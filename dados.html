@@ -150,7 +150,7 @@ function campoHtml(c){
   if(c.tipo==='opcoes'){ const ops=String(c.opcoes||'').split(/[,;\n]/).map(x=>x.trim()).filter(Boolean);
     if(c.outros && !ops.some(ehOutro)) ops.push('Outros');
     return `<label${full}>${lab}<select name="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o=>`<option>${esc(o)}</option>`).join('')}</select><input name="${esc(c.k)}__outro" class="outro" data-v="texto" placeholder="Qual? Informe aqui" aria-label="${esc(c.label)}: qual?" hidden></label>` }
-  if(c.tipo==='arquivo') return `<label class="full">${lab}<input type="file" name="${esc(c.k)}" data-v="arquivo" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"${req}><span class="hint">${esc(c.ph||'Fotos, PDF ou documentos. Até 10 MB por arquivo.')}</span><span class="files hint"></span></label>`;
+  if(c.tipo==='arquivo') return `<label class="full">${lab}<input type="file" name="${esc(c.k)}" data-v="arquivo" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.xml,.zip,.rar,.pfx,.p12,.cer,.crt,.p7b,.pem,application/x-pkcs12"${req}><span class="hint">${esc(c.ph||'Fotos, PDF ou documentos. Até 10 MB por arquivo.')}</span><span class="files hint"></span></label>`;
   if(c.tipo==='textolongo') return `<label class="full">${lab}<textarea name="${esc(c.k)}"${req}${c.ph?` placeholder="${esc(c.ph)}"`:''}></textarea></label>`;
   const extra=c.k==='uf'?' maxlength="2" style="text-transform:uppercase"':'';
   if(c.tipo==='cnpj') return `<label${full}>${lab}<span class="cnpjrow"><input name="${esc(c.k)}" data-v="cnpj" ${TIPO_ATTR.cnpj}${req}><button type="button" class="busca" data-busca="${esc(c.k)}">Pesquisar</button></span><span class="hint cnpjmsg" hidden></span></label>`;
