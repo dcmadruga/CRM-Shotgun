@@ -124,6 +124,68 @@ table.refs td:last-child{width:34px}
 body:not(.is-admin) .admin{display:none!important}
 body.is-admin .noadmin{display:none!important}
 body:not(.is-admin):not(.is-task) .tasktab{display:none!important}
+
+/* ---------- Módulo TASK ---------- */
+.tkhead h2{font-family:var(--display);font-size:20px;margin:0}
+.tkhead p{margin:0;font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.tktools{display:flex;gap:8px;flex-wrap:wrap}
+.tktools input{flex:1 1 260px;padding:10px 12px;font-size:15px;border-radius:8px}
+.tktools button{border-radius:8px;padding:10px 14px}
+.tkabas{display:flex;gap:8px;flex-wrap:wrap}
+.tkabas button{border-radius:8px;display:flex;align-items:center;gap:8px}
+.tkabas i{font-style:normal;font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:0 7px;font-variant-numeric:tabular-nums}
+.tkabas button[aria-pressed=true]{background:var(--purple);border-color:var(--purple);color:#fff}
+.tkabas button.and[aria-pressed=true]{background:#e07b00;border-color:#e07b00}
+.tkabas button[aria-pressed=true] i{background:rgba(255,255,255,.2);border-color:transparent;color:#fff}
+.tkfiltros{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.tkfiltros label{flex-direction:row;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 12px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.tkfiltros select{font-size:14px;text-transform:none;letter-spacing:0}
+.tkgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.tkcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.tkcard h3{margin:0;font-family:var(--display);font-size:16px;font-weight:600;overflow-wrap:anywhere}
+.tkpills{display:flex;gap:6px;flex-wrap:wrap}
+.tkst,.tkstart{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:99px;padding:2px 9px}
+.tkst.and{background:#fdf0d5;color:#9a5300}.tkst.fut{background:#e6eefc;color:#2754a8}.tkst.fin{background:#dcf2e4;color:#1f7a46}
+.tkstart{background:#f1e6fa;color:var(--purple)}
+.tkraz{font-size:12.5px;color:var(--muted);text-transform:uppercase;overflow-wrap:anywhere}
+.tkmeta{display:flex;gap:4px 14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.tkmail{color:var(--purple);font-weight:600;overflow-wrap:anywhere}
+.tkst2{color:#9a5300}
+.tkbox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tkbox>div{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-weight:600;font-size:13px;overflow-wrap:anywhere}
+.tkbox small{display:block;font-size:10.5px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.tkprog{height:6px;background:var(--bg);border-radius:99px;overflow:hidden}
+.tkprog span{display:block;height:100%;background:var(--purple)}
+.tkprogtxt{font-size:12px;color:var(--muted)}
+.tkacts{display:flex;gap:8px;flex-wrap:wrap}
+.tkcard .tkacts button{flex:1;border-radius:8px;padding:10px}
+.tkcard .tkacts button:first-child{background:var(--ink);color:var(--ink-fg);border-color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tkst.and{background:#3a2a10;color:#f3b45c}:root:not([data-theme="light"]) .tkst.fut{background:#1b2740;color:#8fb0f0}:root:not([data-theme="light"]) .tkst.fin{background:#163323;color:#7ed3a0}:root:not([data-theme="light"]) .tkstart{background:#2c1f3a}:root:not([data-theme="light"]) .tkst2{color:#f3b45c}}
+:root[data-theme="dark"] .tkst.and{background:#3a2a10;color:#f3b45c}:root[data-theme="dark"] .tkst.fut{background:#1b2740;color:#8fb0f0}:root[data-theme="dark"] .tkst.fin{background:#163323;color:#7ed3a0}:root[data-theme="dark"] .tkstart{background:#2c1f3a}:root[data-theme="dark"] .tkst2{color:#f3b45c}
+.tkdlg{border:1px solid var(--line);border-radius:12px;padding:0;width:min(640px,calc(100vw - 24px));max-height:calc(100vh - 32px);background:var(--surface);color:var(--fg)}
+.tkdlg::backdrop{background:rgba(0,0,0,.45)}
+.tkdlghead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
+.tkdlghead h3{margin:0;font-family:var(--display);font-size:16px}
+#tkDlgBody{padding:16px}
+#tkDlgMsg{padding:0 16px 14px;margin:0;min-height:0}
+.tkform{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.tkform .full{grid-column:1/-1}
+.tkrow{display:flex;gap:8px}
+.tkrow input,.tkrow select{flex:1}
+.tkck{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.tkck h4{margin:0 0 6px;display:flex;align-items:center;gap:8px;font-size:14px}
+.tkck h4 span{font-size:12px;color:var(--muted);font-weight:500}
+.tkck h4 .linkbtn{margin-left:auto;font-size:12px}
+.tkck ul{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:4px}
+.tkck li{display:flex;flex-direction:column;padding:4px 0;border-bottom:1px dashed var(--line)}
+.tkck li .chk{white-space:normal;font-size:13.5px;align-items:flex-start}
+.tkck li .chk input{margin-top:3px}
+.tkck li input:checked+span{text-decoration:line-through;color:var(--muted)}
+.tkck li small{font-size:11.5px;color:var(--muted);padding-left:22px}
+.tkadd{margin-top:4px}
+.tkimp{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.tkimp li{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.tkimp small{display:block;color:var(--muted);font-size:12px}
 /* Perfil TASK: só o módulo TASK */
 body.is-task .tabs [role=tab]:not(#tabTask),body.is-task #viewProp,body.is-task #viewCfg,body.is-task #viewList,body.is-task .bar{display:none!important}
 header.top .wrap>div{flex:1;min-width:0}
@@ -415,9 +477,30 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 </main>
 
 <main id="viewTask" hidden>
-  <section class="sec"><h2>TASK</h2><div class="body">
-    <p class="hint">Módulo TASK em construção.</p>
-  </div></section>
+  <div class="tkhead"><div><h2>ArgoTask</h2><p>Checklist de implantação</p></div></div>
+  <div class="tktools">
+    <input id="tkBusca" type="search" placeholder="Buscar por posto, razão ou CNPJ…" aria-label="Buscar cadastros">
+    <button type="button" id="tkTemplates">Templates</button>
+    <button type="button" id="tkImportar">Importar das propostas</button>
+    <button type="button" id="tkNovo" class="primary">+ Novo cadastro</button>
+  </div>
+  <div class="tkabas" id="tkAbas" role="group" aria-label="Situação">
+    <button type="button" data-aba="todos">Todos <i>0</i></button>
+    <button type="button" data-aba="and" class="and">Andamento <i>0</i></button>
+    <button type="button" data-aba="fut">Futuros <i>0</i></button>
+    <button type="button" data-aba="fin">Finalizados <i>0</i></button>
+  </div>
+  <div class="tkfiltros">
+    <label>Resp. cadastro<select id="tkRespCad"></select></label>
+    <label>Resp. start<select id="tkRespStart"></select></label>
+  </div>
+  <p id="tkMsg" class="hint" role="status" hidden></p>
+  <div id="tkGrid" class="tkgrid"></div>
+  <dialog id="tkDlg" class="tkdlg" aria-labelledby="tkDlgTit">
+    <div class="tkdlghead"><h3 id="tkDlgTit"></h3><button type="button" id="tkDlgFechar" aria-label="Fechar">✕</button></div>
+    <div id="tkDlgBody"></div>
+    <p id="tkDlgMsg" class="hint" role="status"></p>
+  </dialog>
 </main>
 
 <main id="viewUsers" hidden>
@@ -477,6 +560,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <script src="etapa3-padrao.js"></script>
 <script src="contrato-pdf.js"></script>
 <script type="module" src="auth.js"></script>
+<script type="module" src="task.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const LOGO_PADRAO = $('logo').src;

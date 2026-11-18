@@ -75,7 +75,7 @@ async function iniciar() {
   });
 
   A.onAuthStateChanged(auth, async user => {
-    perfil = null; fb.admin = false; fb.task = false; body.classList.remove('is-admin', 'is-task');
+    perfil = null; fb.admin = false; fb.task = false; body.classList.remove('is-admin', 'is-task'); window.dispatchEvent(new Event('argo-sair'));
     if (!user) { sbox.hidden = true; trocaOk = null; }
     if (!user) { mostrarLogin('Entre com o e-mail e a senha que o administrador cadastrou para você.'); return; }
     try {
@@ -97,8 +97,10 @@ async function iniciar() {
     if (fb.task) {
       box.hidden = true; body.classList.remove('locked');
       $('tabUser').textContent = perfil.nome || perfil.email;
-      aplicarModo(); abrirAba('tabTask'); return;
+      aplicarModo(); abrirAba('tabTask');
+      window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: false } })); return;
     }
+    if (fb.admin) window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: true } }));
     box.hidden = true; body.classList.remove('locked');
     $('tabUser').textContent = perfil.nome || perfil.email;
     aplicarPerfil();
