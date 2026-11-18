@@ -1,7 +1,7 @@
 // Módulo TASK: checklist de implantação. Roda para usuários TASK e administradores.
 // Dados: tasks/{id} (cadastros com checklists) e taskTemplates/{id} (modelos de checklist).
 let F, db, perfil, admin = false, unsubT = null, unsubM = null, unsubP = null, tasksOk = false, aprovadas = null;
-let tasks = [], templates = [], resps = [], aba = 'and';
+let tasks = [], removidas = new Set(), templates = [], resps = [], aba = 'and';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const dig = v => String(v || '').replace(/\D/g, '');
@@ -24,7 +24,10 @@ function iniciar() {
   if (unsubP) unsubP();
   tasksOk = false; aprovadas = null;
   unsubT = F.onSnapshot(F.collection(db, 'tasks'), qs => {
-    tasks = qs.docs.map(d => ({ id: d.id, ...d.data() }));
+    const todos = qs.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Cards removidos pelo ADM ficam só como marca (removido: true), para o automático não recriar
+    removidas = new Set(todos.filter(t => t.removido).flatMap(t => [t.id, t.propostaId]).filter(Boolean));
+    tasks = todos.filter(t => !t.removido);
     tasksOk = true; desenhar(); sincronizar();
   }, e => msg('Não foi possível carregar os cadastros (' + (e.code || 'erro') + ').'));
   unsubP = F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')), qs => {
@@ -78,7 +81,7 @@ function etapas(t) {
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
-    <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${t.start ? `<span class="tkstart">Start: ${esc(fmtD(t.start))}</span>` : ''}</div>
+    <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${t.start ? `<span class="tkstart">Start: ${esc(fmtD(t.start))}</span>` : ''}${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
     <h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}
     <div class="tkmeta">${t.email ? `<span class="tkmail">${esc(t.email)}</span>` : ''}${t.criado ? `<span>Criado em ${esc(fmtTs(t.criado))}</span>` : ''}</div>
@@ -205,7 +208,7 @@ async function formImportar() {
     const qs = await F.getDocs(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')));
     const ja = new Set(tasks.map(t => t.propostaId).filter(Boolean));
     const ps = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !ja.has(p.id)).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0));
-    $('tkDlgBody').innerHTML = ps.length ? `<p class="hint">Quando o cliente aceita o contrato (Etapa 3), o cadastro é criado sozinho. Use esta lista só para trazer antes uma proposta aprovada que ainda não chegou nessa fase.</p>
+    $('tkDlgBody').innerHTML = ps.length ? `<p class="hint">Quando o cliente aceita o contrato (Etapa 3), o cadastro é criado sozinho. Use esta lista para trazer antes uma proposta aprovada que ainda não chegou nessa fase, ou para trazer de volta um card removido.</p>
       <ul class="tkimp">${ps.map(p => `<li><div><b>${esc(p.cliente)}</b><small>Nº ${esc(p.numero)} · ${esc(p.cidade || '')} · ${esc(p.vendedor || '')}${p.e2Em ? ' · dados complementares recebidos' : ''}</small></div><button type="button" data-imp="${esc(p.id)}">Importar</button></li>`).join('')}</ul>`
       : '<p class="hint">Nenhuma proposta aprovada pendente de importação.</p>';
   } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar as propostas (${esc(e.code || 'erro')}).</p>`; }
@@ -213,7 +216,9 @@ async function formImportar() {
 // Cria o cadastro a partir da proposta (id do cadastro = id da proposta, para não duplicar)
 async function criarDaProposta(pid, auto) {
   const ref = F.doc(db, 'tasks', pid);
-  if ((await F.getDoc(ref)).exists()) return null;
+  const atual = await F.getDoc(ref);
+  // Removido pelo ADM: o automático respeita a remoção, a importação manual traz de volta
+  if (atual.exists() && (auto || !atual.data().removido)) return null;
   const p = (await F.getDoc(F.doc(db, 'propostas', pid))).data();
   let v = {}; try { const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')); if (r.exists()) v = r.data().valores || {}; } catch (e) {}
   const sc = window.splitCidade ? window.splitCidade(p.cidade) : { cidade: p.cidade || '', uf: '' };
@@ -227,6 +232,22 @@ async function criarDaProposta(pid, auto) {
   await F.setDoc(ref, novo);
   return novo;
 }
+// Remove o card (só ADM). Se veio de proposta, deixa a marca para o automático não recriar; a proposta volta para "Importar".
+async function removerTask(id) {
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  const pid = t.propostaId || '';
+  if (pid || t.auto) await F.setDoc(F.doc(db, 'tasks', id), { removido: true, propostaId: pid || id, apelido: t.apelido || t.razao || '', removidoEm: F.serverTimestamp(), removidoPor: perfil.nome || perfil.email });
+  else await F.deleteDoc(F.doc(db, 'tasks', id));
+  return t;
+}
+let armadoCard = null;
+async function cliqueRemover(b, id) {
+  if (!admin) return;
+  if (armadoCard !== id) { armadoCard = id; b.textContent = 'Confirmar remoção'; b.classList.add('armado'); setTimeout(() => { if (armadoCard === id) { armadoCard = null; b.textContent = 'Remover'; b.classList.remove('armado'); } }, 5000); return; }
+  armadoCard = null; b.disabled = true; b.textContent = 'Removendo…';
+  try { const t = await removerTask(id); msg(`${t?.apelido || 'Card'} removido. A proposta ficou disponível em "Importar" de novo.`); }
+  catch (er) { b.disabled = false; b.textContent = 'Remover'; msg('Não foi possível remover (' + (er.code || 'erro') + ').'); }
+}
 async function importar(pid, bt) {
   bt.disabled = true; bt.textContent = 'Importando…';
   try { const n = await criarDaProposta(pid, false); bt.closest('li').remove(); dmsg(n ? `${n.apelido} importado.` : 'Essa proposta já tinha virado cadastro.'); }
@@ -236,7 +257,7 @@ async function importar(pid, bt) {
 const criando = new Set();
 function sincronizar() {
   if (!tasksOk || !aprovadas) return;
-  const tem = new Set(tasks.flatMap(t => [t.id, t.propostaId]).filter(Boolean));
+  const tem = new Set([...tasks.flatMap(t => [t.id, t.propostaId]).filter(Boolean), ...removidas]);
   aprovadas.filter(p => p.ctAceitoEm && !tem.has(p.id) && !criando.has(p.id)).forEach(p => {
     criando.add(p.id);
     criarDaProposta(p.id, true).then(n => { if (n) msg(`Novo cadastro automático: ${n.apelido} (contrato aceito).`); })
@@ -324,6 +345,7 @@ function ligar() {
   $('tkImportar').addEventListener('click', formImportar);
   $('tkGrid').addEventListener('click', e => {
     const b = e.target.closest('[data-tk]'); if (!b) return; const id = b.closest('[data-id]').dataset.id;
+    if (b.dataset.tk === 'remover') return cliqueRemover(b, id);
     if (b.dataset.tk === 'pdf') return verProposta(b.dataset.pid, b);
     if (b.dataset.tk === 'e2') return verDados(b.dataset.pid);
     if (b.dataset.tk === 'ct') return verContrato(b.dataset.pid, b);
@@ -345,7 +367,7 @@ function ligar() {
     if (b.id === 'tkBuscaCnpj') return buscarCnpj();
     if (b.dataset.anexo) return baixarAnexo($('tkE2').dataset.pid, b.dataset.anexo, b);
     if (b.id === 'tkE2Copiar') { try { await navigator.clipboard.writeText($('tkE2').dataset.texto || ''); dmsg('Dados copiados.'); } catch (_) { dmsg('Não foi possível copiar.'); } return; }
-    if (b.id === 'tkExcluir') { const id = $('tkForm').dataset.id; if (!confirmar(b, 'task' + id, 'Confirmar exclusão')) return; try { await F.deleteDoc(F.doc(db, 'tasks', id)); dlg().close(); msg('Cadastro excluído.'); } catch (er) { dmsg('Não foi possível excluir (' + (er.code || 'erro') + ').'); } return; }
+    if (b.id === 'tkExcluir') { const id = $('tkForm').dataset.id; if (!confirmar(b, 'task' + id, 'Confirmar exclusão')) return; try { await removerTask(id); dlg().close(); msg('Cadastro excluído.'); } catch (er) { dmsg('Não foi possível excluir (' + (er.code || 'erro') + ').'); } return; }
     if (b.dataset.imp) return importar(b.dataset.imp, b);
     if (b.dataset.ck) {
       const id = $('tkCk').dataset.id, sec = b.closest('[data-ci]'), ci = sec ? +sec.dataset.ci : -1;
