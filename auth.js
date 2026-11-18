@@ -227,12 +227,18 @@ async function iniciar() {
         <div class="vals">Licenças ${brl(p.totLic)} · Mensalidade ${brl(p.totMen)} · Deslocamento ${brl(p.totDes)}</div>
         <div class="meta">Enviada em ${esc(fmtTs(p.criado) || fmtD(p.data))}${p.validade ? ' · válida até ' + esc(fmtD(p.validade)) : ''}${ok ? `<br><b style="color:#1f7a46">Aprovada por ${esc(p.aprovadoNome)}${p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : ''} em ${esc(fmtTs(p.aprovadoEm))}</b>` : ''}</div>
         <div class="acts">
-          ${ok ? '<button type="button" class="primary" data-a="etapa2">Etapa 2: enviar formulário</button>' : '<button type="button" data-a="reenviar">Reenviar link</button><button type="button" disabled title="Libera quando o cliente aprovar">Etapa 2 (após aprovação)</button>'}
+          ${ok ? '<button type="button" class="primary" data-a="etapa2">Etapa 2: enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link da Etapa 2</button>' : '<button type="button" data-a="reenviar">Reenviar link</button><button type="button" disabled title="Libera quando o cliente aprovar">Etapa 2 (após aprovação)</button>'}
           <button type="button" data-a="pdf">Ver PDF</button>
           <button type="button" data-a="abrir">Abrir no formulário</button>
-          <button type="button" data-a="copiar">Copiar link</button>
+          <button type="button" data-a="copiar">${ok ? 'Copiar link da proposta' : 'Copiar link'}</button>
         </div></div>`;
     }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "Enviar proposta para aprovação" na aba Proposta.'}</p>`;
+  }
+  function linkEtapa2(p) {
+    const sc = splitCidade(p.cidade);
+    const dados = { c: p.cnpj, r: p.cliente, cid: sc.cidade, uf: sc.uf, v: perfil.nome || p.vendedor, w: dig(perfil.fone) || p.vendedorFone, n: p.numero };
+    const b = btoa(unescape(encodeURIComponent(JSON.stringify(dados)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return baseUrl('dados.html') + '#d=' + b;
   }
   $('pBusca').addEventListener('input', desenharPropostas);
   $('pFiltro').addEventListener('change', desenharPropostas);
@@ -256,11 +262,13 @@ async function iniciar() {
         setTimeout(() => URL.revokeObjectURL(url), 60000); pMsg('');
       } catch (err) { pMsg('Não foi possível abrir o PDF (' + (err.code || err.message) + ').'); }
     }
-    if (a === 'etapa2') {
-      const sc = splitCidade(p.cidade);
-      const dados = { c: p.cnpj, r: p.cliente, cid: sc.cidade, uf: sc.uf, v: perfil.nome || p.vendedor, w: dig(perfil.fone) || p.vendedorFone, n: p.numero };
-      const b = btoa(unescape(encodeURIComponent(JSON.stringify(dados)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-      const link = baseUrl('dados.html') + '#d=' + b;
+    if (a === 'etapa2' || a === 'etapa2copy') {
+      const link = linkEtapa2(p);
+      if (a === 'etapa2copy') {
+        try { await navigator.clipboard.writeText(link); pMsg('Link da Etapa 2 (proposta nº ' + p.numero + ') copiado. Cole no WhatsApp ou e-mail do cliente.'); }
+        catch (_) { pMsg('Link da Etapa 2: ' + link); }
+        return;
+      }
       abrirWa(p.waCli, `Olá${p.contato ? ' ' + p.contato : ''}! Obrigado por aprovar a proposta nº ${p.numero}. Para iniciarmos a implantação, preencha os dados complementares obrigatórios neste link:\n${link}\n\n${perfil.nome || p.vendedor} - Argo`);
       pMsg('WhatsApp aberto com o formulário da Etapa 2.');
     }
