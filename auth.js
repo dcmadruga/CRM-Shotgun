@@ -331,14 +331,21 @@ async function iniciar() {
       const t = { data: 'type="date"', numero: 'type="number" min="0"', email: 'type="email"', telefone: 'inputmode="tel"', cpf: 'inputmode="numeric"', cnpj: 'inputmode="numeric"', cep: 'inputmode="numeric"' }[c.tipo] || '';
       return `<label${full}>${lab}<input data-k="${esc(c.k)}" ${t} value="${esc(val)}"${req}${ph}></label>`;
     };
-    box.innerHTML = e4Visiveis().map(sc => `<div class="etit" style="margin:4px 0">${esc(sc.titulo)}</div><div class="grid e4grid">${sc.campos.map((c, i) => {
-      const abre = c.tipo === 'simnao' && (c.abre != null ? c.abre : i === 0) && i < sc.campos.length - 1;
-      let h = campo(c); if (abre) h = h.replace(/^<label/, `<label data-abre="${esc(c.k)}"`);
-      return h;
-    }).join('')}</div>`).join('') + `<div class="acts" style="margin-top:8px"><button type="button" class="primary" data-a="e4salvar">Salvar dados</button><button type="button" data-a="e4cancelar">Cancelar</button><span class="hint e4msg"></span></div>`;
+    box.innerHTML = e4Visiveis().map(sc => `<div class="etit" style="margin:4px 0">${esc(sc.titulo)}</div><div class="grid e4grid">${(() => {
+      // Cada Sim/Não que abre vira uma linha: a pergunta à esquerda e os campos dela ao lado
+      const out = []; let g = null, deps = [];
+      const fecha = () => { if (g) { out.push(`<div class="linha">${g}<div class="deps">${deps.join('')}</div></div>`); g = null; deps = []; } };
+      sc.campos.forEach((c, i) => {
+        const abre = c.tipo === 'simnao' && (c.abre != null ? c.abre : i === 0) && i < sc.campos.length - 1;
+        const h = campo(c);
+        if (abre) { fecha(); g = h.replace(/^<label/, `<label data-abre="${esc(c.k)}"`); return; }
+        (g ? deps : out).push(h);
+      });
+      fecha(); return out.join('');
+    })()}</div>`).join('') + `<div class="acts" style="margin-top:8px"><button type="button" class="primary" data-a="e4salvar">Salvar dados</button><button type="button" data-a="e4cancelar">Cancelar</button><span class="hint e4msg"></span></div>`;
     // Sim/Não que abre os campos seguintes da seção
     box.querySelectorAll('[data-abre]').forEach(lab => {
-      const deps = []; let n = lab.nextElementSibling; while (n) { deps.push(n); n = n.nextElementSibling; }
+      const deps = [...(lab.parentElement.querySelector(':scope > .deps')?.children || [])];
       const sync = () => { const sim = lab.querySelector('input:checked')?.value === 'Sim'; deps.forEach(x => { x.hidden = !sim; x.querySelectorAll('[data-k],[data-outro]').forEach(i => i.disabled = !sim); }); };
       lab.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener('change', sync)); sync();
     });

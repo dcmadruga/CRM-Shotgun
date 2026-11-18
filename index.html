@@ -243,6 +243,10 @@ table.users{min-width:640px}
 .pcard .acts .pill{margin-left:4px}
 .pcard .e4box{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px}
 .e4grid .full{grid-column:1/-1}
+.e4grid .linha{grid-column:1/-1;display:grid;grid-template-columns:minmax(150px,1fr) 3fr;gap:12px;align-items:start}
+.e4grid .linha .deps{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.e4grid .linha .deps:not(:has(> :not([hidden]))){display:none}
+@media (max-width:640px){.e4grid .linha{grid-template-columns:1fr}}
 .pcard .e2dados{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:8px}
 table.e2resp{min-width:0}
 table.e2resp td:first-child{color:var(--muted);width:40%;font-size:12.5px}

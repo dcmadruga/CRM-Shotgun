@@ -30,8 +30,12 @@ main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
 .intro{margin:0}
 .sec{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
-.body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .full{grid-column:1/-1}
+.linha{grid-column:1/-1;display:grid;grid-template-columns:minmax(160px,1fr) 3fr;gap:12px;align-items:start}
+.linha .deps{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.linha .deps:not(:has(> :not([hidden]))){display:none}
+@media (max-width:640px){.linha{grid-template-columns:1fr}}
 label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;min-width:0}
 label b{color:var(--danger);font-weight:600}
 input,select,textarea{font:inherit;font-size:16px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:9px 10px;width:100%;min-width:0}
@@ -168,14 +172,17 @@ function montar(){
     const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||''))); if(!cs.length) return '';
     cs.forEach(c=>CAMPOS.push({...c, secao:s.titulo}));
     // Sim/Não que abre os campos seguintes da seção (padrão quando é o primeiro campo)
-    const html=[]; let grupo=null;
+    // Cada Sim/Não que abre vira uma linha: a pergunta à esquerda e os campos dela ao lado, até o próximo Sim/Não que abre
+    const html=[]; let grupo=null, grupoK='', deps=[];
+    const fecha=()=>{ if(grupo){ html.push(`<div class="linha">${grupo}<div class="deps">${deps.join('')}</div></div>`); grupo=null; deps=[] } };
     cs.forEach((c,i)=>{
       const abre=c.tipo==='simnao' && (c.abre!=null ? c.abre : i===0) && i<cs.length-1;
       let h=campoHtml(c);
-      if(grupo) h=h.replace(/^<label/,`<label data-dep="${esc(grupo)}"`);
-      if(abre){ h=h.replace(/^<label/,`<label data-abre="${esc(c.k)}"`); grupo=c.k }
+      if(abre){ fecha(); grupo=h.replace(/^<label/,`<label data-abre="${esc(c.k)}"`); grupoK=c.k; return }
+      if(grupo){ deps.push(h.replace(/^<label/,`<label data-dep="${esc(grupoK)}"`)); return }
       html.push(h);
     });
+    fecha();
     return `<section class="sec"><h2>${esc(s.titulo)}</h2><div class="body">${html.join('')}</div></section>`;
   }).join('');
 }
