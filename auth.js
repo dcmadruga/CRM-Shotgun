@@ -326,7 +326,8 @@ async function iniciar() {
       if (c.tipo === 'opcoes') {
         const ops = String(c.opcoes || '').split(/[,;\n]/).map(o => o.trim()).filter(Boolean); if (c.outros && !ops.some(ehOutro4)) ops.push('Outros');
         const base = ops.find(o => o === val) || (ehOutro4(val.split(':')[0]) ? ops.find(ehOutro4) : '');
-        return `<label${full}>${lab}<select data-k="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o => `<option${o === base ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select><input data-outro="${esc(c.k)}" placeholder="Qual?" value="${esc(base && ehOutro4(base) ? val.replace(/^[^:]*:\s*/, '') : '')}"${base && ehOutro4(base) ? '' : ' hidden'}></label>`;
+        const det = String(c.detalhe || '').trim() ? `<label class="full" data-det="${esc(c.k)}" hidden><span>${esc(c.detalhe)}</span><textarea data-detk="${esc(c.k)}" rows="4">${esc(v[c.k + '__det'] || '')}</textarea></label>` : '';
+        return `<label${full}>${lab}<select data-k="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o => `<option${o === base ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select><input data-outro="${esc(c.k)}" placeholder="Qual?" value="${esc(base && ehOutro4(base) ? val.replace(/^[^:]*:\s*/, '') : '')}"${base && ehOutro4(base) ? '' : ' hidden'}></label>${det}`;
       }
       const t = { data: 'type="date"', numero: 'type="number" min="0"', email: 'type="email"', telefone: 'inputmode="tel"', cpf: 'inputmode="numeric"', cnpj: 'inputmode="numeric"', cep: 'inputmode="numeric"' }[c.tipo] || '';
       return `<label${full}>${lab}<input data-k="${esc(c.k)}" ${t} value="${esc(val)}"${req}${ph}></label>`;
@@ -351,6 +352,9 @@ async function iniciar() {
     });
     box.querySelectorAll('select[data-k]').forEach(sel => { const o = box.querySelector(`[data-outro="${CSS.escape(sel.dataset.k)}"]`); if (o) sel.addEventListener('change', () => { o.hidden = !ehOutro4(sel.value); if (!o.hidden) o.focus(); }); });
     box.addEventListener('input', ev => { if (ev.target.dataset && ev.target.dataset.k) ev.target.style.borderColor = ''; });
+    // Texto longo que abre depois de escolher uma opção (descrição configurada nos Parâmetros)
+    const syncDet = () => box.querySelectorAll('[data-det]').forEach(l => { const sel = box.querySelector(`select[data-k="${CSS.escape(l.dataset.det)}"]`); const on = !!sel && !sel.disabled && !!sel.value; l.hidden = !on; l.querySelector('textarea').disabled = !on; });
+    box.addEventListener('change', syncDet); syncDet();
   }
   async function salvarE4(p, card, bt) {
     const box = card.querySelector('.e4box'), valores = {}, campos = {}; let falta = null;
@@ -361,6 +365,8 @@ async function iniciar() {
       els.forEach(x => x.style.borderColor = '');
       if (c.req && !val) { falta = falta || els[0]; els.forEach(x => x.style.borderColor = 'var(--danger)'); }
       if (val) { valores[c.k] = val; const lab = campos[c.label] != null ? sc.titulo + ' - ' + c.label : c.label; campos[lab] = c.tipo === 'data' ? fmtD(val) : val; }
+      const dt = box.querySelector(`textarea[data-detk="${CSS.escape(c.k)}"]`);
+      if (val && dt && !dt.disabled && dt.value.trim()) { valores[c.k + '__det'] = dt.value.trim(); campos[(campos[c.label + ' - ' + c.detalhe] != null ? sc.titulo + ' - ' : '') + c.label + ' - ' + c.detalhe] = dt.value.trim(); }
     }));
     if (falta) { box.querySelector('.e4msg').textContent = 'Preencha os campos obrigatórios.'; falta.focus(); return; }
     bt.disabled = true; box.querySelector('.e4msg').textContent = 'Salvando…';
@@ -601,7 +607,7 @@ async function iniciar() {
           <td class="t"><select data-f="tipo" ${c.custom ? '' : 'disabled'} aria-label="Tipo">${Object.entries(TIP).map(([k, v]) => `<option value="${k}"${c.tipo === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
           <td class="c"><input type="checkbox" data-f="show" ${c.show !== false || c.fixo ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Mostrar"></td>
           <td class="c"><input type="checkbox" data-f="req" ${c.req ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Obrigatório"></td>
-          <td class="o">${c.tipo === 'simnao' ? `<label class="chk"><input type="checkbox" data-f="abre" ${abreSim(s, ci) ? 'checked' : ''}> Só mostrar os campos abaixo desta seção se responder Sim</label>` : c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
+          <td class="o">${c.tipo === 'simnao' ? `<label class="chk"><input type="checkbox" data-f="abre" ${abreSim(s, ci) ? 'checked' : ''}> Só mostrar os campos abaixo desta seção se responder Sim</label>` : c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>${quem === 'o vendedor' ? `<input data-f="detalhe" value="${esc(c.detalhe || '')}" placeholder="Ao escolher, abrir texto longo com esta descrição (vazio = não abre)" aria-label="Descrição do texto longo">` : ''}` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
           <td class="a"><button type="button" data-ca="up" ${ci === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-ca="down" ${ci === s.campos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button>${c.fixo ? '' : '<button type="button" data-ca="del" aria-label="Excluir campo" title="Excluir campo">✕</button>'}</td>
         </tr>`).join('')}
         </tbody></table></div>
