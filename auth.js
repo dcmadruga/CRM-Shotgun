@@ -327,7 +327,8 @@ async function iniciar() {
         const ops = String(c.opcoes || '').split(/[,;\n]/).map(o => o.trim()).filter(Boolean); if (c.outros && !ops.some(ehOutro4)) ops.push('Outros');
         const base = ops.find(o => o === val) || (ehOutro4(val.split(':')[0]) ? ops.find(ehOutro4) : '');
         const det = String(c.detalhe || '').trim() ? `<label class="full" data-det="${esc(c.k)}" hidden><span>${esc(c.detalhe)}</span><textarea data-detk="${esc(c.k)}" rows="4">${esc(v[c.k + '__det'] || '')}</textarea></label>` : '';
-        return `<label${full}>${lab}<select data-k="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o => `<option${o === base ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select><input data-outro="${esc(c.k)}" placeholder="Qual?" value="${esc(base && ehOutro4(base) ? val.replace(/^[^:]*:\s*/, '') : '')}"${base && ehOutro4(base) ? '' : ' hidden'}></label>${det}`;
+        const fil = String(c.filiaisOp || '').trim() ? `<div class="full e4fil" data-fil="${esc(c.k)}" data-op="${esc(c.filiaisOp.trim())}" hidden><label class="e4filq"><span>Quantidade de filiais <b style="color:var(--danger)">*</b></span><input type="number" min="1" max="50" data-filq="${esc(c.k)}" value="${(v[c.k + '__fil'] || []).length || ''}"></label><div class="e4filrows"></div></div>` : '';
+        return `<label${full}>${lab}<select data-k="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o => `<option${o === base ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select><input data-outro="${esc(c.k)}" placeholder="Qual?" value="${esc(base && ehOutro4(base) ? val.replace(/^[^:]*:\s*/, '') : '')}"${base && ehOutro4(base) ? '' : ' hidden'}></label>${det}${fil}`;
       }
       const t = { data: 'type="date"', numero: 'type="number" min="0"', email: 'type="email"', telefone: 'inputmode="tel"', cpf: 'inputmode="numeric"', cnpj: 'inputmode="numeric"', cep: 'inputmode="numeric"' }[c.tipo] || '';
       return `<label${full}>${lab}<input data-k="${esc(c.k)}" ${t} value="${esc(val)}"${req}${ph}></label>`;
@@ -354,7 +355,13 @@ async function iniciar() {
     box.addEventListener('input', ev => { if (ev.target.dataset && ev.target.dataset.k) ev.target.style.borderColor = ''; });
     // Texto longo que abre depois de escolher uma opção (descrição configurada nos Parâmetros)
     const syncDet = () => box.querySelectorAll('[data-det]').forEach(l => { const sel = box.querySelector(`select[data-k="${CSS.escape(l.dataset.det)}"]`); const on = !!sel && !sel.disabled && !!sel.value; l.hidden = !on; l.querySelector('textarea').disabled = !on; });
-    box.addEventListener('change', syncDet); syncDet();
+    // Filiais: ao escolher a opção configurada (ex.: Central), pede a quantidade e abre uma linha por filial
+    const filLinha = (k, i, f) => `<div class="e4filrow"><b>F${i + 1}</b><select data-filt aria-label="F${i + 1} tipo"><option value="">Posto ou Loja</option>${['Posto', 'Loja'].map(o => `<option${f.tipo === o ? ' selected' : ''}>${o}</option>`).join('')}</select><input data-filc inputmode="numeric" placeholder="CNPJ" aria-label="F${i + 1} CNPJ" value="${esc(f.cnpj || '')}"></div>`;
+    const desenharFil = (bl, lista) => { const k = bl.dataset.fil, n = Math.min(50, Math.max(0, parseInt(bl.querySelector('[data-filq]').value, 10) || 0)), rows = bl.querySelector('.e4filrows'); const atual = lista || [...rows.children].map(r => ({ tipo: r.querySelector('[data-filt]').value, cnpj: r.querySelector('[data-filc]').value })); rows.innerHTML = Array.from({ length: n }, (_, i) => filLinha(k, i, atual[i] || {})).join(''); };
+    box.querySelectorAll('[data-fil]').forEach(bl => { desenharFil(bl, v[bl.dataset.fil + '__fil'] || []); bl.querySelector('[data-filq]').addEventListener('input', () => desenharFil(bl)); });
+    box.addEventListener('input', ev => { if (ev.target.matches('[data-filc]')) { const d = ev.target.value.replace(/\D/g, '').slice(0, 14); ev.target.value = d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : d; ev.target.style.borderColor = ''; } if (ev.target.matches('[data-filt],[data-filq]')) ev.target.style.borderColor = ''; });
+    const syncFil = () => box.querySelectorAll('[data-fil]').forEach(bl => { const sel = box.querySelector(`select[data-k="${CSS.escape(bl.dataset.fil)}"]`); const on = !!sel && !sel.disabled && sel.value.toLowerCase() === bl.dataset.op.toLowerCase(); bl.hidden = !on; bl.querySelectorAll('input,select').forEach(x => x.disabled = !on); });
+    box.addEventListener('change', () => { syncDet(); syncFil(); }); syncDet(); syncFil();
   }
   async function salvarE4(p, card, bt) {
     const box = card.querySelector('.e4box'), valores = {}, campos = {}; let falta = null;
@@ -365,10 +372,17 @@ async function iniciar() {
       els.forEach(x => x.style.borderColor = '');
       if (c.req && !val) { falta = falta || els[0]; els.forEach(x => x.style.borderColor = 'var(--danger)'); }
       if (val) { valores[c.k] = val; const lab = campos[c.label] != null ? sc.titulo + ' - ' + c.label : c.label; campos[lab] = c.tipo === 'data' ? fmtD(val) : val; }
+      const bl = box.querySelector(`[data-fil="${CSS.escape(c.k)}"]`);
+      if (val && bl && !bl.hidden) {
+        const q = bl.querySelector('[data-filq]'), rows = [...bl.querySelectorAll('.e4filrow')];
+        if (!rows.length) { falta = falta || q; q.style.borderColor = 'var(--danger)'; }
+        const fil = rows.map((r, i) => { const t = r.querySelector('[data-filt]'), cn = r.querySelector('[data-filc]'); if (!t.value) { falta = falta || t; t.style.borderColor = 'var(--danger)'; } if (cn.value.replace(/\D/g, '').length !== 14) { falta = falta || cn; cn.style.borderColor = 'var(--danger)'; } return { cod: 'F' + (i + 1), tipo: t.value, cnpj: cn.value }; });
+        if (fil.length) { valores[c.k + '__fil'] = fil; campos[c.label + ' - Filiais'] = fil.map(f => `${f.cod} - ${f.tipo} - ${f.cnpj}`).join('\n'); }
+      }
       const dt = box.querySelector(`textarea[data-detk="${CSS.escape(c.k)}"]`);
       if (val && dt && !dt.disabled && dt.value.trim()) { valores[c.k + '__det'] = dt.value.trim(); campos[(campos[c.label + ' - ' + c.detalhe] != null ? sc.titulo + ' - ' : '') + c.label + ' - ' + c.detalhe] = dt.value.trim(); }
     }));
-    if (falta) { box.querySelector('.e4msg').textContent = 'Preencha os campos obrigatórios.'; falta.focus(); return; }
+    if (falta) { box.querySelector('.e4msg').textContent = 'Preencha os campos obrigatórios (CNPJ das filiais com 14 dígitos).'; falta.focus(); return; }
     bt.disabled = true; box.querySelector('.e4msg').textContent = 'Salvando…';
     try {
       const por = perfil.nome || perfil.email;
@@ -607,7 +621,7 @@ async function iniciar() {
           <td class="t"><select data-f="tipo" ${c.custom ? '' : 'disabled'} aria-label="Tipo">${Object.entries(TIP).map(([k, v]) => `<option value="${k}"${c.tipo === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
           <td class="c"><input type="checkbox" data-f="show" ${c.show !== false || c.fixo ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Mostrar"></td>
           <td class="c"><input type="checkbox" data-f="req" ${c.req ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Obrigatório"></td>
-          <td class="o">${c.tipo === 'simnao' ? `<label class="chk"><input type="checkbox" data-f="abre" ${abreSim(s, ci) ? 'checked' : ''}> Só mostrar os campos abaixo desta seção se responder Sim</label>` : c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>${quem === 'o vendedor' ? `<input data-f="detalhe" value="${esc(c.detalhe || '')}" placeholder="Ao escolher, abrir texto longo com esta descrição (vazio = não abre)" aria-label="Descrição do texto longo">` : ''}` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
+          <td class="o">${c.tipo === 'simnao' ? `<label class="chk"><input type="checkbox" data-f="abre" ${abreSim(s, ci) ? 'checked' : ''}> Só mostrar os campos abaixo desta seção se responder Sim</label>` : c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>${quem === 'o vendedor' ? `<input data-f="detalhe" value="${esc(c.detalhe || '')}" placeholder="Ao escolher, abrir texto longo com esta descrição (vazio = não abre)" aria-label="Descrição do texto longo"><input data-f="filiaisOp" value="${esc(c.filiaisOp || '')}" placeholder="Opção que pede filiais (ex.: Central)" aria-label="Opção que pede filiais">` : ''}` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
           <td class="a"><button type="button" data-ca="up" ${ci === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-ca="down" ${ci === s.campos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button>${c.fixo ? '' : '<button type="button" data-ca="del" aria-label="Excluir campo" title="Excluir campo">✕</button>'}</td>
         </tr>`).join('')}
         </tbody></table></div>
