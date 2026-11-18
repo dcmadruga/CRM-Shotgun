@@ -126,6 +126,21 @@ header.top .wrap>div{flex:1;min-width:0}
 .team .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .team .ok{color:var(--purple);font-weight:600}
 .firstrun{background:var(--accent);color:#fff;border-radius:6px;padding:10px 14px;margin:0}
+body:not(.fb) .fbonly{display:none!important}
+body.fb .nofb{display:none!important}
+.tabuser{margin-left:auto;align-self:center;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
+.linkbtn{background:none!important;border:0!important;color:var(--purple)!important;padding:6px 8px;font-weight:600;cursor:pointer}
+#loginBox{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
+.loginCard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:24px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px}
+.loginCard h2{font-family:var(--display);margin:0;font-size:20px}
+.loginCard img{border-radius:10px}
+.loginCard button.primary{padding:10px}
+body.locked>*:not(#loginBox):not(script){visibility:hidden}
+table.users{min-width:640px}
+table.users td{font-size:13.5px;vertical-align:middle}
+table.users td:last-child{width:auto;white-space:nowrap}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--field);border:1px solid var(--line)}
+.pill.off{color:var(--danger);border-color:var(--danger)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 </head><body>
@@ -137,6 +152,8 @@ header.top .wrap>div{flex:1;min-width:0}
 <nav class="tabs" aria-label="Seções"><div class="wrap" role="tablist">
   <button type="button" role="tab" id="tabProp" aria-selected="true">Proposta</button>
   <button type="button" role="tab" id="tabCfg" aria-selected="false">Parâmetros</button>
+  <button type="button" role="tab" id="tabUsers" aria-selected="false" class="admin fbonly">Usuários</button>
+  <span class="tabuser fbonly" id="tabUser"></span><button type="button" class="linkbtn fbonly" id="btnSair">Sair</button>
 </div></nav>
 
 <div class="wrap"><main id="viewProp">
@@ -194,7 +211,7 @@ header.top .wrap>div{flex:1;min-width:0}
   <section class="sec team"><h2>Parâmetros da equipe <span>preços, textos e referências</span></h2><div class="body">
     <p class="hint" id="teamStatus">Carregando os parâmetros da equipe…</p>
     <p class="hint noadmin">Os preços e textos são definidos pelo administrador e chegam sozinhos quando você abre o app com internet. Você só preenche os seus dados.</p>
-    <details class="noadmin"><summary class="hint">Sou o administrador</summary>
+    <details class="noadmin nofb"><summary class="hint">Sou o administrador</summary>
       <div class="body" style="padding-inline:0">
         <label>Token do GitHub (fica só neste aparelho)<input id="ghToken" type="password" autocomplete="off" placeholder="github_pat_…"></label>
         <label>Repositório<input id="ghRepo" placeholder="usuario/propostas-argo"></label>
@@ -205,9 +222,9 @@ header.top .wrap>div{flex:1;min-width:0}
       <p class="hint"><span class="ok">Modo administrador.</span> Edite os parâmetros abaixo e clique em <b>Publicar para a equipe</b>. Todos recebem na próxima vez que abrirem o app.</p>
       <div class="row">
         <button type="button" class="primary" id="btnPublish">Publicar para a equipe</button>
-        <button type="button" id="btnExportCfg">Exportar parametros.json</button>
+        <button type="button" id="btnExportCfg" class="nofb">Exportar parametros.json</button>
         <button type="button" id="btnPullCfg">Descartar alterações e baixar os publicados</button>
-        <button type="button" id="btnSairAdmin">Sair do modo administrador</button>
+        <button type="button" id="btnSairAdmin" class="nofb">Sair do modo administrador</button>
       </div>
       <p class="hint" id="pubStatus"></p>
     </div>
@@ -270,7 +287,34 @@ header.top .wrap>div{flex:1;min-width:0}
     <label>Itens de suporte (um por linha)<textarea id="c-bullets" rows="3"></textarea></label>
         <p class="hint">Os textos de alimentação, hospedagem, deslocamento e bases são montados a partir dos valores de base acima.</p>
   </div></section>
+</main>
+
+<main id="viewUsers" hidden>
+  <section class="sec"><h2>Novo usuário <span>só o administrador vê esta tela</span></h2><div class="body">
+    <div class="grid">
+      <label>Nome<input id="u-nome" autocomplete="off"></label>
+      <label>E-mail (login)<input id="u-email" type="email" autocomplete="off"></label>
+      <label>Telefone / WhatsApp<input id="u-fone" inputmode="tel" autocomplete="off"></label>
+      <label>Senha inicial (mín. 6)<input id="u-senha" autocomplete="new-password"></label>
+      <label>Perfil<select id="u-papel"><option value="vendedor">Vendedor</option><option value="adm">Administrador</option></select></label>
+    </div>
+    <div class="tools"><button type="button" class="primary" id="btnAddUser">Cadastrar usuário</button><span id="uStatus" class="hint"></span></div>
+  </div></section>
+  <section class="sec"><h2>Usuários cadastrados <span id="uCount"></span></h2><div class="body">
+    <div class="refwrap"><table class="refs users"><thead><tr><th>Nome</th><th>E-mail</th><th>Telefone</th><th>Perfil</th><th>Acesso</th><th><span class="sr">Ações</span></th></tr></thead><tbody id="usersBody"></tbody></table></div>
+    <p class="hint">Bloquear corta o acesso na hora, sem apagar o cadastro. "Nova senha" manda um e-mail para a pessoa criar outra senha.</p>
+  </div></section>
 </main></div>
+
+<div id="loginBox" hidden><form id="loginForm" class="loginCard" novalidate>
+  <img src="icons/icon-192.png" alt="Argo" width="56" height="56">
+  <h2>Propostas Argo</h2>
+  <p class="hint" id="loginMsg">Entre com o e-mail e a senha que o administrador cadastrou para você.</p>
+  <label>E-mail<input id="l-email" type="email" autocomplete="username" required></label>
+  <label>Senha<input id="l-senha" type="password" autocomplete="current-password" required></label>
+  <button type="submit" class="primary" id="btnLogin">Entrar</button>
+  <button type="button" class="linkbtn" id="btnEsqueci">Esqueci minha senha</button>
+</form></div>
 
 <div class="bar"><div class="wrap">
   <div class="sum">
@@ -287,6 +331,8 @@ header.top .wrap>div{flex:1;min-width:0}
 </div></div>
 
 <script src="jspdf.umd.min.js"></script>
+<script src="firebase-config.js"></script>
+<script type="module" src="auth.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const LOGO_PADRAO = $('logo').src;
@@ -875,7 +921,8 @@ $('btnPdf').addEventListener('click', async ()=>{
 
 /* ---------- App da equipe: parâmetros centrais, administrador, instalação ---------- */
 const PEND_KEY='argo-pendente-v1', TOKEN_KEY='argo-gh-token', REPO_KEY='argo-gh-repo';
-function isAdmin(){ try{ return !!localStorage.getItem(TOKEN_KEY) }catch(e){ return false } }
+const FB_ON = !!(window.FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey);
+function isAdmin(){ if(FB_ON) return !!(window.argoFb && argoFb.admin); try{ return !!localStorage.getItem(TOKEN_KEY) }catch(e){ return false } }
 function repoPadrao(){
   try{ const s=localStorage.getItem(REPO_KEY); if(s) return s }catch(e){}
   const h=location.hostname; if(h.endsWith('.github.io')){ const p=location.pathname.split('/').filter(Boolean)[0]; return h.split('.')[0]+'/'+(p||h) }
@@ -884,9 +931,10 @@ function repoPadrao(){
 const teamStatus = t => { $('teamStatus').textContent=t };
 const pubStatus = t => { $('pubStatus').textContent=t };
 const fmtQuando = iso => { try{ return new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'}) }catch(e){ return '' } };
-function aplicarModo(){ document.body.classList.toggle('is-admin', isAdmin()); $('btnEx').hidden=!isAdmin(); $('ghRepo').value=repoPadrao() }
+function aplicarModo(){ document.body.classList.toggle('is-admin', isAdmin()); document.body.classList.toggle('fb', FB_ON); $('btnEx').hidden=!isAdmin(); $('ghRepo').value=repoPadrao() }
 
 async function carregarEquipe(forcar){
+  if(FB_ON){ if(window.argoFb) return argoFb.carregar(forcar); return }
   if(isAdmin() && lsGet(PEND_KEY) && !forcar){ teamStatus('Você tem alterações ainda não publicadas neste aparelho.'); return }
   try{
     const r=await fetch('parametros.json?t='+Date.now(),{cache:'no-store'});
@@ -938,6 +986,7 @@ $('btnExportCfg').addEventListener('click',()=>{
   setTimeout(()=>URL.revokeObjectURL(a.href),5000);
 });
 $('btnPublish').addEventListener('click', async ()=>{
+  if(FB_ON){ if(window.argoFb) argoFb.publicar(); return }
   const repo=repoPadrao(); const btn=$('btnPublish');
   btn.disabled=true; pubStatus('Publicando…');
   try{
@@ -962,8 +1011,9 @@ if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone) $('iosHint').hi
 if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 aplicarModo();
-if(!String(CFG.vNome||'').trim()){ $('firstRun').hidden=false; setTimeout(()=>{ showTab(true) },0) }
+if(!FB_ON && !String(CFG.vNome||'').trim()){ $('firstRun').hidden=false; setTimeout(()=>{ showTab(true) },0) }
 VEND.forEach(id=>$('c-'+id).addEventListener('input',()=>{ if(String(CFG.vNome||'').trim()) $('firstRun').hidden=true }));
+if(FB_ON) document.body.classList.add('locked');
 carregarEquipe(false);
 
 
