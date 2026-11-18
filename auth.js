@@ -395,13 +395,31 @@ async function iniciar() {
     campos.forEach(c => { if (c.tipo === 'data' && /^\d{4}-\d{2}-\d{2}$/.test(V[c.k] || '')) V[c.k] = fmtD(V[c.k]); });
     if (V.uf) V.uf = String(V.uf).toUpperCase();
     const ar = cfgE3().argo || {}, t = new Date(), sc = splitCidade(p.cidade);
-    const cid = V.cidade ? V.cidade + (V.uf ? '/' + V.uf : '') : (sc.cidade + (sc.uf ? '/' + sc.uf : ''));
-    const end = [[V.logradouro, V.numero].filter(Boolean).join(', ') + (V.complemento ? ' - ' + V.complemento : ''), V.bairro, cid, V.cep ? 'CEP ' + V.cep : ''].filter(Boolean).join(', ');
+    // Sede: campos da Etapa 2; se o formulário não pede endereço, busca pelo CNPJ (Receita, via BrasilAPI).
+    const E = { log: V.logradouro, num: V.numero, comp: V.complemento, bai: V.bairro, cid: V.cidade, uf: V.uf, cep: V.cep };
+    const cnpjD = dig(V.cnpj || p.cnpj);
+    if (!E.log && cnpjD.length === 14) {
+      try {
+        const rr = await fetch('https://brasilapi.com.br/api/cnpj/v1/' + cnpjD);
+        if (rr.ok) { const j = await rr.json();
+          Object.assign(E, { log: [j.descricao_tipo_de_logradouro, j.logradouro].filter(Boolean).join(' '), num: j.numero, comp: j.complemento, bai: j.bairro, cid: j.municipio, uf: j.uf, cep: j.cep && String(j.cep).replace(/^(\d{5})(\d{3})$/, '$1-$2') }); }
+      } catch (_) {}
+    }
+    const cid = E.cid ? E.cid + (E.uf ? '/' + String(E.uf).toUpperCase() : '') : (sc.cidade + (sc.uf ? '/' + sc.uf : ''));
+    const end = [[E.log, E.num].filter(Boolean).join(', nº ') + (E.comp ? ' - ' + E.comp : ''), E.bai ? 'bairro ' + E.bai : '', cid, E.cep ? 'CEP ' + E.cep : ''].filter(Boolean).join(', ');
+    // Responsável legal: RG e endereço pelos campos da seção do responsável (achados pelo nome do campo).
+    const secR = (cfg2.secoes || []).find(s => /respons/i.test(s.titulo || '') || s.id === 'responsavel') || { campos: [] };
+    const porNome = re => { const c = (secR.campos || []).find(x => re.test(String(x.label || '').trim())); return c ? String(V[c.k] || '').trim() : ''; };
+    const rgC = campos.find(c => c.tipo === 'rg');
+    const rCid = porNome(/^cidade/i), rUf = porNome(/^(estado|uf)/i);
+    const endResp = [[porNome(/^endere/i), porNome(/^n[uú]mero/i)].filter(Boolean).join(', nº ') + (porNome(/^complemento/i) ? ' - ' + porNome(/^complemento/i) : ''),
+      porNome(/^bairro/i) ? 'bairro ' + porNome(/^bairro/i) : '', rCid ? rCid + (rUf ? '/' + rUf.toUpperCase() : '') : ''].filter(Boolean).join(', ');
     const dd = p.dados || {};
     return {
       ...V,
       razao: V.razao || p.cliente || '', cnpj: V.cnpj || p.cnpj || '', cliente: p.cliente || '', contato: p.contato || '',
       numero: p.numero || '', vendedor: p.vendedor || '', endereco_cliente: end, cidade_cliente: cid,
+      rg_responsavel: rgC ? (V[rgC.k] || '') : '', endereco_responsavel: endResp,
       data: fmtD(hojeIso()), data_extenso: `${t.getDate()} de ${MESES[t.getMonth()]} de ${t.getFullYear()}`,
       data_proposta: fmtD(p.data), aprovado_por: p.aprovadoNome || '', aprovado_cargo: p.aprovadoCargo || '',
       total_licencas: brl(p.totLic), total_mensalidade: brl(p.totMen), total_deslocamento: brl(p.totDes),
@@ -552,7 +570,7 @@ async function iniciar() {
     const grupos = [
       ['Proposta', [['numero', 'Nº da proposta'], ['data_extenso', 'Data de hoje por extenso'], ['data', 'Data de hoje'], ['data_proposta', 'Data da proposta'], ['cliente', 'Cliente (proposta)'], ['contato', 'Contato'], ['vendedor', 'Vendedor'], ['aprovado_por', 'Quem aprovou'], ['aprovado_cargo', 'Cargo de quem aprovou'],
         ['total_licencas', 'Total licenças'], ['total_mensalidade', 'Total mensalidade'], ['total_deslocamento', 'Deslocamento'], ['itens_licencas', 'Lista de licenças'], ['itens_mensalidades', 'Lista de mensalidades']]],
-      ['Endereço montado', [['endereco_cliente', 'Endereço completo do cliente'], ['cidade_cliente', 'Cidade/UF do cliente']]],
+      ['Montados automaticamente', [['endereco_cliente', 'Endereço completo do cliente'], ['cidade_cliente', 'Cidade/UF do cliente'], ['rg_responsavel', 'RG do responsável'], ['endereco_responsavel', 'Endereço do responsável']]],
       ['Argo (contratada)', [['argo_razao', 'Razão social'], ['argo_cnpj', 'CNPJ'], ['argo_endereco', 'Endereço'], ['argo_representante', 'Representante'], ['argo_foro', 'Foro']]],
       ...(cfg2.secoes || []).map(s => ['Etapa 2 · ' + s.titulo, (s.campos || []).filter(c => c.tipo !== 'arquivo').map(c => [c.k, c.label])])
     ];
