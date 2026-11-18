@@ -489,6 +489,8 @@ async function iniciar() {
     desenharE2();
   }
   function marcarE2() { e2Sujo = true; e2Status('Alterações ainda não publicadas.'); }
+  // padrão: um Sim/Não no topo da seção controla os campos de baixo
+  function abreSim(s, ci) { const c = s.campos[ci]; return c.abre != null ? c.abre : ci === 0; }
   function desenharE2() {
     if (!E2) return;
     if (E2.msgEnvio == null) E2.msgEnvio = window.ETAPA2_PADRAO.msgEnvio;
@@ -506,7 +508,7 @@ async function iniciar() {
           <td class="t"><select data-f="tipo" ${c.custom ? '' : 'disabled'} aria-label="Tipo">${Object.entries(TIPOS).map(([k, v]) => `<option value="${k}"${c.tipo === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
           <td class="c"><input type="checkbox" data-f="show" ${c.show !== false || c.fixo ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Mostrar"></td>
           <td class="c"><input type="checkbox" data-f="req" ${c.req ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Obrigatório"></td>
-          <td class="o">${c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
+          <td class="o">${c.tipo === 'simnao' ? `<label class="chk"><input type="checkbox" data-f="abre" ${abreSim(s, ci) ? 'checked' : ''}> Só mostrar os campos abaixo desta seção se responder Sim</label>` : c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
           <td class="a"><button type="button" data-ca="up" ${ci === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-ca="down" ${ci === s.campos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button>${c.fixo ? '' : '<button type="button" data-ca="del" aria-label="Excluir campo" title="Excluir campo">✕</button>'}</td>
         </tr>`).join('')}
         </tbody></table></div>

@@ -167,7 +167,16 @@ function montar(){
   $('#secoes').innerHTML=(CFG.secoes||[]).map(s=>{
     const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||''))); if(!cs.length) return '';
     cs.forEach(c=>CAMPOS.push({...c, secao:s.titulo}));
-    return `<section class="sec"><h2>${esc(s.titulo)}</h2><div class="body">${cs.map(campoHtml).join('')}</div></section>`;
+    // Sim/Não que abre os campos seguintes da seção (padrão quando é o primeiro campo)
+    const html=[]; let grupo=null;
+    cs.forEach((c,i)=>{
+      const abre=c.tipo==='simnao' && (c.abre!=null ? c.abre : i===0) && i<cs.length-1;
+      let h=campoHtml(c);
+      if(grupo) h=h.replace(/^<label/,`<label data-dep="${esc(grupo)}"`);
+      if(abre){ h=h.replace(/^<label/,`<label data-abre="${esc(c.k)}"`); grupo=c.k }
+      html.push(h);
+    });
+    return `<section class="sec"><h2>${esc(s.titulo)}</h2><div class="body">${html.join('')}</div></section>`;
   }).join('');
 }
 const tem=k=>!!f.elements[k];
@@ -246,6 +255,13 @@ async function buscarCnpj(el,forcar){
 }
 function ligarAuto(){
   f.querySelectorAll('[data-v=cnpj]').forEach(el=>{ el.addEventListener('input',()=>buscarCnpj(el)); el.addEventListener('blur',()=>buscarCnpj(el)); el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); buscarCnpj(el,true) } }); if(el.value && el.name==='cnpj') buscarCnpj(el) });
+  // Campos que só aparecem quando o Sim/Não de cima é Sim
+  f.querySelectorAll('[data-abre]').forEach(lab=>{
+    const k=lab.dataset.abre, deps=[...f.querySelectorAll(`[data-dep="${CSS.escape(k)}"]`)];
+    const sync=()=>{ const sim=f.querySelector(`input[name="${CSS.escape(k)}"]:checked`)?.value==='Sim';
+      deps.forEach(d=>{ d.hidden=!sim; d.querySelectorAll('input,select,textarea').forEach(x=>{ x.disabled=!sim; if(!sim) x.classList.remove('bad') }) }) };
+    lab.querySelectorAll('input[type=radio]').forEach(r=>r.addEventListener('change',sync)); sync();
+  });
   // E-mail que pode ser igual ao anterior da mesma seção (ex.: nota fiscal = boleto)
   f.querySelectorAll('#secoes .sec').forEach(sec=>{
     const ems=[...sec.querySelectorAll('input[data-v=email]')];
@@ -391,7 +407,7 @@ function montarTexto(o){
   let sec=null;
   CAMPOS.forEach(c=>{
     let v=o[c.k];
-    if(c.tipo==='arquivo'){ const el=f.elements[c.k]; const fs=el?[...el.files]:[]; if(!fs.length) return; v=fs.map(x=>x.name).join(', ')+(L.p?' (anexado no sistema)':'') }
+    if(c.tipo==='arquivo'){ const el=f.elements[c.k]; const fs=el&&!el.disabled?[...el.files]:[]; if(!fs.length) return; v=fs.map(x=>x.name).join(', ')+(L.p?' (anexado no sistema)':'') }
     if(!v) return;
     if(c.tipo==='data') v=fmtData(v);
     if(c.k==='uf') v=v.toUpperCase();
@@ -438,7 +454,7 @@ async function salvarNoSistema(o, texto){
   const {F,db}=await firestore();
   const pref=['propostas',L.p];
   const anexos=[];
-  const arquivos=CAMPOS.filter(c=>c.tipo==='arquivo').flatMap(c=>[...(f.elements[c.k]?.files||[])].map(file=>({c,file})));
+  const arquivos=CAMPOS.filter(c=>c.tipo==='arquivo'&&!f.elements[c.k]?.disabled).flatMap(c=>[...(f.elements[c.k]?.files||[])].map(file=>({c,file})));
   let n=0;
   for(const {c,file} of arquivos){
     n++; $('#msg').textContent=`Enviando anexo ${n} de ${arquivos.length}…`;
@@ -458,9 +474,9 @@ async function salvarNoSistema(o, texto){
 
 f.addEventListener('submit',async e=>{
   e.preventDefault();
-  const els=[...f.elements].filter(el=>el.name);
+  const els=[...f.elements].filter(el=>el.name && !el.disabled);
   const ruins=els.filter(el=>!valida(el));
-  const radiosFaltando=CAMPOS.filter(c=>c.tipo==='simnao'&&c.req&&!f.querySelector(`input[name="${CSS.escape(c.k)}"]:checked`));
+  const radiosFaltando=CAMPOS.filter(c=>c.tipo==='simnao'&&c.req&&!f.querySelector(`input[name="${CSS.escape(c.k)}"]:disabled`)&&!f.querySelector(`input[name="${CSS.escape(c.k)}"]:checked`));
   if(ruins.length || radiosFaltando.length){
     const prim=ruins[0]||f.querySelector(`input[name="${CSS.escape(radiosFaltando[0].k)}"]`);
     const grandes=ruins.filter(el=>el.type==='file'&&[...el.files].some(x=>x.size>MAXF));
@@ -468,7 +484,7 @@ f.addEventListener('submit',async e=>{
     $('#msg').textContent = grandes.length ? 'Há arquivo com mais de 10 MB. Escolha um arquivo menor.' : especificos.length ? 'Confira: '+especificos.join(', ')+'.' : 'Preencha os campos obrigatórios destacados.';
     prim.focus(); prim.scrollIntoView({block:'center'}); return;
   }
-  const temArquivos=CAMPOS.some(c=>c.tipo==='arquivo'&&f.elements[c.k]&&f.elements[c.k].files.length);
+  const temArquivos=CAMPOS.some(c=>c.tipo==='arquivo'&&f.elements[c.k]&&!f.elements[c.k].disabled&&f.elements[c.k].files.length);
   if(temArquivos && !L.p){ $('#msg').textContent='Este link não aceita anexos. Peça ao seu consultor um link novo da Etapa 2.'; return }
   const o=valoresFinais(lerForm()), texto=montarTexto(o);
   const num = destino ? (destino.length<=11 ? '55'+destino : destino) : '';
