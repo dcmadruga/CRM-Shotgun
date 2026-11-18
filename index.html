@@ -175,6 +175,17 @@ header.top .wrap>div{flex:1;min-width:0}
     <p class="hint">Deslocamento: <span class="calc" id="desl">R$ 0,00</span> <span class="param" id="kmInfo"></span></p>
     <p class="hint">Observações, equipamentos, suporte e referências vêm da aba Parâmetros.</p>
   </div></section>
+
+  <section class="sec"><h2>Etapa 2 · Dados complementares obrigatórios <span>depois que o cliente aprovar</span></h2><div class="body">
+    <div class="grid">
+      <label>WhatsApp do contato do cliente<input id="waCli" inputmode="tel" placeholder="(65) 99999-0000" autocomplete="off"></label>
+    </div>
+    <div class="tools">
+      <button type="button" class="primary" id="btnForm">Enviar formulário pelo WhatsApp</button>
+      <button type="button" id="btnCopyForm">Copiar link do formulário</button>
+    </div>
+    <p class="hint" id="formMsg">O cliente recebe um link para preencher os dados obrigatórios. Quando ele enviar, os dados chegam no seu WhatsApp.</p>
+  </div></section>
 </main>
 
 <main id="viewCfg" hidden>
@@ -955,6 +966,40 @@ if(!String(CFG.vNome||'').trim()){ $('firstRun').hidden=false; setTimeout(()=>{ 
 VEND.forEach(id=>$('c-'+id).addEventListener('input',()=>{ if(String(CFG.vNome||'').trim()) $('firstRun').hidden=true }));
 carregarEquipe(false);
 
+
+/* ---------- Etapa 2: formulário de dados complementares ---------- */
+const digitos = v => String(v||'').replace(/\D/g,'');
+const waNum = v => { const d=digitos(v); return d.length>=10 && d.length<=11 ? '55'+d : d };
+const formMsg = t => { $('formMsg').textContent=t };
+function linkFormulario(){
+  const sc=splitCidade(S.cidade);
+  const dados={c:S.cnpj||'', r:S.cliente||'', cid:sc.cidade, uf:sc.uf, a:S.contato||'', v:String(CFG.vNome||'').trim(), w:digitos(CFG.vFone)};
+  const b=btoa(unescape(encodeURIComponent(JSON.stringify(dados)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return new URL('dados.html', location.href).href.split('#')[0]+'#d='+b;
+}
+function textoConvite(){
+  const nome=String(S.contato||'').trim();
+  return `Olá${nome?' '+nome:''}! Obrigado por aprovar a proposta da Argo. Para iniciarmos a implantação, preencha os dados complementares obrigatórios neste link:\n${linkFormulario()}\n\n${String(CFG.vNome||'').trim()} - Argo`;
+}
+function prontoParaForm(){
+  if(digitos(CFG.vFone).length<10){ showTab(true); $('c-vFone').focus(); msg('Preencha seu telefone em Parâmetros: é para ele que os dados do cliente voltam.'); return false }
+  if(!String(S.cliente||'').trim()){ $('cliente').focus(); formMsg('Preencha o cliente (ou o CNPJ) antes de enviar o formulário.'); return false }
+  return true;
+}
+$('btnForm').addEventListener('click',()=>{
+  if(!prontoParaForm()) return;
+  const n=waNum($('waCli').value);
+  if(n && n.length<12){ $('waCli').focus(); formMsg('Confira o WhatsApp do cliente: DDD e número.'); return }
+  const url='https://wa.me/'+n+'?text='+encodeURIComponent(textoConvite());
+  window.open(url,'_blank') || (location.href=url);
+  formMsg(n ? 'WhatsApp aberto com a mensagem para o cliente. É só tocar em enviar.' : 'WhatsApp aberto: escolha o contato do cliente e envie.');
+});
+$('btnCopyForm').addEventListener('click', async ()=>{
+  if(!prontoParaForm()) return;
+  try{ await navigator.clipboard.writeText(textoConvite()); formMsg('Mensagem com o link copiada. Cole no WhatsApp ou e-mail do cliente.') }
+  catch(e){ formMsg('Copie o link: '+linkFormulario()) }
+});
+$('btnNova').addEventListener('click',()=>{ $('waCli').value=''; formMsg('O cliente recebe um link para preencher os dados obrigatórios. Quando ele enviar, os dados chegam no seu WhatsApp.') });
 /* Ao abrir: formulário novo, sem dados de cliente */
 (function(){ $('btnNova').click(); msg(''); cnpjMsg(''); try{ document.activeElement.blur() }catch(e){} })();
 </script>

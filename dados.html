@@ -1,0 +1,222 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Dados complementares Argo</title>
+<meta name="theme-color" content="#17180f">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f4f2f6; --surface:#ffffff; --fg:#1d1a22; --muted:#6b6475; --line:#e3dfe8;
+  --ink:#17180f; --ink-fg:#f6f4f8; --accent:#cb2da0; --purple:#7030a0; --field:#fbfafc; --danger:#b42335;
+  --display:"Poppins",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141218; --surface:#1d1a23; --fg:#ece8f1; --muted:#a39bb0; --line:#322d3a;
+  --ink:#0b0b08; --accent:#e04bb5; --purple:#a874d6; --field:#17151c; --danger:#f0697a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141218; --surface:#1d1a23; --fg:#ece8f1; --muted:#a39bb0; --line:#322d3a;
+  --ink:#0b0b08; --accent:#e04bb5; --purple:#a874d6; --field:#17151c; --danger:#f0697a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
+[hidden]{display:none!important}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{background:var(--ink);color:var(--ink-fg)}
+header .wrap{display:flex;align-items:center;gap:14px;padding-block:16px;padding-top:max(16px,env(safe-area-inset-top,0px))}
+header img{width:44px;height:44px}
+header h1{font-family:var(--display);font-weight:600;font-size:19px;margin:0;text-wrap:balance}
+header p{margin:0;font-size:13px;opacity:.75}
+main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
+.intro{margin:0}
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
+.body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.full{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;min-width:0}
+label b{color:var(--danger);font-weight:600}
+input,select,textarea{font:inherit;font-size:16px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:9px 10px;width:100%;min-width:0}
+textarea{min-height:80px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
+input[readonly]{opacity:.8}
+.bad{border-color:var(--danger)}
+.err{color:var(--danger);font-size:12px;font-weight:500;min-height:0}
+.radios{display:flex;gap:16px;padding-top:6px;font-size:15px;font-weight:500;color:var(--fg)}
+.radios label{flex-direction:row;align-items:center;gap:6px;font-size:15px;color:var(--fg)}
+.radios input{width:auto}
+button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1px solid var(--purple);background:var(--purple);color:#fff;font-size:16px;cursor:pointer}
+.send{display:flex;flex-direction:column;gap:8px}
+.hint{color:var(--muted);font-size:13px;margin:0}
+#msg{font-weight:500}
+.done{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:6px;padding:14px}
+</style>
+</head><body>
+<header><div class="wrap">
+  <img src="icons/icon-192.png" alt="Argo">
+  <div><h1>Dados complementares obrigatórios</h1><p id="sub">Argo Sistemas · implantação do sistema</p></div>
+</div></header>
+
+<div class="wrap"><main>
+  <p class="intro" id="intro">Obrigado por aprovar a proposta! Preencha os dados abaixo para darmos início à implantação. Os campos com <b style="color:var(--danger)">*</b> são obrigatórios. Ao terminar, toque em <b>Enviar pelo WhatsApp</b>.</p>
+
+  <form id="f" novalidate>
+  <div style="display:flex;flex-direction:column;gap:18px">
+  <section class="sec"><h2>Empresa</h2><div class="body">
+    <label><span>CNPJ <b>*</b></span><input name="cnpj" inputmode="numeric" required data-v="cnpj" placeholder="00.000.000/0000-00"></label>
+    <label><span>Razão social <b>*</b></span><input name="razao" required></label>
+    <label>Nome fantasia<input name="fantasia"></label>
+    <label><span>Inscrição estadual <b>*</b></span><input name="ie" required placeholder="ou ISENTO"></label>
+    <label><span>CEP <b>*</b></span><input name="cep" inputmode="numeric" required data-v="cep"></label>
+    <label class="full"><span>Endereço <b>*</b></span><input name="logradouro" required></label>
+    <label><span>Número <b>*</b></span><input name="numero" required></label>
+    <label>Complemento<input name="complemento"></label>
+    <label><span>Bairro <b>*</b></span><input name="bairro" required></label>
+    <label><span>Cidade <b>*</b></span><input name="cidade" required></label>
+    <label><span>UF <b>*</b></span><input name="uf" required maxlength="2" style="text-transform:uppercase"></label>
+  </div></section>
+
+  <section class="sec"><h2>Responsável legal</h2><div class="body">
+    <label><span>Nome completo <b>*</b></span><input name="respNome" required autocomplete="name"></label>
+    <label><span>CPF <b>*</b></span><input name="respCpf" inputmode="numeric" required data-v="cpf"></label>
+    <label><span>Cargo <b>*</b></span><input name="respCargo" required></label>
+    <label><span>E-mail <b>*</b></span><input name="respEmail" type="email" required data-v="email" autocomplete="email"></label>
+    <label><span>Telefone / WhatsApp <b>*</b></span><input name="respFone" inputmode="tel" required data-v="fone" autocomplete="tel"></label>
+  </div></section>
+
+  <section class="sec"><h2>Financeiro</h2><div class="body">
+    <label><span>Nome do contato <b>*</b></span><input name="finNome" required></label>
+    <label><span>E-mail para boleto e nota fiscal <b>*</b></span><input name="finEmail" type="email" required data-v="email"></label>
+    <label><span>Telefone <b>*</b></span><input name="finFone" inputmode="tel" required data-v="fone"></label>
+    <label><span>Dia de vencimento da mensalidade <b>*</b></span><select name="vencimento" required><option value="">Escolha</option><option>5</option><option>10</option><option>15</option><option>20</option><option>25</option></select></label>
+  </div></section>
+
+  <section class="sec"><h2>Contato técnico no posto</h2><div class="body">
+    <label><span>Nome <b>*</b></span><input name="tecNome" required></label>
+    <label><span>Telefone / WhatsApp <b>*</b></span><input name="tecFone" inputmode="tel" required data-v="fone"></label>
+  </div></section>
+
+  <section class="sec"><h2>Operação</h2><div class="body">
+    <label><span>Quantidade de PDVs fixos <b>*</b></span><input name="pdvFixos" type="number" min="0" inputmode="numeric" required></label>
+    <label>Quantidade de PDVs móveis<input name="pdvMoveis" type="number" min="0" inputmode="numeric"></label>
+    <label><span>Usa TEF (cartão integrado)? <b>*</b></span><span class="radios"><label><input type="radio" name="tef" value="Sim" required> Sim</label><label><input type="radio" name="tef" value="Não"> Não</label></span></label>
+    <label>Sistema atual (que será substituído)<input name="sistemaAtual"></label>
+    <label><span>Data desejada para a implantação <b>*</b></span><input name="dataImpl" type="date" required></label>
+    <label class="full">Observações<textarea name="obs"></textarea></label>
+  </div></section>
+
+  <div class="send">
+    <button type="submit" id="btnEnviar">Enviar pelo WhatsApp</button>
+    <p id="msg" role="status" class="err"></p>
+    <p class="hint" id="destHint"></p>
+  </div>
+  </div>
+  </form>
+
+  <div class="done" id="done" hidden>
+    <b>Pronto!</b> O WhatsApp abriu com os seus dados. Confira e toque em enviar. Se o WhatsApp não abriu, <a id="waLink" href="#" target="_blank" rel="noopener">toque aqui</a>.
+  </div>
+</main></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const f=$('#f');
+const DRAFT='argo-dados-cliente-v1';
+const dig=v=>String(v||'').replace(/\D/g,'');
+
+/* Dados vindos do link: #d=base64url(JSON) com cnpj, razão, cidade, vendedor e WhatsApp do vendedor */
+let L={};
+try{ const m=location.hash.match(/d=([^&]+)/); if(m){ const b=m[1].replace(/-/g,'+').replace(/_/g,'/'); L=JSON.parse(decodeURIComponent(escape(atob(b)))) } }catch(e){ L={} }
+const destino = dig(L.w);
+if(L.v) $('#sub').textContent='Argo Sistemas · seu consultor: '+L.v;
+$('#destHint').textContent = destino ? 'Os dados vão para o WhatsApp do seu consultor'+(L.v?' ('+L.v+')':'')+'.' : 'Os dados serão enviados pelo WhatsApp.';
+
+/* Rascunho */
+function lerForm(){ const o={}; new FormData(f).forEach((v,k)=>o[k]=String(v).trim()); return o }
+function preencher(o){ Object.entries(o||{}).forEach(([k,v])=>{ const els=f.elements[k]; if(!els||v==null||v==='') return;
+  if(els instanceof RadioNodeList){ els.forEach(r=>r.checked=(r.value===v)) } else if(!els.value) els.value=v }) }
+let draft={}; try{ draft=JSON.parse(localStorage.getItem(DRAFT)||'{}')||{} }catch(e){}
+if(draft.cnpj && L.c && dig(draft.cnpj)!==dig(L.c)) draft={};
+preencher(draft);
+preencher({cnpj:L.c, razao:L.r, cidade:L.cid, uf:L.uf});
+f.addEventListener('input',()=>{ try{ localStorage.setItem(DRAFT,JSON.stringify(lerForm())) }catch(e){} });
+
+/* Endereço pelo CNPJ */
+const fmtCnpj=v=>dig(v).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/,'$1.$2.$3/$4-$5');
+function cnpjOk(v){ const d=dig(v); if(d.length!==14||/^(\d)\1+$/.test(d)) return false;
+  const c=n=>{ let s=0,w=n-7; for(let i=0;i<n;i++){ s+=+d[i]*w--; if(w<2) w=9 } const r=s%11; return r<2?0:11-r }; return c(12)===+d[12]&&c(13)===+d[13] }
+function cpfOk(v){ const d=dig(v); if(d.length!==11||/^(\d)\1+$/.test(d)) return false;
+  const c=n=>{ let s=0; for(let i=0;i<n;i++) s+=+d[i]*(n+1-i); const r=(s*10)%11; return r===10?0:r }; return c(9)===+d[9]&&c(10)===+d[10] }
+let buscado='';
+async function buscarCnpj(){
+  const d=dig(f.cnpj.value); if(!cnpjOk(d)||d===buscado) return; buscado=d; f.cnpj.value=fmtCnpj(d);
+  try{
+    const r=await fetch('https://brasilapi.com.br/api/cnpj/v1/'+d); if(!r.ok) return; const j=await r.json();
+    const set=(k,v)=>{ if(v && !f.elements[k].value) f.elements[k].value=v };
+    set('razao',j.razao_social); set('fantasia',j.nome_fantasia); set('cep',j.cep&&String(j.cep).replace(/^(\d{5})(\d{3})$/,'$1-$2'));
+    set('logradouro',[j.descricao_tipo_de_logradouro,j.logradouro].filter(Boolean).join(' ')); set('numero',j.numero); set('complemento',j.complemento);
+    set('bairro',j.bairro); set('cidade',j.municipio); set('uf',j.uf);
+    if(j.email && !f.finEmail.value) f.finEmail.placeholder=String(j.email).toLowerCase();
+    f.dispatchEvent(new Event('input'));
+  }catch(e){}
+}
+f.cnpj.addEventListener('input',buscarCnpj); f.cnpj.addEventListener('blur',buscarCnpj);
+if(f.cnpj.value) buscarCnpj();
+f.cep.addEventListener('blur',async ()=>{
+  const c=dig(f.cep.value); if(c.length!==8) return; f.cep.value=c.replace(/^(\d{5})(\d{3})$/,'$1-$2');
+  if(f.logradouro.value) return;
+  try{ const r=await fetch('https://brasilapi.com.br/api/cep/v1/'+c); if(!r.ok) return; const j=await r.json();
+    if(!f.logradouro.value) f.logradouro.value=j.street||''; if(!f.bairro.value) f.bairro.value=j.neighborhood||'';
+    if(!f.cidade.value) f.cidade.value=j.city||''; if(!f.uf.value) f.uf.value=j.state||''; }catch(e){}
+});
+f.respCpf.addEventListener('blur',()=>{ const d=dig(f.respCpf.value); if(d.length===11) f.respCpf.value=d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4') });
+
+/* Validação */
+function valida(el){
+  if(el.type==='radio') return true;
+  const v=el.value.trim(), t=el.dataset.v; let ok=true;
+  if(el.required && !v) ok=false;
+  else if(v && t==='cnpj') ok=cnpjOk(v);
+  else if(v && t==='cpf') ok=cpfOk(v);
+  else if(v && t==='email') ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  else if(v && t==='fone') ok=dig(v).length>=10;
+  else if(v && t==='cep') ok=dig(v).length===8;
+  el.classList.toggle('bad',!ok); return ok;
+}
+const nomes={cnpj:'CNPJ',respCpf:'CPF',respEmail:'e-mail do responsável',finEmail:'e-mail do financeiro',cep:'CEP'};
+
+/* Mensagem */
+const fmtData=iso=>{ if(!iso) return ''; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y };
+function montarTexto(o){
+  const L2=(t,v)=>v?`${t}: ${v}`:null;
+  return [
+    '*Dados complementares obrigatórios - Argo*','',
+    '*Empresa*', L2('CNPJ',o.cnpj), L2('Razão social',o.razao), L2('Nome fantasia',o.fantasia), L2('Inscrição estadual',o.ie),
+    L2('Endereço',[o.logradouro,o.numero].filter(Boolean).join(', ')+(o.complemento?' - '+o.complemento:'')), L2('Bairro',o.bairro),
+    L2('Cidade',o.cidade+(o.uf?' - '+o.uf.toUpperCase():'')), L2('CEP',o.cep),'',
+    '*Responsável legal*', L2('Nome',o.respNome), L2('CPF',o.respCpf), L2('Cargo',o.respCargo), L2('E-mail',o.respEmail), L2('Telefone',o.respFone),'',
+    '*Financeiro*', L2('Contato',o.finNome), L2('E-mail boleto/NF',o.finEmail), L2('Telefone',o.finFone), L2('Vencimento','dia '+o.vencimento),'',
+    '*Contato técnico no posto*', L2('Nome',o.tecNome), L2('Telefone',o.tecFone),'',
+    '*Operação*', L2('PDVs fixos',o.pdvFixos), L2('PDVs móveis',o.pdvMoveis||'0'), L2('Usa TEF',o.tef), L2('Sistema atual',o.sistemaAtual),
+    L2('Data desejada para implantação',fmtData(o.dataImpl)), L2('Observações',o.obs)
+  ].filter(x=>x!==null).join('\n');
+}
+
+f.addEventListener('submit',e=>{
+  e.preventDefault();
+  const els=[...f.elements].filter(el=>el.name);
+  const ruins=els.filter(el=>!valida(el));
+  const tefOk=!!f.querySelector('input[name=tef]:checked');
+  if(ruins.length || !tefOk){
+    const prim=ruins[0]; const especificos=ruins.filter(el=>el.value.trim() && nomes[el.name]).map(el=>nomes[el.name]);
+    $('#msg').textContent = especificos.length ? 'Confira: '+especificos.join(', ')+'.' : 'Preencha os campos obrigatórios destacados.';
+    (prim||f.querySelector('input[name=tef]')).focus(); prim&&prim.scrollIntoView({block:'center'}); return;
+  }
+  $('#msg').textContent='';
+  const texto=montarTexto(lerForm());
+  const num = destino ? (destino.length<=11 ? '55'+destino : destino) : '';
+  const url='https://wa.me/'+num+'?text='+encodeURIComponent(texto);
+  $('#waLink').href=url; $('#done').hidden=false;
+  window.open(url,'_blank') || (location.href=url);
+});
+f.addEventListener('blur',e=>{ if(e.target.classList.contains('bad')) valida(e.target) },true);
+</script>
+</body></html>
