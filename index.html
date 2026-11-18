@@ -154,7 +154,7 @@ body:not(.is-admin):not(.is-task) .tasktab{display:none!important}
 .tkbox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tkbox>div{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-weight:600;font-size:13px;overflow-wrap:anywhere}
 .tkbox small{display:block;font-size:10.5px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
-.tketapas{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tketapas{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
 .tketapas .tke.none:only-child{grid-column:1/-1}
 .tke{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12px;font-weight:600;background:var(--field);min-width:0}
 .tke b{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:11px;background:var(--line);color:var(--fg)}
@@ -233,6 +233,8 @@ table.users{min-width:640px}
 .pcard .etit{font-family:var(--display);font-weight:600;font-size:13px}
 .pcard .etapa.bloq .etit{color:var(--muted)}
 .pcard .acts .pill{margin-left:4px}
+.pcard .e4box{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px}
+.e4grid .full{grid-column:1/-1}
 .pcard .e2dados{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:8px}
 table.e2resp{min-width:0}
 table.e2resp td:first-child{color:var(--muted);width:40%;font-size:12.5px}
@@ -574,6 +576,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <script src="firebase-config.js"></script>
 <script src="etapa2-padrao.js"></script>
 <script src="etapa3-padrao.js"></script>
+<script src="etapa4-padrao.js"></script>
 <script src="contrato-pdf.js"></script>
 <script type="module" src="auth.js"></script>
 <script type="module" src="task.js"></script>

@@ -292,8 +292,52 @@ async function iniciar() {
               : p.ctAceitoEm ? '<button type="button" class="primary" data-a="ctpdf">Ver contrato aceito (PDF)</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>'
               : `<button type="button" class="primary" data-a="ctenviar">${p.ctEm ? 'Gerar de novo e enviar pelo WhatsApp' : 'Gerar e enviar pelo WhatsApp'}</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>${p.ctEm ? '<button type="button" data-a="ctpdf">Ver contrato (PDF)</button>' : ''}`}
           </div></div>
+        <div class="etapa${p.ctAceitoEm ? '' : ' bloq'}"><div class="etit">Etapa 4 - Dados Referência Implantação ${p.e4Em ? `<span class="pill ok">PREENCHIDO</span> <span class="meta">em ${esc(fmtTs(p.e4Em))}${p.e4Por ? ' por ' + esc(p.e4Por) : ''}</span>` : ''}</div>
+          <div class="acts">
+            ${!p.ctAceitoEm ? '<button type="button" disabled>Preencher dados</button><span class="hint">Libera quando o cliente aceitar o contrato. Responsabilidade do vendedor.</span>'
+              : p.e4Em ? '<button type="button" data-a="e4ver">Ver dados</button><button type="button" data-a="e4">Editar dados</button>'
+              : '<button type="button" class="primary" data-a="e4">Preencher dados</button><span class="hint">Responsabilidade do vendedor.</span>'}
+          </div>
+          <div class="e4box" hidden></div></div>
         </div>`;
     }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "Enviar proposta para aprovação" na aba Proposta.'}</p>`;
+  }
+  /* ---------- Etapa 4: dados de referência para a implantação (vendedor) ---------- */
+  const E4CAMPOS = () => window.ETAPA4_CAMPOS || [];
+  async function etapa4(p, card, editar) {
+    const box = card.querySelector('.e4box');
+    if (!box.hidden && box.dataset.modo === (editar ? 'e' : 'v')) { box.hidden = true; return; }
+    box.hidden = false; box.dataset.modo = editar ? 'e' : 'v'; box.textContent = 'Carregando…';
+    let v = {};
+    try { const r = await F.getDoc(F.doc(db, 'propostas', p.id, 'etapa4', 'dados')); if (r.exists()) v = r.data().valores || {}; }
+    catch (err) { box.textContent = 'Não foi possível carregar (' + (err.code || err.message) + ').'; return; }
+    if (!editar) {
+      box.innerHTML = `<div class="refwrap"><table class="refs e2resp"><tbody>${E4CAMPOS().filter(c => v[c.k]).map(c => `<tr><td>${esc(c.label)}</td><td style="white-space:pre-wrap">${esc(c.tipo === 'data' ? fmtD(v[c.k]) : v[c.k])}</td></tr>`).join('') || '<tr><td>Nada preenchido.</td></tr>'}</tbody></table></div>`;
+      return;
+    }
+    const campo = c => {
+      const req = c.req ? ' required' : '', lab = `<span>${esc(c.label)}${c.req ? ' <b style="color:var(--danger)">*</b>' : ''}</span>`, val = esc(v[c.k] || '');
+      if (c.tipo === 'textolongo') return `<label class="full">${lab}<textarea data-k="${c.k}" rows="3"${req}>${val}</textarea></label>`;
+      if (c.tipo === 'opcoes') return `<label>${lab}<select data-k="${c.k}"${req}><option value="">Escolha</option>${String(c.opcoes || '').split(',').map(o => o.trim()).filter(Boolean).map(o => `<option${o === v[c.k] ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select></label>`;
+      return `<label>${lab}<input data-k="${c.k}" ${c.tipo === 'data' ? 'type="date"' : c.tipo === 'telefone' ? 'inputmode="tel"' : ''} value="${val}"${req}></label>`;
+    };
+    box.innerHTML = `<div class="grid e4grid">${E4CAMPOS().map(campo).join('')}</div>
+      <div class="acts" style="margin-top:8px"><button type="button" class="primary" data-a="e4salvar">Salvar dados</button><button type="button" data-a="e4cancelar">Cancelar</button><span class="hint e4msg"></span></div>`;
+  }
+  async function salvarE4(p, card, bt) {
+    const box = card.querySelector('.e4box'), valores = {}, campos = {}; let falta = null;
+    box.addEventListener('input', ev => { if (ev.target.dataset.k) ev.target.style.borderColor = ''; }, { once: false });
+    box.querySelectorAll('[data-k]').forEach(el => { const val = el.value.trim(); el.style.borderColor = ''; if (el.required && !val) { falta = falta || el; el.style.borderColor = 'var(--danger)'; } if (val) valores[el.dataset.k] = val; });
+    if (falta) { box.querySelector('.e4msg').textContent = 'Preencha os campos obrigatórios.'; falta.focus(); return; }
+    E4CAMPOS().forEach(c => { if (valores[c.k]) campos[c.label] = c.tipo === 'data' ? fmtD(valores[c.k]) : valores[c.k]; });
+    bt.disabled = true; box.querySelector('.e4msg').textContent = 'Salvando…';
+    try {
+      const por = perfil.nome || perfil.email;
+      await F.setDoc(F.doc(db, 'propostas', p.id, 'etapa4', 'dados'), { valores, campos, em: F.serverTimestamp(), por });
+      await F.updateDoc(F.doc(db, 'propostas', p.id), { e4Em: F.serverTimestamp(), e4Por: por });
+      box.hidden = true; pMsg(`Dados de referência da proposta nº ${p.numero} salvos.`);
+    } catch (err) { box.querySelector('.e4msg').textContent = 'Não foi possível salvar (' + (err.code || err.message) + ').'; }
+    finally { bt.disabled = false; }
   }
   let E2PUB = null; // formulário publicado (para a mensagem de envio)
   function msgEtapa2(p, link) {
@@ -314,6 +358,9 @@ async function iniciar() {
   $('pList').addEventListener('click', async e => {
     const bt = e.target.closest('[data-a]'), a = bt && bt.dataset.a, card = e.target.closest('.pcard'); if (!a || !card) return;
     const p = props.find(x => x.id === card.dataset.id); if (!p) return;
+    if (a === 'e4' || a === 'e4ver') return etapa4(p, card, a === 'e4');
+    if (a === 'e4salvar') return salvarE4(p, card, bt);
+    if (a === 'e4cancelar') { card.querySelector('.e4box').hidden = true; return; }
     if (a === 'reenviar') { abrirWa(p.waCli, textoAprov(p)); pMsg('WhatsApp aberto com o link da proposta.'); }
     if (a === 'copiar') { try { await navigator.clipboard.writeText(linkAprov(p.id)); pMsg('Link da proposta nº ' + p.numero + ' copiado.'); } catch (_) { pMsg('Link: ' + linkAprov(p.id)); } }
     if (a === 'abrir') {

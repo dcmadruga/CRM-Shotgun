@@ -73,7 +73,7 @@ function etapas(t) {
   if (!p) return `<div class="tketapas"><span class="tke none">${t.propostaId ? 'Proposta ainda não aprovada' : 'Sem proposta vinculada'}</span></div>`;
   const e = (n, nome, ok, quando, pend) => `<span class="tke ${ok ? 'ok' : pend ? 'pend' : 'none'}" title="${esc(nome + (quando ? ' em ' + quando : ''))}"><b>${ok ? '✓' : n}</b>${esc(nome)}${ok && quando ? `<small>${esc(quando)}</small>` : pend ? `<small>${esc(pend)}</small>` : ''}</span>`;
   const d = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString('pt-BR') : '';
-  return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${p.e2Em ? e(2, 'Dados', true, d(p.e2Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e2" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(2, 'Dados', false, '', 'aguardando')}${(() => { const h = e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : ''); return p.ctEm ? h.replace('</span>', `<button type="button" class="tkver" data-tk="ct" data-pid="${esc(p.id)}">Ver contrato</button></span>`) : h; })()}</div>`;
+  return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${p.e2Em ? e(2, 'Dados', true, d(p.e2Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e2" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(2, 'Dados', false, '', 'aguardando')}${(() => { const h = e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : ''); return p.ctEm ? h.replace('</span>', `<button type="button" class="tkver" data-tk="ct" data-pid="${esc(p.id)}">Ver contrato</button></span>`) : h; })()}${p.e4Em ? e(4, 'Ref. implantação', true, d(p.e4Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e4" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(4, 'Ref. implantação', false, '', p.ctAceitoEm ? 'aguardando vendedor' : '')}</div>`;
 }
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
@@ -287,6 +287,15 @@ async function verContrato(pid, bt) {
   } catch (e) { if (janela) janela.close(); msg('Não foi possível abrir o contrato (' + (e.code || e.message) + ').'); }
   finally { bt.disabled = false; bt.textContent = txt; }
 }
+async function verRef(pid) {
+  const p = (aprovadas || []).find(x => x.id === pid) || {};
+  abrirDlg('e4', 'Dados referência implantação · ' + (p.cliente || ''), '<p class="hint">Carregando…</p>');
+  try {
+    const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados')); const d = r.exists() ? r.data() : { campos: {} };
+    $('tkDlgBody').innerHTML = `${d.por ? `<p class="hint">Preenchido por ${esc(d.por)}${d.em ? ' em ' + esc(fmtTs(d.em)) : ''}.</p>` : ''}
+      <table class="tkdados"><tbody>${Object.entries(d.campos || {}).map(([k, v]) => `<tr><th>${esc(k)}</th><td style="white-space:pre-wrap">${esc(v)}</td></tr>`).join('') || '<tr><td>Nada preenchido.</td></tr>'}</tbody></table>`;
+  } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar (${esc(e.code || e.message)}).</p>`; }
+}
 async function baixarAnexo(pid, aid, bt) {
   bt.disabled = true;
   try {
@@ -318,6 +327,7 @@ function ligar() {
     if (b.dataset.tk === 'pdf') return verProposta(b.dataset.pid, b);
     if (b.dataset.tk === 'e2') return verDados(b.dataset.pid);
     if (b.dataset.tk === 'ct') return verContrato(b.dataset.pid, b);
+    if (b.dataset.tk === 'e4') return verRef(b.dataset.pid);
     if (b.dataset.tk === 'dados') formDados(tasks.find(t => t.id === id)); else formCheck(id);
   });
   $('tkDlgFechar').addEventListener('click', () => dlg().close());
