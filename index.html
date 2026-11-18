@@ -123,6 +123,8 @@ table.refs td.n input,table.refs th.n{text-align:center}
 table.refs td:last-child{width:34px}
 body:not(.is-admin) .admin{display:none!important}
 body.is-admin .noadmin{display:none!important}
+/* Parametrização: só administrador (no modo com login) */
+body.fb:not(.is-admin) .cfgtab,body.fb:not(.is-admin) #viewCfg{display:none!important}
 body:not(.is-admin):not(.is-task) .tasktab{display:none!important}
 
 /* ---------- Módulo TASK ---------- */
@@ -275,7 +277,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 </div></header>
 <nav class="tabs" aria-label="Seções"><div class="wrap" role="tablist">
   <button type="button" role="tab" id="tabProp" aria-selected="true">Etapa 1 - Proposta</button>
-  <button type="button" role="tab" id="tabCfg" aria-selected="false">Parâmetros de Proposta</button>
+  <button type="button" role="tab" id="tabCfg" aria-selected="false" class="cfgtab">Parâmetros de Proposta</button>
   <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Parâmetros Dados Complementares</button>
   <button type="button" role="tab" id="tabE4" aria-selected="false" class="admin fbonly">Parâmetros Referência Implantação</button>
   <button type="button" role="tab" id="tabE3" aria-selected="false" class="admin fbonly">Parâmetros Contrato</button>
@@ -1152,7 +1154,7 @@ let downloads=null;
 if(window.claude && claude.use) claude.use('downloads').then(d=>{ downloads=d }).catch(()=>{});
 $('btnPdf').addEventListener('click', async ()=>{
   if(!window.jspdf){ msg('O gerador de PDF não carregou. Recarregue a página e tente de novo.'); return }
-  if(!String(CFG.vNome||'').trim()){ showTab(true); $('firstRun').hidden=false; $('c-vNome').focus(); msg('Preencha seus dados em Parâmetros antes de gerar o PDF.'); return }
+  if(!String(CFG.vNome||'').trim()){ if(FB_ON && !isAdmin()){ msg('Seu nome não está no cadastro. Peça ao administrador para preencher em Usuários.'); return } showTab(true); $('firstRun').hidden=false; $('c-vNome').focus(); msg('Preencha seus dados em Parâmetros antes de gerar o PDF.'); return }
   let blob;
   try{ blob = buildPdf().output('blob') }catch(e){ msg('Não foi possível montar o PDF: '+e.message); return }
   if(!downloads && !window.claude){
@@ -1292,7 +1294,7 @@ function textoConvite(){
   return `Olá${nome?' '+nome:''}! Obrigado por aprovar a proposta da Argo. Para iniciarmos a implantação, preencha os dados complementares obrigatórios neste link:\n${linkFormulario()}\n\n${String(CFG.vNome||'').trim()} - Argo`;
 }
 function prontoParaForm(){
-  if(digitos(CFG.vFone).length<10){ showTab(true); $('c-vFone').focus(); msg('Preencha seu telefone em Parâmetros: é para ele que os dados do cliente voltam.'); return false }
+  if(digitos(CFG.vFone).length<10){ if(FB_ON && !isAdmin()){ msg('Seu telefone não está no cadastro. Peça ao administrador para preencher em Usuários: é para ele que as respostas do cliente voltam.'); return false } showTab(true); $('c-vFone').focus(); msg('Preencha seu telefone em Parâmetros: é para ele que os dados do cliente voltam.'); return false }
   if(!String(S.cliente||'').trim()){ $('cliente').focus(); formMsg('Preencha o cliente (ou o CNPJ) antes de enviar o formulário.'); return false }
   return true;
 }
