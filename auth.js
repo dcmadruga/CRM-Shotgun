@@ -357,7 +357,7 @@ async function iniciar() {
           <td class="t"><select data-f="tipo" ${c.custom ? '' : 'disabled'} aria-label="Tipo">${Object.entries(TIPOS).map(([k, v]) => `<option value="${k}"${c.tipo === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
           <td class="c"><input type="checkbox" data-f="show" ${c.show !== false || c.fixo ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Mostrar"></td>
           <td class="c"><input type="checkbox" data-f="req" ${c.req ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Obrigatório"></td>
-          <td class="o">${c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula. Inclua Outros para abrir campo de texto" title="Se a lista tiver Outro/Outros, o cliente que escolher essa opção informa qual" aria-label="Opções">` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
+          <td class="o">${c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
           <td class="a"><button type="button" data-ca="up" ${ci === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-ca="down" ${ci === s.campos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button>${c.fixo ? '' : '<button type="button" data-ca="del" aria-label="Excluir campo" title="Excluir campo">✕</button>'}</td>
         </tr>`).join('')}
         </tbody></table></div>

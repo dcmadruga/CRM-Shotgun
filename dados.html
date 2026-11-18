@@ -120,6 +120,7 @@ function campoHtml(c){
   const lab=`<span>${esc(c.label)}${star}</span>`;
   if(c.tipo==='simnao') return `<label${full}>${lab}<span class="radios"><label><input type="radio" name="${esc(c.k)}" value="Sim"${req}> Sim</label><label><input type="radio" name="${esc(c.k)}" value="Não"> Não</label></span></label>`;
   if(c.tipo==='opcoes'){ const ops=String(c.opcoes||'').split(/[,;\n]/).map(x=>x.trim()).filter(Boolean);
+    if(c.outros && !ops.some(ehOutro)) ops.push('Outros');
     return `<label${full}>${lab}<select name="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o=>`<option>${esc(o)}</option>`).join('')}</select><input name="${esc(c.k)}__outro" class="outro" data-v="texto" placeholder="Qual? Informe aqui" aria-label="${esc(c.label)}: qual?" hidden></label>` }
   if(c.tipo==='arquivo') return `<label class="full">${lab}<input type="file" name="${esc(c.k)}" data-v="arquivo" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"${req}><span class="hint">${esc(c.ph||'Fotos, PDF ou documentos. Até 10 MB por arquivo.')}</span><span class="files hint"></span></label>`;
   if(c.tipo==='textolongo') return `<label class="full">${lab}<textarea name="${esc(c.k)}"${req}${c.ph?` placeholder="${esc(c.ph)}"`:''}></textarea></label>`;
