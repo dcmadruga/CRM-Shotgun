@@ -268,8 +268,8 @@ async function salvarNoSistema(o, texto){
     anexos.push({id:ref.id, nome:z.nome, campo:c.label});
   }
   $('#msg').textContent='Salvando os dados…';
-  const campos={}; CAMPOS.forEach(c=>{ if(c.tipo!=='arquivo' && o[c.k]) campos[c.label]=o[c.k] });
-  await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{campos, texto, anexos, em:F.serverTimestamp()});
+  const campos={}, valores={}; CAMPOS.forEach(c=>{ if(c.tipo!=='arquivo' && o[c.k]){ campos[c.label]=o[c.k]; valores[c.k]=o[c.k] } });
+  await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{campos, valores, texto, anexos, em:F.serverTimestamp()});
   await F.updateDoc(F.doc(db,...pref),{e2Em:F.serverTimestamp(), e2Anexos:anexos.length});
 }
 

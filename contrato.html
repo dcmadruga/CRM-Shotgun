@@ -1,0 +1,180 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Contrato Argo</title>
+<meta name="theme-color" content="#17180f">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f4f2f6; --surface:#ffffff; --fg:#1d1a22; --muted:#6b6475; --line:#e3dfe8;
+  --ink:#17180f; --ink-fg:#f6f4f8; --accent:#cb2da0; --purple:#7030a0; --field:#fbfafc; --danger:#b42335;
+  --display:"Poppins",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141218; --surface:#1d1a23; --fg:#ece8f1; --muted:#a39bb0; --line:#322d3a;
+  --ink:#0b0b08; --accent:#e04bb5; --purple:#a874d6; --field:#17151c; --danger:#f0697a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141218; --surface:#1d1a23; --fg:#ece8f1; --muted:#a39bb0; --line:#322d3a;
+  --ink:#0b0b08; --accent:#e04bb5; --purple:#a874d6; --field:#17151c; --danger:#f0697a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
+[hidden]{display:none!important}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{background:var(--ink);color:var(--ink-fg)}
+header .wrap{display:flex;align-items:center;gap:14px;padding-block:16px;padding-top:max(16px,env(safe-area-inset-top,0px))}
+header img{width:44px;height:44px}
+header h1{font-family:var(--display);font-weight:600;font-size:19px;margin:0;text-wrap:balance}
+header p{margin:0;font-size:13px;opacity:.75}
+main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
+.intro{margin:0}
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
+.body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.full{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;min-width:0}
+label b{color:var(--danger);font-weight:600}
+input,select,textarea{font:inherit;font-size:16px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:9px 10px;width:100%;min-width:0}
+textarea{min-height:80px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
+input[readonly]{opacity:.8}
+.bad{border-color:var(--danger)}
+.err{color:var(--danger);font-size:12px;font-weight:500;min-height:0}
+.radios{display:flex;gap:16px;padding-top:6px;font-size:15px;font-weight:500;color:var(--fg)}
+.radios label{flex-direction:row;align-items:center;gap:6px;font-size:15px;color:var(--fg)}
+.radios input{width:auto}
+button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1px solid var(--purple);background:var(--purple);color:#fff;font-size:16px;cursor:pointer}
+.send{display:flex;flex-direction:column;gap:8px}
+.hint{color:var(--muted);font-size:13px;margin:0}
+#msg{font-weight:500}
+.done{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:6px;padding:14px}
+.resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px}
+.resumo div{background:var(--field);border:1px solid var(--line);border-radius:4px;padding:10px}
+.resumo small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.resumo strong{font-family:var(--display);font-size:18px;font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button.sec2{background:var(--surface);color:var(--purple)}
+.check{flex-direction:row;align-items:flex-start;gap:8px;font-size:14px;color:var(--fg);font-weight:500}
+.check input{width:auto;margin-top:3px}
+.ok{background:var(--surface);border:1px solid #1f7a46;border-left:4px solid #1f7a46;border-radius:6px;padding:14px}
+.warn{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--danger);border-radius:6px;padding:14px}
+.contrato{padding:14px 16px;max-height:60vh;overflow:auto;background:var(--field);border-top:1px solid var(--line);font-size:14px;line-height:1.55}
+.contrato p{margin:0 0 8px;white-space:pre-wrap}
+.contrato h3{font-family:var(--display);font-size:14px;font-weight:600;margin:14px 0 6px}
+.contrato h3:first-child{margin-top:0}
+</style>
+</head><body>
+<header><div class="wrap">
+  <img src="icons/icon-192.png" alt="Argo">
+  <div><h1 id="hTit">Contrato Argo</h1><p id="sub">Carregando…</p></div>
+</div></header>
+
+<div class="wrap"><main>
+  <p id="carregando">Carregando o contrato…</p>
+  <div class="warn" id="erro" hidden></div>
+
+  <div id="conteudo" hidden style="display:flex;flex-direction:column;gap:18px">
+    <section class="sec"><h2 id="tit">Contrato</h2>
+      <div class="body"><p class="hint full">Leia o contrato abaixo. Se preferir, abra a versão em PDF.</p>
+        <div class="row full"><button type="button" class="sec2" id="btnVer">Ver contrato em PDF</button></div></div>
+      <div class="contrato" id="texto" tabindex="0" aria-label="Texto do contrato"></div>
+    </section>
+
+    <div class="ok" id="jaAceito" hidden></div>
+
+    <form class="sec" id="fAceite" novalidate><h2>Aceite do contrato</h2><div class="body">
+      <label><span>Nome completo do representante <b>*</b></span><input id="aNome" required autocomplete="name"></label>
+      <label><span>CPF <b>*</b></span><input id="aCpf" required inputmode="numeric" placeholder="000.000.000-00"></label>
+      <label><span>Cargo <b>*</b></span><input id="aCargo" required placeholder="Ex.: Sócio, Administrador"></label>
+      <label class="check full"><input type="checkbox" id="aCiente" required> <span id="aTxt">Li o contrato e concordo com todas as cláusulas, em nome da empresa contratante.</span></label>
+      <div class="row full">
+        <button type="submit" id="btnAceitar">Aceitar contrato</button>
+        <button type="button" class="sec2" id="btnDuvida">Tenho dúvidas</button>
+      </div>
+      <p class="err full" id="aMsg" role="status"></p>
+    </div></form>
+  </div>
+</main></div>
+
+<script src="firebase-config.js"></script>
+<script type="module">
+const $=id=>document.getElementById(id);
+const id=decodeURIComponent(location.hash.slice(1)).trim();
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dig=v=>String(v||'').replace(/\D/g,'');
+const erro=t=>{ $('carregando').hidden=true; $('erro').hidden=false; $('erro').textContent=t };
+function cpfOk(v){ const d=dig(v); if(d.length!==11||/^(\d)\1+$/.test(d)) return false;
+  const c=n=>{ let s=0; for(let i=0;i<n;i++) s+=+d[i]*(n+1-i); const r=(s*10)%11; return r===10?0:r }; return c(9)===+d[9]&&c(10)===+d[10] }
+const fmtCpf=v=>dig(v).replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');
+let P=null, D=null;
+
+function abrirWa(num, texto){ const url='https://wa.me/'+(num||'')+'?text='+encodeURIComponent(texto); window.open(url,'_blank') || (location.href=url) }
+const vendNum=()=>{ const d=dig(P.vendedorFone); return d.length>=10&&d.length<=11?'55'+d:d };
+function textoHtml(t){
+  return String(t||'').split(/\n{2,}|\n(?=#\s)/).map(b=>{ b=b.replace(/^\n+|\n+$/g,''); if(!b) return '';
+    const m=b.match(/^#\s+(.*?)(\n([\s\S]*))?$/); if(m) return `<h3>${esc(m[1])}</h3>`+(m[3]?`<p>${esc(m[3])}</p>`:'');
+    return `<p>${esc(b)}</p>` }).join('');
+}
+
+(async()=>{
+  if(!id || !/^[A-Za-z0-9]{10,40}$/.test(id)) return erro('Link inválido. Peça um novo link ao seu consultor Argo.');
+  const C=window.FIREBASE_CONFIG||{};
+  try{
+    const V='10.12.2', base=`https://www.gstatic.com/firebasejs/${V}/`;
+    const [{initializeApp}, F]=await Promise.all([import(base+'firebase-app.js'), import(base+'firebase-firestore.js')]);
+    const db=F.getFirestore(initializeApp(C));
+    const ref=F.doc(db,'propostas',id);
+    const snap=await F.getDoc(ref);
+    if(!snap.exists()) return erro('Contrato não encontrado. Peça um novo link ao seu consultor Argo.');
+    P=snap.data();
+    if(!P.ctEm) return erro('O contrato desta proposta ainda não foi gerado. Fale com seu consultor Argo.');
+    const cs=await F.getDoc(F.doc(db,'propostas',id,'arquivo','contrato'));
+    if(!cs.exists()) return erro('O contrato desta proposta ainda não foi gerado. Fale com seu consultor Argo.');
+    D=cs.data();
+    $('sub').textContent=`Proposta nº ${P.numero} · consultor: ${P.vendedor}`;
+    $('tit').textContent=P.cliente;
+    if(D.titulo){ $('hTit').textContent=D.titulo; document.title=D.titulo+' · Argo' }
+    if(D.aceiteTxt) $('aTxt').textContent=D.aceiteTxt;
+    $('texto').innerHTML=textoHtml(D.texto);
+    $('carregando').hidden=true; $('conteudo').hidden=false;
+
+    const aceito=()=>{ $('fAceite').hidden=true; $('jaAceito').hidden=false;
+      $('jaAceito').innerHTML='<b>'+esc(D.final||'Contrato aceito. Obrigado!')+'</b>'+(P.ctAceitoNome?'<br><span class="hint">Aceito por '+esc(P.ctAceitoNome)+'.</span>':'') };
+    if(P.ctAceitoEm) aceito();
+
+    $('btnVer').addEventListener('click',()=>{
+      try{
+        const bin=atob(D.b64), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+        const url=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));
+        const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener';
+        if(!/iphone|ipad|android/i.test(navigator.userAgent)) a.download='Contrato Argo '+P.numero+'.pdf';
+        a.click();
+      }catch(e){ $('aMsg').textContent='Não foi possível abrir o PDF. Tente de novo.' }
+    });
+    $('btnDuvida').addEventListener('click',()=>abrirWa(vendNum(), `Olá ${P.vendedor}! Tenho uma dúvida sobre o contrato da proposta nº ${P.numero} (${P.cliente}):\n`));
+    $('aCpf').addEventListener('blur',()=>{ if(dig($('aCpf').value).length===11) $('aCpf').value=fmtCpf($('aCpf').value) });
+
+    $('fAceite').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const nome=$('aNome').value.trim(), cpf=$('aCpf').value.trim(), cargo=$('aCargo').value.trim();
+      $('aNome').classList.toggle('bad',!nome); $('aCargo').classList.toggle('bad',!cargo); $('aCpf').classList.toggle('bad',!cpfOk(cpf));
+      if(!nome||!cargo||!cpf){ $('aMsg').textContent='Informe nome, CPF e cargo.'; return }
+      if(!cpfOk(cpf)){ $('aMsg').textContent='Confira o CPF.'; $('aCpf').focus(); return }
+      if(!$('aCiente').checked){ $('aMsg').textContent='Marque a confirmação de que leu e concorda com o contrato.'; return }
+      const janela=window.open('','_blank');
+      const b=$('btnAceitar'); b.disabled=true; $('aMsg').textContent='Registrando o aceite…';
+      try{
+        await F.updateDoc(ref,{ctAceitoNome:nome, ctAceitoCpf:fmtCpf(cpf), ctAceitoCargo:cargo, ctAceitoEm:F.serverTimestamp()});
+        P.ctAceitoNome=nome; aceito(); $('aMsg').textContent='';
+        const texto=`Olá ${P.vendedor}! Li e aceito o contrato da Argo referente à proposta nº ${P.numero}, em nome de ${P.cliente}.\n\n${nome} - ${cargo}\nCPF ${fmtCpf(cpf)}`;
+        const url='https://wa.me/'+vendNum()+'?text='+encodeURIComponent(texto);
+        if(janela && !janela.closed) janela.location.href=url; else abrirWa(vendNum(), texto);
+      }catch(e){
+        if(janela) janela.close();
+        $('aMsg').textContent='Não foi possível registrar o aceite ('+(e.code||'erro')+'). Tente de novo ou fale com seu consultor.';
+      }finally{ b.disabled=false }
+    });
+  }catch(e){ erro('Não foi possível carregar o contrato. Verifique a internet e tente de novo.') }
+})();
+</script>
+</body></html>
