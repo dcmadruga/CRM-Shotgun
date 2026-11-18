@@ -107,6 +107,7 @@ async function iniciar() {
     aplicarModo();
     await carregar(false);
     if (fb.admin) { ouvirUsuarios(); carregarE2(); carregarE3(); }
+    carregarE4();
     ouvirPropostas();
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa2')).then(s => { if (s.exists() && s.data().json) E2PUB = JSON.parse(s.data().json); }).catch(() => {});
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa3')).then(s => { if (s.exists() && s.data().json) E3PUB = JSON.parse(s.data().json); }).catch(() => {});
@@ -149,7 +150,7 @@ async function iniciar() {
   }
 
   /* ---------- Abas ---------- */
-  const EXTRA = { tabTask: 'viewTask', tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2', tabE3: 'viewE3' };
+  const EXTRA = { tabTask: 'viewTask', tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4' };
   function abrirAba(tab) {
     Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
     document.body.classList.toggle('semBarra', !!EXTRA[tab]);
@@ -303,33 +304,58 @@ async function iniciar() {
     }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "Enviar proposta para aprovação" na aba Proposta.'}</p>`;
   }
   /* ---------- Etapa 4: dados de referência para a implantação (vendedor) ---------- */
-  const E4CAMPOS = () => window.ETAPA4_CAMPOS || [];
+  const e4Visiveis = () => (cfgE4().secoes || []).map(sc => ({ ...sc, campos: (sc.campos || []).filter(c => c.show !== false && c.tipo !== 'arquivo') })).filter(sc => sc.campos.length);
+  const ehOutro4 = v => /^outr[oa]s?(\b|$)/i.test(String(v || '').trim());
   async function etapa4(p, card, editar) {
     const box = card.querySelector('.e4box');
     if (!box.hidden && box.dataset.modo === (editar ? 'e' : 'v')) { box.hidden = true; return; }
     box.hidden = false; box.dataset.modo = editar ? 'e' : 'v'; box.textContent = 'Carregando…';
-    let v = {};
-    try { const r = await F.getDoc(F.doc(db, 'propostas', p.id, 'etapa4', 'dados')); if (r.exists()) v = r.data().valores || {}; }
+    let d = {};
+    try { const r = await F.getDoc(F.doc(db, 'propostas', p.id, 'etapa4', 'dados')); if (r.exists()) d = r.data(); }
     catch (err) { box.textContent = 'Não foi possível carregar (' + (err.code || err.message) + ').'; return; }
+    const v = d.valores || {};
     if (!editar) {
-      box.innerHTML = `<div class="refwrap"><table class="refs e2resp"><tbody>${E4CAMPOS().filter(c => v[c.k]).map(c => `<tr><td>${esc(c.label)}</td><td style="white-space:pre-wrap">${esc(c.tipo === 'data' ? fmtD(v[c.k]) : v[c.k])}</td></tr>`).join('') || '<tr><td>Nada preenchido.</td></tr>'}</tbody></table></div>`;
+      box.innerHTML = `<div class="refwrap"><table class="refs e2resp"><tbody>${Object.entries(d.campos || {}).map(([k, x]) => `<tr><td>${esc(k)}</td><td style="white-space:pre-wrap">${esc(x)}</td></tr>`).join('') || '<tr><td>Nada preenchido.</td></tr>'}</tbody></table></div>`;
       return;
     }
     const campo = c => {
-      const req = c.req ? ' required' : '', lab = `<span>${esc(c.label)}${c.req ? ' <b style="color:var(--danger)">*</b>' : ''}</span>`, val = esc(v[c.k] || '');
-      if (c.tipo === 'textolongo') return `<label class="full">${lab}<textarea data-k="${c.k}" rows="3"${req}>${val}</textarea></label>`;
-      if (c.tipo === 'opcoes') return `<label>${lab}<select data-k="${c.k}"${req}><option value="">Escolha</option>${String(c.opcoes || '').split(',').map(o => o.trim()).filter(Boolean).map(o => `<option${o === v[c.k] ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select></label>`;
-      return `<label>${lab}<input data-k="${c.k}" ${c.tipo === 'data' ? 'type="date"' : c.tipo === 'telefone' ? 'inputmode="tel"' : ''} value="${val}"${req}></label>`;
+      const req = c.req ? ' required' : '', lab = `<span>${esc(c.label)}${c.req ? ' <b style="color:var(--danger)">*</b>' : ''}</span>`, val = v[c.k] || '', ph = c.ph ? ` placeholder="${esc(c.ph)}"` : '';
+      const full = c.tipo === 'textolongo' || c.full ? ' class="full"' : '';
+      if (c.tipo === 'textolongo') return `<label class="full">${lab}<textarea data-k="${esc(c.k)}" rows="3"${req}${ph}>${esc(val)}</textarea></label>`;
+      if (c.tipo === 'simnao') return `<label${full}>${lab}<span class="tools">${['Sim', 'Não'].map(o => `<label class="chk"><input type="radio" name="e4_${esc(c.k)}" data-k="${esc(c.k)}" value="${o}"${val === o ? ' checked' : ''}${req}> ${o}</label>`).join('')}</span></label>`;
+      if (c.tipo === 'opcoes') {
+        const ops = String(c.opcoes || '').split(/[,;\n]/).map(o => o.trim()).filter(Boolean); if (c.outros && !ops.some(ehOutro4)) ops.push('Outros');
+        const base = ops.find(o => o === val) || (ehOutro4(val.split(':')[0]) ? ops.find(ehOutro4) : '');
+        return `<label${full}>${lab}<select data-k="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o => `<option${o === base ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select><input data-outro="${esc(c.k)}" placeholder="Qual?" value="${esc(base && ehOutro4(base) ? val.replace(/^[^:]*:\s*/, '') : '')}"${base && ehOutro4(base) ? '' : ' hidden'}></label>`;
+      }
+      const t = { data: 'type="date"', numero: 'type="number" min="0"', email: 'type="email"', telefone: 'inputmode="tel"', cpf: 'inputmode="numeric"', cnpj: 'inputmode="numeric"', cep: 'inputmode="numeric"' }[c.tipo] || '';
+      return `<label${full}>${lab}<input data-k="${esc(c.k)}" ${t} value="${esc(val)}"${req}${ph}></label>`;
     };
-    box.innerHTML = `<div class="grid e4grid">${E4CAMPOS().map(campo).join('')}</div>
-      <div class="acts" style="margin-top:8px"><button type="button" class="primary" data-a="e4salvar">Salvar dados</button><button type="button" data-a="e4cancelar">Cancelar</button><span class="hint e4msg"></span></div>`;
+    box.innerHTML = e4Visiveis().map(sc => `<div class="etit" style="margin:4px 0">${esc(sc.titulo)}</div><div class="grid e4grid">${sc.campos.map((c, i) => {
+      const abre = c.tipo === 'simnao' && (c.abre != null ? c.abre : i === 0) && i < sc.campos.length - 1;
+      let h = campo(c); if (abre) h = h.replace(/^<label/, `<label data-abre="${esc(c.k)}"`);
+      return h;
+    }).join('')}</div>`).join('') + `<div class="acts" style="margin-top:8px"><button type="button" class="primary" data-a="e4salvar">Salvar dados</button><button type="button" data-a="e4cancelar">Cancelar</button><span class="hint e4msg"></span></div>`;
+    // Sim/Não que abre os campos seguintes da seção
+    box.querySelectorAll('[data-abre]').forEach(lab => {
+      const deps = []; let n = lab.nextElementSibling; while (n) { deps.push(n); n = n.nextElementSibling; }
+      const sync = () => { const sim = lab.querySelector('input:checked')?.value === 'Sim'; deps.forEach(x => { x.hidden = !sim; x.querySelectorAll('[data-k],[data-outro]').forEach(i => i.disabled = !sim); }); };
+      lab.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener('change', sync)); sync();
+    });
+    box.querySelectorAll('select[data-k]').forEach(sel => { const o = box.querySelector(`[data-outro="${CSS.escape(sel.dataset.k)}"]`); if (o) sel.addEventListener('change', () => { o.hidden = !ehOutro4(sel.value); if (!o.hidden) o.focus(); }); });
+    box.addEventListener('input', ev => { if (ev.target.dataset && ev.target.dataset.k) ev.target.style.borderColor = ''; });
   }
   async function salvarE4(p, card, bt) {
     const box = card.querySelector('.e4box'), valores = {}, campos = {}; let falta = null;
-    box.addEventListener('input', ev => { if (ev.target.dataset.k) ev.target.style.borderColor = ''; }, { once: false });
-    box.querySelectorAll('[data-k]').forEach(el => { const val = el.value.trim(); el.style.borderColor = ''; if (el.required && !val) { falta = falta || el; el.style.borderColor = 'var(--danger)'; } if (val) valores[el.dataset.k] = val; });
+    e4Visiveis().forEach(sc => sc.campos.forEach(c => {
+      const els = [...box.querySelectorAll(`[data-k="${CSS.escape(c.k)}"]`)].filter(x => !x.disabled); if (!els.length) return;
+      let val = els[0].type === 'radio' ? (els.find(x => x.checked)?.value || '') : els[0].value.trim();
+      const o = box.querySelector(`[data-outro="${CSS.escape(c.k)}"]`); if (o && !o.hidden && val && o.value.trim()) val += ': ' + o.value.trim();
+      els.forEach(x => x.style.borderColor = '');
+      if (c.req && !val) { falta = falta || els[0]; els.forEach(x => x.style.borderColor = 'var(--danger)'); }
+      if (val) { valores[c.k] = val; const lab = campos[c.label] != null ? sc.titulo + ' - ' + c.label : c.label; campos[lab] = c.tipo === 'data' ? fmtD(val) : val; }
+    }));
     if (falta) { box.querySelector('.e4msg').textContent = 'Preencha os campos obrigatórios.'; falta.focus(); return; }
-    E4CAMPOS().forEach(c => { if (valores[c.k]) campos[c.label] = c.tipo === 'data' ? fmtD(valores[c.k]) : valores[c.k]; });
     bt.disabled = true; box.querySelector('.e4msg').textContent = 'Salvando…';
     try {
       const por = perfil.nome || perfil.email;
@@ -551,16 +577,21 @@ async function iniciar() {
     if (E2.msgEnvio == null) E2.msgEnvio = window.ETAPA2_PADRAO.msgEnvio;
     $('e2Msg').value = E2.msgEnvio; previewMsg();
     $('e2Titulo').value = E2.titulo || ''; $('e2Intro').value = E2.intro || ''; $('e2Final').value = E2.final || ''; $('e2Contrato').checked = E2.contratoSocial !== false;
-    $('e2Secoes').innerHTML = E2.secoes.map((s, si) => `
+    $('e2Secoes').innerHTML = htmlSecoes(E2, TIPOS, 'o cliente');
+  }
+  // Editor de seções/campos (usado na Etapa 2 e na Etapa 4)
+  function htmlSecoes(CFGX, TIP, quem) {
+    const E2 = CFGX;
+    return E2.secoes.map((s, si) => `
       <section class="sec" data-si="${si}"><h2>Seção ${si + 1} <span>${s.campos.filter(c => c.show !== false || c.fixo).length} campos visíveis</span></h2><div class="body">
         <div class="e2head"><input data-s="titulo" value="${esc(s.titulo)}" aria-label="Título da seção">
           <button type="button" data-sa="up" ${si === 0 ? 'disabled' : ''} aria-label="Subir seção">↑</button>
           <button type="button" data-sa="down" ${si === E2.secoes.length - 1 ? 'disabled' : ''} aria-label="Descer seção">↓</button>
           ${s.campos.some(c => c.fixo) ? '' : '<button type="button" data-sa="del">Remover seção</button>'}</div>
-        <div class="refwrap"><table class="e2tab"><thead><tr><th>Campo (como o cliente vê)</th><th>Tipo</th><th class="c">Mostrar</th><th class="c">Obrigatório</th><th>Opções / exemplo</th><th><span class="sr">Ações</span></th></tr></thead><tbody>
+        <div class="refwrap"><table class="e2tab"><thead><tr><th>Campo (como ${quem} vê)</th><th>Tipo</th><th class="c">Mostrar</th><th class="c">Obrigatório</th><th>Opções / exemplo</th><th><span class="sr">Ações</span></th></tr></thead><tbody>
         ${s.campos.map((c, ci) => `<tr data-ci="${ci}" class="${c.show === false && !c.fixo ? 'off' : ''}">
           <td><input data-f="label" value="${esc(c.label)}" aria-label="Nome do campo"></td>
-          <td class="t"><select data-f="tipo" ${c.custom ? '' : 'disabled'} aria-label="Tipo">${Object.entries(TIPOS).map(([k, v]) => `<option value="${k}"${c.tipo === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
+          <td class="t"><select data-f="tipo" ${c.custom ? '' : 'disabled'} aria-label="Tipo">${Object.entries(TIP).map(([k, v]) => `<option value="${k}"${c.tipo === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
           <td class="c"><input type="checkbox" data-f="show" ${c.show !== false || c.fixo ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Mostrar"></td>
           <td class="c"><input type="checkbox" data-f="req" ${c.req ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Obrigatório"></td>
           <td class="o">${c.tipo === 'simnao' ? `<label class="chk"><input type="checkbox" data-f="abre" ${abreSim(s, ci) ? 'checked' : ''}> Só mostrar os campos abaixo desta seção se responder Sim</label>` : c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
@@ -577,19 +608,20 @@ async function iniciar() {
   $('e2Msg').addEventListener('input', e => { if (!E2) return; E2.msgEnvio = e.target.value; marcarE2(); previewMsg(); });
   ['e2Titulo', 'e2Intro', 'e2Final'].forEach(id => $(id).addEventListener('input', e => { if (!E2) return; E2[{ e2Titulo: 'titulo', e2Intro: 'intro', e2Final: 'final' }[id]] = e.target.value; marcarE2(); }));
   $('e2Contrato').addEventListener('change', e => { if (!E2) return; E2.contratoSocial = e.target.checked; marcarE2(); });
-  $('e2Secoes').addEventListener('input', e => {
-    const sec = e.target.closest('[data-si]'); if (!sec || !E2) return; const s = E2.secoes[+sec.dataset.si];
-    if (e.target.dataset.s) { s.titulo = e.target.value; marcarE2(); return; }
+  function ligarSecoes(el, get, marcar, redesenhar) {
+  el.addEventListener('input', e => {
+    const sec = e.target.closest('[data-si]'); if (!sec || !get()) return; const E2 = get(), s = E2.secoes[+sec.dataset.si];
+    if (e.target.dataset.s) { s.titulo = e.target.value; marcar(); return; }
     const tr = e.target.closest('[data-ci]'); const f = e.target.dataset.f; if (!tr || !f) return;
     const c = s.campos[+tr.dataset.ci];
     if (e.target.type === 'checkbox') { c[f] = e.target.checked; tr.classList.toggle('off', c.show === false); }
     else c[f] = e.target.value;
-    marcarE2();
-    if (f === 'tipo') desenharE2();
+    marcar();
+    if (f === 'tipo') redesenhar();
   });
-  $('e2Secoes').addEventListener('change', e => { if (e.target.dataset.f === 'tipo') { const sec = e.target.closest('[data-si]'), tr = e.target.closest('[data-ci]'); E2.secoes[+sec.dataset.si].campos[+tr.dataset.ci].tipo = e.target.value; marcarE2(); desenharE2(); } });
-  $('e2Secoes').addEventListener('click', e => {
-    const sec = e.target.closest('[data-si]'); if (!sec || !E2) return; const si = +sec.dataset.si, s = E2.secoes[si];
+  el.addEventListener('change', e => { if (e.target.dataset.f === 'tipo') { const sec = e.target.closest('[data-si]'), tr = e.target.closest('[data-ci]'); get().secoes[+sec.dataset.si].campos[+tr.dataset.ci].tipo = e.target.value; marcar(); redesenhar(); } });
+  el.addEventListener('click', e => {
+    const sec = e.target.closest('[data-si]'); if (!sec || !get()) return; const E2 = get(), si = +sec.dataset.si, s = E2.secoes[si];
     const troca = (arr, i, j) => { [arr[i], arr[j]] = [arr[j], arr[i]]; };
     const sa = e.target.dataset.sa, ca = e.target.dataset.ca;
     if (sa === 'up' && si > 0) troca(E2.secoes, si, si - 1);
@@ -603,7 +635,44 @@ async function iniciar() {
       else if (ca === 'del') s.campos.splice(ci, 1);
       else return;
     } else return;
-    marcarE2(); desenharE2();
+    marcar(); redesenhar();
+  });
+  }
+  ligarSecoes($('e2Secoes'), () => E2, marcarE2, desenharE2);
+
+  /* ---------- Parâmetros da Etapa 4 - Referência Implantação (ADM) ---------- */
+  const E4DOC = F.doc(db, 'config', 'etapa4');
+  const TIPOS4 = Object.fromEntries(Object.entries(TIPOS).filter(([k]) => k !== 'arquivo'));
+  let E4 = null, e4Sujo = false;
+  const e4Status = t => { $('e4Status').textContent = t; };
+  const cfgE4 = () => E4 || copia(window.ETAPA4_PADRAO);
+  async function carregarE4() {
+    try {
+      const snap = await F.getDoc(E4DOC);
+      E4 = snap.exists() && snap.data().json ? JSON.parse(snap.data().json) : copia(window.ETAPA4_PADRAO);
+      if (fb.admin) e4Status(snap.exists() ? (snap.data().por ? 'Publicado por ' + snap.data().por + (snap.data().em ? ' em ' + fmtQuando(snap.data().em) : '') + '.' : '') : 'Usando o formulário padrão. Ajuste e publique.');
+    } catch (e) { E4 = copia(window.ETAPA4_PADRAO); if (fb.admin) e4Status('Não foi possível carregar o formulário publicado; mostrando o padrão.'); }
+    e4Sujo = false; desenharE4();
+  }
+  function marcarE4() { e4Sujo = true; e4Status('Alterações ainda não publicadas.'); }
+  function desenharE4() { if (E4 && fb.admin) $('e4Secoes').innerHTML = htmlSecoes(E4, TIPOS4, 'o vendedor'); }
+  ligarSecoes($('e4Secoes'), () => E4, marcarE4, desenharE4);
+  $('btnE4Secao').addEventListener('click', () => { if (!E4) return; E4.secoes.push({ id: 's' + Date.now().toString(36), titulo: 'Nova seção', campos: [{ k: 'c' + Date.now().toString(36), label: 'Novo campo', tipo: 'texto', req: false, show: true, custom: true }] }); marcarE4(); desenharE4(); });
+  let e4ResetT = 0;
+  $('btnE4Padrao').addEventListener('click', () => {
+    if (Date.now() - e4ResetT > 4000) { e4ResetT = Date.now(); e4Status('Clique de novo para confirmar: o formulário volta ao padrão (só vale depois de publicar).'); return; }
+    e4ResetT = 0; E4 = copia(window.ETAPA4_PADRAO); marcarE4(); desenharE4();
+  });
+  $('btnE4Salvar').addEventListener('click', async () => {
+    if (!E4 || !fb.admin) return;
+    if (E4.secoes.flatMap(s => s.campos).some(c => !String(c.label || '').trim()) || E4.secoes.some(s => !String(s.titulo || '').trim())) { e4Status('Todo campo e toda seção precisam de um nome.'); return; }
+    const btn = $('btnE4Salvar'); btn.disabled = true; e4Status('Publicando…');
+    try {
+      const em = new Date().toISOString();
+      await F.setDoc(E4DOC, { json: JSON.stringify(E4), em, por: perfil.nome || perfil.email });
+      e4Sujo = false; e4Status('Formulário publicado em ' + fmtQuando(em) + '. Vale para todas as propostas.');
+    } catch (err) { e4Status('Não foi possível publicar (' + (err.code || err.message) + ').'); }
+    finally { btn.disabled = false; }
   });
   $('btnE2Secao').addEventListener('click', () => { if (!E2) return; E2.secoes.push({ id: 's' + Date.now().toString(36), titulo: 'Nova seção', campos: [{ k: 'c' + Date.now().toString(36), label: 'Novo campo', tipo: 'texto', req: false, show: true, custom: true }] }); marcarE2(); desenharE2(); });
   let e2ResetT = 0;

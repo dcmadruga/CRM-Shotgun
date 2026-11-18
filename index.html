@@ -277,6 +277,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <button type="button" role="tab" id="tabProp" aria-selected="true">Etapa 1 - Proposta</button>
   <button type="button" role="tab" id="tabCfg" aria-selected="false">Parâmetros de Proposta</button>
   <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Parâmetros Dados Complementares</button>
+  <button type="button" role="tab" id="tabE4" aria-selected="false" class="admin fbonly">Parâmetros Referência Implantação</button>
   <button type="button" role="tab" id="tabE3" aria-selected="false" class="admin fbonly">Parâmetros Contrato</button>
   <button type="button" role="tab" id="tabList" aria-selected="false" class="fbonly">Propostas</button>
   <button type="button" role="tab" id="tabTask" aria-selected="false" class="fbonly tasktab">TASK</button>
@@ -459,6 +460,18 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <div id="e2Secoes" style="display:flex;flex-direction:column;gap:18px"></div>
   <div class="tools"><button type="button" id="btnE2Secao">+ Nova seção</button></div>
   <p class="hint">CNPJ e razão social são sempre exibidos e obrigatórios e não podem ser excluídos, porque identificam o cliente. O ✕ exclui o campo; para só esconder, desmarque "Mostrar". As alterações valem para todos os links da Etapa 2, inclusive os já enviados, assim que você publicar.</p>
+</main>
+
+<main id="viewE4" hidden>
+  <div class="savebar">
+    <button type="button" class="primary" id="btnE4Salvar">Salvar e publicar formulário</button>
+    <button type="button" id="btnE4Padrao">Restaurar padrão</button>
+    <span id="e4Status" class="hint"></span>
+  </div>
+  <p class="hint">Formulário da Etapa 4, preenchido pelo vendedor no cartão da proposta depois que o cliente aceita o contrato. Os dados aparecem para a equipe no módulo TASK.</p>
+  <div id="e4Secoes" style="display:flex;flex-direction:column;gap:18px"></div>
+  <div class="tools"><button type="button" id="btnE4Secao">+ Nova seção</button></div>
+  <p class="hint">O ✕ exclui o campo; para só esconder, desmarque "Mostrar". As alterações valem para todas as propostas assim que você publicar. Dados já preenchidos continuam guardados.</p>
 </main>
 
 <main id="viewE3" hidden>
