@@ -93,6 +93,10 @@ button.del{border:none;background:none;color:var(--danger);padding:6px;font-size
 .tabs .linkbtn{color:var(--ink-fg)!important;opacity:.85}
 .tabs button{background:transparent;border:none;border-bottom:3px solid transparent;border-radius:0;color:var(--ink-fg);opacity:.7;padding:10px 12px}
 .tabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--accent)}
+.subtabs{background:var(--surface);border-bottom:1px solid var(--line)}
+.subtabs .wrap{display:flex;gap:6px;padding-block:8px;overflow-x:auto;scrollbar-width:none}
+.subtabs button{flex:none;background:var(--field);border:1px solid var(--line);border-bottom:1px solid var(--line);border-radius:99px;color:var(--fg);opacity:1;padding:6px 14px;font-size:13px}
+.subtabs button[aria-selected="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
 .savebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .savebar span{font-size:12.5px;color:var(--muted)}
 .item.cfg{grid-template-columns:minmax(0,1fr) 70px 120px auto}
@@ -205,7 +209,7 @@ body:not(.is-admin):not(.is-task) .tasktab{display:none!important}
 .tkimp li{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
 .tkimp small{display:block;color:var(--muted);font-size:12px}
 /* Perfil TASK: só o módulo TASK */
-body.is-task .tabs [role=tab]:not(#tabTask),body.is-task #viewProp,body.is-task #viewCfg,body.is-task #viewList,body.is-task .bar{display:none!important}
+body.is-task .tabs [role=tab]:not(#tabTask),body.is-task .subtabs,body.is-task #viewProp,body.is-task #viewCfg,body.is-task #viewList,body.is-task .bar{display:none!important}
 header.top .wrap>div{flex:1;min-width:0}
 #btnInstall{background:var(--accent);color:#fff;border:0;border-radius:4px;padding:8px 12px;font-weight:600;white-space:nowrap}
 .team{border-left:4px solid var(--purple)}
@@ -277,15 +281,18 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 </div></header>
 <nav class="tabs" aria-label="Seções"><div class="wrap" role="tablist">
   <button type="button" role="tab" id="tabProp" aria-selected="true">Etapa 1 - Proposta</button>
-  <button type="button" role="tab" id="tabCfg" aria-selected="false" class="cfgtab">Parâmetros de Proposta</button>
-  <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Parâmetros Dados Complementares</button>
-  <button type="button" role="tab" id="tabE4" aria-selected="false" class="admin fbonly">Parâmetros Referência Implantação</button>
-  <button type="button" role="tab" id="tabE3" aria-selected="false" class="admin fbonly">Parâmetros Contrato</button>
   <button type="button" role="tab" id="tabList" aria-selected="false" class="fbonly">Propostas</button>
   <button type="button" role="tab" id="tabTask" aria-selected="false" class="fbonly tasktab">TASK</button>
   <button type="button" role="tab" id="tabUsers" aria-selected="false" class="admin fbonly">Usuários</button>
+  <button type="button" role="tab" id="tabParam" aria-selected="false" aria-expanded="false" aria-controls="subParam" class="cfgtab">Parâmetros ▾</button>
   <span class="tabuser fbonly" id="tabUser"></span><button type="button" class="linkbtn fbonly" id="btnSair">Sair</button>
-</div></nav>
+</div>
+<div class="subtabs" id="subParam" hidden><div class="wrap" role="tablist" aria-label="Parâmetros">
+  <button type="button" role="tab" id="tabCfg" aria-selected="false" class="cfgtab">Parâmetros Proposta</button>
+  <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Parâmetros Complementares</button>
+  <button type="button" role="tab" id="tabE4" aria-selected="false" class="admin fbonly">Parâmetros Implantação</button>
+  <button type="button" role="tab" id="tabE3" aria-selected="false" class="admin fbonly">Parâmetros Contrato</button>
+</div></div></nav>
 
 <div class="wrap"><main id="viewProp">
   <p class="example" id="exNote" hidden>Exemplo carregado: proposta da Alberti Comércio de Combustíveis. Edite à vontade ou clique em <b>Nova proposta</b> para começar outra com os itens padrão dos Parâmetros. O rascunho fica salvo neste navegador.</p>
@@ -593,6 +600,15 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <script src="etapa3-padrao.js"></script>
 <script src="etapa4-padrao.js"></script>
 <script src="contrato-pdf.js"></script>
+<script>
+/* Menu Parâmetros: abre a primeira subaba e mostra a linha de subabas enquanto uma delas estiver aberta */
+(function(){
+  const ids=['tabCfg','tabE2','tabE4','tabE3'], el=id=>document.getElementById(id), sub=el('subParam'), bt=el('tabParam');
+  const sync=()=>{ const on=ids.some(id=>el(id).getAttribute('aria-selected')==='true'); sub.hidden=!on; bt.setAttribute('aria-selected',String(on)); bt.setAttribute('aria-expanded',String(on)) };
+  bt.addEventListener('click',()=>{ const ab=ids.map(el).find(b=>b.getAttribute('aria-selected')==='true'); (ab||el('tabCfg')).click() });
+  new MutationObserver(sync).observe(sub,{subtree:true,attributes:true,attributeFilter:['aria-selected']}); sync();
+})();
+</script>
 <script type="module" src="auth.js"></script>
 <script type="module" src="task.js"></script>
 <script>
