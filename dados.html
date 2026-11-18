@@ -237,7 +237,7 @@ function desenharSocios(){
   const atual=f.querySelector('input[name=_rep]:checked')?.value;
   box.hidden=false;
   box.innerHTML=`<p>Quem é o representante legal que vai assinar?</p>`+SOCIOS.map((s,i)=>{
-    const l1=[s.cpf&&'CPF '+fmtCpf(s.cpf), s.rg&&'RG '+s.rg+(s.orgaoRg?' '+s.orgaoRg:''), s.estadoCivil, s.profissao, s.quotas&&s.quotas.toLocaleString('pt-BR')+' quotas'].filter(Boolean).join(' · ');
+    const l1=[s.cpf&&'CPF '+fmtCpf(s.cpf), s.rg&&'RG '+s.rg+(s.orgaoRg?' '+s.orgaoRg:''), !s.rg&&s.cnh&&'CNH '+s.cnh, s.nascimento&&'nasc. '+s.nascimento, s.estadoCivil, s.profissao, s.quotas&&s.quotas.toLocaleString('pt-BR')+' quotas'].filter(Boolean).join(' · ');
     const l2=[s.endereco, s.cep&&'CEP '+s.cep].filter(Boolean).join(', ');
     return `<label class="socio"><input type="radio" name="_rep" value="${i}"${atual===String(i)?' checked':''}><span><b>${esc(s.nome)}</b>${s.administrador?'<span class="tag">ADMINISTRADOR</span>':''}${l1?`<small>${esc(l1)}</small>`:''}${l2?`<small>${esc(l2)}</small>`:''}</span></label>`;
   }).join('')+`<label class="socio"><input type="radio" name="_rep" value="outro"${atual==='outro'?' checked':''}><span><b>Outra pessoa</b><small>Procurador ou alguém que não está na lista. Preencha os dados abaixo.</small></span></label>`;

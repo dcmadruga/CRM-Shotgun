@@ -149,7 +149,7 @@
     }
     if (!r.rg && (m = bloco.match(/\bCNH\b[^0-9]{0,30}(\d{9,12})/i))) r.cnh = m[1];
     if ((m = bloco.match(/resident[ea]s?\s+e\s+domiciliad[oa]s?\s+(?:na|no|à|a|em|ao)\s+(.{5,260}?)(?:,?\s*(?:CEP)[:\s nº°.]*(\d{2}\.?\d{3}\s?-?\s?\d{3})|;|\.\s+(?=[A-Z]{3})|$)/i))) {
-      r.endereco = limpa(m[1]).replace(/,\s*$/, '');
+      r.endereco = limpa(m[1]).replace(/[,.\s]+$/, '');
       if (m[2]) r.cep = dig(m[2]).replace(/^(\d{5})(\d{3})$/, '$1-$2');
     }
     // profissão: primeira parte curta entre vírgulas que não é nenhum dos dados acima
@@ -162,32 +162,54 @@
     return r;
   }
 
+  // CPF dentro de um trecho: o que vem logo depois de "CPF" tem prioridade; número solto só se tiver pontuação de CPF
+  function cpfNoBloco(bloco) {
+    let m, achado = null; CPF_RE.lastIndex = 0;
+    while ((m = CPF_RE.exec(bloco))) {
+      const cpf = m[1] + m[2] + m[3] + m[4], antes = bloco.slice(Math.max(0, m.index - 40), m.index);
+      const rotulado = /C\.?P\.?F/i.test(antes), pontuado = /[.\-]/.test(m[0]);
+      if (/CNH|habilita|NIRE|registro|protocolo|RG\b|identidade/i.test(antes.slice(-25)) && !rotulado) continue;
+      if (rotulado || (pontuado && cpfOk(cpf))) { const r = { cpf, valido: cpfOk(cpf) }; if (rotulado) return r; achado = achado || r; }
+    }
+    return achado;
+  }
+
   function extrair(texto) {
     const t = normalizar(texto);
     const lista = [];
-    let m; CPF_RE.lastIndex = 0;
-    while ((m = CPF_RE.exec(t))) {
-      const cpf = m[1] + m[2] + m[3] + m[4], p = m.index;
-      const janelaAntes = t.slice(Math.max(0, p - 700), p);
-      const perto = t.slice(Math.max(0, p - 220), p);
-      if (/testemunha|\bOAB\b|\bCRC\b|contador|advogad|procurador/i.test(perto.slice(-160))) continue;
-      const n = acharNome(janelaAntes); if (!n) continue;
-      const ini = Math.max(0, p - 700) + n.i;
-      // o bloco de qualificação vai do nome até o próximo nome qualificado (ou ~500 caracteres depois do CPF)
-      let fim = Math.min(t.length, p + 520);
-      const resto = t.slice(p + 11, fim); NOME_QUAL.lastIndex = 0; const prox = NOME_QUAL.exec(resto);
-      if (prox) fim = p + 11 + prox.index;
-      const bloco = t.slice(ini, fim);
-      lista.push({ nome: tit(limpa(n.nome)), cpf, cpfValido: cpfOk(cpf), ...campos(bloco), _ini: ini });
+    // 1) Qualificação das partes: "NOME, brasileiro, casado, ..., CPF nº ..., residente ..."
+    const quals = []; let m; NOME_QUAL.lastIndex = 0;
+    while ((m = NOME_QUAL.exec(t))) { const nome = sufixoNome(m[1]); if (nome) quals.push({ nome, i: m.index + m[1].lastIndexOf(nome) }); }
+    quals.forEach((q, k) => {
+      const fim = Math.min(t.length, q.i + 700, k + 1 < quals.length ? quals[k + 1].i : t.length);
+      const bloco = t.slice(q.i, fim);
+      const antes = t.slice(Math.max(0, q.i - 160), q.i);
+      if (/testemunha|\bOAB\b|\bCRC\b|contador|advogad/i.test(antes.slice(-120))) return;
+      const c = cpfNoBloco(bloco);
+      if (!c) return;   // sem CPF não é sócio pessoa física (ou não deu para ler)
+      lista.push({ nome: tit(limpa(q.nome)), cpf: c.cpf, cpfValido: c.valido, ...campos(bloco) });
+    });
+    // 2) Sem qualificação legível: usa os blocos de assinatura "NOME  CPF nº ..."
+    if (!lista.length) {
+      CPF_RE.lastIndex = 0;
+      while ((m = CPF_RE.exec(t))) {
+        const antes = t.slice(Math.max(0, m.index - 140), m.index);
+        if (!/C\.?P\.?F[^\d]{0,12}$/i.test(antes) || /testemunha|\bOAB\b|\bCRC\b|contador|advogad/i.test(antes)) continue;
+        const n = acharNome(antes.replace(/C\.?P\.?F[^\d]*$/i, '')); if (!n) continue;
+        const cpf = m[1] + m[2] + m[3] + m[4];
+        lista.push({ nome: tit(limpa(n.nome)), cpf, cpfValido: cpfOk(cpf) });
+      }
     }
-    // junta repetidos (o mesmo sócio aparece em várias cláusulas/alterações)
-    const porCpf = new Map();
+    // junta repetidos (o mesmo sócio aparece na alteração e na consolidação)
+    const grupos = [];
     for (const s of lista) {
-      const k = s.cpfValido ? s.cpf : semAcento(s.nome);
-      const a = porCpf.get(k);
-      if (!a) porCpf.set(k, s); else for (const [c, v] of Object.entries(s)) if (v && !a[c]) a[c] = v;
+      const N = semAcento(s.nome);
+      const g = grupos.find(x => (s.cpfValido && x.cpfValido && x.cpf === s.cpf) || semAcento(x.nome) === N);
+      if (!g) { grupos.push(s); continue; }
+      if (s.cpfValido && !g.cpfValido) { g.cpf = s.cpf; g.cpfValido = true; }
+      for (const [c, v] of Object.entries(s)) if (v && !g[c]) g[c] = v;
     }
-    const socios = [...porCpf.values()];
+    const socios = grupos.filter(s => s.cpfValido || !grupos.some(o => o !== s && o.cpfValido && semAcento(o.nome) === semAcento(s.nome)));
     const T = semAcento(t);
     for (const s of socios) {
       const N = semAcento(s.nome);
@@ -196,11 +218,12 @@
         const antes = T.slice(Math.max(0, i - 260), i), depois = T.slice(i + N.length, i + N.length + 160);
         if (/ADMINISTR[^.;]{0,200}$/.test(antes) && !/TESTEMUNHA/.test(antes.slice(-120))) admin = true;
         if (/^[^.;]{0,60}(?:COMO |NA (?:QUALIDADE|FUNCAO) DE |SOCI[OA][- ])ADMINISTRADOR|^[^.;]{0,40}ADMINISTRADOR[A]? (?:DA SOCIEDADE|NAO SOCIO)/.test(depois)) admin = true;
-        const q = depois.match(/^[^;]{0,80}?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:\([^)]{0,120}\))?\s*QUOTAS/);
-        if (q && !quotas) quotas = q[1].replace(/\./g, '');
+        // quadro de quotas: "Fulano .... 50.000 50.000,00" ou "Fulano ... 50.000 (cinquenta mil) quotas"; vale o último (contrato consolidado)
+        let q = depois.match(/^[\s.:|-]*(\d{1,3}(?:\.\d{3})+|\d+)\s+(?:R\$\s*)?\d{1,3}(?:\.\d{3})*,\d{2}/);
+        if (!q && !/TRANSFER|CEDE|CESS|VEND|ADQUIR/.test(antes.slice(-80) + depois.slice(0, 60))) q = depois.match(/^[^;]{0,80}?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:\([^)]{0,120}\))?\s*QUOTAS/);
+        if (q) quotas = q[1].replace(/\./g, '');
       }
       s.administrador = admin; if (quotas) s.quotas = +quotas;
-      delete s._ini;
     }
     return socios;
   }
