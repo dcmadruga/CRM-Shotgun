@@ -74,9 +74,53 @@ async function iniciar() {
     } finally { $('btnSenha').disabled = false; }
   });
 
+  /* ---------- Foto do rosto (identificação), pedida no primeiro acesso ---------- */
+  const fbox = $('fotoBox'), fmsg = t => { $('fotoMsg').textContent = t; };
+  let fotoOk = null, fotoStream = null, fotoDado = '';
+  const pararCam = () => { if (fotoStream) fotoStream.getTracks().forEach(t => t.stop()); fotoStream = null; };
+  function modoFoto(tirada) { $('fotoVideo').hidden = tirada; $('fotoPrev').hidden = !tirada; $('btnFotoTirar').hidden = tirada; $('btnFotoRefazer').hidden = !tirada; $('btnFotoSalvar').hidden = !tirada; }
+  async function ligarCam() {
+    modoFoto(false); fotoDado = '';
+    try { fotoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 720 } }, audio: false }); $('fotoVideo').srcObject = fotoStream; $('btnFotoTirar').disabled = false; }
+    catch (e) { $('btnFotoTirar').disabled = true; fmsg('Não foi possível abrir a câmera. Libere a câmera no navegador ou use "Enviar uma foto".'); }
+  }
+  // Recorta o centro em quadrado e reduz para 360 px em JPEG
+  function reduzir(src, w, h, espelhar) {
+    const lado = Math.min(w, h), c = document.createElement('canvas'); c.width = c.height = 360; const g = c.getContext('2d');
+    if (espelhar) { g.translate(360, 0); g.scale(-1, 1); }
+    g.drawImage(src, (w - lado) / 2, (h - lado) / 2, lado, lado, 0, 0, 360, 360);
+    return c.toDataURL('image/jpeg', 0.82);
+  }
+  function exigirFoto() {
+    box.hidden = true; body.classList.add('locked'); fbox.hidden = false; $('fotoAceite').checked = false;
+    ligarCam();
+    return new Promise(res => { fotoOk = res; });
+  }
+  $('btnFotoTirar').addEventListener('click', () => { const v = $('fotoVideo'); if (!v.videoWidth) return; fotoDado = reduzir(v, v.videoWidth, v.videoHeight, true); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); });
+  $('btnFotoRefazer').addEventListener('click', ligarCam);
+  $('fotoArq').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return; const img = new Image();
+    img.onload = () => { fotoDado = reduzir(img, img.naturalWidth, img.naturalHeight, false); URL.revokeObjectURL(img.src); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); };
+    img.onerror = () => fmsg('Esse arquivo não é uma imagem válida.'); img.src = URL.createObjectURL(f); e.target.value = '';
+  });
+  $('btnFotoSair').addEventListener('click', () => { pararCam(); fbox.hidden = true; fotoOk = null; A.signOut(auth); });
+  $('btnFotoSalvar').addEventListener('click', async () => {
+    if (!fotoDado) return; if (!$('fotoAceite').checked) { fmsg('Marque a autorização para continuar.'); return; }
+    const u = auth.currentUser; if (!u) return; $('btnFotoSalvar').disabled = true; fmsg('Salvando…');
+    try {
+      await F.setDoc(F.doc(db, 'fotos', u.uid), { b64: fotoDado, em: F.serverTimestamp(), aceite: true });
+      fbox.hidden = true; const r = fotoOk; fotoOk = null; if (r) r();
+    } catch (err) { fmsg('Não foi possível salvar a foto (' + (err.code || 'erro') + '). Tente de novo.'); }
+    finally { $('btnFotoSalvar').disabled = false; }
+  });
+  async function precisaFoto(uid) {
+    try { return !(await F.getDoc(F.doc(db, 'fotos', uid))).exists(); }
+    catch (e) { return false; } // sem permissão ou sem internet: não bloqueia o acesso
+  }
+
   A.onAuthStateChanged(auth, async user => {
     perfil = null; fb.admin = false; fb.task = false; body.classList.remove('is-admin', 'is-task'); window.dispatchEvent(new Event('argo-sair'));
-    if (!user) { sbox.hidden = true; trocaOk = null; }
+    if (!user) { sbox.hidden = true; trocaOk = null; fbox.hidden = true; fotoOk = null; pararCam(); }
     if (!user) { mostrarLogin('Entre com o e-mail e a senha que o administrador cadastrou para você.'); return; }
     try {
       const ref = F.doc(db, 'usuarios', user.uid);
@@ -92,6 +136,7 @@ async function iniciar() {
       mostrarLogin(e.code === 'unavailable' ? 'Sem internet. Conecte-se para entrar.' : 'Não foi possível verificar seu acesso (' + (e.code || 'erro') + ').'); return;
     }
     if (perfil.trocarSenha === true) { await exigirTroca(); if (auth.currentUser?.uid !== user.uid) return; perfil.trocarSenha = false; }
+    if (await precisaFoto(user.uid)) { await exigirFoto(); if (auth.currentUser?.uid !== user.uid) return; }
     fb.admin = perfil.papel === 'adm';
     fb.task = perfil.papel === 'task'; body.classList.toggle('is-task', fb.task);
     if (fb.task) {
@@ -842,19 +887,22 @@ async function iniciar() {
   }
   A.onAuthStateChanged(auth, u => { if (!u && unsub) { unsub(); unsub = null; } });
 
+  const fotosU = {};
   function desenharUsuarios() {
     $('uCount').textContent = lista.length + (lista.length === 1 ? ' usuário' : ' usuários');
     $('usersBody').innerHTML = lista.map(u => {
       const eu = perfil && u.uid === perfil.uid;
       return `<tr data-uid="${esc(u.uid)}">
+        <td>${fotosU[u.uid] ? `<img class="ufoto" src="${fotosU[u.uid]}" alt="Foto de ${esc(u.nome)}">` : `<span class="ufoto" title="${fotosU[u.uid] === '' ? 'Ainda não enviou a foto' : 'Carregando'}"></span>`}</td>
         <td><input data-f="nome" value="${esc(u.nome)}" aria-label="Nome"></td>
         <td>${esc(u.email)}</td>
         <td><input data-f="fone" value="${esc(u.fone)}" aria-label="Telefone" inputmode="tel"></td>
         <td><select data-f="papel" ${eu ? 'disabled' : ''} aria-label="Perfil"><option value="vendedor"${u.papel !== 'adm' && u.papel !== 'task' ? ' selected' : ''}>Vendedor</option><option value="task"${u.papel === 'task' ? ' selected' : ''}>TASK</option><option value="adm"${u.papel === 'adm' ? ' selected' : ''}>Administrador</option></select></td>
         <td><span class="pill ${u.ativo ? '' : 'off'}">${u.ativo ? 'Liberado' : 'Bloqueado'}</span></td>
         <td>${eu ? '<span class="hint">você</span>' : `<button type="button" data-a="toggle">${u.ativo ? 'Bloquear' : 'Liberar'}</button>`}${eu ? '' : '<button type="button" data-a="excluir" class="danger">Excluir</button>'}
-            <button type="button" data-a="reset">Nova senha</button></td></tr>`;
+            <button type="button" data-a="reset">Nova senha</button>${fotosU[u.uid] ? '<button type="button" data-a="novafoto">Pedir nova foto</button>' : ''}</td></tr>`;
     }).join('');
+    lista.filter(u => !(u.uid in fotosU)).forEach(u => { fotosU[u.uid] = ''; F.getDoc(F.doc(db, 'fotos', u.uid)).then(sn => { if (sn.exists()) { fotosU[u.uid] = sn.data().b64 || ''; desenharUsuarios(); } }).catch(() => {}); });
   }
   $('usersBody').addEventListener('change', async e => {
     const tr = e.target.closest('tr'), f = e.target.dataset.f; if (!tr || !f) return;
@@ -873,6 +921,7 @@ async function iniciar() {
         await F.updateDoc(F.doc(db, 'usuarios', u.uid), { ativo: false, excluido: true, excluidoEm: F.serverTimestamp() });
         uStatus(`${u.nome} excluído. O acesso foi cortado na hora.`);
       }
+      if (a === 'novafoto') { await F.deleteDoc(F.doc(db, 'fotos', u.uid)); delete fotosU[u.uid]; fotosU[u.uid] = ''; desenharUsuarios(); uStatus(`${u.nome} vai tirar uma foto nova no próximo acesso.`); }
       if (a === 'reset') { await A.sendPasswordResetEmail(auth, u.email); uStatus(`E-mail para criar nova senha enviado para ${u.email}.`); }
     } catch (err) { uStatus('Não foi possível concluir (' + (err.code || 'erro') + ').'); }
   });
