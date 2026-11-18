@@ -1,0 +1,249 @@
+{
+  "vkm": 1.72,
+  "validDias": 30,
+  "bases": "Nova Mutum - MT\nCuiabá - MT",
+  "catLic": [
+    {
+      "desc": "Licença Sistema Argo - Posto",
+      "sub": "Parcela única",
+      "qty": "1",
+      "price": 2000,
+      "isento": false,
+      "padrao": true
+    },
+    {
+      "desc": "Licença Sistema Argo (Loja)",
+      "sub": "Parcela única - Isenta",
+      "qty": "1",
+      "price": 0,
+      "isento": true,
+      "padrao": true
+    },
+    {
+      "desc": "Licença Biblioteca NFE e NFCE (Valor por Posto, Loja)",
+      "sub": "Parcela única",
+      "qty": "2",
+      "price": 229,
+      "isento": false,
+      "padrao": true
+    },
+    {
+      "desc": "Licença e Implantação de TEF (Posto)",
+      "sub": "Parcela única",
+      "qty": "2",
+      "price": 709,
+      "isento": false,
+      "padrao": true
+    }
+  ],
+  "catMen": [
+    {
+      "desc": "Mensalidade Sistema Argo - Posto",
+      "sub": "Reajuste anual em janeiro pelo IGPM/IPCA",
+      "qty": "1",
+      "price": 1037,
+      "isento": false,
+      "padrao": true
+    },
+    {
+      "desc": "Mensalidade Sistema Argo - Loja",
+      "sub": "Reajuste anual em janeiro pelo IGPM/IPCA",
+      "qty": "1",
+      "price": 0,
+      "isento": false,
+      "padrao": true
+    },
+    {
+      "desc": "Mensalidade TEF (1 PDV Fixo, Posto). PDVs adicionais: R$ 72,00 cada.",
+      "sub": "Reajuste anual em janeiro pelo IGPM/IPCA",
+      "qty": "1",
+      "price": 218,
+      "isento": false,
+      "padrao": true
+    },
+    {
+      "desc": "Mensalidade PDV Móvel ou espelho de venda. Valor por aparelho ativo no sistema.",
+      "sub": "Reajuste anual em janeiro pelo IGPM/IPCA",
+      "qty": "",
+      "price": 40,
+      "isento": false,
+      "padrao": true
+    }
+  ],
+  "detImp": "Valores de implantação calculados por dia, considerando 1 técnico. São valores de referência e podem variar conforme a necessidade do cliente. A hospedagem fica a critério do contratante.",
+  "eqMin": "Processador Intel I5, 4GB memória, SSD 120GB, Windows 10 Pro ORIGINAL",
+  "eqIdeal": "Processador Intel I7, 8GB memória, SSD 240GB, Windows 10 Pro ORIGINAL",
+  "bullets": "Suporte técnico incluso na mensalidade das 8:00 às 17:30, sem limite de uso.\nSuporte Avançado (se o PDV estiver parado) incluso (suporte 24 horas).\nIncluso Backup Diário na Nuvem (Responsabilidade do Cliente).",
+  "refs": [
+    {
+      "nome": "Rede JP",
+      "postos": "3",
+      "regiao": "Rosário, Diamantino",
+      "contato": "Sueimi Campos",
+      "fone": "(66) 99632-9491"
+    },
+    {
+      "nome": "Posto Avanti",
+      "postos": "1",
+      "regiao": "Sorriso",
+      "contato": "Eloisa",
+      "fone": "(66) 99616-4612"
+    },
+    {
+      "nome": "Rede Galeski",
+      "postos": "4",
+      "regiao": "Cuiabá",
+      "contato": "Galeski",
+      "fone": "(65) 98121-3133"
+    },
+    {
+      "nome": "Rede 77",
+      "postos": "4",
+      "regiao": "Campo Novo dos Parecis, Brasnorte, Juína",
+      "contato": "Kleber",
+      "fone": "(65) 9997-9636"
+    },
+    {
+      "nome": "Posto G1",
+      "postos": "1",
+      "regiao": "Nova Mutum",
+      "contato": "Rosangela",
+      "fone": "(65) 98116-5191"
+    },
+    {
+      "nome": "Rede Danubio Azul",
+      "postos": "",
+      "regiao": "Mirassol do Oeste",
+      "contato": "Lucas",
+      "fone": "(65) 98119-8010"
+    },
+    {
+      "nome": "Rede Quero Quero",
+      "postos": "",
+      "regiao": "Juruena, Juína",
+      "contato": "Karla",
+      "fone": "(66) 98431-1515"
+    },
+    {
+      "nome": "Rede CPN",
+      "postos": "6",
+      "regiao": "Primavera do Leste, Lucas do Rio Verde, Nova Mutum",
+      "contato": "Bernardo",
+      "fone": "(66) 9986-0638"
+    },
+    {
+      "nome": "Rede Cimatel",
+      "postos": "1",
+      "regiao": "Nova Monte Verde",
+      "contato": "Jonatan Zanella",
+      "fone": "(66) 98470-0289"
+    },
+    {
+      "nome": "Rede Arinos",
+      "postos": "2",
+      "regiao": "Juara, Brasnorte",
+      "contato": "Vandreia",
+      "fone": "(66) 99668-6182"
+    },
+    {
+      "nome": "Rede São Paulo",
+      "postos": "4",
+      "regiao": "Lucas do Rio Verde",
+      "contato": "Jaqueline",
+      "fone": "(65) 9960-6538"
+    },
+    {
+      "nome": "Rede Trevão Matupá",
+      "postos": "22",
+      "regiao": "Norte do MT e Sul do PA",
+      "contato": "Ivo",
+      "fone": "(66) 9958-2905"
+    },
+    {
+      "nome": "Rede Terra Santa",
+      "postos": "2",
+      "regiao": "Nova Ubiratã, Juína",
+      "contato": "Antonio",
+      "fone": "(66) 98444-1508"
+    },
+    {
+      "nome": "Rede Tradição",
+      "postos": "56",
+      "regiao": "Sarandi, Soledade, Carazinho, Passo Fundo",
+      "contato": "André Fernandes",
+      "fone": "(54) 99681-5246"
+    },
+    {
+      "nome": "Rede Chopão",
+      "postos": "8",
+      "regiao": "Feliz, Bom Princípio",
+      "contato": "Toninho",
+      "fone": "(51) 99988-8289"
+    },
+    {
+      "nome": "Rede Sapatão",
+      "postos": "2",
+      "regiao": "Novo Hamburgo, Estância Velha, Taquara",
+      "contato": "Samuel",
+      "fone": "(51) 99346-6446 ou (51) 3595-3190"
+    },
+    {
+      "nome": "Rede Novo Petro",
+      "postos": "4",
+      "regiao": "Novo Hamburgo",
+      "contato": "Aline",
+      "fone": "(51) 99354-8744"
+    },
+    {
+      "nome": "Rede Zanluchi",
+      "postos": "3",
+      "regiao": "Bom Princípio",
+      "contato": "Giovani",
+      "fone": "(54) 99632-7312"
+    },
+    {
+      "nome": "Rede Grossi",
+      "postos": "5",
+      "regiao": "Barra Funda",
+      "contato": "Jacson",
+      "fone": "(54) 99976-1744"
+    },
+    {
+      "nome": "Rede Squizzato",
+      "postos": "2",
+      "regiao": "Caxias do Sul",
+      "contato": "Ricardo",
+      "fone": "(54) 99975-4495"
+    },
+    {
+      "nome": "Rede Barbosa",
+      "postos": "3",
+      "regiao": "Carlos Barbosa e região",
+      "contato": "Daniel",
+      "fone": "(54) 99921-2794"
+    },
+    {
+      "nome": "Rede Paulo Moreira",
+      "postos": "3",
+      "regiao": "Pelotas",
+      "contato": "Henrique",
+      "fone": "(53) 98116-1776"
+    },
+    {
+      "nome": "Rede Flex",
+      "postos": "10",
+      "regiao": "",
+      "contato": "Piter",
+      "fone": "(51) 99654-0156"
+    },
+    {
+      "nome": "Rede Santa Terezinha",
+      "postos": "8",
+      "regiao": "",
+      "contato": "Ricardo",
+      "fone": "(55) 99925-1243"
+    }
+  ],
+  "_publicado": "2026-11-18T01:05:50.996Z",
+  "_por": ""
+}
