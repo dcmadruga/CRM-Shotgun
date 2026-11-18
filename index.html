@@ -154,6 +154,15 @@ body:not(.is-admin):not(.is-task) .tasktab{display:none!important}
 .tkbox{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .tkbox>div{background:var(--field);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-weight:600;font-size:13px;overflow-wrap:anywhere}
 .tkbox small{display:block;font-size:10.5px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+.tketapas{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.tketapas .tke.none:only-child{grid-column:1/-1}
+.tke{display:flex;flex-direction:column;align-items:flex-start;gap:1px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12px;font-weight:600;background:var(--field);min-width:0}
+.tke b{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:11px;background:var(--line);color:var(--fg)}
+.tke small{font-size:10.5px;font-weight:500;color:var(--muted)}
+.tke.ok{border-color:#1f7a46;color:#1f7a46}.tke.ok b{background:#1f7a46;color:#fff}
+.tke.pend{border-color:#e07b00;color:#9a5300}.tke.pend b{background:#e07b00;color:#fff}
+.tke.none{color:var(--muted)}
+.tkver{margin-top:4px;font-size:11.5px;padding:3px 8px;border-radius:6px;border-color:currentColor;color:inherit;background:var(--surface)}
 .tkprog{height:6px;background:var(--bg);border-radius:99px;overflow:hidden}
 .tkprog span{display:block;height:100%;background:var(--purple)}
 .tkprogtxt{font-size:12px;color:var(--muted)}

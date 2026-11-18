@@ -28,7 +28,7 @@ function iniciar() {
     tasksOk = true; desenhar(); sincronizar();
   }, e => msg('Não foi possível carregar os cadastros (' + (e.code || 'erro') + ').'));
   unsubP = F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')), qs => {
-    aprovadas = qs.docs.map(d => ({ id: d.id, ...d.data() })); sincronizar();
+    aprovadas = qs.docs.map(d => ({ id: d.id, ...d.data() })); sincronizar(); desenhar();
   }, () => {});
   unsubM = F.onSnapshot(F.collection(db, 'taskTemplates'), qs => {
     templates = qs.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
@@ -63,6 +63,18 @@ function desenhar() {
   const vis = filtrados().sort((a, b) => statusDe(a) === 'fin' && statusDe(b) === 'fin' ? (b.finalizadoEm?.seconds || 0) - (a.finalizadoEm?.seconds || 0) : String(a.start || '9').localeCompare(String(b.start || '9')));
   $('tkGrid').innerHTML = vis.length ? vis.map(cartao).join('') : `<p class="hint">${tasks.length ? 'Nenhum cadastro com esse filtro.' : 'Nenhum cadastro ainda. Use "Novo cadastro" ou "Importar das propostas".'}</p>`;
 }
+// Etapas da venda: proposta vinculada pelo id ou, nos cadastros manuais, pelo CNPJ
+function propostaDe(t) {
+  const ps = aprovadas || [];
+  return ps.find(p => p.id === (t.propostaId || t.id)) || (dig(t.cnpj).length === 14 ? ps.filter(p => dig(p.cnpj) === dig(t.cnpj)).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0))[0] : null);
+}
+function etapas(t) {
+  const p = propostaDe(t);
+  if (!p) return `<div class="tketapas"><span class="tke none">${t.propostaId ? 'Proposta ainda não aprovada' : 'Sem proposta vinculada'}</span></div>`;
+  const e = (n, nome, ok, quando, pend) => `<span class="tke ${ok ? 'ok' : pend ? 'pend' : 'none'}" title="${esc(nome + (quando ? ' em ' + quando : ''))}"><b>${ok ? '✓' : n}</b>${esc(nome)}${ok && quando ? `<small>${esc(quando)}</small>` : pend ? `<small>${esc(pend)}</small>` : ''}</span>`;
+  const d = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString('pt-BR') : '';
+  return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${e(2, 'Dados', !!p.e2Em, d(p.e2Em), p.e2Em ? '' : 'aguardando')}${e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : '')}</div>`;
+}
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
@@ -71,6 +83,7 @@ function cartao(t) {
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}
     <div class="tkmeta">${t.email ? `<span class="tkmail">${esc(t.email)}</span>` : ''}${t.criado ? `<span>Criado em ${esc(fmtTs(t.criado))}</span>` : ''}</div>
     <div class="tkmeta"><span>Cad: ${esc(t.respCadastro?.nome || (t.auto ? 'Automático' : '-'))}</span><span class="tkst2">Start: ${esc(t.respStart?.nome || '-')}</span></div>
+    ${etapas(t)}
     <div class="tkbox"><div><small>CNPJ</small>${esc(fmtCnpj(t.cnpj) || '-')}</div><div><small>Cidade / UF</small>${esc([t.cidade, t.uf].filter(Boolean).join(' / ') || '-')}</div></div>
     <div class="tkprog" title="${pr.feitos} de ${pr.total} itens concluídos"><span style="width:${pct}%"></span></div>
     <div class="tkprogtxt">${pr.total ? `${pr.feitos} de ${pr.total} itens concluídos (${pct}%)` : 'Nenhum checklist ainda'}</div>
@@ -231,6 +244,19 @@ function sincronizar() {
   });
 }
 
+async function verProposta(pid, bt) {
+  const janela = window.open('', '_blank'); const txt = bt.textContent; bt.disabled = true; bt.textContent = 'Abrindo…';
+  try {
+    const snap = await F.getDoc(F.doc(db, 'propostas', pid, 'arquivo', 'pdf'));
+    if (!snap.exists()) throw new Error('PDF não encontrado');
+    const bin = atob(snap.data().b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([u8], { type: 'application/pdf' }));
+    if (janela && !janela.closed) janela.location.href = url; else window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 120000);
+  } catch (e) { if (janela) janela.close(); msg('Não foi possível abrir a proposta (' + (e.code || e.message) + ').'); }
+  finally { bt.disabled = false; bt.textContent = txt; }
+}
+
 /* ---------- Eventos ---------- */
 let ligado = false;
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar); else ligar();
@@ -245,6 +271,7 @@ function ligar() {
   $('tkImportar').addEventListener('click', formImportar);
   $('tkGrid').addEventListener('click', e => {
     const b = e.target.closest('[data-tk]'); if (!b) return; const id = b.closest('[data-id]').dataset.id;
+    if (b.dataset.tk === 'pdf') return verProposta(b.dataset.pid, b);
     if (b.dataset.tk === 'dados') formDados(tasks.find(t => t.id === id)); else formCheck(id);
   });
   $('tkDlgFechar').addEventListener('click', () => dlg().close());
