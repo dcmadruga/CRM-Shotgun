@@ -73,7 +73,7 @@ function etapas(t) {
   if (!p) return `<div class="tketapas"><span class="tke none">${t.propostaId ? 'Proposta ainda não aprovada' : 'Sem proposta vinculada'}</span></div>`;
   const e = (n, nome, ok, quando, pend) => `<span class="tke ${ok ? 'ok' : pend ? 'pend' : 'none'}" title="${esc(nome + (quando ? ' em ' + quando : ''))}"><b>${ok ? '✓' : n}</b>${esc(nome)}${ok && quando ? `<small>${esc(quando)}</small>` : pend ? `<small>${esc(pend)}</small>` : ''}</span>`;
   const d = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString('pt-BR') : '';
-  return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${p.e2Em ? e(2, 'Dados', true, d(p.e2Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e2" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(2, 'Dados', false, '', 'aguardando')}${e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : '')}</div>`;
+  return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${p.e2Em ? e(2, 'Dados', true, d(p.e2Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e2" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(2, 'Dados', false, '', 'aguardando')}${(() => { const h = e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : ''); return p.ctEm ? h.replace('</span>', `<button type="button" class="tkver" data-tk="ct" data-pid="${esc(p.id)}">Ver contrato</button></span>`) : h; })()}</div>`;
 }
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
@@ -272,6 +272,21 @@ async function verDados(pid) {
     $('tkE2').dataset.texto = d.texto || Object.entries(d.campos || {}).map(([k, v]) => k + ': ' + v).join('\n');
   } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar (${esc(e.code || e.message)}).</p>`; }
 }
+async function verContrato(pid, bt) {
+  const janela = window.open('', '_blank'); const txt = bt.textContent; bt.disabled = true; bt.textContent = 'Abrindo…';
+  try {
+    const p = (aprovadas || []).find(x => x.id === pid) || (await F.getDoc(F.doc(db, 'propostas', pid))).data();
+    const snap = await F.getDoc(F.doc(db, 'propostas', pid, 'arquivo', 'contrato'));
+    if (!snap.exists()) throw new Error('contrato não encontrado');
+    const d = snap.data(), C = typeof CFG !== 'undefined' ? CFG : {};
+    const doc = window.contratoPdf({ titulo: d.titulo, texto: d.texto, numero: p.numero, logo: typeof logoAtual === 'function' ? logoAtual() : undefined, logoW: C.logoW, logoH: C.logoH,
+      aceite: p.ctAceitoEm ? { nome: p.ctAceitoNome, cpf: p.ctAceitoCpf, cargo: p.ctAceitoCargo, em: fmtTs(p.ctAceitoEm), cliente: p.cliente } : null });
+    const url = URL.createObjectURL(doc.output('blob'));
+    if (janela && !janela.closed) janela.location.href = url; else window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 120000);
+  } catch (e) { if (janela) janela.close(); msg('Não foi possível abrir o contrato (' + (e.code || e.message) + ').'); }
+  finally { bt.disabled = false; bt.textContent = txt; }
+}
 async function baixarAnexo(pid, aid, bt) {
   bt.disabled = true;
   try {
@@ -302,6 +317,7 @@ function ligar() {
     const b = e.target.closest('[data-tk]'); if (!b) return; const id = b.closest('[data-id]').dataset.id;
     if (b.dataset.tk === 'pdf') return verProposta(b.dataset.pid, b);
     if (b.dataset.tk === 'e2') return verDados(b.dataset.pid);
+    if (b.dataset.tk === 'ct') return verContrato(b.dataset.pid, b);
     if (b.dataset.tk === 'dados') formDados(tasks.find(t => t.id === id)); else formCheck(id);
   });
   $('tkDlgFechar').addEventListener('click', () => dlg().close());
