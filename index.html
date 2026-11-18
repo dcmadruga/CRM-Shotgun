@@ -133,12 +133,12 @@ body:not(.fb) .fbonly{display:none!important}
 body.fb .nofb{display:none!important}
 .tabuser{margin-left:auto;align-self:center;font-size:12px;color:var(--ink-fg);opacity:.7;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
 .linkbtn{background:none!important;border:0!important;color:var(--purple)!important;padding:6px 8px;font-weight:600;cursor:pointer}
-#loginBox{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
+#loginBox,#senhaBox{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
 .loginCard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:24px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px}
 .loginCard h2{font-family:var(--display);margin:0;font-size:20px}
 .loginCard img{border-radius:10px}
 .loginCard button.primary{padding:10px}
-body.locked>*:not(#loginBox):not(script){visibility:hidden}
+body.locked>*:not(#loginBox):not(#senhaBox):not(script){visibility:hidden}
 table.users{min-width:640px}
 .ptools input{flex:1;min-width:180px}
 .plist{display:flex;flex-direction:column;gap:10px}
@@ -434,6 +434,16 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <label>Senha<input id="l-senha" type="password" autocomplete="current-password" required></label>
   <button type="submit" class="primary" id="btnLogin">Entrar</button>
   <button type="button" class="linkbtn" id="btnEsqueci">Esqueci minha senha</button>
+</form></div>
+
+<div id="senhaBox" hidden><form id="senhaForm" class="loginCard" novalidate>
+  <img src="icons/icon-192.png" alt="Argo" width="56" height="56">
+  <h2>Crie a sua senha</h2>
+  <p class="hint" id="senhaMsg">Este é o seu primeiro acesso. Troque a senha inicial que o administrador passou por uma senha só sua.</p>
+  <label>Nova senha<input id="s-nova" type="password" autocomplete="new-password" minlength="6" required></label>
+  <label>Repita a nova senha<input id="s-conf" type="password" autocomplete="new-password" minlength="6" required></label>
+  <button type="submit" class="primary" id="btnSenha">Salvar senha e entrar</button>
+  <button type="button" class="linkbtn" id="btnSenhaSair">Sair</button>
 </form></div>
 
 <div class="bar"><div class="wrap">

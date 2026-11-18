@@ -27,7 +27,7 @@ async function iniciar() {
     const email = $('l-email').value.trim(), senha = $('l-senha').value;
     if (!email || !senha) { lmsg('Informe e-mail e senha.'); return; }
     $('btnLogin').disabled = true; lmsg('Entrando…');
-    try { await A.signInWithEmailAndPassword(auth, email, senha); $('l-senha').value = ''; }
+    try { senhaDigitada = senha; await A.signInWithEmailAndPassword(auth, email, senha); $('l-senha').value = ''; }
     catch (err) {
       const c = err.code || '';
       lmsg(/invalid-credential|wrong-password|user-not-found|invalid-email/.test(c) ? 'E-mail ou senha incorretos.' :
@@ -43,8 +43,40 @@ async function iniciar() {
   });
   $('btnSair').addEventListener('click', () => A.signOut(auth));
 
+  /* ---------- Troca de senha obrigatória no primeiro acesso ---------- */
+  let senhaDigitada = '', trocaOk = null;
+  const sbox = $('senhaBox'), smsg = t => { $('senhaMsg').textContent = t };
+  function exigirTroca() {
+    box.hidden = true; body.classList.add('locked'); sbox.hidden = false;
+    $('s-nova').value = ''; $('s-conf').value = '';
+    setTimeout(() => $('s-nova').focus(), 50);
+    return new Promise(res => { trocaOk = res; });
+  }
+  $('btnSenhaSair').addEventListener('click', () => { sbox.hidden = true; trocaOk = null; A.signOut(auth); });
+  $('senhaForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const nova = $('s-nova').value, conf = $('s-conf').value;
+    if (nova.length < 6) { smsg('A nova senha precisa ter pelo menos 6 caracteres.'); return; }
+    if (nova !== conf) { smsg('As duas senhas não são iguais. Digite de novo.'); return; }
+    if (senhaDigitada && nova === senhaDigitada) { smsg('A nova senha tem que ser diferente da senha inicial.'); return; }
+    const u = auth.currentUser; if (!u) return;
+    $('btnSenha').disabled = true; smsg('Salvando…');
+    try {
+      await A.updatePassword(u, nova);
+      await F.updateDoc(F.doc(db, 'usuarios', u.uid), { trocarSenha: false, senhaTrocadaEm: F.serverTimestamp() });
+      senhaDigitada = ''; sbox.hidden = true;
+      const r = trocaOk; trocaOk = null; if (r) r();
+    } catch (err) {
+      const c = err.code || '';
+      smsg(/requires-recent-login/.test(c) ? 'Por segurança, saia e entre de novo com a senha inicial para trocar.' :
+        /weak-password/.test(c) ? 'Senha fraca: use pelo menos 6 caracteres.' :
+        /network|unavailable/.test(c) ? 'Sem internet. Conecte-se e tente de novo.' : 'Não foi possível trocar a senha (' + c + ').');
+    } finally { $('btnSenha').disabled = false; }
+  });
+
   A.onAuthStateChanged(auth, async user => {
     perfil = null; fb.admin = false; body.classList.remove('is-admin');
+    if (!user) { sbox.hidden = true; trocaOk = null; }
     if (!user) { mostrarLogin('Entre com o e-mail e a senha que o administrador cadastrou para você.'); return; }
     try {
       const ref = F.doc(db, 'usuarios', user.uid);
@@ -59,6 +91,7 @@ async function iniciar() {
     } catch (e) {
       mostrarLogin(e.code === 'unavailable' ? 'Sem internet. Conecte-se para entrar.' : 'Não foi possível verificar seu acesso (' + (e.code || 'erro') + ').'); return;
     }
+    if (perfil.trocarSenha === true) { await exigirTroca(); if (auth.currentUser?.uid !== user.uid) return; perfil.trocarSenha = false; }
     fb.admin = perfil.papel === 'adm';
     box.hidden = true; body.classList.remove('locked');
     $('tabUser').textContent = perfil.nome || perfil.email;
@@ -675,10 +708,10 @@ async function iniciar() {
       app2 = app2 || initializeApp(C, 'cadastro');
       const auth2 = A.getAuth(app2);
       const cred = await A.createUserWithEmailAndPassword(auth2, email, senha);
-      await F.setDoc(F.doc(db, 'usuarios', cred.user.uid), { nome, email, fone, papel, ativo: true, criado: F.serverTimestamp() });
+      await F.setDoc(F.doc(db, 'usuarios', cred.user.uid), { nome, email, fone, papel, ativo: true, trocarSenha: true, criado: F.serverTimestamp() });
       await A.signOut(auth2);
       ['u-nome', 'u-email', 'u-fone', 'u-senha'].forEach(id => $(id).value = ''); $('u-papel').value = 'vendedor';
-      uStatus(`${nome} cadastrado. Passe para a pessoa o link do app, o e-mail e a senha inicial.`);
+      uStatus(`${nome} cadastrado. Passe para a pessoa o link do app, o e-mail e a senha inicial. No primeiro acesso o app pede para ela criar uma senha nova.`);
     } catch (err) {
       const c = err.code || '';
       if (/email-already-in-use/.test(c)) {
@@ -687,7 +720,7 @@ async function iniciar() {
           const qs = await F.getDocs(F.query(F.collection(db, 'usuarios'), F.where('email', '==', email)));
           const ant = qs.docs[0];
           if (ant && ant.data().excluido) {
-            await F.updateDoc(ant.ref, { nome, fone, papel, ativo: true, excluido: false });
+            await F.updateDoc(ant.ref, { nome, fone, papel, ativo: true, excluido: false, trocarSenha: false });
             await A.sendPasswordResetEmail(auth, email);
             ['u-nome', 'u-email', 'u-fone', 'u-senha'].forEach(id => $(id).value = ''); $('u-papel').value = 'vendedor';
             uStatus(`${nome} já tinha sido cadastrado antes e foi reativado. A senha inicial não vale para ele: chegou um e-mail em ${email} para criar uma nova.`);
