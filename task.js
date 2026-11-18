@@ -1,6 +1,6 @@
 // Módulo TASK: checklist de implantação. Roda para usuários TASK e administradores.
 // Dados: tasks/{id} (cadastros com checklists) e taskTemplates/{id} (modelos de checklist).
-let F, db, perfil, admin = false, unsubT = null, unsubM = null;
+let F, db, perfil, admin = false, unsubT = null, unsubM = null, unsubP = null, tasksOk = false, aprovadas = null;
 let tasks = [], templates = [], resps = [], aba = 'and';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -16,15 +16,20 @@ const progresso = t => { const it = (t.checklists || []).flatMap(c => c.itens ||
 const msg = t => { const el = $('tkMsg'); el.textContent = t || ''; el.hidden = !t; };
 
 window.addEventListener('argo-perfil', e => { ({ F, db, perfil, admin } = e.detail); iniciar(); });
-window.addEventListener('argo-sair', () => { if (unsubT) unsubT(); if (unsubM) unsubM(); unsubT = unsubM = null; tasks = []; templates = []; });
+window.addEventListener('argo-sair', () => { if (unsubT) unsubT(); if (unsubM) unsubM(); if (unsubP) unsubP(); unsubT = unsubM = unsubP = null; aprovadas = null; tasksOk = false; tasks = []; templates = []; });
 
 function iniciar() {
   if (unsubT) unsubT();
   if (unsubM) unsubM();
+  if (unsubP) unsubP();
+  tasksOk = false; aprovadas = null;
   unsubT = F.onSnapshot(F.collection(db, 'tasks'), qs => {
     tasks = qs.docs.map(d => ({ id: d.id, ...d.data() }));
-    desenhar();
+    tasksOk = true; desenhar(); sincronizar();
   }, e => msg('Não foi possível carregar os cadastros (' + (e.code || 'erro') + ').'));
+  unsubP = F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')), qs => {
+    aprovadas = qs.docs.map(d => ({ id: d.id, ...d.data() })); sincronizar();
+  }, () => {});
   unsubM = F.onSnapshot(F.collection(db, 'taskTemplates'), qs => {
     templates = qs.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
     if ($('tkDlg').open && $('tkDlg').dataset.modo === 'templates') desenharTemplates();
@@ -65,7 +70,7 @@ function cartao(t) {
     <h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}
     <div class="tkmeta">${t.email ? `<span class="tkmail">${esc(t.email)}</span>` : ''}${t.criado ? `<span>Criado em ${esc(fmtTs(t.criado))}</span>` : ''}</div>
-    <div class="tkmeta"><span>Cad: ${esc(t.respCadastro?.nome || '-')}</span><span class="tkst2">Start: ${esc(t.respStart?.nome || '-')}</span></div>
+    <div class="tkmeta"><span>Cad: ${esc(t.respCadastro?.nome || (t.auto ? 'Automático' : '-'))}</span><span class="tkst2">Start: ${esc(t.respStart?.nome || '-')}</span></div>
     <div class="tkbox"><div><small>CNPJ</small>${esc(fmtCnpj(t.cnpj) || '-')}</div><div><small>Cidade / UF</small>${esc([t.cidade, t.uf].filter(Boolean).join(' / ') || '-')}</div></div>
     <div class="tkprog" title="${pr.feitos} de ${pr.total} itens concluídos"><span style="width:${pct}%"></span></div>
     <div class="tkprogtxt">${pr.total ? `${pr.feitos} de ${pr.total} itens concluídos (${pct}%)` : 'Nenhum checklist ainda'}</div>
@@ -187,26 +192,43 @@ async function formImportar() {
     const qs = await F.getDocs(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')));
     const ja = new Set(tasks.map(t => t.propostaId).filter(Boolean));
     const ps = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !ja.has(p.id)).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0));
-    $('tkDlgBody').innerHTML = ps.length ? `<p class="hint">Propostas aprovadas que ainda não viraram cadastro. Os dados complementares (Etapa 2) entram junto quando o cliente já enviou.</p>
+    $('tkDlgBody').innerHTML = ps.length ? `<p class="hint">Quando o cliente aceita o contrato (Etapa 3), o cadastro é criado sozinho. Use esta lista só para trazer antes uma proposta aprovada que ainda não chegou nessa fase.</p>
       <ul class="tkimp">${ps.map(p => `<li><div><b>${esc(p.cliente)}</b><small>Nº ${esc(p.numero)} · ${esc(p.cidade || '')} · ${esc(p.vendedor || '')}${p.e2Em ? ' · dados complementares recebidos' : ''}</small></div><button type="button" data-imp="${esc(p.id)}">Importar</button></li>`).join('')}</ul>`
       : '<p class="hint">Nenhuma proposta aprovada pendente de importação.</p>';
   } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar as propostas (${esc(e.code || 'erro')}).</p>`; }
 }
+// Cria o cadastro a partir da proposta (id do cadastro = id da proposta, para não duplicar)
+async function criarDaProposta(pid, auto) {
+  const ref = F.doc(db, 'tasks', pid);
+  if ((await F.getDoc(ref)).exists()) return null;
+  const p = (await F.getDoc(F.doc(db, 'propostas', pid))).data();
+  let v = {}; try { const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')); if (r.exists()) v = r.data().valores || {}; } catch (e) {}
+  const sc = window.splitCidade ? window.splitCidade(p.cidade) : { cidade: p.cidade || '', uf: '' };
+  const novo = {
+    apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
+    email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
+    respCadastro: auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: v.dataImpl || '', obs: v.obs || '',
+    propostaId: pid, propostaNumero: p.numero || '', vendedor: p.vendedor || '', finalizado: false, checklists: [],
+    criado: F.serverTimestamp(), criadoPor: auto ? 'Automático (contrato aceito)' : (perfil.nome || perfil.email), auto: !!auto
+  };
+  await F.setDoc(ref, novo);
+  return novo;
+}
 async function importar(pid, bt) {
   bt.disabled = true; bt.textContent = 'Importando…';
-  try {
-    const p = (await F.getDoc(F.doc(db, 'propostas', pid))).data();
-    let v = {}; try { const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')); if (r.exists()) v = r.data().valores || {}; } catch (e) {}
-    const sc = window.splitCidade ? window.splitCidade(p.cidade) : { cidade: p.cidade || '', uf: '' };
-    const novo = {
-      apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
-      email: v.respEmail || v.finEmail || '', contato: v.respNome || p.contato || '', fone: v.respFone || p.fone || '',
-      respCadastro: { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: v.dataImpl || '', obs: v.obs || '',
-      propostaId: pid, propostaNumero: p.numero || '', vendedor: p.vendedor || '', finalizado: false, checklists: [], criado: F.serverTimestamp(), criadoPor: perfil.nome || perfil.email
-    };
-    await F.addDoc(F.collection(db, 'tasks'), novo);
-    bt.closest('li').remove(); dmsg(`${novo.apelido} importado.`);
-  } catch (e) { bt.disabled = false; bt.textContent = 'Importar'; dmsg('Não foi possível importar (' + (e.code || 'erro') + ').'); }
+  try { const n = await criarDaProposta(pid, false); bt.closest('li').remove(); dmsg(n ? `${n.apelido} importado.` : 'Essa proposta já tinha virado cadastro.'); }
+  catch (e) { bt.disabled = false; bt.textContent = 'Importar'; dmsg('Não foi possível importar (' + (e.code || 'erro') + ').'); }
+}
+// Alimentação automática: contrato aceito (Etapa 3 concluída) vira cadastro no TASK
+const criando = new Set();
+function sincronizar() {
+  if (!tasksOk || !aprovadas) return;
+  const tem = new Set(tasks.flatMap(t => [t.id, t.propostaId]).filter(Boolean));
+  aprovadas.filter(p => p.ctAceitoEm && !tem.has(p.id) && !criando.has(p.id)).forEach(p => {
+    criando.add(p.id);
+    criarDaProposta(p.id, true).then(n => { if (n) msg(`Novo cadastro automático: ${n.apelido} (contrato aceito).`); })
+      .catch(e => console.warn('TASK automático', p.id, e)).finally(() => criando.delete(p.id));
+  });
 }
 
 /* ---------- Eventos ---------- */
