@@ -623,7 +623,7 @@ async function iniciar() {
   function ouvirUsuarios() {
     if (unsub) return;
     unsub = F.onSnapshot(F.collection(db, 'usuarios'), qs => {
-      lista = qs.docs.map(d => ({ uid: d.id, ...d.data() })).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+      lista = qs.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => !u.excluido).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
       desenharUsuarios();
     }, () => uStatus('Não foi possível carregar a lista de usuários.'));
   }
@@ -639,7 +639,7 @@ async function iniciar() {
         <td><input data-f="fone" value="${esc(u.fone)}" aria-label="Telefone" inputmode="tel"></td>
         <td><select data-f="papel" ${eu ? 'disabled' : ''} aria-label="Perfil"><option value="vendedor"${u.papel !== 'adm' ? ' selected' : ''}>Vendedor</option><option value="adm"${u.papel === 'adm' ? ' selected' : ''}>Administrador</option></select></td>
         <td><span class="pill ${u.ativo ? '' : 'off'}">${u.ativo ? 'Liberado' : 'Bloqueado'}</span></td>
-        <td>${eu ? '<span class="hint">você</span>' : `<button type="button" data-a="toggle">${u.ativo ? 'Bloquear' : 'Liberar'}</button>`}
+        <td>${eu ? '<span class="hint">você</span>' : `<button type="button" data-a="toggle">${u.ativo ? 'Bloquear' : 'Liberar'}</button>`}${eu ? '' : '<button type="button" data-a="excluir" class="danger">Excluir</button>'}
             <button type="button" data-a="reset">Nova senha</button></td></tr>`;
     }).join('');
   }
@@ -648,11 +648,18 @@ async function iniciar() {
     try { await F.updateDoc(F.doc(db, 'usuarios', tr.dataset.uid), { [f]: e.target.value.trim() }); uStatus('Alteração salva.'); }
     catch (err) { uStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); }
   });
+  let excluirArm = {};
   $('usersBody').addEventListener('click', async e => {
     const a = e.target.dataset.a, tr = e.target.closest('tr'); if (!a || !tr) return;
     const u = lista.find(x => x.uid === tr.dataset.uid); if (!u) return;
     try {
       if (a === 'toggle') { await F.updateDoc(F.doc(db, 'usuarios', u.uid), { ativo: !u.ativo }); uStatus(u.ativo ? `${u.nome} bloqueado.` : `${u.nome} liberado.`); }
+      if (a === 'excluir') {
+        if (excluirArm.uid !== u.uid || Date.now() - excluirArm.t > 5000) { excluirArm = { uid: u.uid, t: Date.now() }; e.target.textContent = 'Confirmar exclusão'; uStatus(`Clique de novo em "Confirmar exclusão" para excluir ${u.nome}. As propostas dele continuam na aba Propostas.`); return; }
+        excluirArm = {};
+        await F.updateDoc(F.doc(db, 'usuarios', u.uid), { ativo: false, excluido: true, excluidoEm: F.serverTimestamp() });
+        uStatus(`${u.nome} excluído. O acesso foi cortado na hora.`);
+      }
       if (a === 'reset') { await A.sendPasswordResetEmail(auth, u.email); uStatus(`E-mail para criar nova senha enviado para ${u.email}.`); }
     } catch (err) { uStatus('Não foi possível concluir (' + (err.code || 'erro') + ').'); }
   });
@@ -674,6 +681,20 @@ async function iniciar() {
       uStatus(`${nome} cadastrado. Passe para a pessoa o link do app, o e-mail e a senha inicial.`);
     } catch (err) {
       const c = err.code || '';
+      if (/email-already-in-use/.test(c)) {
+        // E-mail de alguém excluído antes: reativa o cadastro e manda e-mail para criar nova senha.
+        try {
+          const qs = await F.getDocs(F.query(F.collection(db, 'usuarios'), F.where('email', '==', email)));
+          const ant = qs.docs[0];
+          if (ant && ant.data().excluido) {
+            await F.updateDoc(ant.ref, { nome, fone, papel, ativo: true, excluido: false });
+            await A.sendPasswordResetEmail(auth, email);
+            ['u-nome', 'u-email', 'u-fone', 'u-senha'].forEach(id => $(id).value = ''); $('u-papel').value = 'vendedor';
+            uStatus(`${nome} já tinha sido cadastrado antes e foi reativado. A senha inicial não vale para ele: chegou um e-mail em ${email} para criar uma nova.`);
+            return;
+          }
+        } catch (_) {}
+      }
       uStatus(/email-already-in-use/.test(c) ? 'Esse e-mail já tem conta. Se a pessoa estava bloqueada, libere na lista abaixo.' :
         /weak-password/.test(c) ? 'Senha fraca: use pelo menos 6 caracteres.' : 'Não foi possível cadastrar (' + c + ').');
     } finally { btn.disabled = false; }
