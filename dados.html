@@ -52,57 +52,16 @@ button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1
 </head><body>
 <header><div class="wrap">
   <img src="icons/icon-192.png" alt="Argo">
-  <div><h1>Dados complementares obrigatórios</h1><p id="sub">Argo Sistemas · implantação do sistema</p></div>
+  <div><h1 id="titulo">Dados complementares obrigatórios</h1><p id="sub">Argo Sistemas · implantação do sistema</p></div>
 </div></header>
 
 <div class="wrap"><main>
-  <p class="intro" id="intro">Obrigado por aprovar a proposta! Preencha os dados abaixo para darmos início à implantação. Os campos com <b style="color:var(--danger)">*</b> são obrigatórios. Ao terminar, toque em <b>Enviar pelo WhatsApp</b>.</p>
+  <p class="intro" id="intro"></p>
+  <p id="carregando" class="hint">Carregando o formulário…</p>
 
-  <form id="f" novalidate>
+  <form id="f" novalidate hidden>
   <div style="display:flex;flex-direction:column;gap:18px">
-  <section class="sec"><h2>Empresa</h2><div class="body">
-    <label><span>CNPJ <b>*</b></span><input name="cnpj" inputmode="numeric" required data-v="cnpj" placeholder="00.000.000/0000-00"></label>
-    <label><span>Razão social <b>*</b></span><input name="razao" required></label>
-    <label>Nome fantasia<input name="fantasia"></label>
-    <label><span>Inscrição estadual <b>*</b></span><input name="ie" required placeholder="ou ISENTO"></label>
-    <label><span>CEP <b>*</b></span><input name="cep" inputmode="numeric" required data-v="cep"></label>
-    <label class="full"><span>Endereço <b>*</b></span><input name="logradouro" required></label>
-    <label><span>Número <b>*</b></span><input name="numero" required></label>
-    <label>Complemento<input name="complemento"></label>
-    <label><span>Bairro <b>*</b></span><input name="bairro" required></label>
-    <label><span>Cidade <b>*</b></span><input name="cidade" required></label>
-    <label><span>UF <b>*</b></span><input name="uf" required maxlength="2" style="text-transform:uppercase"></label>
-  </div></section>
-
-  <section class="sec"><h2>Responsável legal</h2><div class="body">
-    <label><span>Nome completo <b>*</b></span><input name="respNome" required autocomplete="name"></label>
-    <label><span>CPF <b>*</b></span><input name="respCpf" inputmode="numeric" required data-v="cpf"></label>
-    <label><span>Cargo <b>*</b></span><input name="respCargo" required></label>
-    <label><span>E-mail <b>*</b></span><input name="respEmail" type="email" required data-v="email" autocomplete="email"></label>
-    <label><span>Telefone / WhatsApp <b>*</b></span><input name="respFone" inputmode="tel" required data-v="fone" autocomplete="tel"></label>
-  </div></section>
-
-  <section class="sec"><h2>Financeiro</h2><div class="body">
-    <label><span>Nome do contato <b>*</b></span><input name="finNome" required></label>
-    <label><span>E-mail para boleto e nota fiscal <b>*</b></span><input name="finEmail" type="email" required data-v="email"></label>
-    <label><span>Telefone <b>*</b></span><input name="finFone" inputmode="tel" required data-v="fone"></label>
-    <label><span>Dia de vencimento da mensalidade <b>*</b></span><select name="vencimento" required><option value="">Escolha</option><option>5</option><option>10</option><option>15</option><option>20</option><option>25</option></select></label>
-  </div></section>
-
-  <section class="sec"><h2>Contato técnico no posto</h2><div class="body">
-    <label><span>Nome <b>*</b></span><input name="tecNome" required></label>
-    <label><span>Telefone / WhatsApp <b>*</b></span><input name="tecFone" inputmode="tel" required data-v="fone"></label>
-  </div></section>
-
-  <section class="sec"><h2>Operação</h2><div class="body">
-    <label><span>Quantidade de PDVs fixos <b>*</b></span><input name="pdvFixos" type="number" min="0" inputmode="numeric" required></label>
-    <label>Quantidade de PDVs móveis<input name="pdvMoveis" type="number" min="0" inputmode="numeric"></label>
-    <label><span>Usa TEF (cartão integrado)? <b>*</b></span><span class="radios"><label><input type="radio" name="tef" value="Sim" required> Sim</label><label><input type="radio" name="tef" value="Não"> Não</label></span></label>
-    <label>Sistema atual (que será substituído)<input name="sistemaAtual"></label>
-    <label><span>Data desejada para a implantação <b>*</b></span><input name="dataImpl" type="date" required></label>
-    <label class="full">Observações<textarea name="obs"></textarea></label>
-  </div></section>
-
+  <div id="secoes" style="display:flex;flex-direction:column;gap:18px"></div>
   <div class="send">
     <button type="submit" id="btnEnviar">Enviar pelo WhatsApp</button>
     <p id="msg" role="status" class="err"></p>
@@ -112,64 +71,79 @@ button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1
   </form>
 
   <div class="done" id="done" hidden>
-    <b>Pronto!</b> O WhatsApp abriu com os seus dados. Confira e toque em enviar. Se o WhatsApp não abriu, <a id="waLink" href="#" target="_blank" rel="noopener">toque aqui</a>.
+    <span id="finalTxt"></span> Se o WhatsApp não abriu, <a id="waLink" href="#" target="_blank" rel="noopener">toque aqui</a>.
   </div>
 </main></div>
 
+<script src="firebase-config.js"></script>
+<script src="etapa2-padrao.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const f=$('#f');
 const DRAFT='argo-dados-cliente-v1';
 const dig=v=>String(v||'').replace(/\D/g,'');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-/* Dados vindos do link: #d=base64url(JSON) com cnpj, razão, cidade, vendedor e WhatsApp do vendedor */
+/* Dados vindos do link: #d=base64url(JSON) com cnpj, razão, cidade, vendedor, WhatsApp do vendedor e nº da proposta */
 let L={};
 try{ const m=location.hash.match(/d=([^&]+)/); if(m){ const b=m[1].replace(/-/g,'+').replace(/_/g,'/'); L=JSON.parse(decodeURIComponent(escape(atob(b)))) } }catch(e){ L={} }
 const destino = dig(L.w);
 if(L.v) $('#sub').textContent='Argo Sistemas · '+(L.n?'proposta nº '+L.n+' · ':'')+'consultor: '+L.v;
 $('#destHint').textContent = destino ? 'Os dados vão para o WhatsApp do seu consultor'+(L.v?' ('+L.v+')':'')+'.' : 'Os dados serão enviados pelo WhatsApp.';
 
+/* Configuração publicada pelo administrador (Firestore, leitura pública) */
+async function carregarConfig(){
+  const C=window.FIREBASE_CONFIG||{};
+  if(C.apiKey && C.projectId){
+    try{
+      const r=await fetch(`https://firestore.googleapis.com/v1/projects/${C.projectId}/databases/(default)/documents/publico/etapa2?key=${C.apiKey}`);
+      if(r.ok){ const j=await r.json(); const t=j.fields&&j.fields.json&&j.fields.json.stringValue; if(t){ const cfg=JSON.parse(t); try{ localStorage.setItem('argo-etapa2-cfg',t) }catch(e){} return cfg } }
+    }catch(e){}
+    try{ const t=localStorage.getItem('argo-etapa2-cfg'); if(t) return JSON.parse(t) }catch(e){}
+  }
+  return window.ETAPA2_PADRAO;
+}
+
+let CFG=null, CAMPOS=[];
+const TIPO_ATTR={
+  texto:'', email:'type="email" autocomplete="email"', telefone:'inputmode="tel" autocomplete="tel"', cpf:'inputmode="numeric"',
+  cnpj:'inputmode="numeric" placeholder="00.000.000/0000-00"', cep:'inputmode="numeric"', numero:'type="number" min="0" inputmode="numeric"', data:'type="date"'
+};
+function campoHtml(c){
+  const req=c.req?' required':'', star=c.req?' <b>*</b>':'', full=(c.full||c.tipo==='textolongo')?' class="full"':'';
+  const lab=`<span>${esc(c.label)}${star}</span>`;
+  if(c.tipo==='simnao') return `<label${full}>${lab}<span class="radios"><label><input type="radio" name="${esc(c.k)}" value="Sim"${req}> Sim</label><label><input type="radio" name="${esc(c.k)}" value="Não"> Não</label></span></label>`;
+  if(c.tipo==='opcoes'){ const ops=String(c.opcoes||'').split(/[,;\n]/).map(x=>x.trim()).filter(Boolean);
+    return `<label${full}>${lab}<select name="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o=>`<option>${esc(o)}</option>`).join('')}</select></label>` }
+  if(c.tipo==='textolongo') return `<label class="full">${lab}<textarea name="${esc(c.k)}"${req}${c.ph?` placeholder="${esc(c.ph)}"`:''}></textarea></label>`;
+  const extra=c.k==='uf'?' maxlength="2" style="text-transform:uppercase"':'';
+  return `<label${full}>${lab}<input name="${esc(c.k)}" data-v="${esc(c.tipo)}" ${TIPO_ATTR[c.tipo]||''}${req}${c.ph?` placeholder="${esc(c.ph)}"`:''}${extra}></label>`;
+}
+function montar(){
+  $('#titulo').textContent=CFG.titulo||'Dados complementares obrigatórios';
+  document.title=(CFG.titulo||'Dados complementares')+' Argo';
+  $('#intro').innerHTML=esc(CFG.intro||'')+' Os campos com <b style="color:var(--danger)">*</b> são obrigatórios.';
+  $('#finalTxt').textContent=CFG.final||'Pronto! O WhatsApp abriu com os seus dados. Confira e toque em enviar.';
+  CAMPOS=[];
+  $('#secoes').innerHTML=(CFG.secoes||[]).map(s=>{
+    const cs=(s.campos||[]).filter(c=>c.show!==false||c.fixo); if(!cs.length) return '';
+    cs.forEach(c=>CAMPOS.push({...c, secao:s.titulo}));
+    return `<section class="sec"><h2>${esc(s.titulo)}</h2><div class="body">${cs.map(campoHtml).join('')}</div></section>`;
+  }).join('');
+}
+const tem=k=>!!f.elements[k];
+
 /* Rascunho */
 function lerForm(){ const o={}; new FormData(f).forEach((v,k)=>o[k]=String(v).trim()); return o }
 function preencher(o){ Object.entries(o||{}).forEach(([k,v])=>{ const els=f.elements[k]; if(!els||v==null||v==='') return;
-  if(els instanceof RadioNodeList){ els.forEach(r=>r.checked=(r.value===v)) } else if(!els.value) els.value=v }) }
-let draft={}; try{ draft=JSON.parse(localStorage.getItem(DRAFT)||'{}')||{} }catch(e){}
-if(draft.cnpj && L.c && dig(draft.cnpj)!==dig(L.c)) draft={};
-preencher(draft);
-preencher({cnpj:L.c, razao:L.r, cidade:L.cid, uf:L.uf});
-f.addEventListener('input',()=>{ try{ localStorage.setItem(DRAFT,JSON.stringify(lerForm())) }catch(e){} });
+  if(els instanceof RadioNodeList && els[0] && els[0].type==='radio'){ els.forEach(r=>r.checked=(r.value===v)) } else if(!els.value) els.value=v }) }
 
-/* Endereço pelo CNPJ */
+/* Validações */
 const fmtCnpj=v=>dig(v).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2}).*/,'$1.$2.$3/$4-$5');
 function cnpjOk(v){ const d=dig(v); if(d.length!==14||/^(\d)\1+$/.test(d)) return false;
   const c=n=>{ let s=0,w=n-7; for(let i=0;i<n;i++){ s+=+d[i]*w--; if(w<2) w=9 } const r=s%11; return r<2?0:11-r }; return c(12)===+d[12]&&c(13)===+d[13] }
 function cpfOk(v){ const d=dig(v); if(d.length!==11||/^(\d)\1+$/.test(d)) return false;
   const c=n=>{ let s=0; for(let i=0;i<n;i++) s+=+d[i]*(n+1-i); const r=(s*10)%11; return r===10?0:r }; return c(9)===+d[9]&&c(10)===+d[10] }
-let buscado='';
-async function buscarCnpj(){
-  const d=dig(f.cnpj.value); if(!cnpjOk(d)||d===buscado) return; buscado=d; f.cnpj.value=fmtCnpj(d);
-  try{
-    const r=await fetch('https://brasilapi.com.br/api/cnpj/v1/'+d); if(!r.ok) return; const j=await r.json();
-    const set=(k,v)=>{ if(v && !f.elements[k].value) f.elements[k].value=v };
-    set('razao',j.razao_social); set('fantasia',j.nome_fantasia); set('cep',j.cep&&String(j.cep).replace(/^(\d{5})(\d{3})$/,'$1-$2'));
-    set('logradouro',[j.descricao_tipo_de_logradouro,j.logradouro].filter(Boolean).join(' ')); set('numero',j.numero); set('complemento',j.complemento);
-    set('bairro',j.bairro); set('cidade',j.municipio); set('uf',j.uf);
-    if(j.email && !f.finEmail.value) f.finEmail.placeholder=String(j.email).toLowerCase();
-    f.dispatchEvent(new Event('input'));
-  }catch(e){}
-}
-f.cnpj.addEventListener('input',buscarCnpj); f.cnpj.addEventListener('blur',buscarCnpj);
-if(f.cnpj.value) buscarCnpj();
-f.cep.addEventListener('blur',async ()=>{
-  const c=dig(f.cep.value); if(c.length!==8) return; f.cep.value=c.replace(/^(\d{5})(\d{3})$/,'$1-$2');
-  if(f.logradouro.value) return;
-  try{ const r=await fetch('https://brasilapi.com.br/api/cep/v1/'+c); if(!r.ok) return; const j=await r.json();
-    if(!f.logradouro.value) f.logradouro.value=j.street||''; if(!f.bairro.value) f.bairro.value=j.neighborhood||'';
-    if(!f.cidade.value) f.cidade.value=j.city||''; if(!f.uf.value) f.uf.value=j.state||''; }catch(e){}
-});
-f.respCpf.addEventListener('blur',()=>{ const d=dig(f.respCpf.value); if(d.length===11) f.respCpf.value=d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4') });
-
-/* Validação */
 function valida(el){
   if(el.type==='radio') return true;
   const v=el.value.trim(), t=el.dataset.v; let ok=true;
@@ -177,38 +151,74 @@ function valida(el){
   else if(v && t==='cnpj') ok=cnpjOk(v);
   else if(v && t==='cpf') ok=cpfOk(v);
   else if(v && t==='email') ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-  else if(v && t==='fone') ok=dig(v).length>=10;
+  else if(v && t==='telefone') ok=dig(v).length>=10;
   else if(v && t==='cep') ok=dig(v).length===8;
   el.classList.toggle('bad',!ok); return ok;
 }
-const nomes={cnpj:'CNPJ',respCpf:'CPF',respEmail:'e-mail do responsável',finEmail:'e-mail do financeiro',cep:'CEP'};
+
+/* Preenchimento automático pelo CNPJ e CEP */
+let buscado='';
+async function buscarCnpj(el){
+  const d=dig(el.value); if(!cnpjOk(d)||d===buscado) return; buscado=d; el.value=fmtCnpj(d);
+  try{
+    const r=await fetch('https://brasilapi.com.br/api/cnpj/v1/'+d); if(!r.ok) return; const j=await r.json();
+    const set=(k,v)=>{ if(v && tem(k) && !f.elements[k].value) f.elements[k].value=v };
+    set('razao',j.razao_social); set('fantasia',j.nome_fantasia); set('cep',j.cep&&String(j.cep).replace(/^(\d{5})(\d{3})$/,'$1-$2'));
+    set('logradouro',[j.descricao_tipo_de_logradouro,j.logradouro].filter(Boolean).join(' ')); set('numero',j.numero); set('complemento',j.complemento);
+    set('bairro',j.bairro); set('cidade',j.municipio); set('uf',j.uf);
+    f.dispatchEvent(new Event('input'));
+  }catch(e){}
+}
+function ligarAuto(){
+  f.querySelectorAll('[data-v=cnpj]').forEach(el=>{ el.addEventListener('input',()=>buscarCnpj(el)); el.addEventListener('blur',()=>buscarCnpj(el)); if(el.value) buscarCnpj(el) });
+  f.querySelectorAll('[data-v=cep]').forEach(el=>el.addEventListener('blur',async ()=>{
+    const c=dig(el.value); if(c.length!==8) return; el.value=c.replace(/^(\d{5})(\d{3})$/,'$1-$2');
+    if(tem('logradouro') && f.logradouro.value) return;
+    try{ const r=await fetch('https://brasilapi.com.br/api/cep/v1/'+c); if(!r.ok) return; const j=await r.json();
+      const set=(k,v)=>{ if(v && tem(k) && !f.elements[k].value) f.elements[k].value=v };
+      set('logradouro',j.street); set('bairro',j.neighborhood); set('cidade',j.city); set('uf',j.state); }catch(e){}
+  }));
+  f.querySelectorAll('[data-v=cpf]').forEach(el=>el.addEventListener('blur',()=>{ const d=dig(el.value); if(d.length===11) el.value=d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4') }));
+}
 
 /* Mensagem */
 const fmtData=iso=>{ if(!iso) return ''; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y };
 function montarTexto(o){
-  const L2=(t,v)=>v?`${t}: ${v}`:null;
-  return [
-    '*Dados complementares obrigatórios - Argo*', L.n?'Proposta nº '+L.n:null,'',
-    '*Empresa*', L2('CNPJ',o.cnpj), L2('Razão social',o.razao), L2('Nome fantasia',o.fantasia), L2('Inscrição estadual',o.ie),
-    L2('Endereço',[o.logradouro,o.numero].filter(Boolean).join(', ')+(o.complemento?' - '+o.complemento:'')), L2('Bairro',o.bairro),
-    L2('Cidade',o.cidade+(o.uf?' - '+o.uf.toUpperCase():'')), L2('CEP',o.cep),'',
-    '*Responsável legal*', L2('Nome',o.respNome), L2('CPF',o.respCpf), L2('Cargo',o.respCargo), L2('E-mail',o.respEmail), L2('Telefone',o.respFone),'',
-    '*Financeiro*', L2('Contato',o.finNome), L2('E-mail boleto/NF',o.finEmail), L2('Telefone',o.finFone), L2('Vencimento','dia '+o.vencimento),'',
-    '*Contato técnico no posto*', L2('Nome',o.tecNome), L2('Telefone',o.tecFone),'',
-    '*Operação*', L2('PDVs fixos',o.pdvFixos), L2('PDVs móveis',o.pdvMoveis||'0'), L2('Usa TEF',o.tef), L2('Sistema atual',o.sistemaAtual),
-    L2('Data desejada para implantação',fmtData(o.dataImpl)), L2('Observações',o.obs)
-  ].filter(x=>x!==null).join('\n');
+  const linhas=['*'+(CFG.titulo||'Dados complementares obrigatórios')+' - Argo*'];
+  if(L.n) linhas.push('Proposta nº '+L.n);
+  let sec=null;
+  CAMPOS.forEach(c=>{
+    let v=o[c.k]; if(!v) return;
+    if(c.tipo==='data') v=fmtData(v);
+    if(c.k==='uf') v=v.toUpperCase();
+    if(c.secao!==sec){ linhas.push('','*'+c.secao+'*'); sec=c.secao }
+    linhas.push(c.label+': '+v);
+  });
+  return linhas.join('\n');
 }
+
+(async()=>{
+  CFG=await carregarConfig();
+  montar();
+  let draft={}; try{ draft=JSON.parse(localStorage.getItem(DRAFT)||'{}')||{} }catch(e){}
+  if(draft.cnpj && L.c && dig(draft.cnpj)!==dig(L.c)) draft={};
+  preencher(draft);
+  preencher({cnpj:L.c, razao:L.r, cidade:L.cid, uf:L.uf});
+  ligarAuto();
+  $('#carregando').hidden=true; f.hidden=false;
+})();
+f.addEventListener('input',()=>{ try{ localStorage.setItem(DRAFT,JSON.stringify(lerForm())) }catch(e){} });
 
 f.addEventListener('submit',e=>{
   e.preventDefault();
   const els=[...f.elements].filter(el=>el.name);
   const ruins=els.filter(el=>!valida(el));
-  const tefOk=!!f.querySelector('input[name=tef]:checked');
-  if(ruins.length || !tefOk){
-    const prim=ruins[0]; const especificos=ruins.filter(el=>el.value.trim() && nomes[el.name]).map(el=>nomes[el.name]);
+  const radiosFaltando=CAMPOS.filter(c=>c.tipo==='simnao'&&c.req&&!f.querySelector(`input[name="${CSS.escape(c.k)}"]:checked`));
+  if(ruins.length || radiosFaltando.length){
+    const prim=ruins[0]||f.querySelector(`input[name="${CSS.escape(radiosFaltando[0].k)}"]`);
+    const especificos=ruins.filter(el=>el.value.trim()).map(el=>{ const c=CAMPOS.find(x=>x.k===el.name); return c?c.label:el.name });
     $('#msg').textContent = especificos.length ? 'Confira: '+especificos.join(', ')+'.' : 'Preencha os campos obrigatórios destacados.';
-    (prim||f.querySelector('input[name=tef]')).focus(); prim&&prim.scrollIntoView({block:'center'}); return;
+    prim.focus(); prim.scrollIntoView({block:'center'}); return;
   }
   $('#msg').textContent='';
   const texto=montarTexto(lerForm());
@@ -217,6 +227,6 @@ f.addEventListener('submit',e=>{
   $('#waLink').href=url; $('#done').hidden=false;
   window.open(url,'_blank') || (location.href=url);
 });
-f.addEventListener('blur',e=>{ if(e.target.classList.contains('bad')) valida(e.target) },true);
+f.addEventListener('blur',e=>{ if(e.target.classList&&e.target.classList.contains('bad')) valida(e.target) },true);
 </script>
 </body></html>

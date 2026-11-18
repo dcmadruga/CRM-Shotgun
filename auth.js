@@ -65,7 +65,7 @@ async function iniciar() {
     aplicarPerfil();
     aplicarModo();
     await carregar(false);
-    if (fb.admin) ouvirUsuarios();
+    if (fb.admin) { ouvirUsuarios(); carregarE2(); }
     ouvirPropostas();
   });
 
@@ -106,9 +106,10 @@ async function iniciar() {
   }
 
   /* ---------- Abas ---------- */
-  const EXTRA = { tabUsers: 'viewUsers', tabList: 'viewList' };
+  const EXTRA = { tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2' };
   function abrirAba(tab) {
     Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
+    document.body.classList.toggle('semBarra', !!EXTRA[tab]);
     if (EXTRA[tab]) { $('viewProp').hidden = true; $('viewCfg').hidden = true; $('tabProp').setAttribute('aria-selected', 'false'); $('tabCfg').setAttribute('aria-selected', 'false'); }
   }
   Object.keys(EXTRA).forEach(t => $(t).addEventListener('click', () => abrirAba(t)));
@@ -272,6 +273,99 @@ async function iniciar() {
       abrirWa(p.waCli, `Olá${p.contato ? ' ' + p.contato : ''}! Obrigado por aprovar a proposta nº ${p.numero}. Para iniciarmos a implantação, preencha os dados complementares obrigatórios neste link:\n${link}\n\n${perfil.nome || p.vendedor} - Argo`);
       pMsg('WhatsApp aberto com o formulário da Etapa 2.');
     }
+  });
+
+
+  /* ---------- Parâmetros da Etapa 2 (ADM) ---------- */
+  const E2DOC = F.doc(db, 'publico', 'etapa2');
+  const TIPOS = window.ETAPA2_TIPOS || {};
+  let E2 = null, e2Sujo = false;
+  const e2Status = t => { $('e2Status').textContent = t; };
+  const copia = o => JSON.parse(JSON.stringify(o));
+  async function carregarE2() {
+    try {
+      const snap = await F.getDoc(E2DOC);
+      E2 = snap.exists() && snap.data().json ? JSON.parse(snap.data().json) : copia(window.ETAPA2_PADRAO);
+      e2Status(snap.exists() ? (snap.data().por ? 'Publicado por ' + snap.data().por + (snap.data().em ? ' em ' + fmtQuando(snap.data().em) : '') + '.' : '') : 'Usando o formulário padrão. Ajuste e publique.');
+    } catch (e) { E2 = copia(window.ETAPA2_PADRAO); e2Status('Não foi possível carregar o formulário publicado; mostrando o padrão.'); }
+    desenharE2();
+  }
+  function marcarE2() { e2Sujo = true; e2Status('Alterações ainda não publicadas.'); }
+  function desenharE2() {
+    if (!E2) return;
+    $('e2Titulo').value = E2.titulo || ''; $('e2Intro').value = E2.intro || ''; $('e2Final').value = E2.final || '';
+    $('e2Secoes').innerHTML = E2.secoes.map((s, si) => `
+      <section class="sec" data-si="${si}"><h2>Seção ${si + 1} <span>${s.campos.filter(c => c.show !== false || c.fixo).length} campos visíveis</span></h2><div class="body">
+        <div class="e2head"><input data-s="titulo" value="${esc(s.titulo)}" aria-label="Título da seção">
+          <button type="button" data-sa="up" ${si === 0 ? 'disabled' : ''} aria-label="Subir seção">↑</button>
+          <button type="button" data-sa="down" ${si === E2.secoes.length - 1 ? 'disabled' : ''} aria-label="Descer seção">↓</button>
+          ${s.campos.some(c => c.fixo) ? '' : '<button type="button" data-sa="del">Remover seção</button>'}</div>
+        <div class="refwrap"><table class="e2tab"><thead><tr><th>Campo (como o cliente vê)</th><th>Tipo</th><th class="c">Mostrar</th><th class="c">Obrigatório</th><th>Opções / exemplo</th><th><span class="sr">Ações</span></th></tr></thead><tbody>
+        ${s.campos.map((c, ci) => `<tr data-ci="${ci}" class="${c.show === false && !c.fixo ? 'off' : ''}">
+          <td><input data-f="label" value="${esc(c.label)}" aria-label="Nome do campo"></td>
+          <td class="t"><select data-f="tipo" ${c.custom ? '' : 'disabled'} aria-label="Tipo">${Object.entries(TIPOS).map(([k, v]) => `<option value="${k}"${c.tipo === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
+          <td class="c"><input type="checkbox" data-f="show" ${c.show !== false || c.fixo ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Mostrar"></td>
+          <td class="c"><input type="checkbox" data-f="req" ${c.req ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Obrigatório"></td>
+          <td class="o">${c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções">` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
+          <td class="a"><button type="button" data-ca="up" ${ci === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-ca="down" ${ci === s.campos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button>${c.custom ? '<button type="button" data-ca="del" aria-label="Remover campo">✕</button>' : ''}</td>
+        </tr>`).join('')}
+        </tbody></table></div>
+        <div class="tools"><button type="button" data-sa="add">+ Campo nesta seção</button></div>
+      </div></section>`).join('');
+  }
+  ['e2Titulo', 'e2Intro', 'e2Final'].forEach(id => $(id).addEventListener('input', e => { if (!E2) return; E2[{ e2Titulo: 'titulo', e2Intro: 'intro', e2Final: 'final' }[id]] = e.target.value; marcarE2(); }));
+  $('e2Secoes').addEventListener('input', e => {
+    const sec = e.target.closest('[data-si]'); if (!sec || !E2) return; const s = E2.secoes[+sec.dataset.si];
+    if (e.target.dataset.s) { s.titulo = e.target.value; marcarE2(); return; }
+    const tr = e.target.closest('[data-ci]'); const f = e.target.dataset.f; if (!tr || !f) return;
+    const c = s.campos[+tr.dataset.ci];
+    if (e.target.type === 'checkbox') { c[f] = e.target.checked; tr.classList.toggle('off', c.show === false); }
+    else c[f] = e.target.value;
+    marcarE2();
+    if (f === 'tipo') desenharE2();
+  });
+  $('e2Secoes').addEventListener('change', e => { if (e.target.dataset.f === 'tipo') { const sec = e.target.closest('[data-si]'), tr = e.target.closest('[data-ci]'); E2.secoes[+sec.dataset.si].campos[+tr.dataset.ci].tipo = e.target.value; marcarE2(); desenharE2(); } });
+  $('e2Secoes').addEventListener('click', e => {
+    const sec = e.target.closest('[data-si]'); if (!sec || !E2) return; const si = +sec.dataset.si, s = E2.secoes[si];
+    const troca = (arr, i, j) => { [arr[i], arr[j]] = [arr[j], arr[i]]; };
+    const sa = e.target.dataset.sa, ca = e.target.dataset.ca;
+    if (sa === 'up' && si > 0) troca(E2.secoes, si, si - 1);
+    else if (sa === 'down' && si < E2.secoes.length - 1) troca(E2.secoes, si, si + 1);
+    else if (sa === 'del') E2.secoes.splice(si, 1);
+    else if (sa === 'add') s.campos.push({ k: 'c' + Date.now().toString(36), label: 'Novo campo', tipo: 'texto', req: false, show: true, custom: true });
+    else if (ca) {
+      const ci = +e.target.closest('[data-ci]').dataset.ci;
+      if (ca === 'up' && ci > 0) troca(s.campos, ci, ci - 1);
+      else if (ca === 'down' && ci < s.campos.length - 1) troca(s.campos, ci, ci + 1);
+      else if (ca === 'del') s.campos.splice(ci, 1);
+      else return;
+    } else return;
+    marcarE2(); desenharE2();
+  });
+  $('btnE2Secao').addEventListener('click', () => { if (!E2) return; E2.secoes.push({ id: 's' + Date.now().toString(36), titulo: 'Nova seção', campos: [{ k: 'c' + Date.now().toString(36), label: 'Novo campo', tipo: 'texto', req: false, show: true, custom: true }] }); marcarE2(); desenharE2(); });
+  let e2ResetT = 0;
+  $('btnE2Padrao').addEventListener('click', () => {
+    if (Date.now() - e2ResetT > 4000) { e2ResetT = Date.now(); e2Status('Clique de novo para confirmar: o formulário volta ao padrão (só vale depois de publicar).'); return; }
+    e2ResetT = 0; E2 = copia(window.ETAPA2_PADRAO); marcarE2(); desenharE2();
+  });
+  $('btnE2Salvar').addEventListener('click', async () => {
+    if (!E2 || !fb.admin) return;
+    const vazio = E2.secoes.flatMap(s => s.campos).find(c => !String(c.label || '').trim());
+    if (vazio || E2.secoes.some(s => !String(s.titulo || '').trim())) { e2Status('Todo campo e toda seção precisam de um nome.'); return; }
+    const btn = $('btnE2Salvar'); btn.disabled = true; e2Status('Publicando…');
+    try {
+      const em = new Date().toISOString();
+      await F.setDoc(E2DOC, { json: JSON.stringify(E2), em, por: perfil.nome || perfil.email });
+      try { localStorage.setItem('argo-etapa2-cfg', JSON.stringify(E2)); } catch (_) {}
+      e2Sujo = false; e2Status('Formulário publicado em ' + fmtQuando(em) + '. Vale para todos os links da Etapa 2.');
+    } catch (err) { e2Status('Não foi possível publicar (' + (err.code || err.message) + ').'); }
+    finally { btn.disabled = false; }
+  });
+  $('btnE2Ver').addEventListener('click', () => {
+    const dados = { c: '', r: '', v: perfil.nome || '', w: dig(perfil.fone), n: 'EXEMPLO' };
+    const b = btoa(unescape(encodeURIComponent(JSON.stringify(dados)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    if (e2Sujo) e2Status('Atenção: a visualização mostra a versão publicada. Publique para ver as alterações.');
+    window.open(baseUrl('dados.html') + '#d=' + b, '_blank');
   });
 
   /* ---------- Usuários (ADM) ---------- */
