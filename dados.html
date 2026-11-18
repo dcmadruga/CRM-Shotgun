@@ -41,6 +41,7 @@ input[readonly]{opacity:.8}
 .bad{border-color:var(--danger)}
 .badf .hint{color:var(--danger)}
 .files{font-weight:500}
+.outro{margin-top:6px}
 .err{color:var(--danger);font-size:12px;font-weight:500;min-height:0}
 .radios{display:flex;gap:16px;padding-top:6px;font-size:15px;font-weight:500;color:var(--fg)}
 .radios label{flex-direction:row;align-items:center;gap:6px;font-size:15px;color:var(--fg)}
@@ -107,6 +108,8 @@ async function carregarConfig(){
 }
 
 let CFG=null, CAMPOS=[];
+const ehOutro=v=>/^outr[oa]s?(\b|$)/i.test(String(v||'').trim());
+function valoresFinais(o){ const r={...o}; Object.keys(r).filter(k=>k.endsWith('__outro')).forEach(k=>{ const base=k.slice(0,-7); if(ehOutro(r[base]) && r[k]) r[base]=r[base]+': '+r[k]; delete r[k] }); return r }
 const MAXF=10*1024*1024;
 const TIPO_ATTR={
   texto:'', email:'type="email" autocomplete="email"', telefone:'inputmode="tel" autocomplete="tel"', cpf:'inputmode="numeric"', rg:'autocomplete="off" style="text-transform:uppercase"',
@@ -117,7 +120,7 @@ function campoHtml(c){
   const lab=`<span>${esc(c.label)}${star}</span>`;
   if(c.tipo==='simnao') return `<label${full}>${lab}<span class="radios"><label><input type="radio" name="${esc(c.k)}" value="Sim"${req}> Sim</label><label><input type="radio" name="${esc(c.k)}" value="Não"> Não</label></span></label>`;
   if(c.tipo==='opcoes'){ const ops=String(c.opcoes||'').split(/[,;\n]/).map(x=>x.trim()).filter(Boolean);
-    return `<label${full}>${lab}<select name="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o=>`<option>${esc(o)}</option>`).join('')}</select></label>` }
+    return `<label${full}>${lab}<select name="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o=>`<option>${esc(o)}</option>`).join('')}</select><input name="${esc(c.k)}__outro" class="outro" data-v="texto" placeholder="Qual? Informe aqui" aria-label="${esc(c.label)}: qual?" hidden></label>` }
   if(c.tipo==='arquivo') return `<label class="full">${lab}<input type="file" name="${esc(c.k)}" data-v="arquivo" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"${req}><span class="hint">${esc(c.ph||'Fotos, PDF ou documentos. Até 10 MB por arquivo.')}</span><span class="files hint"></span></label>`;
   if(c.tipo==='textolongo') return `<label class="full">${lab}<textarea name="${esc(c.k)}"${req}${c.ph?` placeholder="${esc(c.ph)}"`:''}></textarea></label>`;
   const extra=c.k==='uf'?' maxlength="2" style="text-transform:uppercase"':'';
@@ -150,6 +153,7 @@ function cpfOk(v){ const d=dig(v); if(d.length!==11||/^(\d)\1+$/.test(d)) return
   const c=n=>{ let s=0; for(let i=0;i<n;i++) s+=+d[i]*(n+1-i); const r=(s*10)%11; return r===10?0:r }; return c(9)===+d[9]&&c(10)===+d[10] }
 function valida(el){
   if(el.type==='radio') return true;
+  if(el.hidden){ el.classList.remove('bad'); return true }
   if(el.type==='file'){ const fs=[...el.files]; const ok=(!el.required||fs.length>0) && fs.every(x=>x.size<=MAXF); el.closest('label').classList.toggle('badf',!ok); el.classList.toggle('bad',!ok); return ok }
   const v=el.value.trim(), t=el.dataset.v; let ok=true;
   if(el.required && !v) ok=false;
@@ -189,6 +193,11 @@ function ligarAuto(){
     out.textContent=fs.map(x=>x.name+' ('+(x.size/1048576).toFixed(1)+' MB'+(x.size>MAXF?' · grande demais':'')+')').join(' · ');
     valida(el);
   }));
+  f.querySelectorAll('select').forEach(sel=>{
+    const out=f.elements[sel.name+'__outro']; if(!out) return;
+    const sync=()=>{ const on=ehOutro(sel.value); out.hidden=!on; out.required=on; if(on && document.activeElement===sel) setTimeout(()=>out.focus(),0); if(!on) out.classList.remove('bad') };
+    sel.addEventListener('change',sync); sync();
+  });
   f.querySelectorAll('[data-v=rg]').forEach(el=>el.addEventListener('blur',()=>{ el.value=el.value.trim().toUpperCase() }));
   f.querySelectorAll('[data-v=cpf]').forEach(el=>el.addEventListener('blur',()=>{ const d=dig(el.value); if(d.length===11) el.value=d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4') }));
 }
@@ -271,13 +280,13 @@ f.addEventListener('submit',async e=>{
   if(ruins.length || radiosFaltando.length){
     const prim=ruins[0]||f.querySelector(`input[name="${CSS.escape(radiosFaltando[0].k)}"]`);
     const grandes=ruins.filter(el=>el.type==='file'&&[...el.files].some(x=>x.size>MAXF));
-    const especificos=ruins.filter(el=>el.type!=='file'&&el.value.trim()).map(el=>{ const c=CAMPOS.find(x=>x.k===el.name); return c?c.label:el.name });
+    const especificos=ruins.filter(el=>el.type!=='file'&&el.value.trim()).map(el=>{ const o=el.name.endsWith('__outro'); const c=CAMPOS.find(x=>x.k===el.name.replace(/__outro$/,'')); return c?c.label+(o?' (qual)':''):el.name });
     $('#msg').textContent = grandes.length ? 'Há arquivo com mais de 10 MB. Escolha um arquivo menor.' : especificos.length ? 'Confira: '+especificos.join(', ')+'.' : 'Preencha os campos obrigatórios destacados.';
     prim.focus(); prim.scrollIntoView({block:'center'}); return;
   }
   const temArquivos=CAMPOS.some(c=>c.tipo==='arquivo'&&f.elements[c.k]&&f.elements[c.k].files.length);
   if(temArquivos && !L.p){ $('#msg').textContent='Este link não aceita anexos. Peça ao seu consultor um link novo da Etapa 2.'; return }
-  const o=lerForm(), texto=montarTexto(o);
+  const o=valoresFinais(lerForm()), texto=montarTexto(o);
   const num = destino ? (destino.length<=11 ? '55'+destino : destino) : '';
   const url='https://wa.me/'+num+'?text='+encodeURIComponent(texto);
   const btn=$('#btnEnviar');
