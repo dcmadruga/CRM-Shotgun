@@ -75,7 +75,7 @@ async function iniciar() {
   });
 
   A.onAuthStateChanged(auth, async user => {
-    perfil = null; fb.admin = false; body.classList.remove('is-admin');
+    perfil = null; fb.admin = false; fb.task = false; body.classList.remove('is-admin', 'is-task');
     if (!user) { sbox.hidden = true; trocaOk = null; }
     if (!user) { mostrarLogin('Entre com o e-mail e a senha que o administrador cadastrou para você.'); return; }
     try {
@@ -93,6 +93,12 @@ async function iniciar() {
     }
     if (perfil.trocarSenha === true) { await exigirTroca(); if (auth.currentUser?.uid !== user.uid) return; perfil.trocarSenha = false; }
     fb.admin = perfil.papel === 'adm';
+    fb.task = perfil.papel === 'task'; body.classList.toggle('is-task', fb.task);
+    if (fb.task) {
+      box.hidden = true; body.classList.remove('locked');
+      $('tabUser').textContent = perfil.nome || perfil.email;
+      aplicarModo(); abrirAba('tabTask'); return;
+    }
     box.hidden = true; body.classList.remove('locked');
     $('tabUser').textContent = perfil.nome || perfil.email;
     aplicarPerfil();
@@ -141,7 +147,7 @@ async function iniciar() {
   }
 
   /* ---------- Abas ---------- */
-  const EXTRA = { tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2', tabE3: 'viewE3' };
+  const EXTRA = { tabTask: 'viewTask', tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2', tabE3: 'viewE3' };
   function abrirAba(tab) {
     Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
     document.body.classList.toggle('semBarra', !!EXTRA[tab]);
