@@ -42,6 +42,8 @@ input[readonly]{opacity:.8}
 .badf .hint{color:var(--danger)}
 .files{font-weight:500}
 .outro{margin-top:6px}
+label.mesmo{flex-direction:row;align-items:center;gap:8px;margin-top:6px;font-size:14px;font-weight:500;color:var(--fg);letter-spacing:0;cursor:pointer}
+label.mesmo input{width:auto;margin:0}
 .cnpjrow{display:flex;gap:8px}
 .cnpjrow input{flex:1}
 button.busca{padding:8px 14px;font-size:14px;background:var(--surface);color:var(--purple);flex:none}
@@ -244,6 +246,21 @@ async function buscarCnpj(el,forcar){
 }
 function ligarAuto(){
   f.querySelectorAll('[data-v=cnpj]').forEach(el=>{ el.addEventListener('input',()=>buscarCnpj(el)); el.addEventListener('blur',()=>buscarCnpj(el)); el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); buscarCnpj(el,true) } }); if(el.value && el.name==='cnpj') buscarCnpj(el) });
+  // E-mail que pode ser igual ao anterior da mesma seção (ex.: nota fiscal = boleto)
+  f.querySelectorAll('#secoes .sec').forEach(sec=>{
+    const ems=[...sec.querySelectorAll('input[data-v=email]')];
+    ems.slice(1).forEach((el,i)=>{
+      const base=ems[i], nomeBase=(base.closest('label').querySelector('span')?.textContent||'').replace(/\s*\*\s*$/,'').replace(/^e-?mail\s*(para|do|da|de)?\s*/i,'').trim();
+      const box=document.createElement('label'); box.className='mesmo';
+      box.innerHTML=`<input type="checkbox"> <span>Mesmo e-mail ${nomeBase?'do '+esc(nomeBase.toLowerCase()):'de cima'}</span>`;
+      el.closest('label').appendChild(box);
+      const cb=box.querySelector('input');
+      const sync=()=>{ if(cb.checked){ el.value=base.value; el.readOnly=true; if(el.classList.contains('bad')) valida(el) } else el.readOnly=false };
+      cb.addEventListener('change',()=>{ if(!cb.checked) el.value=''; sync(); f.dispatchEvent(new Event('input')); if(!cb.checked) el.focus() });
+      base.addEventListener('input',sync);
+      if(el.value && el.value===base.value){ cb.checked=true; sync() }
+    });
+  });
   f.querySelectorAll('[data-busca]').forEach(bt=>bt.addEventListener('click',()=>buscarCnpj(f.elements[bt.dataset.busca],true)));
   f.querySelectorAll('[data-v=cep]').forEach(el=>el.addEventListener('blur',async ()=>{
     const c=dig(el.value); if(c.length!==8) return; el.value=c.replace(/^(\d{5})(\d{3})$/,'$1-$2');
