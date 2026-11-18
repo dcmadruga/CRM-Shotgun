@@ -4,6 +4,7 @@
 window.ETAPA2_PADRAO = {
   titulo: 'Dados complementares obrigatórios',
   intro: 'Obrigado por aprovar a proposta! Preencha os dados abaixo para darmos início à implantação. Ao terminar, toque em Enviar pelo WhatsApp.',
+  msgEnvio: 'Olá {contato}! Obrigado por aprovar a proposta nº {numero}. Para iniciarmos a implantação, preencha os dados complementares obrigatórios neste link:\n{link}\n\n{vendedor} - Argo',
   final: 'Pronto! O WhatsApp abriu com os seus dados. Confira e toque em enviar.',
   secoes: [
     { id: 'empresa', titulo: 'Empresa', campos: [

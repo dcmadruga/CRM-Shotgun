@@ -179,7 +179,7 @@ table.users td:last-child{width:auto;white-space:nowrap}
   <button type="button" role="tab" id="tabProp" aria-selected="true">Proposta</button>
   <button type="button" role="tab" id="tabCfg" aria-selected="false">Parâmetros</button>
   <button type="button" role="tab" id="tabList" aria-selected="false" class="fbonly">Propostas</button>
-  <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Etapa 2</button>
+  <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Parâmetros Etapa 2</button>
   <button type="button" role="tab" id="tabUsers" aria-selected="false" class="admin fbonly">Usuários</button>
   <span class="tabuser fbonly" id="tabUser"></span><button type="button" class="linkbtn fbonly" id="btnSair">Sair</button>
 </div></nav>
@@ -344,6 +344,12 @@ table.users td:last-child{width:auto;white-space:nowrap}
     <button type="button" id="btnE2Padrao">Restaurar padrão</button>
     <span id="e2Status" class="hint"></span>
   </div>
+  <section class="sec"><h2>Mensagem de envio da Etapa 2 <span>texto padrão do WhatsApp para o cliente</span></h2><div class="body">
+    <label>Mensagem<textarea id="e2Msg" rows="5"></textarea></label>
+    <p class="hint">Use os marcadores, que são trocados na hora do envio: <b>{contato}</b> nome do contato, <b>{cliente}</b> razão social, <b>{numero}</b> nº da proposta, <b>{link}</b> link do formulário, <b>{vendedor}</b> seu nome. Se tirar o {link}, ele é colocado no fim da mensagem.</p>
+    <p class="hint" id="e2MsgPrev" style="white-space:pre-wrap;background:var(--field);border:1px solid var(--line);border-radius:4px;padding:8px"></p>
+  </div></section>
+
   <section class="sec"><h2>Textos do formulário <span>o que o cliente lê</span></h2><div class="body">
     <label>Título<input id="e2Titulo"></label>
     <label>Texto de abertura<textarea id="e2Intro" rows="2"></textarea></label>

@@ -67,6 +67,7 @@ async function iniciar() {
     await carregar(false);
     if (fb.admin) { ouvirUsuarios(); carregarE2(); }
     ouvirPropostas();
+    if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa2')).then(s => { if (s.exists() && s.data().json) E2PUB = JSON.parse(s.data().json); }).catch(() => {});
   });
 
   function aplicarPerfil() {
@@ -235,6 +236,14 @@ async function iniciar() {
         </div></div>`;
     }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "Enviar proposta para aprovação" na aba Proposta.'}</p>`;
   }
+  let E2PUB = null; // formulário publicado (para a mensagem de envio)
+  function msgEtapa2(p, link) {
+    const cfg = E2 || E2PUB || window.ETAPA2_PADRAO;
+    let t = String(cfg.msgEnvio || window.ETAPA2_PADRAO.msgEnvio);
+    if (!t.includes('{link}')) t += '\n{link}';
+    const v = { contato: p.contato || '', cliente: p.cliente || '', numero: p.numero || '', link, vendedor: perfil.nome || p.vendedor || '' };
+    return t.replace(/\{(contato|cliente|numero|link|vendedor)\}/g, (_, k) => v[k]).replace(/ +([,!.?])/g, '$1').replace(/ +\n/g, '\n');
+  }
   function linkEtapa2(p) {
     const sc = splitCidade(p.cidade);
     const dados = { c: p.cnpj, r: p.cliente, cid: sc.cidade, uf: sc.uf, v: perfil.nome || p.vendedor, w: dig(perfil.fone) || p.vendedorFone, n: p.numero };
@@ -270,7 +279,7 @@ async function iniciar() {
         catch (_) { pMsg('Link da Etapa 2: ' + link); }
         return;
       }
-      abrirWa(p.waCli, `Olá${p.contato ? ' ' + p.contato : ''}! Obrigado por aprovar a proposta nº ${p.numero}. Para iniciarmos a implantação, preencha os dados complementares obrigatórios neste link:\n${link}\n\n${perfil.nome || p.vendedor} - Argo`);
+      abrirWa(p.waCli, msgEtapa2(p, link));
       pMsg('WhatsApp aberto com o formulário da Etapa 2.');
     }
   });
@@ -293,6 +302,8 @@ async function iniciar() {
   function marcarE2() { e2Sujo = true; e2Status('Alterações ainda não publicadas.'); }
   function desenharE2() {
     if (!E2) return;
+    if (E2.msgEnvio == null) E2.msgEnvio = window.ETAPA2_PADRAO.msgEnvio;
+    $('e2Msg').value = E2.msgEnvio; previewMsg();
     $('e2Titulo').value = E2.titulo || ''; $('e2Intro').value = E2.intro || ''; $('e2Final').value = E2.final || '';
     $('e2Secoes').innerHTML = E2.secoes.map((s, si) => `
       <section class="sec" data-si="${si}"><h2>Seção ${si + 1} <span>${s.campos.filter(c => c.show !== false || c.fixo).length} campos visíveis</span></h2><div class="body">
@@ -313,6 +324,11 @@ async function iniciar() {
         <div class="tools"><button type="button" data-sa="add">+ Campo nesta seção</button></div>
       </div></section>`).join('');
   }
+  function previewMsg() {
+    if (!perfil) return;
+    $('e2MsgPrev').textContent = 'Exemplo: ' + msgEtapa2({ contato: 'Pedro', cliente: 'POSTO EXEMPLO LTDA', numero: '261118-AB12' }, baseUrl('dados.html') + '#d=…');
+  }
+  $('e2Msg').addEventListener('input', e => { if (!E2) return; E2.msgEnvio = e.target.value; marcarE2(); previewMsg(); });
   ['e2Titulo', 'e2Intro', 'e2Final'].forEach(id => $(id).addEventListener('input', e => { if (!E2) return; E2[{ e2Titulo: 'titulo', e2Intro: 'intro', e2Final: 'final' }[id]] = e.target.value; marcarE2(); }));
   $('e2Secoes').addEventListener('input', e => {
     const sec = e.target.closest('[data-si]'); if (!sec || !E2) return; const s = E2.secoes[+sec.dataset.si];
