@@ -147,14 +147,16 @@
       r.rg = m[1].replace(/\s+/g, '').replace(/[.\-]+$/, '');
       if (m[2]) r.orgaoRg = m[2].replace(/\s+/g, '').toUpperCase();
     }
+    if (r.rg && !r.orgaoRg && (m = bloco.match(/[óo]rg[aã]o\s+(?:expedidor|emissor)\s*:?\s*([A-Z]{2,7}\s*[-\/]?\s*[A-Z]{2})\b/i))) r.orgaoRg = m[1].replace(/\s+/g, '').toUpperCase();
     if (!r.rg && (m = bloco.match(/\bCNH\b[^0-9]{0,30}(\d{9,12})/i))) r.cnh = m[1];
-    if ((m = bloco.match(/resident[ea]s?\s+e\s+domiciliad[oa]s?\s+(?:na|no|à|a|em|ao)\s+(.{5,260}?)(?:,?\s*(?:CEP)[:\s nº°.]*(\d{2}\.?\d{3}\s?-?\s?\d{3})|;|\.\s+(?=[A-Z]{3})|$)/i))) {
+    if ((m = bloco.match(/resident[ea]s?\s+e\s+domiciliad[oa]s?\s*(?:n[oa](?:\s*\([oa]\))?|à|a|em|ao)?\s*:?\s+(.{5,260}?)(?:,?\s*(?:CEP)[:\s nº°.]*(\d{2}\.?\d{3}\s?-?\s?\d{3})|;|\.\s+(?=[A-Z]{3})|$)/i))) {
       r.endereco = limpa(m[1]).replace(/[,.\s]+$/, '');
       if (m[2]) r.cep = dig(m[2]).replace(/^(\d{5})(\d{3})$/, '$1-$2');
     }
+    if ((m = bloco.match(/profiss[aã]o\s*:\s*([^,;:]{3,45}?)\s*[,;]/i))) r.profissao = m[1].trim().toLowerCase();
     // profissão: primeira parte curta entre vírgulas que não é nenhum dos dados acima
     const partes = bloco.split(/[,;]/).slice(1, 8).map(s => s.trim());
-    for (const p of partes) {
+    for (const p of (r.profissao ? [] : partes)) {
       if (!p || p.length > 45 || /\d/.test(p)) continue;
       if (/brasileir|portugu|naturaliz|estrangeir|solteir|casad|divorciad|vi[uú]v|separad|convivente|uni[aã]o|regime|comunh|bens|natural d|nascid|portador|inscrit|identidade|\bRG\b|CPF|resident|domicil|maior|capaz|filh[oa]|nacionalidade/i.test(p)) continue;
       if (/^[a-záâãàéêíóôõúç][a-záâãàéêíóôõúç\s\/()-]+$/i.test(p) && p.split(/\s+/).length <= 5) { r.profissao = p.toLowerCase(); break; }
@@ -217,7 +219,7 @@
       while ((i = T.indexOf(N, i + 1)) >= 0) {
         const antes = T.slice(Math.max(0, i - 260), i), depois = T.slice(i + N.length, i + N.length + 160);
         if (/ADMINISTR[^.;]{0,200}$/.test(antes) && !/TESTEMUNHA/.test(antes.slice(-120))) admin = true;
-        if (/^[^.;]{0,60}(?:COMO |NA (?:QUALIDADE|FUNCAO) DE |SOCI[OA][- ])ADMINISTRADOR|^[^.;]{0,40}ADMINISTRADOR[A]? (?:DA SOCIEDADE|NAO SOCIO)/.test(depois)) admin = true;
+        if (/^[^.;]{0,60}(?:COMO |NA (?:QUALIDADE|FUNCAO) DE |SOCI[OA]\s*[-\/ ]\s*)ADMINISTRADOR|^[^.;]{0,40}ADMINISTRADOR[A]? (?:DA SOCIEDADE|NAO SOCIO)/.test(depois)) admin = true;
         // quadro de quotas: "Fulano .... 50.000 50.000,00" ou "Fulano ... 50.000 (cinquenta mil) quotas"; vale o último (contrato consolidado)
         let q = depois.match(/^[\s.:|-]*(\d{1,3}(?:\.\d{3})+|\d+)\s+(?:R\$\s*)?\d{1,3}(?:\.\d{3})*,\d{2}/);
         if (!q && !/TRANSFER|CEDE|CESS|VEND|ADQUIR/.test(antes.slice(-80) + depois.slice(0, 60))) q = depois.match(/^[^;]{0,80}?(\d{1,3}(?:\.\d{3})+|\d+)\s*(?:\([^)]{0,120}\))?\s*QUOTAS/);

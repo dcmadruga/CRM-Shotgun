@@ -259,18 +259,23 @@ async function lerContrato(el){
 }
 // "Praça dos Motoristas, 59, Poção, Cuiabá-MT" -> logradouro, número, complemento, bairro, cidade, UF
 function partesEndereco(e){
-  const r={}; let ps=String(e||'').split(',').map(x=>x.trim()).filter(Boolean); if(!ps.length) return r;
-  const ult=ps[ps.length-1].match(/^(.+?)\s*[-\/–]\s*([A-Za-z]{2})\.?$/);
-  if(ult){ r.cidade=ult[1].replace(/^(munic[ií]pio|cidade) de\s+/i,''); r.uf=ult[2].toUpperCase(); ps.pop() }
-  else if(ps.length>1 && /^[A-Za-z]{2}$/.test(ps[ps.length-1])){ r.uf=ps.pop().toUpperCase(); r.cidade=ps.pop() }
-  r.logradouro=ps.shift()||'';
-  const ni=ps.findIndex(x=>/^(n[º°o.]*\s*)?(\d+[a-z]?|s\/?n)\b/i.test(x));
-  if(ni>=0){ r.numero=ps[ni].replace(/^n[º°o.]*\s*/i,''); ps.splice(ni,1) }
-  else { const m=r.logradouro.match(/^(.*?)[\s,]+(?:n[º°o.]*\s*)?(\d+[a-z]?)$/i); if(m){ r.logradouro=m[1]; r.numero=m[2] } }
-  const bi=ps.findIndex(x=>/^(bairro|b\.|jardim|jd\.?|vila|parque|residencial|centro|setor)/i.test(x)); 
-  const bIdx=bi>=0?bi:ps.length-1;
-  if(ps.length){ r.bairro=ps[bIdx].replace(/^bairro\s*:?\s*/i,''); ps.splice(bIdx,1) }
-  if(ps.length) r.complemento=ps.join(', ');
+  const r={}; const cap=x=>/[a-zà-ú]/.test(x)?x:x.toLowerCase().replace(/(^|[\s\/(-])(\S)/g,(m,a,b)=>a+b.toUpperCase()).replace(/\s(D[aeo]s?|E|De)\s/g,m=>m.toLowerCase());
+  let ps=String(e||'').split(/,|;/).map(x=>x.trim()).filter(Boolean); if(!ps.length) return r;
+  const tira=(re)=>{ const i=ps.findIndex(x=>re.test(x)); if(i<0) return null; const v=ps[i]; ps.splice(i,1); return v };
+  let v;
+  if((v=tira(/^(munic[ií]pio|cidade)\b/i))){ const m=v.replace(/^(munic[ií]pio|cidade)\s*(de|:)?\s*/i,'').match(/^(.+?)(?:\s*[-\/–]\s*([A-Za-z]{2}))?\.?$/); r.cidade=m[1]; if(m[2]) r.uf=m[2].toUpperCase() }
+  else { const ult=ps[ps.length-1].match(/^(.+?)\s*[-\/–]\s*([A-Za-z]{2})\.?$/);
+    if(ult){ r.cidade=ult[1]; r.uf=ult[2].toUpperCase(); ps.pop() }
+    else if(ps.length>1 && /^[A-Za-z]{2}\.?$/.test(ps[ps.length-1])){ r.uf=ps.pop().replace('.','').toUpperCase(); r.cidade=ps.pop() } }
+  if((v=tira(/^(estado|uf)\b/i))) r.uf=r.uf||v.replace(/^(estado|uf)\s*(de|:)?\s*/i,'').slice(0,2).toUpperCase();
+  if((v=tira(/^bairro\b/i))) r.bairro=v.replace(/^bairro\s*:?\s*/i,'');
+  if((v=tira(/^(complemento|sala|apto|apartamento|ap\.|bloco|casa|lote|quadra|qd\.?|lt\.?)\b/i))) r.complemento=v.replace(/^complemento\s*:?\s*/i,'');
+  r.logradouro=(ps.shift()||'').replace(/^(endere[cç]o|logradouro)\s*:?\s*/i,'');
+  if((v=tira(/^(n[uú]mero|n[º°o.]*)?\s*:?\s*(\d+[A-Za-z]?|s\/?n)\b/i))) r.numero=v.replace(/^(n[uú]mero|n[º°o.]*)\s*:?\s*/i,'');
+  else { const m=r.logradouro.match(/^(.*?)[\s,]+(?:n[uú]mero|n[º°o.]*)?\s*(\d+[A-Za-z]?)$/i); if(m){ r.logradouro=m[1]; r.numero=m[2] } }
+  if(!r.bairro && ps.length){ const bi=ps.findIndex(x=>/^(b\.|jardim|jd\.?|vila|parque|residencial|centro|setor)/i.test(x)); r.bairro=ps.splice(bi>=0?bi:ps.length-1,1)[0] }
+  if(ps.length) r.complemento=[r.complemento,...ps].filter(Boolean).join(', ');
+  ['logradouro','bairro','cidade','complemento'].forEach(k=>{ if(r[k]) r[k]=cap(r[k].trim()) });
   return r;
 }
 function escolher(v,rolar=true){
