@@ -224,16 +224,23 @@ async function iniciar() {
     $('pList').innerHTML = vis.length ? vis.map(p => {
       const st = statusDe(p), ok = p.status === 'aprovada';
       return `<div class="pcard" data-id="${esc(p.id)}">
-        <div class="top"><div><b>${esc(p.cliente)}</b><div class="meta">Nº ${esc(p.numero)} · ${esc(p.cidade || '')}${fb.admin ? ' · ' + esc(p.vendedor) : ''}</div></div>
-          <span class="pill ${st.cls}">${st.txt}</span></div>
+        <div><b>${esc(p.cliente)}</b><div class="meta">Nº ${esc(p.numero)} · ${esc(p.cidade || '')}${fb.admin ? ' · ' + esc(p.vendedor) : ''}</div></div>
         <div class="vals">Licenças ${brl(p.totLic)} · Mensalidade ${brl(p.totMen)} · Deslocamento ${brl(p.totDes)}</div>
         <div class="meta">Enviada em ${esc(fmtTs(p.criado) || fmtD(p.data))}${p.validade ? ' · válida até ' + esc(fmtD(p.validade)) : ''}${ok ? `<br><b style="color:#1f7a46">Aprovada por ${esc(p.aprovadoNome)}${p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : ''} em ${esc(fmtTs(p.aprovadoEm))}</b>` : ''}</div>
-        <div class="acts">
-          ${ok ? '<button type="button" class="primary" data-a="etapa2">Etapa 2: enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link da Etapa 2</button>' : '<button type="button" data-a="reenviar">Reenviar link</button><button type="button" disabled title="Libera quando o cliente aprovar">Etapa 2 (após aprovação)</button>'}
-          <button type="button" data-a="pdf">Ver PDF</button>
-          <button type="button" data-a="abrir">Abrir no formulário</button>
-          <button type="button" data-a="copiar">${ok ? 'Copiar link da proposta' : 'Copiar link'}</button>
-        </div></div>`;
+        <div class="etapa"><div class="etit">Etapa 1 - Proposta</div>
+          <div class="acts">
+            <button type="button" data-a="pdf">Ver PDF</button>
+            <button type="button" data-a="abrir">Abrir no formulário</button>
+            ${ok ? '' : '<button type="button" data-a="reenviar">Reenviar pelo WhatsApp</button>'}
+            <button type="button" data-a="copiar">Copiar link da proposta</button>
+            <span class="pill ${st.cls}">${st.txt}</span>
+          </div></div>
+        <div class="etapa${ok ? '' : ' bloq'}"><div class="etit">Etapa 2 - Dados Complementares</div>
+          <div class="acts">
+            ${ok ? '<button type="button" class="primary" data-a="etapa2">Enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link da Etapa 2</button>'
+                 : '<button type="button" disabled>Enviar pelo WhatsApp</button><button type="button" disabled>Copiar link da Etapa 2</button><span class="hint">Libera quando o cliente aprovar a proposta.</span>'}
+          </div></div>
+        </div>`;
     }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "Enviar proposta para aprovação" na aba Proposta.'}</p>`;
   }
   let E2PUB = null; // formulário publicado (para a mensagem de envio)
