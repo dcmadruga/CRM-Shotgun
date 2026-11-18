@@ -673,7 +673,7 @@ async function iniciar() {
         <td><input data-f="nome" value="${esc(u.nome)}" aria-label="Nome"></td>
         <td>${esc(u.email)}</td>
         <td><input data-f="fone" value="${esc(u.fone)}" aria-label="Telefone" inputmode="tel"></td>
-        <td><select data-f="papel" ${eu ? 'disabled' : ''} aria-label="Perfil"><option value="vendedor"${u.papel !== 'adm' ? ' selected' : ''}>Vendedor</option><option value="adm"${u.papel === 'adm' ? ' selected' : ''}>Administrador</option></select></td>
+        <td><select data-f="papel" ${eu ? 'disabled' : ''} aria-label="Perfil"><option value="vendedor"${u.papel !== 'adm' && u.papel !== 'task' ? ' selected' : ''}>Vendedor</option><option value="task"${u.papel === 'task' ? ' selected' : ''}>TASK</option><option value="adm"${u.papel === 'adm' ? ' selected' : ''}>Administrador</option></select></td>
         <td><span class="pill ${u.ativo ? '' : 'off'}">${u.ativo ? 'Liberado' : 'Bloqueado'}</span></td>
         <td>${eu ? '<span class="hint">você</span>' : `<button type="button" data-a="toggle">${u.ativo ? 'Bloquear' : 'Liberar'}</button>`}${eu ? '' : '<button type="button" data-a="excluir" class="danger">Excluir</button>'}
             <button type="button" data-a="reset">Nova senha</button></td></tr>`;
