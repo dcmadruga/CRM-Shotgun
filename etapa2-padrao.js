@@ -24,7 +24,7 @@ window.ETAPA2_PADRAO = {
     { id: 'responsavel', titulo: 'Responsável legal', campos: [
       { k: 'respNome', label: 'Nome completo', tipo: 'texto', req: true, show: true },
       { k: 'respCpf', label: 'CPF', tipo: 'cpf', req: true, show: true },
-      { k: 'respRg', label: 'RG', tipo: 'rg', req: true, show: true },
+      { k: 'respRg', label: 'RG ou CNH', tipo: 'rg', req: true, show: true },
       { k: 'respEstadoCivil', label: 'Estado civil', tipo: 'opcoes', req: false, show: true, opcoes: 'Solteiro(a), Casado(a), Divorciado(a), Viúvo(a), União estável' },
       { k: 'respCargo', label: 'Cargo', tipo: 'texto', req: true, show: true },
       { k: 'respEmail', label: 'E-mail', tipo: 'email', req: true, show: true },

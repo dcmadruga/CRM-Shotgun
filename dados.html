@@ -158,7 +158,7 @@ function montar(){
   const cs=CFG.contratoSocial!==false; $('#secContrato').hidden=!cs; f.elements.contratoSocial.disabled=!cs; f.elements.contratoSocial.required=cs;
   if(cs) CAMPOS.push({k:'contratoSocial', label:'Contrato social', tipo:'arquivo', req:true, secao:'Contrato social'});
   $('#secoes').innerHTML=(CFG.secoes||[]).map(s=>{
-    const cs=(s.campos||[]).filter(c=>c.show!==false||c.fixo); if(!cs.length) return '';
+    const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||''))); if(!cs.length) return '';
     cs.forEach(c=>CAMPOS.push({...c, secao:s.titulo}));
     return `<section class="sec"><h2>${esc(s.titulo)}</h2><div class="body">${cs.map(campoHtml).join('')}</div></section>`;
   }).join('');
@@ -184,7 +184,7 @@ function valida(el){
   if(el.required && !v) ok=false;
   else if(v && t==='cnpj') ok=cnpjOk(v);
   else if(v && t==='cpf') ok=cpfOk(v);
-  else if(v && t==='rg') ok=/^[0-9A-Za-z]{4,14}$/.test(v.replace(/[.\-\/\s]/g,''));
+  else if(v && t==='rg') ok=/^[0-9A-Za-z]{4,16}$/.test(v.replace(/[.\-\/\s]/g,''));
   else if(v && t==='email') ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   else if(v && t==='telefone') ok=dig(v).length>=10;
   else if(v && t==='cep') ok=dig(v).length===8;
@@ -257,6 +257,22 @@ async function lerContrato(el){
       : 'Não conseguimos identificar os sócios neste arquivo'+(r.ocr?' (a imagem pode estar pouco nítida)':'')+'. O arquivo será enviado mesmo assim. Preencha os dados do representante legal abaixo.', SOCIOS.length?'ok':'bad');
   }catch(e){ if(id!==leitura) return; console.error(e); csStatus('Não conseguimos ler o arquivo agora. Ele será enviado mesmo assim. Preencha os dados do representante legal abaixo.','bad') }
 }
+// "Praça dos Motoristas, 59, Poção, Cuiabá-MT" -> logradouro, número, complemento, bairro, cidade, UF
+function partesEndereco(e){
+  const r={}; let ps=String(e||'').split(',').map(x=>x.trim()).filter(Boolean); if(!ps.length) return r;
+  const ult=ps[ps.length-1].match(/^(.+?)\s*[-\/–]\s*([A-Za-z]{2})\.?$/);
+  if(ult){ r.cidade=ult[1].replace(/^(munic[ií]pio|cidade) de\s+/i,''); r.uf=ult[2].toUpperCase(); ps.pop() }
+  else if(ps.length>1 && /^[A-Za-z]{2}$/.test(ps[ps.length-1])){ r.uf=ps.pop().toUpperCase(); r.cidade=ps.pop() }
+  r.logradouro=ps.shift()||'';
+  const ni=ps.findIndex(x=>/^(n[º°o.]*\s*)?(\d+[a-z]?|s\/?n)\b/i.test(x));
+  if(ni>=0){ r.numero=ps[ni].replace(/^n[º°o.]*\s*/i,''); ps.splice(ni,1) }
+  else { const m=r.logradouro.match(/^(.*?)[\s,]+(?:n[º°o.]*\s*)?(\d+[a-z]?)$/i); if(m){ r.logradouro=m[1]; r.numero=m[2] } }
+  const bi=ps.findIndex(x=>/^(bairro|b\.|jardim|jd\.?|vila|parque|residencial|centro|setor)/i.test(x)); 
+  const bIdx=bi>=0?bi:ps.length-1;
+  if(ps.length){ r.bairro=ps[bIdx].replace(/^bairro\s*:?\s*/i,''); ps.splice(bIdx,1) }
+  if(ps.length) r.complemento=ps.join(', ');
+  return r;
+}
 function escolher(v,rolar=true){
   const sec=secResp(); if(!sec) return;
   const s=v==='outro'?null:SOCIOS[+v];
@@ -264,7 +280,7 @@ function escolher(v,rolar=true){
     if(!s) return '';
     const l=String(c.label||'').toLowerCase();
     if(c.tipo==='cpf') return fmtCpf(s.cpf);
-    if(c.tipo==='rg'||/\brg\b|identidade/.test(l)) return s.rg?(s.rg+(s.orgaoRg&&c.tipo!=='rg'?' '+s.orgaoRg:'')):'';
+    if(c.tipo==='rg'||/\brg\b|identidade|\bcnh\b/.test(l)) return s.rg?(s.rg+(s.orgaoRg&&c.tipo!=='rg'?' '+s.orgaoRg:'')):(s.cnh&&/cnh|habilita/.test(l)?'CNH '+s.cnh:'');
     if(c.tipo==='data') return /nasc/.test(l)&&s.nascimento?s.nascimento.split('/').reverse().join('-'):'';
     if(c.tipo==='email'||c.tipo==='telefone'||c.tipo==='arquivo') return '';
     if(c.tipo==='cep') return s.cep||'';
@@ -272,10 +288,19 @@ function escolher(v,rolar=true){
     if(/nacionalidade/.test(l)) return s.nacionalidade||'';
     if(/profiss/.test(l)) return s.profissao||'';
     if(/cargo|fun[cç][aã]o|qualifica/.test(l)) return s.administrador?'Sócio administrador':'Sócio';
-    if(/endere|resid/.test(l)) return [s.endereco,s.cep&&'CEP '+s.cep].filter(Boolean).join(', ');
+    if(/n[uú]mero|^n[º°o]\.?$/.test(l)) return END.numero||'';
+    if(/complemento/.test(l)) return END.complemento||'';
+    if(/bairro/.test(l)) return END.bairro||'';
+    if(/cidade|munic/.test(l)) return END.cidade||'';
+    if(/^(estado|uf)\b/.test(l)&&!/civil/.test(l)) return END.uf||'';
+    if(/\bcep\b/.test(l)) return s.cep||'';
+    if(/endere|resid|logradouro/.test(l)) return separado?(END.logradouro||s.endereco||''):[s.endereco,s.cep&&'CEP '+s.cep].filter(Boolean).join(', ');
     if(/nome/.test(l)) return s.nome;
     return '';
   };
+  const labs=(sec.campos||[]).map(c=>String(c.label||'').toLowerCase());
+  const separado=labs.some(l=>/bairro|cidade|n[uú]mero/.test(l));
+  const END=s?partesEndereco(s.endereco):{};
   let alvo=null;
   (sec.campos||[]).forEach(c=>{
     const el=f.elements[c.k]; if(!el||el instanceof RadioNodeList) return;
