@@ -130,38 +130,67 @@ async function iniciar() {
   }
   const textoAprov = p => `Olá${p.contato ? ' ' + p.contato : ''}! Segue a proposta comercial da Argo nº ${p.numero} para ${p.cliente}.\n\nPara ver o PDF e aprovar, acesse:\n${linkAprov(p.id)}\n\n${p.vendedor} - Argo`;
 
-  $('btnAprov').addEventListener('click', async () => {
-    if (!perfil) return;
-    if (!String(S.cliente || '').trim()) { $('cliente').focus(); aprovMsg('Preencha o cliente antes de enviar.'); return; }
-    if (!window.jspdf) { aprovMsg('O gerador de PDF não carregou. Recarregue a página.'); return; }
+  // Salva a proposta uma vez; se nada mudou desde o último envio, reaproveita o mesmo link.
+  let ultimo = null;
+  async function salvarProposta(n) {
+    const assin = JSON.stringify(S);
+    if (ultimo && ultimo.assin === assin) { if (n && n !== ultimo.meta.waCli) { ultimo.meta.waCli = n; F.updateDoc(F.doc(db, 'propostas', ultimo.id), { waCli: n }).catch(() => {}); } return ultimo; }
+    const b64 = buildPdf().output('datauristring').split(',')[1];
+    if (b64.length > 950000) throw new Error('o PDF ficou grande demais (troque o logo por uma imagem menor)');
+    const ref = F.doc(F.collection(db, 'propostas'));
+    const numero = hojeIso().replace(/-/g, '').slice(2) + '-' + ref.id.slice(0, 4).toUpperCase();
+    const meta = {
+      numero, status: 'enviada', owner: perfil.uid, vendedor: perfil.nome || '', vendedorFone: dig(perfil.fone),
+      cliente: String(S.cliente || '').trim(), cnpj: S.cnpj || '', contato: String(S.contato || '').trim(), cidade: S.cidade || '',
+      waCli: n, data: S.data || hojeIso(), validade: S.validade || '',
+      totLic: sumRows(S.lic), totMen: sumRows(S.men), totDes: deslocamento(), arquivo: fileName(),
+      dados: JSON.parse(assin), criado: F.serverTimestamp()
+    };
+    const lote = F.writeBatch(db);
+    lote.set(ref, meta);
+    lote.set(F.doc(db, 'propostas', ref.id, 'arquivo', 'pdf'), { b64, nome: fileName() });
+    await lote.commit();
+    ultimo = { id: ref.id, meta, assin };
+    return ultimo;
+  }
+  function validarEnvio() {
+    if (!perfil) return null;
+    if (!String(S.cliente || '').trim()) { $('cliente').focus(); aprovMsg('Preencha o cliente antes de enviar.'); return null; }
+    if (!window.jspdf) { aprovMsg('O gerador de PDF não carregou. Recarregue a página.'); return null; }
     const n = waNum($('waAprov').value);
-    if (n && n.length < 12) { $('waAprov').focus(); aprovMsg('Confira o WhatsApp do cliente: DDD e número.'); return; }
+    if (n && n.length < 12) { $('waAprov').focus(); aprovMsg('Confira o WhatsApp do cliente: DDD e número.'); return null; }
+    return { n };
+  }
+  $('btnAprov').addEventListener('click', async () => {
+    const v = validarEnvio(); if (!v) return;
     const janela = window.open('', '_blank');
     const btn = $('btnAprov'); btn.disabled = true; aprovMsg('Salvando a proposta…');
     try {
-      const b64 = buildPdf().output('datauristring').split(',')[1];
-      if (b64.length > 950000) throw new Error('o PDF ficou grande demais (troque o logo por uma imagem menor)');
-      const ref = F.doc(F.collection(db, 'propostas'));
-      const numero = hojeIso().replace(/-/g, '').slice(2) + '-' + ref.id.slice(0, 4).toUpperCase();
-      const meta = {
-        numero, status: 'enviada', owner: perfil.uid, vendedor: perfil.nome || '', vendedorFone: dig(perfil.fone),
-        cliente: String(S.cliente || '').trim(), cnpj: S.cnpj || '', contato: String(S.contato || '').trim(), cidade: S.cidade || '',
-        waCli: n, data: S.data || hojeIso(), validade: S.validade || '',
-        totLic: sumRows(S.lic), totMen: sumRows(S.men), totDes: deslocamento(), arquivo: fileName(),
-        dados: JSON.parse(JSON.stringify(S)), criado: F.serverTimestamp()
-      };
-      const lote = F.writeBatch(db);
-      lote.set(ref, meta);
-      lote.set(F.doc(db, 'propostas', ref.id, 'arquivo', 'pdf'), { b64, nome: fileName() });
-      await lote.commit();
-      abrirWa(n, textoAprov({ ...meta, id: ref.id }), janela);
-      aprovMsg(`Proposta nº ${numero} salva e enviada. Acompanhe na aba Propostas.`);
+      const r = await salvarProposta(v.n);
+      abrirWa(v.n, textoAprov({ ...r.meta, id: r.id }), janela);
+      aprovMsg(`Proposta nº ${r.meta.numero} salva e enviada. Acompanhe na aba Propostas.`);
     } catch (e) {
       if (janela) janela.close();
       aprovMsg('Não foi possível enviar: ' + (e.code || e.message) + '.');
     } finally { btn.disabled = false; }
   });
-  $('btnNova').addEventListener('click', () => { $('waAprov').value = ''; });
+  $('btnAprovCopy').addEventListener('click', async () => {
+    const v = validarEnvio(); if (!v) return;
+    const btn = $('btnAprovCopy'); btn.disabled = true; aprovMsg('Salvando a proposta…');
+    try {
+      const r = await salvarProposta(v.n);
+      const link = linkAprov(r.id);
+      $('aprovLink').value = link; $('aprovLinkRow').hidden = false;
+      try { await navigator.clipboard.writeText(link); aprovMsg(`Proposta nº ${r.meta.numero} salva. Link copiado: cole no WhatsApp, e-mail ou onde preferir.`); }
+      catch (_) { $('aprovLink').select(); aprovMsg(`Proposta nº ${r.meta.numero} salva. Toque em Copiar ao lado do link.`); }
+    } catch (e) { aprovMsg('Não foi possível salvar: ' + (e.code || e.message) + '.'); }
+    finally { btn.disabled = false; }
+  });
+  $('btnAprovLinkCopy').addEventListener('click', async () => {
+    const i = $('aprovLink'); i.select();
+    try { await navigator.clipboard.writeText(i.value); aprovMsg('Link copiado.'); } catch (_) { try { document.execCommand('copy'); aprovMsg('Link copiado.'); } catch (__) { aprovMsg('Selecione o link e copie.'); } }
+  });
+  $('btnNova').addEventListener('click', () => { $('waAprov').value = ''; $('aprovLinkRow').hidden = true; ultimo = null; });
 
   /* ---------- Aba Propostas ---------- */
   let unsubP = null, props = [];
@@ -211,7 +240,7 @@ async function iniciar() {
     const a = e.target.dataset.a, card = e.target.closest('.pcard'); if (!a || !card) return;
     const p = props.find(x => x.id === card.dataset.id); if (!p) return;
     if (a === 'reenviar') { abrirWa(p.waCli, textoAprov(p)); pMsg('WhatsApp aberto com o link da proposta.'); }
-    if (a === 'copiar') { try { await navigator.clipboard.writeText(textoAprov(p)); pMsg('Mensagem com o link copiada.'); } catch (_) { pMsg('Link: ' + linkAprov(p.id)); } }
+    if (a === 'copiar') { try { await navigator.clipboard.writeText(linkAprov(p.id)); pMsg('Link da proposta nº ' + p.numero + ' copiado.'); } catch (_) { pMsg('Link: ' + linkAprov(p.id)); } }
     if (a === 'abrir') {
       S = { ...JSON.parse(JSON.stringify(p.dados || {})) }; save(); renderProp(); aplicarValidade(); totals();
       $('waAprov').value = p.waCli ? String(p.waCli).replace(/^55/, '') : '';

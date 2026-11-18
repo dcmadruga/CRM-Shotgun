@@ -213,7 +213,8 @@ table.users td:last-child{width:auto;white-space:nowrap}
     <div class="grid">
       <label>WhatsApp do contato do cliente<input id="waAprov" inputmode="tel" placeholder="(65) 99999-0000" autocomplete="off"></label>
     </div>
-    <div class="tools"><button type="button" class="primary" id="btnAprov">Enviar proposta para aprovação</button></div>
+    <div class="tools"><button type="button" class="primary" id="btnAprov">Enviar pelo WhatsApp</button><button type="button" id="btnAprovCopy">Copiar link da proposta</button></div>
+    <div class="tools" id="aprovLinkRow" hidden><input id="aprovLink" readonly aria-label="Link da proposta" style="flex:1;min-width:200px"><button type="button" id="btnAprovLinkCopy">Copiar</button></div>
     <p class="hint" id="aprovMsg">A proposta fica salva na aba Propostas. Quando o cliente aprovar pelo link, ela aparece como APROVADA e a Etapa 2 é liberada.</p>
   </div></section>
 
