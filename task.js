@@ -73,7 +73,7 @@ function etapas(t) {
   if (!p) return `<div class="tketapas"><span class="tke none">${t.propostaId ? 'Proposta ainda não aprovada' : 'Sem proposta vinculada'}</span></div>`;
   const e = (n, nome, ok, quando, pend) => `<span class="tke ${ok ? 'ok' : pend ? 'pend' : 'none'}" title="${esc(nome + (quando ? ' em ' + quando : ''))}"><b>${ok ? '✓' : n}</b>${esc(nome)}${ok && quando ? `<small>${esc(quando)}</small>` : pend ? `<small>${esc(pend)}</small>` : ''}</span>`;
   const d = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString('pt-BR') : '';
-  return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${e(2, 'Dados', !!p.e2Em, d(p.e2Em), p.e2Em ? '' : 'aguardando')}${e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : '')}</div>`;
+  return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${p.e2Em ? e(2, 'Dados', true, d(p.e2Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e2" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(2, 'Dados', false, '', 'aguardando')}${e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : '')}</div>`;
 }
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
@@ -257,6 +257,35 @@ async function verProposta(pid, bt) {
   finally { bt.disabled = false; bt.textContent = txt; }
 }
 
+async function verDados(pid) {
+  const p = (aprovadas || []).find(x => x.id === pid) || {};
+  abrirDlg('e2', 'Dados complementares · ' + (p.cliente || ''), '<p class="hint">Carregando…</p>');
+  try {
+    const [r, an] = await Promise.all([F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')), F.getDocs(F.collection(db, 'propostas', pid, 'anexos'))]);
+    const d = r.exists() ? r.data() : { campos: {} };
+    const arqs = an.docs.map(x => ({ id: x.id, ...x.data() }));
+    $('tkDlgBody').innerHTML = `<div id="tkE2" data-pid="${esc(pid)}">
+      ${d.em ? `<p class="hint">Enviado pelo cliente em ${esc(fmtTs(d.em))}.</p>` : ''}
+      <table class="tkdados"><tbody>${Object.entries(d.campos || {}).map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('') || '<tr><td>Sem respostas salvas.</td></tr>'}</tbody></table>
+      ${arqs.length ? `<h4 class="tkh4">Anexos</h4><div class="tkanexos">${arqs.map(x => `<button type="button" data-anexo="${esc(x.id)}">⬇ ${esc(x.nome)} <small>${esc(x.campo || '')} · ${(Number(x.tamanho || 0) / 1048576).toFixed(1)} MB</small></button>`).join('')}</div>` : ''}
+      <div class="tkacts" style="margin-top:12px"><button type="button" id="tkE2Copiar">Copiar dados</button></div></div>`;
+    $('tkE2').dataset.texto = d.texto || Object.entries(d.campos || {}).map(([k, v]) => k + ': ' + v).join('\n');
+  } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar (${esc(e.code || e.message)}).</p>`; }
+}
+async function baixarAnexo(pid, aid, bt) {
+  bt.disabled = true;
+  try {
+    const meta = (await F.getDoc(F.doc(db, 'propostas', pid, 'anexos', aid))).data();
+    const ps = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos', aid, 'partes'));
+    const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join('');
+    const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const url = URL.createObjectURL(new Blob([u8], { type: meta.tipo || 'application/octet-stream' }));
+    const l = document.createElement('a'); l.href = url; l.download = meta.nome || 'anexo'; document.body.appendChild(l); l.click(); l.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } catch (e) { dmsg('Não foi possível baixar o anexo (' + (e.code || e.message) + ').'); }
+  finally { bt.disabled = false; }
+}
+
 /* ---------- Eventos ---------- */
 let ligado = false;
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar); else ligar();
@@ -272,6 +301,7 @@ function ligar() {
   $('tkGrid').addEventListener('click', e => {
     const b = e.target.closest('[data-tk]'); if (!b) return; const id = b.closest('[data-id]').dataset.id;
     if (b.dataset.tk === 'pdf') return verProposta(b.dataset.pid, b);
+    if (b.dataset.tk === 'e2') return verDados(b.dataset.pid);
     if (b.dataset.tk === 'dados') formDados(tasks.find(t => t.id === id)); else formCheck(id);
   });
   $('tkDlgFechar').addEventListener('click', () => dlg().close());
@@ -287,6 +317,8 @@ function ligar() {
   $('tkDlgBody').addEventListener('click', async e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.id === 'tkBuscaCnpj') return buscarCnpj();
+    if (b.dataset.anexo) return baixarAnexo($('tkE2').dataset.pid, b.dataset.anexo, b);
+    if (b.id === 'tkE2Copiar') { try { await navigator.clipboard.writeText($('tkE2').dataset.texto || ''); dmsg('Dados copiados.'); } catch (_) { dmsg('Não foi possível copiar.'); } return; }
     if (b.id === 'tkExcluir') { const id = $('tkForm').dataset.id; if (!confirmar(b, 'task' + id, 'Confirmar exclusão')) return; try { await F.deleteDoc(F.doc(db, 'tasks', id)); dlg().close(); msg('Cadastro excluído.'); } catch (er) { dmsg('Não foi possível excluir (' + (er.code || 'erro') + ').'); } return; }
     if (b.dataset.imp) return importar(b.dataset.imp, b);
     if (b.dataset.ck) {
