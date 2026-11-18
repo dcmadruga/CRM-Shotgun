@@ -106,7 +106,7 @@ async function carregarConfig(){
 
 let CFG=null, CAMPOS=[];
 const TIPO_ATTR={
-  texto:'', email:'type="email" autocomplete="email"', telefone:'inputmode="tel" autocomplete="tel"', cpf:'inputmode="numeric"',
+  texto:'', email:'type="email" autocomplete="email"', telefone:'inputmode="tel" autocomplete="tel"', cpf:'inputmode="numeric"', rg:'autocomplete="off" style="text-transform:uppercase"',
   cnpj:'inputmode="numeric" placeholder="00.000.000/0000-00"', cep:'inputmode="numeric"', numero:'type="number" min="0" inputmode="numeric"', data:'type="date"'
 };
 function campoHtml(c){
@@ -150,6 +150,7 @@ function valida(el){
   if(el.required && !v) ok=false;
   else if(v && t==='cnpj') ok=cnpjOk(v);
   else if(v && t==='cpf') ok=cpfOk(v);
+  else if(v && t==='rg') ok=/^[0-9A-Za-z]{4,14}$/.test(v.replace(/[.\-\/\s]/g,''));
   else if(v && t==='email') ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
   else if(v && t==='telefone') ok=dig(v).length>=10;
   else if(v && t==='cep') ok=dig(v).length===8;
@@ -178,6 +179,7 @@ function ligarAuto(){
       const set=(k,v)=>{ if(v && tem(k) && !f.elements[k].value) f.elements[k].value=v };
       set('logradouro',j.street); set('bairro',j.neighborhood); set('cidade',j.city); set('uf',j.state); }catch(e){}
   }));
+  f.querySelectorAll('[data-v=rg]').forEach(el=>el.addEventListener('blur',()=>{ el.value=el.value.trim().toUpperCase() }));
   f.querySelectorAll('[data-v=cpf]').forEach(el=>el.addEventListener('blur',()=>{ const d=dig(el.value); if(d.length===11) el.value=d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4') }));
 }
 

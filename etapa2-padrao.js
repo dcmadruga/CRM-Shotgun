@@ -47,4 +47,4 @@ window.ETAPA2_PADRAO = {
     ] }
   ]
 };
-window.ETAPA2_TIPOS = { texto: 'Texto', textolongo: 'Texto longo', numero: 'Número', data: 'Data', email: 'E-mail', telefone: 'Telefone', cpf: 'CPF', cnpj: 'CNPJ', cep: 'CEP', simnao: 'Sim / Não', opcoes: 'Lista de opções' };
+window.ETAPA2_TIPOS = { texto: 'Texto', textolongo: 'Texto longo', numero: 'Número', data: 'Data', email: 'E-mail', telefone: 'Telefone', cpf: 'CPF', rg: 'RG', cnpj: 'CNPJ', cep: 'CEP', simnao: 'Sim / Não', opcoes: 'Lista de opções' };
