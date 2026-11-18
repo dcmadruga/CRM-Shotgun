@@ -42,6 +42,10 @@ input[readonly]{opacity:.8}
 .badf .hint{color:var(--danger)}
 .files{font-weight:500}
 .outro{margin-top:6px}
+.cnpjrow{display:flex;gap:8px}
+.cnpjrow input{flex:1}
+button.busca{padding:8px 14px;font-size:14px;background:var(--surface);color:var(--purple);flex:none}
+button.busca:disabled{opacity:.6;cursor:progress}
 .err{color:var(--danger);font-size:12px;font-weight:500;min-height:0}
 .radios{display:flex;gap:16px;padding-top:6px;font-size:15px;font-weight:500;color:var(--fg)}
 .radios label{flex-direction:row;align-items:center;gap:6px;font-size:15px;color:var(--fg)}
@@ -147,6 +151,7 @@ function campoHtml(c){
   if(c.tipo==='arquivo') return `<label class="full">${lab}<input type="file" name="${esc(c.k)}" data-v="arquivo" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"${req}><span class="hint">${esc(c.ph||'Fotos, PDF ou documentos. Até 10 MB por arquivo.')}</span><span class="files hint"></span></label>`;
   if(c.tipo==='textolongo') return `<label class="full">${lab}<textarea name="${esc(c.k)}"${req}${c.ph?` placeholder="${esc(c.ph)}"`:''}></textarea></label>`;
   const extra=c.k==='uf'?' maxlength="2" style="text-transform:uppercase"':'';
+  if(c.tipo==='cnpj') return `<label${full}>${lab}<span class="cnpjrow"><input name="${esc(c.k)}" data-v="cnpj" ${TIPO_ATTR.cnpj}${req}><button type="button" class="busca" data-busca="${esc(c.k)}">Pesquisar</button></span><span class="hint cnpjmsg" hidden></span></label>`;
   return `<label${full}>${lab}<input name="${esc(c.k)}" data-v="${esc(c.tipo)}" ${TIPO_ATTR[c.tipo]||''}${req}${c.ph?` placeholder="${esc(c.ph)}"`:''}${extra}></label>`;
 }
 function montar(){
@@ -192,20 +197,54 @@ function valida(el){
 }
 
 /* Preenchimento automático pelo CNPJ e CEP */
-let buscado='';
-async function buscarCnpj(el){
-  const d=dig(el.value); if(!cnpjOk(d)||d===buscado) return; buscado=d; el.value=fmtCnpj(d);
+const buscados={};
+async function buscarCnpj(el,forcar){
+  const d=dig(el.value), lab=el.closest('label'), msg=lab&&lab.querySelector('.cnpjmsg'), bt=lab&&lab.querySelector('.busca');
+  const aviso=t=>{ if(msg){ msg.hidden=!t; msg.textContent=t||'' } };
+  if(!cnpjOk(d)){ if(forcar){ aviso('Digite um CNPJ válido para pesquisar.'); valida(el) } return }
+  if(buscados[el.name]===d && !forcar) return; buscados[el.name]=d; el.value=fmtCnpj(d);
+  if(bt) bt.disabled=true; aviso('Pesquisando…');
   try{
-    const r=await fetch('https://brasilapi.com.br/api/cnpj/v1/'+d); if(!r.ok) return; const j=await r.json();
-    const set=(k,v)=>{ if(v && tem(k) && !f.elements[k].value) f.elements[k].value=v };
-    set('razao',j.razao_social); set('fantasia',j.nome_fantasia); set('cep',j.cep&&String(j.cep).replace(/^(\d{5})(\d{3})$/,'$1-$2'));
-    set('logradouro',[j.descricao_tipo_de_logradouro,j.logradouro].filter(Boolean).join(' ')); set('numero',j.numero); set('complemento',j.complemento);
-    set('bairro',j.bairro); set('cidade',j.municipio); set('uf',j.uf);
-    f.dispatchEvent(new Event('input'));
-  }catch(e){}
+    const r=await fetch('https://brasilapi.com.br/api/cnpj/v1/'+d); if(!r.ok){ aviso(r.status===404?'CNPJ não encontrado na Receita.':'Não foi possível pesquisar agora. Preencha à mão.'); return } const j=await r.json();
+    const cep=j.cep&&String(j.cep).padStart(8,'0').replace(/^(\d{5})(\d{3})$/,'$1-$2'), rua=[j.descricao_tipo_de_logradouro,j.logradouro].filter(Boolean).join(' ');
+    const fone=String(j.ddd_telefone_1||'').replace(/\D/g,'');
+    if(el.name==='cnpj'){
+      // CNPJ da empresa do cliente: preenche os campos da empresa
+      const set=(k,v)=>{ if(v && tem(k) && (forcar||!f.elements[k].value)) f.elements[k].value=v };
+      set('razao',j.razao_social); set('fantasia',j.nome_fantasia); set('cep',cep);
+      set('logradouro',rua); set('numero',j.numero); set('complemento',j.complemento);
+      set('bairro',j.bairro); set('cidade',j.municipio); set('uf',j.uf);
+    } else {
+      // Outro CNPJ (contabilidade, etc.): preenche só os campos da mesma seção
+      const sec=el.closest('.sec'); let n=0;
+      sec.querySelectorAll('label').forEach(l=>{
+        const inp=l.querySelector('input:not([type=radio]):not([type=file]),select,textarea'); if(!inp||inp===el) return;
+        const t=(l.querySelector('span')?.textContent||'').toLowerCase(), tipo=inp.dataset.v;
+        if(/contador|cpf|crc|respons/.test(t)) return;
+        let v='';
+        if(/fantasia/.test(t)) v=j.nome_fantasia;
+        else if(/raz[aã]o|nome|empresa/.test(t)) v=j.razao_social;
+        else if(tipo==='email'||/e-?mail/.test(t)) v=j.email&&String(j.email).toLowerCase();
+        else if(tipo==='telefone'||/telefone|whats|fone/.test(t)) v=fone.length>=10?fone.replace(/^(\d{2})(\d{4,5})(\d{4})$/,'($1) $2-$3'):'';
+        else if(tipo==='cep'||/\bcep\b/.test(t)) v=cep;
+        else if(/n[uú]mero/.test(t)) v=j.numero;
+        else if(/complemento/.test(t)) v=j.complemento;
+        else if(/bairro/.test(t)) v=j.bairro;
+        else if(/cidade|munic/.test(t)) v=j.municipio;
+        else if(/^(estado|uf)\b/.test(t)) v=j.uf;
+        else if(/endere|logradouro|rua/.test(t)) v=rua;
+        if(v && (forcar||!inp.value)){ inp.value=v; n++; if(inp.classList.contains('bad')) valida(inp) }
+      });
+      aviso(n?'Preenchido com os dados da Receita: '+(j.razao_social||'')+'. Confira.':'Encontrado: '+(j.razao_social||'')+'.');
+      f.dispatchEvent(new Event('input')); return;
+    }
+    aviso(''); f.dispatchEvent(new Event('input'));
+  }catch(e){ aviso('Não foi possível pesquisar agora. Preencha à mão.') }
+  finally{ if(bt) bt.disabled=false }
 }
 function ligarAuto(){
-  f.querySelectorAll('[data-v=cnpj]').forEach(el=>{ el.addEventListener('input',()=>buscarCnpj(el)); el.addEventListener('blur',()=>buscarCnpj(el)); if(el.value) buscarCnpj(el) });
+  f.querySelectorAll('[data-v=cnpj]').forEach(el=>{ el.addEventListener('input',()=>buscarCnpj(el)); el.addEventListener('blur',()=>buscarCnpj(el)); el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); buscarCnpj(el,true) } }); if(el.value && el.name==='cnpj') buscarCnpj(el) });
+  f.querySelectorAll('[data-busca]').forEach(bt=>bt.addEventListener('click',()=>buscarCnpj(f.elements[bt.dataset.busca],true)));
   f.querySelectorAll('[data-v=cep]').forEach(el=>el.addEventListener('blur',async ()=>{
     const c=dig(el.value); if(c.length!==8) return; el.value=c.replace(/^(\d{5})(\d{3})$/,'$1-$2');
     if(tem('logradouro') && f.logradouro.value) return;
