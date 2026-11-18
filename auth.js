@@ -65,9 +65,10 @@ async function iniciar() {
     aplicarPerfil();
     aplicarModo();
     await carregar(false);
-    if (fb.admin) { ouvirUsuarios(); carregarE2(); }
+    if (fb.admin) { ouvirUsuarios(); carregarE2(); carregarE3(); }
     ouvirPropostas();
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa2')).then(s => { if (s.exists() && s.data().json) E2PUB = JSON.parse(s.data().json); }).catch(() => {});
+    if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa3')).then(s => { if (s.exists() && s.data().json) E3PUB = JSON.parse(s.data().json); }).catch(() => {});
   });
 
   function aplicarPerfil() {
@@ -107,7 +108,7 @@ async function iniciar() {
   }
 
   /* ---------- Abas ---------- */
-  const EXTRA = { tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2' };
+  const EXTRA = { tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2', tabE3: 'viewE3' };
   function abrirAba(tab) {
     Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
     document.body.classList.toggle('semBarra', !!EXTRA[tab]);
@@ -217,7 +218,8 @@ async function iniciar() {
   }
   function desenharPropostas() {
     const busca = $('pBusca').value.trim().toLowerCase(), filtro = $('pFiltro').value;
-    const vis = props.filter(p => (!filtro || p.status === filtro) &&
+    const passa = p => !filtro || (filtro === 'ctok' ? !!p.ctAceitoEm : filtro === 'ctenv' ? (!!p.ctEm && !p.ctAceitoEm) : p.status === filtro);
+    const vis = props.filter(p => passa(p) &&
       (!busca || [p.cliente, p.cnpj, p.numero, p.cidade, p.vendedor].join(' ').toLowerCase().includes(busca)));
     const ap = props.filter(p => p.status === 'aprovada').length;
     $('pCount').textContent = `${props.length} no total · ${ap} aprovada${ap === 1 ? '' : 's'}`;
@@ -242,6 +244,13 @@ async function iniciar() {
                  : '<button type="button" disabled>Enviar pelo WhatsApp</button><button type="button" disabled>Copiar link da Etapa 2</button><span class="hint">Libera quando o cliente aprovar a proposta.</span>'}
           </div>
           <div class="e2dados" hidden></div></div>
+        <div class="etapa${p.e2Em ? '' : ' bloq'}"><div class="etit">Etapa 3 - Contrato ${p.ctAceitoEm ? '<span class="pill ok">CONTRATO ACEITO</span>' : p.ctEm ? '<span class="pill wait">Aguardando aceite</span>' : ''}</div>
+          ${p.ctAceitoEm ? `<div class="ctinfo">Aceito por ${esc(p.ctAceitoNome)}${p.ctAceitoCargo ? ' (' + esc(p.ctAceitoCargo) + ')' : ''}, CPF ${esc(p.ctAceitoCpf || '')}, em ${esc(fmtTs(p.ctAceitoEm))}</div>` : p.ctEm ? `<div class="meta">Contrato gerado em ${esc(fmtTs(p.ctEm))}</div>` : ''}
+          <div class="acts">
+            ${!p.e2Em ? '<button type="button" disabled>Gerar e enviar pelo WhatsApp</button><button type="button" disabled>Copiar link do contrato</button><span class="hint">Libera quando o cliente enviar os dados complementares.</span>'
+              : p.ctAceitoEm ? '<button type="button" class="primary" data-a="ctpdf">Ver contrato aceito (PDF)</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>'
+              : `<button type="button" class="primary" data-a="ctenviar">${p.ctEm ? 'Gerar de novo e enviar pelo WhatsApp' : 'Gerar e enviar pelo WhatsApp'}</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>${p.ctEm ? '<button type="button" data-a="ctpdf">Ver contrato (PDF)</button>' : ''}`}
+          </div></div>
         </div>`;
     }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "Enviar proposta para aprovação" na aba Proposta.'}</p>`;
   }
@@ -322,7 +331,96 @@ async function iniciar() {
       abrirWa(p.waCli, msgEtapa2(p, link));
       pMsg('WhatsApp aberto com o formulário da Etapa 2.');
     }
+    if (a === 'ctenviar' || a === 'ctcopy') {
+      if (!p.e2Em) return;
+      const janela = a === 'ctenviar' ? window.open('', '_blank') : null;
+      bt.disabled = true;
+      try {
+        if (!p.ctEm || (a === 'ctenviar' && !p.ctAceitoEm)) { pMsg('Gerando o contrato…'); await gerarContrato(p); }
+        const link = linkContrato(p.id);
+        if (a === 'ctcopy') {
+          try { await navigator.clipboard.writeText(link); pMsg('Link do contrato (proposta nº ' + p.numero + ') copiado.'); }
+          catch (_) { pMsg('Link do contrato: ' + link); }
+        } else { abrirWa(p.waCli, msgEtapa3(p, link), janela); pMsg('Contrato gerado e WhatsApp aberto com o link.'); }
+      } catch (err) {
+        if (janela) janela.close();
+        pMsg('Não foi possível gerar o contrato: ' + (err.code || err.message) + '.');
+      } finally { bt.disabled = false; }
+      return;
+    }
+    if (a === 'ctpdf') {
+      bt.disabled = true; pMsg('Abrindo o contrato…');
+      try {
+        const d = (await F.getDoc(F.doc(db, 'propostas', p.id, 'arquivo', 'contrato'))).data();
+        const doc = window.contratoPdf({ titulo: d.titulo, texto: d.texto, numero: p.numero, logo: logoAtual(), logoW: CFG.logoW, logoH: CFG.logoH,
+          aceite: p.ctAceitoEm ? { nome: p.ctAceitoNome, cpf: p.ctAceitoCpf, cargo: p.ctAceitoCargo, em: fmtTs(p.ctAceitoEm), cliente: p.cliente } : null });
+        const url = URL.createObjectURL(doc.output('blob'));
+        const l = document.createElement('a'); l.href = url; l.download = 'Contrato Argo ' + p.numero + (p.ctAceitoEm ? ' - aceito' : '') + '.pdf'; l.target = '_blank'; l.click();
+        setTimeout(() => URL.revokeObjectURL(url), 60000); pMsg('');
+      } catch (err) { pMsg('Não foi possível abrir o contrato (' + (err.code || err.message) + ').'); }
+      finally { bt.disabled = false; }
+      return;
+    }
   });
+
+  /* ---------- Etapa 3: contrato ---------- */
+  let E3PUB = null;
+  const cfgE3 = () => E3 || E3PUB || window.ETAPA3_PADRAO;
+  const linkContrato = id => baseUrl('contrato.html') + '#' + id;
+  function msgEtapa3(p, link) {
+    let t = String(cfgE3().msgEnvio || window.ETAPA3_PADRAO.msgEnvio);
+    if (!t.includes('{link}')) t += '\n{link}';
+    const v = { contato: p.contato || '', cliente: p.cliente || '', numero: p.numero || '', link, vendedor: perfil.nome || p.vendedor || '' };
+    return t.replace(/\{(contato|cliente|numero|link|vendedor)\}/g, (_, k) => v[k]).replace(/ +([,!.?])/g, '$1').replace(/ +\n/g, '\n');
+  }
+  const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  function itensTexto(rows) {
+    const ls = (rows || []).filter(r => !r.oculto && String(r.desc || '').trim()).map(r => {
+      const q = qtyNum(r.qty), pr = num(r.price), temp = isentoTemp(r);
+      let v = r.isento && !temp ? 'isento' : q === null ? brl(pr) + ' por unidade' : (q === 1 ? brl(pr) : q + ' x ' + brl(pr) + ' = ' + brl(q * pr));
+      if (temp) v += ` (isento por ${Math.round(num(r.diasIsento))} dias a contar da emissão do primeiro cupom ou nota pelo sistema; depois, valor integral)`;
+      return '- ' + String(r.desc).trim() + (r.sub ? ' (' + String(r.sub).trim() + ')' : '') + ': ' + v;
+    });
+    return ls.length ? ls.join('\n') : '- (nenhum item)';
+  }
+  // Dados disponíveis como marcadores: proposta + Etapa 2 + dados da Argo.
+  async function valoresContrato(p) {
+    const cfg2 = E2 || E2PUB || window.ETAPA2_PADRAO;
+    const campos = (cfg2.secoes || []).flatMap(s => s.campos || []);
+    const r = await F.getDoc(F.doc(db, 'propostas', p.id, 'etapa2', 'resposta'));
+    const d = r.exists() ? r.data() : {};
+    const V = {};
+    if (d.valores) Object.assign(V, d.valores);
+    else Object.entries(d.campos || {}).forEach(([lab, v]) => { const c = campos.find(x => x.label === lab); if (c) V[c.k] = v; });
+    campos.forEach(c => { if (c.tipo === 'data' && /^\d{4}-\d{2}-\d{2}$/.test(V[c.k] || '')) V[c.k] = fmtD(V[c.k]); });
+    if (V.uf) V.uf = String(V.uf).toUpperCase();
+    const ar = cfgE3().argo || {}, t = new Date(), sc = splitCidade(p.cidade);
+    const cid = V.cidade ? V.cidade + (V.uf ? '/' + V.uf : '') : (sc.cidade + (sc.uf ? '/' + sc.uf : ''));
+    const end = [[V.logradouro, V.numero].filter(Boolean).join(', ') + (V.complemento ? ' - ' + V.complemento : ''), V.bairro, cid, V.cep ? 'CEP ' + V.cep : ''].filter(Boolean).join(', ');
+    const dd = p.dados || {};
+    return {
+      ...V,
+      razao: V.razao || p.cliente || '', cnpj: V.cnpj || p.cnpj || '', cliente: p.cliente || '', contato: p.contato || '',
+      numero: p.numero || '', vendedor: p.vendedor || '', endereco_cliente: end, cidade_cliente: cid,
+      data: fmtD(hojeIso()), data_extenso: `${t.getDate()} de ${MESES[t.getMonth()]} de ${t.getFullYear()}`,
+      data_proposta: fmtD(p.data), aprovado_por: p.aprovadoNome || '', aprovado_cargo: p.aprovadoCargo || '',
+      total_licencas: brl(p.totLic), total_mensalidade: brl(p.totMen), total_deslocamento: brl(p.totDes),
+      itens_licencas: itensTexto(dd.lic), itens_mensalidades: itensTexto(dd.men),
+      argo_razao: ar.razao || '', argo_cnpj: ar.cnpj || '', argo_endereco: ar.endereco || '', argo_representante: ar.representante || '', argo_foro: ar.foro || ''
+    };
+  }
+  const preencherModelo = (modelo, V) => String(modelo || '').replace(/\{([A-Za-z0-9_]+)\}/g, (_, k) => V[k] == null ? '' : String(V[k]));
+  async function gerarContrato(p) {
+    const cfg = cfgE3();
+    const texto = preencherModelo(cfg.modelo, await valoresContrato(p));
+    const titulo = cfg.titulo || window.ETAPA3_PADRAO.titulo;
+    const b64 = window.contratoPdf({ titulo, texto, numero: p.numero, logo: logoAtual(), logoW: CFG.logoW, logoH: CFG.logoH }).output('datauristring').split(',')[1];
+    if (b64.length + texto.length > 950000) throw new Error('o contrato ficou grande demais (troque o logo por uma imagem menor)');
+    const lote = F.writeBatch(db);
+    lote.set(F.doc(db, 'propostas', p.id, 'arquivo', 'contrato'), { b64, texto, titulo, aceiteTxt: cfg.textoAceite || window.ETAPA3_PADRAO.textoAceite, final: cfg.final || window.ETAPA3_PADRAO.final });
+    lote.update(F.doc(db, 'propostas', p.id), { ctEm: F.serverTimestamp() });
+    await lote.commit();
+  }
 
 
   /* ---------- Parâmetros da Etapa 2 (ADM) ---------- */
@@ -422,6 +520,83 @@ async function iniciar() {
     const b = btoa(unescape(encodeURIComponent(JSON.stringify(dados)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     if (e2Sujo) e2Status('Atenção: a visualização mostra a versão publicada. Publique para ver as alterações.');
     window.open(baseUrl('dados.html') + '#d=' + b, '_blank');
+  });
+
+  /* ---------- Parâmetros do contrato (ADM) ---------- */
+  const E3DOC = F.doc(db, 'publico', 'etapa3');
+  let E3 = null, e3Sujo = false;
+  const e3Status = t => { $('e3Status').textContent = t; };
+  const E3CAMPOS = { e3Msg: 'msgEnvio', e3Titulo: 'titulo', e3Aceite: 'textoAceite', e3Final: 'final', e3Modelo: 'modelo' };
+  async function carregarE3() {
+    try {
+      const snap = await F.getDoc(E3DOC);
+      E3 = snap.exists() && snap.data().json ? JSON.parse(snap.data().json) : copia(window.ETAPA3_PADRAO);
+      e3Status(snap.exists() ? (snap.data().por ? 'Publicado por ' + snap.data().por + (snap.data().em ? ' em ' + fmtQuando(snap.data().em) : '') + '.' : '') : 'Usando o modelo provisório. Cole o seu contrato, preencha os dados da Argo e publique.');
+    } catch (e) { E3 = copia(window.ETAPA3_PADRAO); e3Status('Não foi possível carregar o contrato publicado; mostrando o padrão.'); }
+    desenharE3();
+  }
+  function marcarE3() { e3Sujo = true; e3Status('Alterações ainda não publicadas.'); }
+  function desenharE3() {
+    if (!E3) return;
+    E3.argo = { ...window.ETAPA3_PADRAO.argo, ...(E3.argo || {}) };
+    Object.entries(E3CAMPOS).forEach(([id, k]) => { $(id).value = E3[k] ?? window.ETAPA3_PADRAO[k] ?? ''; });
+    document.querySelectorAll('[data-argo]').forEach(el => { el.value = E3.argo[el.dataset.argo] || ''; });
+    previewMsgE3(); desenharMarcadores();
+  }
+  function previewMsgE3() {
+    if (!perfil) return;
+    $('e3MsgPrev').textContent = 'Exemplo: ' + msgEtapa3({ contato: 'Pedro', cliente: 'POSTO EXEMPLO LTDA', numero: '261118-AB12' }, baseUrl('contrato.html') + '#…');
+  }
+  function desenharMarcadores() {
+    const cfg2 = E2 || window.ETAPA2_PADRAO;
+    const grupos = [
+      ['Proposta', [['numero', 'Nº da proposta'], ['data_extenso', 'Data de hoje por extenso'], ['data', 'Data de hoje'], ['data_proposta', 'Data da proposta'], ['cliente', 'Cliente (proposta)'], ['contato', 'Contato'], ['vendedor', 'Vendedor'], ['aprovado_por', 'Quem aprovou'], ['aprovado_cargo', 'Cargo de quem aprovou'],
+        ['total_licencas', 'Total licenças'], ['total_mensalidade', 'Total mensalidade'], ['total_deslocamento', 'Deslocamento'], ['itens_licencas', 'Lista de licenças'], ['itens_mensalidades', 'Lista de mensalidades']]],
+      ['Endereço montado', [['endereco_cliente', 'Endereço completo do cliente'], ['cidade_cliente', 'Cidade/UF do cliente']]],
+      ['Argo (contratada)', [['argo_razao', 'Razão social'], ['argo_cnpj', 'CNPJ'], ['argo_endereco', 'Endereço'], ['argo_representante', 'Representante'], ['argo_foro', 'Foro']]],
+      ...(cfg2.secoes || []).map(s => ['Etapa 2 · ' + s.titulo, (s.campos || []).filter(c => c.tipo !== 'arquivo').map(c => [c.k, c.label])])
+    ];
+    $('e3Marc').innerHTML = grupos.filter(g => g[1].length).map(([t, ms]) => `<div class="mg">${esc(t)}</div>` + ms.map(([k, l]) => `<button type="button" data-mk="${esc(k)}" title="{${esc(k)}}">${esc(l)}</button>`).join('')).join('');
+  }
+  $('tabE3').addEventListener('click', () => { if (E3) desenharMarcadores(); });
+  Object.keys(E3CAMPOS).forEach(id => $(id).addEventListener('input', e => { if (!E3) return; E3[E3CAMPOS[id]] = e.target.value; marcarE3(); if (id === 'e3Msg') previewMsgE3(); }));
+  document.querySelectorAll('[data-argo]').forEach(el => el.addEventListener('input', () => { if (!E3) return; E3.argo[el.dataset.argo] = el.value; marcarE3(); }));
+  $('e3Marc').addEventListener('click', e => {
+    const k = e.target.closest('[data-mk]')?.dataset.mk; if (!k || !E3) return;
+    const ta = $('e3Modelo'), ins = '{' + k + '}', i = ta.selectionStart ?? ta.value.length, j = ta.selectionEnd ?? i;
+    ta.value = ta.value.slice(0, i) + ins + ta.value.slice(j); ta.focus(); ta.selectionStart = ta.selectionEnd = i + ins.length;
+    E3.modelo = ta.value; marcarE3();
+  });
+  let e3ResetT = 0;
+  $('btnE3Padrao').addEventListener('click', () => {
+    if (Date.now() - e3ResetT > 4000) { e3ResetT = Date.now(); e3Status('Clique de novo para confirmar: o modelo volta ao provisório (só vale depois de publicar).'); return; }
+    e3ResetT = 0; const argo = E3 && E3.argo; E3 = copia(window.ETAPA3_PADRAO); if (argo) E3.argo = argo; marcarE3(); desenharE3();
+  });
+  $('btnE3Salvar').addEventListener('click', async () => {
+    if (!E3 || !fb.admin) return;
+    if (!String(E3.modelo || '').trim()) { e3Status('O modelo do contrato não pode ficar vazio.'); return; }
+    const btn = $('btnE3Salvar'); btn.disabled = true; e3Status('Publicando…');
+    try {
+      const em = new Date().toISOString();
+      await F.setDoc(E3DOC, { json: JSON.stringify(E3), em, por: perfil.nome || perfil.email });
+      e3Sujo = false; e3Status('Contrato publicado em ' + fmtQuando(em) + '. Vale para os próximos contratos gerados.');
+    } catch (err) { e3Status('Não foi possível publicar (' + (err.code || err.message) + ').'); }
+    finally { btn.disabled = false; }
+  });
+  $('btnE3Ver').addEventListener('click', () => {
+    if (!E3) return;
+    const ex = props.find(p => p.e2Em) || null, janela = window.open('', '_blank');
+    const gerar = async () => {
+      let V;
+      if (ex) V = await valoresContrato(ex);
+      else V = { numero: 'EXEMPLO', razao: 'POSTO EXEMPLO LTDA', cnpj: '00.000.000/0001-00', data_extenso: 'data de hoje' };
+      const texto = preencherModelo(E3.modelo, V);
+      const doc = window.contratoPdf({ titulo: E3.titulo, texto, numero: V.numero, logo: logoAtual(), logoW: CFG.logoW, logoH: CFG.logoH });
+      const url = URL.createObjectURL(doc.output('blob'));
+      if (janela && !janela.closed) janela.location.href = url; else { const l = document.createElement('a'); l.href = url; l.download = 'Contrato exemplo.pdf'; l.click(); }
+      e3Status(ex ? 'Exemplo gerado com os dados da proposta nº ' + ex.numero + ' (nada foi enviado).' : 'Exemplo gerado sem dados: nenhuma proposta com dados complementares recebidos ainda.');
+    };
+    gerar().catch(err => { if (janela) janela.close(); e3Status('Não foi possível gerar o exemplo (' + (err.code || err.message) + ').'); });
   });
 
   /* ---------- Usuários (ADM) ---------- */
