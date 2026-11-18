@@ -179,6 +179,7 @@ function montar(){
       const abre=c.tipo==='simnao' && (c.abre!=null ? c.abre : i===0) && i<cs.length-1;
       let h=campoHtml(c);
       if(abre){ fecha(); grupo=h.replace(/^<label/,`<label data-abre="${esc(c.k)}"`); grupoK=c.k; return }
+      if(c.solto) fecha();
       if(grupo){ deps.push(h.replace(/^<label/,`<label data-dep="${esc(grupoK)}"`)); return }
       html.push(h);
     });
