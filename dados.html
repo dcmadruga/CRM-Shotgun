@@ -126,7 +126,7 @@ const dig=v=>String(v||'').replace(/\D/g,'');
 let L={};
 try{ const m=location.hash.match(/d=([^&]+)/); if(m){ const b=m[1].replace(/-/g,'+').replace(/_/g,'/'); L=JSON.parse(decodeURIComponent(escape(atob(b)))) } }catch(e){ L={} }
 const destino = dig(L.w);
-if(L.v) $('#sub').textContent='Argo Sistemas · seu consultor: '+L.v;
+if(L.v) $('#sub').textContent='Argo Sistemas · '+(L.n?'proposta nº '+L.n+' · ':'')+'consultor: '+L.v;
 $('#destHint').textContent = destino ? 'Os dados vão para o WhatsApp do seu consultor'+(L.v?' ('+L.v+')':'')+'.' : 'Os dados serão enviados pelo WhatsApp.';
 
 /* Rascunho */
@@ -188,7 +188,7 @@ const fmtData=iso=>{ if(!iso) return ''; const [y,m,d]=iso.split('-'); return d+
 function montarTexto(o){
   const L2=(t,v)=>v?`${t}: ${v}`:null;
   return [
-    '*Dados complementares obrigatórios - Argo*','',
+    '*Dados complementares obrigatórios - Argo*', L.n?'Proposta nº '+L.n:null,'',
     '*Empresa*', L2('CNPJ',o.cnpj), L2('Razão social',o.razao), L2('Nome fantasia',o.fantasia), L2('Inscrição estadual',o.ie),
     L2('Endereço',[o.logradouro,o.numero].filter(Boolean).join(', ')+(o.complemento?' - '+o.complemento:'')), L2('Bairro',o.bairro),
     L2('Cidade',o.cidade+(o.uf?' - '+o.uf.toUpperCase():'')), L2('CEP',o.cep),'',

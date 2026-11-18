@@ -66,6 +66,7 @@ async function iniciar() {
     aplicarModo();
     await carregar(false);
     if (fb.admin) ouvirUsuarios();
+    ouvirPropostas();
   });
 
   function aplicarPerfil() {
@@ -105,15 +106,136 @@ async function iniciar() {
   }
 
   /* ---------- Abas ---------- */
-  function abaUsuarios(on) {
-    $('viewUsers').hidden = !on;
-    $('tabUsers').setAttribute('aria-selected', String(on));
-    if (on) { $('viewProp').hidden = true; $('viewCfg').hidden = true; $('tabProp').setAttribute('aria-selected', 'false'); $('tabCfg').setAttribute('aria-selected', 'false'); }
+  const EXTRA = { tabUsers: 'viewUsers', tabList: 'viewList' };
+  function abrirAba(tab) {
+    Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
+    if (EXTRA[tab]) { $('viewProp').hidden = true; $('viewCfg').hidden = true; $('tabProp').setAttribute('aria-selected', 'false'); $('tabCfg').setAttribute('aria-selected', 'false'); }
   }
-  $('tabUsers').addEventListener('click', () => abaUsuarios(true));
-  $('tabProp').addEventListener('click', () => abaUsuarios(false));
-  $('tabCfg').addEventListener('click', () => abaUsuarios(false));
-  $('btnPdf').addEventListener('click', () => abaUsuarios(false), true);
+  Object.keys(EXTRA).forEach(t => $(t).addEventListener('click', () => abrirAba(t)));
+  ['tabProp', 'tabCfg'].forEach(t => $(t).addEventListener('click', () => abrirAba(t)));
+  $('btnPdf').addEventListener('click', () => abrirAba('tabProp'), true);
+
+  /* ---------- Propostas: envio para aprovação ---------- */
+  const dig = v => String(v || '').replace(/\D/g, '');
+  const waNum = v => { const d = dig(v); return d.length >= 10 && d.length <= 11 ? '55' + d : d; };
+  const aprovMsg = t => { $('aprovMsg').textContent = t; };
+  const pMsg = t => { $('pMsg').textContent = t; };
+  const baseUrl = p => new URL(p, location.href).href.split('#')[0].split('?')[0];
+  const linkAprov = id => baseUrl('aprovar.html') + '#' + id;
+  const hojeIso = () => { const t = new Date(); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; };
+  function abrirWa(num, texto, janela) {
+    const url = 'https://wa.me/' + (num || '') + '?text=' + encodeURIComponent(texto);
+    if (janela && !janela.closed) { janela.location.href = url; return; }
+    window.open(url, '_blank') || (location.href = url);
+  }
+  const textoAprov = p => `Olá${p.contato ? ' ' + p.contato : ''}! Segue a proposta comercial da Argo nº ${p.numero} para ${p.cliente}.\n\nPara ver o PDF e aprovar, acesse:\n${linkAprov(p.id)}\n\n${p.vendedor} - Argo`;
+
+  $('btnAprov').addEventListener('click', async () => {
+    if (!perfil) return;
+    if (!String(S.cliente || '').trim()) { $('cliente').focus(); aprovMsg('Preencha o cliente antes de enviar.'); return; }
+    if (!window.jspdf) { aprovMsg('O gerador de PDF não carregou. Recarregue a página.'); return; }
+    const n = waNum($('waAprov').value);
+    if (n && n.length < 12) { $('waAprov').focus(); aprovMsg('Confira o WhatsApp do cliente: DDD e número.'); return; }
+    const janela = window.open('', '_blank');
+    const btn = $('btnAprov'); btn.disabled = true; aprovMsg('Salvando a proposta…');
+    try {
+      const b64 = buildPdf().output('datauristring').split(',')[1];
+      if (b64.length > 950000) throw new Error('o PDF ficou grande demais (troque o logo por uma imagem menor)');
+      const ref = F.doc(F.collection(db, 'propostas'));
+      const numero = hojeIso().replace(/-/g, '').slice(2) + '-' + ref.id.slice(0, 4).toUpperCase();
+      const meta = {
+        numero, status: 'enviada', owner: perfil.uid, vendedor: perfil.nome || '', vendedorFone: dig(perfil.fone),
+        cliente: String(S.cliente || '').trim(), cnpj: S.cnpj || '', contato: String(S.contato || '').trim(), cidade: S.cidade || '',
+        waCli: n, data: S.data || hojeIso(), validade: S.validade || '',
+        totLic: sumRows(S.lic), totMen: sumRows(S.men), totDes: deslocamento(), arquivo: fileName(),
+        dados: JSON.parse(JSON.stringify(S)), criado: F.serverTimestamp()
+      };
+      const lote = F.writeBatch(db);
+      lote.set(ref, meta);
+      lote.set(F.doc(db, 'propostas', ref.id, 'arquivo', 'pdf'), { b64, nome: fileName() });
+      await lote.commit();
+      abrirWa(n, textoAprov({ ...meta, id: ref.id }), janela);
+      aprovMsg(`Proposta nº ${numero} salva e enviada. Acompanhe na aba Propostas.`);
+    } catch (e) {
+      if (janela) janela.close();
+      aprovMsg('Não foi possível enviar: ' + (e.code || e.message) + '.');
+    } finally { btn.disabled = false; }
+  });
+  $('btnNova').addEventListener('click', () => { $('waAprov').value = ''; });
+
+  /* ---------- Aba Propostas ---------- */
+  let unsubP = null, props = [];
+  function ouvirPropostas() {
+    if (unsubP) unsubP();
+    const col = F.collection(db, 'propostas');
+    const q = fb.admin ? F.query(col, F.orderBy('criado', 'desc'), F.limit(300)) : F.query(col, F.where('owner', '==', perfil.uid));
+    unsubP = F.onSnapshot(q, qs => {
+      props = qs.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.criado?.seconds || 9e9) - (a.criado?.seconds || 9e9));
+      desenharPropostas();
+    }, e => pMsg('Não foi possível carregar as propostas (' + (e.code || 'erro') + ').'));
+  }
+  A.onAuthStateChanged(auth, u => { if (!u && unsubP) { unsubP(); unsubP = null; props = []; } });
+
+  const fmtD = iso => { if (!iso) return ''; const [y, m, d] = String(iso).split('-'); return `${d}/${m}/${y}`; };
+  const fmtTs = ts => ts && ts.toDate ? ts.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+  function statusDe(p) {
+    if (p.status === 'aprovada') return { cls: 'ok', txt: 'APROVADA' };
+    if (p.validade && p.validade < hojeIso()) return { cls: 'exp', txt: 'Vencida' };
+    return { cls: 'wait', txt: 'Aguardando aprovação' };
+  }
+  function desenharPropostas() {
+    const busca = $('pBusca').value.trim().toLowerCase(), filtro = $('pFiltro').value;
+    const vis = props.filter(p => (!filtro || p.status === filtro) &&
+      (!busca || [p.cliente, p.cnpj, p.numero, p.cidade, p.vendedor].join(' ').toLowerCase().includes(busca)));
+    const ap = props.filter(p => p.status === 'aprovada').length;
+    $('pCount').textContent = `${props.length} no total · ${ap} aprovada${ap === 1 ? '' : 's'}`;
+    $('pList').innerHTML = vis.length ? vis.map(p => {
+      const st = statusDe(p), ok = p.status === 'aprovada';
+      return `<div class="pcard" data-id="${esc(p.id)}">
+        <div class="top"><div><b>${esc(p.cliente)}</b><div class="meta">Nº ${esc(p.numero)} · ${esc(p.cidade || '')}${fb.admin ? ' · ' + esc(p.vendedor) : ''}</div></div>
+          <span class="pill ${st.cls}">${st.txt}</span></div>
+        <div class="vals">Licenças ${brl(p.totLic)} · Mensalidade ${brl(p.totMen)} · Deslocamento ${brl(p.totDes)}</div>
+        <div class="meta">Enviada em ${esc(fmtTs(p.criado) || fmtD(p.data))}${p.validade ? ' · válida até ' + esc(fmtD(p.validade)) : ''}${ok ? `<br><b style="color:#1f7a46">Aprovada por ${esc(p.aprovadoNome)}${p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : ''} em ${esc(fmtTs(p.aprovadoEm))}</b>` : ''}</div>
+        <div class="acts">
+          ${ok ? '<button type="button" class="primary" data-a="etapa2">Etapa 2: enviar formulário</button>' : '<button type="button" data-a="reenviar">Reenviar link</button><button type="button" disabled title="Libera quando o cliente aprovar">Etapa 2 (após aprovação)</button>'}
+          <button type="button" data-a="pdf">Ver PDF</button>
+          <button type="button" data-a="abrir">Abrir no formulário</button>
+          <button type="button" data-a="copiar">Copiar link</button>
+        </div></div>`;
+    }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "Enviar proposta para aprovação" na aba Proposta.'}</p>`;
+  }
+  $('pBusca').addEventListener('input', desenharPropostas);
+  $('pFiltro').addEventListener('change', desenharPropostas);
+  $('pList').addEventListener('click', async e => {
+    const a = e.target.dataset.a, card = e.target.closest('.pcard'); if (!a || !card) return;
+    const p = props.find(x => x.id === card.dataset.id); if (!p) return;
+    if (a === 'reenviar') { abrirWa(p.waCli, textoAprov(p)); pMsg('WhatsApp aberto com o link da proposta.'); }
+    if (a === 'copiar') { try { await navigator.clipboard.writeText(textoAprov(p)); pMsg('Mensagem com o link copiada.'); } catch (_) { pMsg('Link: ' + linkAprov(p.id)); } }
+    if (a === 'abrir') {
+      S = { ...JSON.parse(JSON.stringify(p.dados || {})) }; save(); renderProp(); aplicarValidade(); totals();
+      $('waAprov').value = p.waCli ? String(p.waCli).replace(/^55/, '') : '';
+      showTab(false); abrirAba('tabProp'); msg(`Proposta nº ${p.numero} carregada. Se mudar algo, envie de novo para aprovação.`);
+    }
+    if (a === 'pdf') {
+      pMsg('Abrindo o PDF…');
+      try {
+        const snap = await F.getDoc(F.doc(db, 'propostas', p.id, 'arquivo', 'pdf'));
+        const bin = atob(snap.data().b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        const url = URL.createObjectURL(new Blob([u8], { type: 'application/pdf' }));
+        const l = document.createElement('a'); l.href = url; l.download = p.arquivo || 'Proposta Argo.pdf'; l.target = '_blank'; l.click();
+        setTimeout(() => URL.revokeObjectURL(url), 60000); pMsg('');
+      } catch (err) { pMsg('Não foi possível abrir o PDF (' + (err.code || err.message) + ').'); }
+    }
+    if (a === 'etapa2') {
+      const sc = splitCidade(p.cidade);
+      const dados = { c: p.cnpj, r: p.cliente, cid: sc.cidade, uf: sc.uf, v: perfil.nome || p.vendedor, w: dig(perfil.fone) || p.vendedorFone, n: p.numero };
+      const b = btoa(unescape(encodeURIComponent(JSON.stringify(dados)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const link = baseUrl('dados.html') + '#d=' + b;
+      abrirWa(p.waCli, `Olá${p.contato ? ' ' + p.contato : ''}! Obrigado por aprovar a proposta nº ${p.numero}. Para iniciarmos a implantação, preencha os dados complementares obrigatórios neste link:\n${link}\n\n${perfil.nome || p.vendedor} - Argo`);
+      pMsg('WhatsApp aberto com o formulário da Etapa 2.');
+    }
+  });
 
   /* ---------- Usuários (ADM) ---------- */
   let unsub = null, lista = [];

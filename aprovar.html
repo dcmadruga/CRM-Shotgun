@@ -1,0 +1,172 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Aprovação de proposta Argo</title>
+<meta name="theme-color" content="#17180f">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f4f2f6; --surface:#ffffff; --fg:#1d1a22; --muted:#6b6475; --line:#e3dfe8;
+  --ink:#17180f; --ink-fg:#f6f4f8; --accent:#cb2da0; --purple:#7030a0; --field:#fbfafc; --danger:#b42335;
+  --display:"Poppins",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141218; --surface:#1d1a23; --fg:#ece8f1; --muted:#a39bb0; --line:#322d3a;
+  --ink:#0b0b08; --accent:#e04bb5; --purple:#a874d6; --field:#17151c; --danger:#f0697a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141218; --surface:#1d1a23; --fg:#ece8f1; --muted:#a39bb0; --line:#322d3a;
+  --ink:#0b0b08; --accent:#e04bb5; --purple:#a874d6; --field:#17151c; --danger:#f0697a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
+[hidden]{display:none!important}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{background:var(--ink);color:var(--ink-fg)}
+header .wrap{display:flex;align-items:center;gap:14px;padding-block:16px;padding-top:max(16px,env(safe-area-inset-top,0px))}
+header img{width:44px;height:44px}
+header h1{font-family:var(--display);font-weight:600;font-size:19px;margin:0;text-wrap:balance}
+header p{margin:0;font-size:13px;opacity:.75}
+main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
+.intro{margin:0}
+.sec{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
+.body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.full{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;min-width:0}
+label b{color:var(--danger);font-weight:600}
+input,select,textarea{font:inherit;font-size:16px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:9px 10px;width:100%;min-width:0}
+textarea{min-height:80px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
+input[readonly]{opacity:.8}
+.bad{border-color:var(--danger)}
+.err{color:var(--danger);font-size:12px;font-weight:500;min-height:0}
+.radios{display:flex;gap:16px;padding-top:6px;font-size:15px;font-weight:500;color:var(--fg)}
+.radios label{flex-direction:row;align-items:center;gap:6px;font-size:15px;color:var(--fg)}
+.radios input{width:auto}
+button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1px solid var(--purple);background:var(--purple);color:#fff;font-size:16px;cursor:pointer}
+.send{display:flex;flex-direction:column;gap:8px}
+.hint{color:var(--muted);font-size:13px;margin:0}
+#msg{font-weight:500}
+.done{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:6px;padding:14px}
+.resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px}
+.resumo div{background:var(--field);border:1px solid var(--line);border-radius:4px;padding:10px}
+.resumo small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.resumo strong{font-family:var(--display);font-size:18px;font-variant-numeric:tabular-nums}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button.sec2{background:var(--surface);color:var(--purple)}
+.check{flex-direction:row;align-items:flex-start;gap:8px;font-size:14px;color:var(--fg);font-weight:500}
+.check input{width:auto;margin-top:3px}
+.ok{background:var(--surface);border:1px solid #1f7a46;border-left:4px solid #1f7a46;border-radius:6px;padding:14px}
+.warn{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--danger);border-radius:6px;padding:14px}
+</style>
+</head><body>
+<header><div class="wrap">
+  <img src="icons/icon-192.png" alt="Argo">
+  <div><h1>Proposta Comercial Argo</h1><p id="sub">Carregando…</p></div>
+</div></header>
+
+<div class="wrap"><main>
+  <p id="carregando">Carregando a proposta…</p>
+  <div class="warn" id="erro" hidden></div>
+
+  <div id="conteudo" hidden style="display:flex;flex-direction:column;gap:18px">
+    <section class="sec"><h2 id="tit">Proposta</h2>
+      <div class="resumo">
+        <div><small>Licenças (parcela única)</small><strong id="vLic"></strong></div>
+        <div><small>Mensalidade</small><strong id="vMen"></strong></div>
+        <div><small>Deslocamento da implantação</small><strong id="vDes"></strong></div>
+      </div>
+      <div class="body" style="padding-top:0">
+        <p class="hint full" id="validade"></p>
+        <div class="row full"><button type="button" id="btnVer">Ver proposta completa (PDF)</button></div>
+      </div>
+    </section>
+
+    <div class="ok" id="jaAprovada" hidden></div>
+
+    <form class="sec" id="fAprov" novalidate><h2>Aprovação</h2><div class="body">
+      <label><span>Seu nome completo <b>*</b></span><input id="aNome" required autocomplete="name"></label>
+      <label><span>Cargo <b>*</b></span><input id="aCargo" required placeholder="Ex.: Sócio, Gerente"></label>
+      <label class="check full"><input type="checkbox" id="aCiente" required> <span>Li a proposta e aprovo as condições e valores apresentados.</span></label>
+      <div class="row full">
+        <button type="submit" id="btnAprovar">Aprovar proposta</button>
+        <button type="button" class="sec2" id="btnDuvida">Tenho dúvidas</button>
+      </div>
+      <p class="err full" id="aMsg" role="status"></p>
+    </div></form>
+  </div>
+</main></div>
+
+<script src="firebase-config.js"></script>
+<script type="module">
+const $=id=>document.getElementById(id);
+const id=decodeURIComponent(location.hash.slice(1)).trim();
+const brl=n=>(Number(n)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const fmtD=iso=>{ if(!iso) return ''; const [y,m,d]=String(iso).split('-'); return `${d}/${m}/${y}` };
+const hoje=()=>{ const t=new Date(); return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}` };
+const erro=t=>{ $('carregando').hidden=true; $('erro').hidden=false; $('erro').textContent=t };
+let P=null, pdfB64=null;
+
+function abrirWa(num, texto){ const url='https://wa.me/'+(num||'')+'?text='+encodeURIComponent(texto); window.open(url,'_blank') || (location.href=url) }
+const vendNum=()=>{ const d=String(P.vendedorFone||'').replace(/\D/g,''); return d.length>=10&&d.length<=11?'55'+d:d };
+
+(async()=>{
+  if(!id || !/^[A-Za-z0-9]{10,40}$/.test(id)) return erro('Link inválido. Peça um novo link ao seu consultor Argo.');
+  const C=window.FIREBASE_CONFIG||{};
+  try{
+    const V='10.12.2', base=`https://www.gstatic.com/firebasejs/${V}/`;
+    const [{initializeApp}, F]=await Promise.all([import(base+'firebase-app.js'), import(base+'firebase-firestore.js')]);
+    const db=F.getFirestore(initializeApp(C));
+    const ref=F.doc(db,'propostas',id);
+    const snap=await F.getDoc(ref);
+    if(!snap.exists()) return erro('Proposta não encontrada. Peça um novo link ao seu consultor Argo.');
+    P=snap.data();
+    $('sub').textContent=`Nº ${P.numero} · consultor: ${P.vendedor}`;
+    $('tit').textContent=P.cliente;
+    $('vLic').textContent=brl(P.totLic); $('vMen').textContent=brl(P.totMen); $('vDes').textContent=brl(P.totDes);
+    $('validade').textContent=`Proposta emitida em ${fmtD(P.data)}`+(P.validade?`, condição válida até ${fmtD(P.validade)}.`:'.');
+    $('carregando').hidden=true; $('conteudo').hidden=false;
+
+    const aprovada=()=>{ $('fAprov').hidden=true; $('jaAprovada').hidden=false;
+      $('jaAprovada').innerHTML=`<b>Proposta aprovada.</b> Obrigado${P.aprovadoNome?', '+P.aprovadoNome.replace(/[<>&]/g,''):''}! Seu consultor já foi avisado e vai enviar os próximos passos.` };
+    if(P.status==='aprovada') aprovada();
+    else if(P.validade && P.validade<hoje()){ $('fAprov').hidden=true; $('erro').hidden=false; $('erro').textContent='O prazo desta condição terminou. Fale com seu consultor para receber uma proposta atualizada.' }
+
+    $('btnVer').addEventListener('click', async ()=>{
+      const b=$('btnVer'); b.disabled=true; b.textContent='Abrindo…';
+      try{
+        if(!pdfB64){ const s=await F.getDoc(F.doc(db,'propostas',id,'arquivo','pdf')); pdfB64=s.data().b64 }
+        const bin=atob(pdfB64), u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u8[i]=bin.charCodeAt(i);
+        const url=URL.createObjectURL(new Blob([u8],{type:'application/pdf'}));
+        const a=document.createElement('a'); a.href=url; a.target='_blank'; a.rel='noopener';
+        if(!/iphone|ipad|android/i.test(navigator.userAgent)) a.download=P.arquivo||'Proposta Argo.pdf';
+        a.click();
+      }catch(e){ $('aMsg').textContent='Não foi possível abrir o PDF. Tente de novo.' }
+      finally{ b.disabled=false; b.textContent='Ver proposta completa (PDF)' }
+    });
+
+    $('btnDuvida').addEventListener('click',()=>abrirWa(vendNum(), `Olá ${P.vendedor}! Tenho uma dúvida sobre a proposta nº ${P.numero} (${P.cliente}):\n`));
+
+    $('fAprov').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const nome=$('aNome').value.trim(), cargo=$('aCargo').value.trim();
+      $('aNome').classList.toggle('bad',!nome); $('aCargo').classList.toggle('bad',!cargo);
+      if(!nome||!cargo){ $('aMsg').textContent='Informe seu nome e cargo.'; return }
+      if(!$('aCiente').checked){ $('aMsg').textContent='Marque a confirmação de que leu e aprova a proposta.'; return }
+      const janela=window.open('','_blank');
+      const b=$('btnAprovar'); b.disabled=true; $('aMsg').textContent='Registrando a aprovação…';
+      try{
+        await F.updateDoc(ref,{status:'aprovada', aprovadoNome:nome, aprovadoCargo:cargo, aprovadoEm:F.serverTimestamp()});
+        P.aprovadoNome=nome; aprovada();
+        const texto=`Olá ${P.vendedor}! Aprovo a proposta comercial Argo nº ${P.numero} para ${P.cliente}.\n\n${nome} - ${cargo}`;
+        const url='https://wa.me/'+vendNum()+'?text='+encodeURIComponent(texto);
+        if(janela && !janela.closed) janela.location.href=url; else abrirWa(vendNum(), texto);
+      }catch(e){
+        if(janela) janela.close();
+        $('aMsg').textContent='Não foi possível registrar a aprovação ('+(e.code||'erro')+'). Tente de novo ou fale com seu consultor.';
+      }finally{ b.disabled=false }
+    });
+  }catch(e){ erro('Não foi possível carregar a proposta. Verifique a internet e tente de novo.') }
+})();
+</script>
+</body></html>

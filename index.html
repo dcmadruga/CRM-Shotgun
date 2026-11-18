@@ -87,7 +87,9 @@ button.del{border:none;background:none;color:var(--danger);padding:6px;font-size
 .tabs{background:var(--ink)}
 [hidden]{display:none!important}
 @media (max-width:640px){main{padding-bottom:210px}.bar .wrap{gap:8px}.bar button{padding:7px 11px}}
-.tabs .wrap{display:flex;gap:4px;padding-block:0}
+.tabs .wrap{display:flex;gap:4px;padding-block:0;overflow-x:auto;scrollbar-width:none}
+.tabs .wrap::-webkit-scrollbar{display:none}
+.tabs button{flex:none}
 .tabs button{background:transparent;border:none;border-bottom:3px solid transparent;border-radius:0;color:var(--ink-fg);opacity:.7;padding:10px 12px}
 .tabs button[aria-selected="true"]{opacity:1;border-bottom-color:var(--accent)}
 .savebar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -128,7 +130,7 @@ header.top .wrap>div{flex:1;min-width:0}
 .firstrun{background:var(--accent);color:#fff;border-radius:6px;padding:10px 14px;margin:0}
 body:not(.fb) .fbonly{display:none!important}
 body.fb .nofb{display:none!important}
-.tabuser{margin-left:auto;align-self:center;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
+.tabuser{margin-left:auto;align-self:center;font-size:12px;color:var(--ink-fg);opacity:.7;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
 .linkbtn{background:none!important;border:0!important;color:var(--purple)!important;padding:6px 8px;font-weight:600;cursor:pointer}
 #loginBox{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
 .loginCard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:24px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px}
@@ -137,6 +139,18 @@ body.fb .nofb{display:none!important}
 .loginCard button.primary{padding:10px}
 body.locked>*:not(#loginBox):not(script){visibility:hidden}
 table.users{min-width:640px}
+.ptools input{flex:1;min-width:180px}
+.plist{display:flex;flex-direction:column;gap:10px}
+.pcard{border:1px solid var(--line);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px;background:var(--field)}
+.pcard .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.pcard b{font-size:14.5px}
+.pcard .meta{font-size:12.5px;color:var(--muted)}
+.pcard .vals{font-size:13px;font-variant-numeric:tabular-nums}
+.pcard .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.pcard .acts button{font-size:13px;padding:6px 10px}
+.pill.ok{color:#fff;background:#1f7a46;border-color:#1f7a46}
+.pill.wait{color:var(--purple);border-color:var(--purple)}
+.pill.exp{color:var(--muted)}
 table.users td{font-size:13.5px;vertical-align:middle}
 table.users td:last-child{width:auto;white-space:nowrap}
 .pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--field);border:1px solid var(--line)}
@@ -152,6 +166,7 @@ table.users td:last-child{width:auto;white-space:nowrap}
 <nav class="tabs" aria-label="Seções"><div class="wrap" role="tablist">
   <button type="button" role="tab" id="tabProp" aria-selected="true">Proposta</button>
   <button type="button" role="tab" id="tabCfg" aria-selected="false">Parâmetros</button>
+  <button type="button" role="tab" id="tabList" aria-selected="false" class="fbonly">Propostas</button>
   <button type="button" role="tab" id="tabUsers" aria-selected="false" class="admin fbonly">Usuários</button>
   <span class="tabuser fbonly" id="tabUser"></span><button type="button" class="linkbtn fbonly" id="btnSair">Sair</button>
 </div></nav>
@@ -193,7 +208,15 @@ table.users td:last-child{width:auto;white-space:nowrap}
     <p class="hint">Observações, equipamentos, suporte e referências vêm da aba Parâmetros.</p>
   </div></section>
 
-  <section class="sec"><h2>Etapa 2 · Dados complementares obrigatórios <span>depois que o cliente aprovar</span></h2><div class="body">
+  <section class="sec fbonly"><h2>Envio para aprovação <span>o cliente vê o PDF e aprova pelo link</span></h2><div class="body">
+    <div class="grid">
+      <label>WhatsApp do contato do cliente<input id="waAprov" inputmode="tel" placeholder="(65) 99999-0000" autocomplete="off"></label>
+    </div>
+    <div class="tools"><button type="button" class="primary" id="btnAprov">Enviar proposta para aprovação</button></div>
+    <p class="hint" id="aprovMsg">A proposta fica salva na aba Propostas. Quando o cliente aprovar pelo link, ela aparece como APROVADA e a Etapa 2 é liberada.</p>
+  </div></section>
+
+  <section class="sec nofb"><h2>Etapa 2 · Dados complementares obrigatórios <span>depois que o cliente aprovar</span></h2><div class="body">
     <div class="grid">
       <label>WhatsApp do contato do cliente<input id="waCli" inputmode="tel" placeholder="(65) 99999-0000" autocomplete="off"></label>
     </div>
@@ -286,6 +309,17 @@ table.users td:last-child{width:auto;white-space:nowrap}
     </div>
     <label>Itens de suporte (um por linha)<textarea id="c-bullets" rows="3"></textarea></label>
         <p class="hint">Os textos de alimentação, hospedagem, deslocamento e bases são montados a partir dos valores de base acima.</p>
+  </div></section>
+</main>
+
+<main id="viewList" hidden>
+  <section class="sec"><h2>Propostas <span id="pCount"></span></h2><div class="body">
+    <div class="tools ptools">
+      <input id="pBusca" placeholder="Buscar por cliente, CNPJ ou número" autocomplete="off">
+      <select id="pFiltro" aria-label="Filtrar por status"><option value="">Todas</option><option value="enviada">Aguardando aprovação</option><option value="aprovada">Aprovadas</option></select>
+    </div>
+    <div id="pList" class="plist"></div>
+    <p class="hint" id="pMsg"></p>
   </div></section>
 </main>
 
