@@ -493,7 +493,7 @@ async function iniciar() {
     if (!E2) return;
     if (E2.msgEnvio == null) E2.msgEnvio = window.ETAPA2_PADRAO.msgEnvio;
     $('e2Msg').value = E2.msgEnvio; previewMsg();
-    $('e2Titulo').value = E2.titulo || ''; $('e2Intro').value = E2.intro || ''; $('e2Final').value = E2.final || '';
+    $('e2Titulo').value = E2.titulo || ''; $('e2Intro').value = E2.intro || ''; $('e2Final').value = E2.final || ''; $('e2Contrato').checked = E2.contratoSocial !== false;
     $('e2Secoes').innerHTML = E2.secoes.map((s, si) => `
       <section class="sec" data-si="${si}"><h2>Seção ${si + 1} <span>${s.campos.filter(c => c.show !== false || c.fixo).length} campos visíveis</span></h2><div class="body">
         <div class="e2head"><input data-s="titulo" value="${esc(s.titulo)}" aria-label="Título da seção">
@@ -519,6 +519,7 @@ async function iniciar() {
   }
   $('e2Msg').addEventListener('input', e => { if (!E2) return; E2.msgEnvio = e.target.value; marcarE2(); previewMsg(); });
   ['e2Titulo', 'e2Intro', 'e2Final'].forEach(id => $(id).addEventListener('input', e => { if (!E2) return; E2[{ e2Titulo: 'titulo', e2Intro: 'intro', e2Final: 'final' }[id]] = e.target.value; marcarE2(); }));
+  $('e2Contrato').addEventListener('change', e => { if (!E2) return; E2.contratoSocial = e.target.checked; marcarE2(); });
   $('e2Secoes').addEventListener('input', e => {
     const sec = e.target.closest('[data-si]'); if (!sec || !E2) return; const s = E2.secoes[+sec.dataset.si];
     if (e.target.dataset.s) { s.titulo = e.target.value; marcarE2(); return; }

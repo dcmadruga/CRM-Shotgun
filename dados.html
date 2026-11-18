@@ -51,6 +51,22 @@ button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1
 .hint{color:var(--muted);font-size:13px;margin:0}
 #msg{font-weight:500}
 .done{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:6px;padding:14px}
+#csStatus{display:flex;align-items:center;gap:8px}
+#csStatus.ok{color:var(--fg)}
+#csStatus.bad{color:var(--danger)}
+.spin{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--purple);border-radius:50%;animation:gira .8s linear infinite;flex:none}
+@keyframes gira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
+.socios{display:flex;flex-direction:column;gap:8px}
+.socios>p{margin:0;font-size:14px;font-weight:600;color:var(--fg)}
+label.socio{flex-direction:row;align-items:flex-start;gap:10px;border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:var(--field);cursor:pointer;color:var(--fg);font-size:14px;font-weight:400;letter-spacing:0}
+label.socio:has(input:checked){border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
+label.socio input{width:auto;margin-top:3px;flex:none}
+label.socio b{font-size:15px;font-weight:600;color:var(--fg)}
+label.socio small{display:block;color:var(--muted);font-size:13px;overflow-wrap:anywhere}
+.tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.03em;color:var(--purple);border:1px solid var(--purple);border-radius:3px;padding:0 5px;margin-left:6px;vertical-align:2px}
+.flash{animation:flash 1.6s ease-out}
+@keyframes flash{from{box-shadow:0 0 0 3px var(--purple)}to{box-shadow:0 0 0 0 transparent}}
 </style>
 </head><body>
 <header><div class="wrap">
@@ -64,6 +80,11 @@ button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1
 
   <form id="f" novalidate hidden>
   <div style="display:flex;flex-direction:column;gap:18px">
+  <section class="sec" id="secContrato" hidden><h2>Contrato social</h2><div class="body">
+    <label class="full"><span>Contrato social (com a última alteração) <b>*</b></span><input type="file" name="contratoSocial" data-v="arquivo" accept="application/pdf,image/*" multiple required><span class="hint">Envie o PDF ou fotos de todas as páginas. Vamos ler o documento aqui mesmo no seu aparelho para encontrar os sócios e já preencher os dados do representante legal.</span><span class="files hint"></span></label>
+    <p id="csStatus" class="full hint" role="status" hidden></p>
+    <div id="csSocios" class="full socios" hidden></div>
+  </div></section>
   <div id="secoes" style="display:flex;flex-direction:column;gap:18px"></div>
   <div class="send">
     <button type="submit" id="btnEnviar">Enviar pelo WhatsApp</button>
@@ -80,6 +101,7 @@ button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1
 
 <script src="firebase-config.js"></script>
 <script src="etapa2-padrao.js"></script>
+<script src="contrato-social.js"></script>
 <script>
 const $=s=>document.querySelector(s);
 const f=$('#f');
@@ -133,6 +155,8 @@ function montar(){
   $('#intro').innerHTML=esc(CFG.intro||'')+' Os campos com <b style="color:var(--danger)">*</b> são obrigatórios.';
   $('#finalTxt').textContent=CFG.final||'Pronto! O WhatsApp abriu com os seus dados. Confira e toque em enviar.';
   CAMPOS=[];
+  const cs=CFG.contratoSocial!==false; $('#secContrato').hidden=!cs; f.elements.contratoSocial.disabled=!cs; f.elements.contratoSocial.required=cs;
+  if(cs) CAMPOS.push({k:'contratoSocial', label:'Contrato social', tipo:'arquivo', req:true, secao:'Contrato social'});
   $('#secoes').innerHTML=(CFG.secoes||[]).map(s=>{
     const cs=(s.campos||[]).filter(c=>c.show!==false||c.fixo); if(!cs.length) return '';
     cs.forEach(c=>CAMPOS.push({...c, secao:s.titulo}));
@@ -203,6 +227,76 @@ function ligarAuto(){
   f.querySelectorAll('[data-v=cpf]').forEach(el=>el.addEventListener('blur',()=>{ const d=dig(el.value); if(d.length===11) el.value=d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4') }));
 }
 
+/* Contrato social: lê o documento, lista os sócios e preenche o representante legal */
+let SOCIOS=[], leitura=0;
+const fmtCpf=d=>String(d||'').replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');
+function csStatus(t,tipo){ const el=$('#csStatus'); el.hidden=!t; el.className='full hint'+(tipo?' '+tipo:''); el.innerHTML=(tipo==='lendo'?'<span class="spin" aria-hidden="true"></span>':'')+'<span>'+esc(t)+'</span>' }
+function secResp(){ const ss=CFG.secoes||[]; return ss.find(s=>s.id==='responsavel')||ss.find(s=>/respons|represent/i.test(s.titulo||'')) }
+function desenharSocios(){
+  const box=$('#csSocios'); if(!SOCIOS.length){ box.hidden=true; box.innerHTML=''; return }
+  const atual=f.querySelector('input[name=_rep]:checked')?.value;
+  box.hidden=false;
+  box.innerHTML=`<p>Quem é o representante legal que vai assinar?</p>`+SOCIOS.map((s,i)=>{
+    const l1=[s.cpf&&'CPF '+fmtCpf(s.cpf), s.rg&&'RG '+s.rg+(s.orgaoRg?' '+s.orgaoRg:''), s.estadoCivil, s.profissao, s.quotas&&s.quotas.toLocaleString('pt-BR')+' quotas'].filter(Boolean).join(' · ');
+    const l2=[s.endereco, s.cep&&'CEP '+s.cep].filter(Boolean).join(', ');
+    return `<label class="socio"><input type="radio" name="_rep" value="${i}"${atual===String(i)?' checked':''}><span><b>${esc(s.nome)}</b>${s.administrador?'<span class="tag">ADMINISTRADOR</span>':''}${l1?`<small>${esc(l1)}</small>`:''}${l2?`<small>${esc(l2)}</small>`:''}</span></label>`;
+  }).join('')+`<label class="socio"><input type="radio" name="_rep" value="outro"${atual==='outro'?' checked':''}><span><b>Outra pessoa</b><small>Procurador ou alguém que não está na lista. Preencha os dados abaixo.</small></span></label>`;
+}
+async function lerContrato(el){
+  const fs=[...el.files].filter(x=>x.size<=MAXF); const id=++leitura;
+  SOCIOS=[]; desenharSocios();
+  if(!fs.length){ csStatus(''); return }
+  if(!window.ContratoSocial){ csStatus('Não foi possível ler o documento. Preencha os dados do representante legal abaixo.','bad'); return }
+  csStatus('Lendo o contrato social…','lendo');
+  try{
+    const r=await window.ContratoSocial.ler(fs,(t,parcial)=>{ if(id!==leitura) return; csStatus(t,'lendo'); if(parcial&&parcial.length){ SOCIOS=parcial; desenharSocios() } });
+    if(id!==leitura) return;
+    SOCIOS=r.socios; desenharSocios();
+    if(SOCIOS.length===1 && !f.querySelector('input[name=_rep]:checked')){ f.querySelector('input[name=_rep][value="0"]').checked=true; escolher('0',false) }
+    csStatus(SOCIOS.length ? (SOCIOS.length===1?'Encontramos 1 sócio no contrato. ':'Encontramos '+SOCIOS.length+' sócios no contrato. ')+(SOCIOS.length===1?'Os dados já foram preenchidos no Responsável legal. Confira.':'Escolha quem é o representante legal.')
+      : 'Não conseguimos identificar os sócios neste arquivo'+(r.ocr?' (a imagem pode estar pouco nítida)':'')+'. O arquivo será enviado mesmo assim. Preencha os dados do representante legal abaixo.', SOCIOS.length?'ok':'bad');
+  }catch(e){ if(id!==leitura) return; console.error(e); csStatus('Não conseguimos ler o arquivo agora. Ele será enviado mesmo assim. Preencha os dados do representante legal abaixo.','bad') }
+}
+function escolher(v,rolar=true){
+  const sec=secResp(); if(!sec) return;
+  const s=v==='outro'?null:SOCIOS[+v];
+  const val=(c)=>{
+    if(!s) return '';
+    const l=String(c.label||'').toLowerCase();
+    if(c.tipo==='cpf') return fmtCpf(s.cpf);
+    if(c.tipo==='rg'||/\brg\b|identidade/.test(l)) return s.rg?(s.rg+(s.orgaoRg&&c.tipo!=='rg'?' '+s.orgaoRg:'')):'';
+    if(c.tipo==='data') return /nasc/.test(l)&&s.nascimento?s.nascimento.split('/').reverse().join('-'):'';
+    if(c.tipo==='email'||c.tipo==='telefone'||c.tipo==='arquivo') return '';
+    if(c.tipo==='cep') return s.cep||'';
+    if(/estado civil/.test(l)) return s.estadoCivil||'';
+    if(/nacionalidade/.test(l)) return s.nacionalidade||'';
+    if(/profiss/.test(l)) return s.profissao||'';
+    if(/cargo|fun[cç][aã]o|qualifica/.test(l)) return s.administrador?'Sócio administrador':'Sócio';
+    if(/endere|resid/.test(l)) return [s.endereco,s.cep&&'CEP '+s.cep].filter(Boolean).join(', ');
+    if(/nome/.test(l)) return s.nome;
+    return '';
+  };
+  let alvo=null;
+  (sec.campos||[]).forEach(c=>{
+    const el=f.elements[c.k]; if(!el||el instanceof RadioNodeList) return;
+    let v=val(c);
+    if(el.tagName==='SELECT'){
+      if(!v){ if(s) return; el.value=''; return }
+      const n=x=>x.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().slice(0,5);
+      const op=[...el.options].find(o=>o.value&&n(o.value)===n(v)); if(op) el.value=op.value; else return;
+    } else {
+      if(!s){ if(/nome|cpf|rg|identidade|estado civil|nacionalidade|profiss|cargo|endere|nasc/.test(String(c.label).toLowerCase())||['cpf','rg'].includes(c.tipo)) el.value=''; return }
+      if(!v) return; el.value=v;
+    }
+    alvo=alvo||el; if(el.classList.contains('bad')) valida(el);
+  });
+  f.dispatchEvent(new Event('input'));
+  const secEl=[...document.querySelectorAll('#secoes .sec')].find(x=>x.querySelector('h2')?.textContent===sec.titulo);
+  if(rolar && secEl){ secEl.scrollIntoView({behavior:'smooth',block:'start'}); secEl.classList.remove('flash'); void secEl.offsetWidth; secEl.classList.add('flash');
+    const vazio=[...secEl.querySelectorAll('input,select,textarea')].find(x=>!x.value&&x.required); setTimeout(()=>(vazio||alvo)?.focus({preventScroll:true}),450) }
+}
+f.addEventListener('change',e=>{ if(e.target.name==='contratoSocial') lerContrato(e.target); if(e.target.name==='_rep') escolher(e.target.value) });
+
 /* Mensagem */
 const fmtData=iso=>{ if(!iso) return ''; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y };
 function montarTexto(o){
@@ -217,6 +311,7 @@ function montarTexto(o){
     if(c.k==='uf') v=v.toUpperCase();
     if(c.secao!==sec){ linhas.push('','*'+c.secao+'*'); sec=c.secao }
     linhas.push(c.label+': '+v);
+    if(c.k==='contratoSocial' && SOCIOS.length) linhas.push('Sócios no contrato: '+SOCIOS.map(x=>x.nome+(x.administrador?' (administrador)':'')).join('; '));
   });
   return linhas.join('\n');
 }
@@ -269,7 +364,9 @@ async function salvarNoSistema(o, texto){
   }
   $('#msg').textContent='Salvando os dados…';
   const campos={}, valores={}; CAMPOS.forEach(c=>{ if(c.tipo!=='arquivo' && o[c.k]){ campos[c.label]=o[c.k]; valores[c.k]=o[c.k] } });
-  await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{campos, valores, texto, anexos, em:F.serverTimestamp()});
+  const socios=SOCIOS.map(({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas})=>Object.fromEntries(Object.entries({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas}).filter(([k,v])=>v!=null&&v!=='')));
+  if(socios.length) campos['Sócios no contrato social']=socios.map(x=>x.nome).join('; ');
+  await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{campos, valores, texto, anexos, socios, em:F.serverTimestamp()});
   await F.updateDoc(F.doc(db,...pref),{e2Em:F.serverTimestamp(), e2Anexos:anexos.length});
 }
 

@@ -5,6 +5,7 @@ window.ETAPA2_PADRAO = {
   titulo: 'Dados complementares obrigatórios',
   intro: 'Obrigado por aprovar a proposta! Preencha os dados abaixo para darmos início à implantação. Ao terminar, toque em Enviar pelo WhatsApp.',
   msgEnvio: 'Olá {contato}! Obrigado por aprovar a proposta nº {numero}. Para iniciarmos a implantação, preencha os dados complementares obrigatórios neste link:\n{link}\n\n{vendedor} - Argo',
+  contratoSocial: true,
   final: 'Pronto! O WhatsApp abriu com os seus dados. Confira e toque em enviar.',
   secoes: [
     { id: 'empresa', titulo: 'Empresa', campos: [
@@ -23,9 +24,12 @@ window.ETAPA2_PADRAO = {
     { id: 'responsavel', titulo: 'Responsável legal', campos: [
       { k: 'respNome', label: 'Nome completo', tipo: 'texto', req: true, show: true },
       { k: 'respCpf', label: 'CPF', tipo: 'cpf', req: true, show: true },
+      { k: 'respRg', label: 'RG', tipo: 'rg', req: true, show: true },
+      { k: 'respEstadoCivil', label: 'Estado civil', tipo: 'opcoes', req: false, show: true, opcoes: 'Solteiro(a), Casado(a), Divorciado(a), Viúvo(a), União estável' },
       { k: 'respCargo', label: 'Cargo', tipo: 'texto', req: true, show: true },
       { k: 'respEmail', label: 'E-mail', tipo: 'email', req: true, show: true },
-      { k: 'respFone', label: 'Telefone / WhatsApp', tipo: 'telefone', req: true, show: true }
+      { k: 'respFone', label: 'Telefone / WhatsApp', tipo: 'telefone', req: true, show: true },
+      { k: 'respEndereco', label: 'Endereço residencial', tipo: 'texto', req: false, show: true, full: true }
     ] },
     { id: 'financeiro', titulo: 'Financeiro', campos: [
       { k: 'finNome', label: 'Nome do contato', tipo: 'texto', req: true, show: true },
