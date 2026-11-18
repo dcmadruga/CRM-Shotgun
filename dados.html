@@ -39,6 +39,8 @@ textarea{min-height:80px;resize:vertical}
 input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
 input[readonly]{opacity:.8}
 .bad{border-color:var(--danger)}
+.badf .hint{color:var(--danger)}
+.files{font-weight:500}
 .err{color:var(--danger);font-size:12px;font-weight:500;min-height:0}
 .radios{display:flex;gap:16px;padding-top:6px;font-size:15px;font-weight:500;color:var(--fg)}
 .radios label{flex-direction:row;align-items:center;gap:6px;font-size:15px;color:var(--fg)}
@@ -105,6 +107,7 @@ async function carregarConfig(){
 }
 
 let CFG=null, CAMPOS=[];
+const MAXF=10*1024*1024;
 const TIPO_ATTR={
   texto:'', email:'type="email" autocomplete="email"', telefone:'inputmode="tel" autocomplete="tel"', cpf:'inputmode="numeric"', rg:'autocomplete="off" style="text-transform:uppercase"',
   cnpj:'inputmode="numeric" placeholder="00.000.000/0000-00"', cep:'inputmode="numeric"', numero:'type="number" min="0" inputmode="numeric"', data:'type="date"'
@@ -115,6 +118,7 @@ function campoHtml(c){
   if(c.tipo==='simnao') return `<label${full}>${lab}<span class="radios"><label><input type="radio" name="${esc(c.k)}" value="Sim"${req}> Sim</label><label><input type="radio" name="${esc(c.k)}" value="Não"> Não</label></span></label>`;
   if(c.tipo==='opcoes'){ const ops=String(c.opcoes||'').split(/[,;\n]/).map(x=>x.trim()).filter(Boolean);
     return `<label${full}>${lab}<select name="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o=>`<option>${esc(o)}</option>`).join('')}</select></label>` }
+  if(c.tipo==='arquivo') return `<label class="full">${lab}<input type="file" name="${esc(c.k)}" data-v="arquivo" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt"${req}><span class="hint">${esc(c.ph||'Fotos, PDF ou documentos. Até 10 MB por arquivo.')}</span><span class="files hint"></span></label>`;
   if(c.tipo==='textolongo') return `<label class="full">${lab}<textarea name="${esc(c.k)}"${req}${c.ph?` placeholder="${esc(c.ph)}"`:''}></textarea></label>`;
   const extra=c.k==='uf'?' maxlength="2" style="text-transform:uppercase"':'';
   return `<label${full}>${lab}<input name="${esc(c.k)}" data-v="${esc(c.tipo)}" ${TIPO_ATTR[c.tipo]||''}${req}${c.ph?` placeholder="${esc(c.ph)}"`:''}${extra}></label>`;
@@ -134,7 +138,7 @@ function montar(){
 const tem=k=>!!f.elements[k];
 
 /* Rascunho */
-function lerForm(){ const o={}; new FormData(f).forEach((v,k)=>o[k]=String(v).trim()); return o }
+function lerForm(){ const o={}; new FormData(f).forEach((v,k)=>{ if(typeof v==='string') o[k]=v.trim() }); return o }
 function preencher(o){ Object.entries(o||{}).forEach(([k,v])=>{ const els=f.elements[k]; if(!els||v==null||v==='') return;
   if(els instanceof RadioNodeList && els[0] && els[0].type==='radio'){ els.forEach(r=>r.checked=(r.value===v)) } else if(!els.value) els.value=v }) }
 
@@ -146,6 +150,7 @@ function cpfOk(v){ const d=dig(v); if(d.length!==11||/^(\d)\1+$/.test(d)) return
   const c=n=>{ let s=0; for(let i=0;i<n;i++) s+=+d[i]*(n+1-i); const r=(s*10)%11; return r===10?0:r }; return c(9)===+d[9]&&c(10)===+d[10] }
 function valida(el){
   if(el.type==='radio') return true;
+  if(el.type==='file'){ const fs=[...el.files]; const ok=(!el.required||fs.length>0) && fs.every(x=>x.size<=MAXF); el.closest('label').classList.toggle('badf',!ok); el.classList.toggle('bad',!ok); return ok }
   const v=el.value.trim(), t=el.dataset.v; let ok=true;
   if(el.required && !v) ok=false;
   else if(v && t==='cnpj') ok=cnpjOk(v);
@@ -179,6 +184,11 @@ function ligarAuto(){
       const set=(k,v)=>{ if(v && tem(k) && !f.elements[k].value) f.elements[k].value=v };
       set('logradouro',j.street); set('bairro',j.neighborhood); set('cidade',j.city); set('uf',j.state); }catch(e){}
   }));
+  f.querySelectorAll('[data-v=arquivo]').forEach(el=>el.addEventListener('change',()=>{
+    const out=el.closest('label').querySelector('.files'); const fs=[...el.files];
+    out.textContent=fs.map(x=>x.name+' ('+(x.size/1048576).toFixed(1)+' MB'+(x.size>MAXF?' · grande demais':'')+')').join(' · ');
+    valida(el);
+  }));
   f.querySelectorAll('[data-v=rg]').forEach(el=>el.addEventListener('blur',()=>{ el.value=el.value.trim().toUpperCase() }));
   f.querySelectorAll('[data-v=cpf]').forEach(el=>el.addEventListener('blur',()=>{ const d=dig(el.value); if(d.length===11) el.value=d.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4') }));
 }
@@ -190,7 +200,9 @@ function montarTexto(o){
   if(L.n) linhas.push('Proposta nº '+L.n);
   let sec=null;
   CAMPOS.forEach(c=>{
-    let v=o[c.k]; if(!v) return;
+    let v=o[c.k];
+    if(c.tipo==='arquivo'){ const el=f.elements[c.k]; const fs=el?[...el.files]:[]; if(!fs.length) return; v=fs.map(x=>x.name).join(', ')+(L.p?' (anexado no sistema)':'') }
+    if(!v) return;
     if(c.tipo==='data') v=fmtData(v);
     if(c.k==='uf') v=v.toUpperCase();
     if(c.secao!==sec){ linhas.push('','*'+c.secao+'*'); sec=c.secao }
@@ -211,23 +223,79 @@ function montarTexto(o){
 })();
 f.addEventListener('input',()=>{ try{ localStorage.setItem(DRAFT,JSON.stringify(lerForm())) }catch(e){} });
 
-f.addEventListener('submit',e=>{
+let FS=null;
+async function firestore(){
+  if(FS) return FS;
+  const C=window.FIREBASE_CONFIG||{}; if(!C.apiKey) throw new Error('sem configuração');
+  const base='https://www.gstatic.com/firebasejs/10.12.2/';
+  const [{initializeApp},F]=await Promise.all([import(base+'firebase-app.js'),import(base+'firebase-firestore.js')]);
+  FS={F, db:F.getFirestore(initializeApp(C))}; return FS;
+}
+function lerB64(blob){ return new Promise((ok,err)=>{ const r=new FileReader(); r.onload=()=>ok(String(r.result).split(',')[1]); r.onerror=err; r.readAsDataURL(blob) }) }
+async function comprimir(file){
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size<400*1024) return {blob:file, nome:file.name, tipo:file.type};
+  try{
+    const img=await createImageBitmap(file); const m=Math.min(1,1800/Math.max(img.width,img.height));
+    const cv=document.createElement('canvas'); cv.width=Math.round(img.width*m); cv.height=Math.round(img.height*m);
+    cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+    const blob=await new Promise(r=>cv.toBlob(r,'image/jpeg',0.82));
+    if(blob && blob.size<file.size) return {blob, nome:file.name.replace(/\.(png|webp|jpe?g)$/i,'')+'.jpg', tipo:'image/jpeg'};
+  }catch(e){}
+  return {blob:file, nome:file.name, tipo:file.type};
+}
+async function salvarNoSistema(o, texto){
+  const {F,db}=await firestore();
+  const pref=['propostas',L.p];
+  const anexos=[];
+  const arquivos=CAMPOS.filter(c=>c.tipo==='arquivo').flatMap(c=>[...(f.elements[c.k]?.files||[])].map(file=>({c,file})));
+  let n=0;
+  for(const {c,file} of arquivos){
+    n++; $('#msg').textContent=`Enviando anexo ${n} de ${arquivos.length}…`;
+    const z=await comprimir(file); const b64=await lerB64(z.blob);
+    const ref=F.doc(F.collection(db,...pref,'anexos')); const PART=700000, partes=Math.ceil(b64.length/PART);
+    for(let i=0;i<partes;i++) await F.setDoc(F.doc(db,...pref,'anexos',ref.id,'partes',String(i).padStart(3,'0')),{d:b64.slice(i*PART,(i+1)*PART)});
+    await F.setDoc(ref,{nome:z.nome, tipo:z.tipo||'application/octet-stream', tamanho:z.blob.size, campo:c.label, partes, em:F.serverTimestamp()});
+    anexos.push({id:ref.id, nome:z.nome, campo:c.label});
+  }
+  $('#msg').textContent='Salvando os dados…';
+  const campos={}; CAMPOS.forEach(c=>{ if(c.tipo!=='arquivo' && o[c.k]) campos[c.label]=o[c.k] });
+  await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{campos, texto, anexos, em:F.serverTimestamp()});
+  await F.updateDoc(F.doc(db,...pref),{e2Em:F.serverTimestamp(), e2Anexos:anexos.length});
+}
+
+f.addEventListener('submit',async e=>{
   e.preventDefault();
   const els=[...f.elements].filter(el=>el.name);
   const ruins=els.filter(el=>!valida(el));
   const radiosFaltando=CAMPOS.filter(c=>c.tipo==='simnao'&&c.req&&!f.querySelector(`input[name="${CSS.escape(c.k)}"]:checked`));
   if(ruins.length || radiosFaltando.length){
     const prim=ruins[0]||f.querySelector(`input[name="${CSS.escape(radiosFaltando[0].k)}"]`);
-    const especificos=ruins.filter(el=>el.value.trim()).map(el=>{ const c=CAMPOS.find(x=>x.k===el.name); return c?c.label:el.name });
-    $('#msg').textContent = especificos.length ? 'Confira: '+especificos.join(', ')+'.' : 'Preencha os campos obrigatórios destacados.';
+    const grandes=ruins.filter(el=>el.type==='file'&&[...el.files].some(x=>x.size>MAXF));
+    const especificos=ruins.filter(el=>el.type!=='file'&&el.value.trim()).map(el=>{ const c=CAMPOS.find(x=>x.k===el.name); return c?c.label:el.name });
+    $('#msg').textContent = grandes.length ? 'Há arquivo com mais de 10 MB. Escolha um arquivo menor.' : especificos.length ? 'Confira: '+especificos.join(', ')+'.' : 'Preencha os campos obrigatórios destacados.';
     prim.focus(); prim.scrollIntoView({block:'center'}); return;
   }
-  $('#msg').textContent='';
-  const texto=montarTexto(lerForm());
+  const temArquivos=CAMPOS.some(c=>c.tipo==='arquivo'&&f.elements[c.k]&&f.elements[c.k].files.length);
+  if(temArquivos && !L.p){ $('#msg').textContent='Este link não aceita anexos. Peça ao seu consultor um link novo da Etapa 2.'; return }
+  const o=lerForm(), texto=montarTexto(o);
   const num = destino ? (destino.length<=11 ? '55'+destino : destino) : '';
   const url='https://wa.me/'+num+'?text='+encodeURIComponent(texto);
+  const btn=$('#btnEnviar');
+  let janela=null;
+  if(L.p){
+    janela=window.open('','_blank');
+    btn.disabled=true;
+    try{ await salvarNoSistema(o, texto) }
+    catch(err){
+      btn.disabled=false; if(janela) janela.close();
+      if(temArquivos){ $('#msg').textContent='Não foi possível enviar os anexos. Verifique a internet e tente de novo.'; return }
+      janela=null;
+    }
+    btn.disabled=false;
+  }
+  $('#msg').textContent='';
   $('#waLink').href=url; $('#done').hidden=false;
-  window.open(url,'_blank') || (location.href=url);
+  if(janela && !janela.closed) janela.location.href=url; else (window.open(url,'_blank') || (location.href=url));
 });
 f.addEventListener('blur',e=>{ if(e.target.classList&&e.target.classList.contains('bad')) valida(e.target) },true);
 </script>

@@ -235,11 +235,13 @@ async function iniciar() {
             <button type="button" data-a="copiar">Copiar link da proposta</button>
             <span class="pill ${st.cls}">${st.txt}</span>
           </div></div>
-        <div class="etapa${ok ? '' : ' bloq'}"><div class="etit">Etapa 2 - Dados Complementares</div>
+        <div class="etapa${ok ? '' : ' bloq'}"><div class="etit">Etapa 2 - Dados Complementares ${p.e2Em ? `<span class="pill ok">DADOS RECEBIDOS</span> <span class="meta">em ${esc(fmtTs(p.e2Em))}${p.e2Anexos ? ' · ' + p.e2Anexos + ' anexo' + (p.e2Anexos > 1 ? 's' : '') : ''}</span>` : ''}</div>
           <div class="acts">
-            ${ok ? '<button type="button" class="primary" data-a="etapa2">Enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link da Etapa 2</button>'
+            ${p.e2Em ? '<button type="button" class="primary" data-a="e2ver">Ver dados e anexos</button>' : ''}
+            ${ok ? `<button type="button"${p.e2Em ? '' : ' class="primary"'} data-a="etapa2">Enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link da Etapa 2</button>`
                  : '<button type="button" disabled>Enviar pelo WhatsApp</button><button type="button" disabled>Copiar link da Etapa 2</button><span class="hint">Libera quando o cliente aprovar a proposta.</span>'}
-          </div></div>
+          </div>
+          <div class="e2dados" hidden></div></div>
         </div>`;
     }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "Enviar proposta para aprovação" na aba Proposta.'}</p>`;
   }
@@ -253,14 +255,14 @@ async function iniciar() {
   }
   function linkEtapa2(p) {
     const sc = splitCidade(p.cidade);
-    const dados = { c: p.cnpj, r: p.cliente, cid: sc.cidade, uf: sc.uf, v: perfil.nome || p.vendedor, w: dig(perfil.fone) || p.vendedorFone, n: p.numero };
+    const dados = { c: p.cnpj, r: p.cliente, cid: sc.cidade, uf: sc.uf, v: perfil.nome || p.vendedor, w: dig(perfil.fone) || p.vendedorFone, n: p.numero, p: p.id };
     const b = btoa(unescape(encodeURIComponent(JSON.stringify(dados)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     return baseUrl('dados.html') + '#d=' + b;
   }
   $('pBusca').addEventListener('input', desenharPropostas);
   $('pFiltro').addEventListener('change', desenharPropostas);
   $('pList').addEventListener('click', async e => {
-    const a = e.target.dataset.a, card = e.target.closest('.pcard'); if (!a || !card) return;
+    const bt = e.target.closest('[data-a]'), a = bt && bt.dataset.a, card = e.target.closest('.pcard'); if (!a || !card) return;
     const p = props.find(x => x.id === card.dataset.id); if (!p) return;
     if (a === 'reenviar') { abrirWa(p.waCli, textoAprov(p)); pMsg('WhatsApp aberto com o link da proposta.'); }
     if (a === 'copiar') { try { await navigator.clipboard.writeText(linkAprov(p.id)); pMsg('Link da proposta nº ' + p.numero + ' copiado.'); } catch (_) { pMsg('Link: ' + linkAprov(p.id)); } }
@@ -278,6 +280,37 @@ async function iniciar() {
         const l = document.createElement('a'); l.href = url; l.download = p.arquivo || 'Proposta Argo.pdf'; l.target = '_blank'; l.click();
         setTimeout(() => URL.revokeObjectURL(url), 60000); pMsg('');
       } catch (err) { pMsg('Não foi possível abrir o PDF (' + (err.code || err.message) + ').'); }
+    }
+    if (a === 'e2ver') {
+      const box = card.querySelector('.e2dados');
+      if (!box.hidden) { box.hidden = true; return; }
+      box.hidden = false; box.textContent = 'Carregando…';
+      try {
+        const [r, an] = await Promise.all([F.getDoc(F.doc(db, 'propostas', p.id, 'etapa2', 'resposta')), F.getDocs(F.collection(db, 'propostas', p.id, 'anexos'))]);
+        const d = r.exists() ? r.data() : { campos: {} };
+        const linhas = Object.entries(d.campos || {}).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
+        const arqs = an.docs.map(x => ({ id: x.id, ...x.data() }));
+        box.innerHTML = `<div class="refwrap"><table class="refs e2resp"><tbody>${linhas || '<tr><td>Sem respostas salvas.</td></tr>'}</tbody></table></div>
+          ${arqs.length ? `<div class="etit" style="margin-top:6px">Anexos</div><div class="acts">${arqs.map(x => `<button type="button" data-a="anexo" data-aid="${esc(x.id)}">⬇ ${esc(x.nome)} <span class="meta">(${esc(x.campo || '')}, ${(Number(x.tamanho || 0) / 1048576).toFixed(1)} MB)</span></button>`).join('')}</div>` : ''}
+          <div class="acts" style="margin-top:6px"><button type="button" data-a="e2copiar">Copiar dados</button></div>`;
+        box.dataset.texto = d.texto || '';
+      } catch (err) { box.textContent = 'Não foi possível carregar (' + (err.code || err.message) + ').'; }
+      return;
+    }
+    if (a === 'e2copiar') { try { await navigator.clipboard.writeText(card.querySelector('.e2dados').dataset.texto || ''); pMsg('Dados copiados.'); } catch (_) { pMsg('Não foi possível copiar.'); } return; }
+    if (a === 'anexo') {
+      const aid = e.target.closest('[data-aid]').dataset.aid; const b = e.target.closest('button'); b.disabled = true;
+      try {
+        const meta = (await F.getDoc(F.doc(db, 'propostas', p.id, 'anexos', aid))).data();
+        const ps = await F.getDocs(F.collection(db, 'propostas', p.id, 'anexos', aid, 'partes'));
+        const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join('');
+        const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+        const url = URL.createObjectURL(new Blob([u8], { type: meta.tipo || 'application/octet-stream' }));
+        const l = document.createElement('a'); l.href = url; l.download = meta.nome || 'anexo'; l.click();
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      } catch (err) { pMsg('Não foi possível baixar o anexo (' + (err.code || err.message) + ').'); }
+      finally { b.disabled = false; }
+      return;
     }
     if (a === 'etapa2' || a === 'etapa2copy') {
       const link = linkEtapa2(p);
