@@ -318,7 +318,15 @@ async function iniciar() {
       box.innerHTML = `<div class="refwrap"><table class="refs e2resp"><tbody>${Object.entries(d.campos || {}).map(([k, x]) => `<tr><td>${esc(k)}</td><td style="white-space:pre-wrap">${esc(x)}</td></tr>`).join('') || '<tr><td>Nada preenchido.</td></tr>'}</tbody></table></div>`;
       return;
     }
+    // Bloco de filiais: quantidade + uma linha por filial (F1, F2…) com Posto/Loja e CNPJ
+    const filBloco = (k, op, label) => `<div class="full e4fil" data-fil="${esc(k)}"${op ? ` data-op="${esc(op)}"` : ''} hidden><label class="e4filq"><span>${esc(label || 'Quantidade de filiais')} <b style="color:var(--danger)">*</b></span><input type="number" min="1" max="50" data-filq="${esc(k)}" value="${(v[k + '__fil'] || []).length || ''}"></label><div class="e4filrows"></div></div>`;
     const campo = c => {
+      if (c.tipo === 'multicond') {
+        const ops = String(c.opcoes || '').split(/[,;\n]/).map(o => o.trim()).filter(Boolean), val = v[c.k] || '';
+        const lab = `<span>${esc(c.label)}${c.req ? ' <b style="color:var(--danger)">*</b>' : ''}</span>`;
+        const blocos = ops.map(op => { const xs = (c.cond || {})[op] || []; if (!xs.length) return ''; return `<div class="full e4cond" data-cond="${esc(c.k)}" data-op="${esc(op)}" hidden><div class="grid e4grid">${xs.map(x => x.tipo === 'filiais' ? filBloco(x.k, '', x.label) : campo(x)).join('')}</div></div>`; }).join('');
+        return `<label>${lab}<select data-k="${esc(c.k)}"${c.req ? ' required' : ''}><option value="">Escolha</option>${ops.map(o => `<option${o === val ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select></label>${blocos}`;
+      }
       const req = c.req ? ' required' : '', lab = `<span>${esc(c.label)}${c.req ? ' <b style="color:var(--danger)">*</b>' : ''}</span>`, val = v[c.k] || '', ph = c.ph ? ` placeholder="${esc(c.ph)}"` : '';
       const full = c.tipo === 'textolongo' || c.full ? ' class="full"' : '';
       if (c.tipo === 'textolongo') return `<label class="full">${lab}<textarea data-k="${esc(c.k)}" rows="3"${req}${ph}>${esc(val)}</textarea></label>`;
@@ -327,7 +335,7 @@ async function iniciar() {
         const ops = String(c.opcoes || '').split(/[,;\n]/).map(o => o.trim()).filter(Boolean); if (c.outros && !ops.some(ehOutro4)) ops.push('Outros');
         const base = ops.find(o => o === val) || (ehOutro4(val.split(':')[0]) ? ops.find(ehOutro4) : '');
         const det = String(c.detalhe || '').trim() ? `<label class="full" data-det="${esc(c.k)}" hidden><span>${esc(c.detalhe)}</span><textarea data-detk="${esc(c.k)}" rows="4">${esc(v[c.k + '__det'] || '')}</textarea></label>` : '';
-        const fil = String(c.filiaisOp || '').trim() ? `<div class="full e4fil" data-fil="${esc(c.k)}" data-op="${esc(c.filiaisOp.trim())}" hidden><label class="e4filq"><span>Quantidade de filiais <b style="color:var(--danger)">*</b></span><input type="number" min="1" max="50" data-filq="${esc(c.k)}" value="${(v[c.k + '__fil'] || []).length || ''}"></label><div class="e4filrows"></div></div>` : '';
+        const fil = String(c.filiaisOp || '').trim() ? filBloco(c.k, c.filiaisOp.trim(), 'Quantidade de filiais') : '';
         return `<label${full}>${lab}<select data-k="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o => `<option${o === base ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select><input data-outro="${esc(c.k)}" placeholder="Qual?" value="${esc(base && ehOutro4(base) ? val.replace(/^[^:]*:\s*/, '') : '')}"${base && ehOutro4(base) ? '' : ' hidden'}></label>${det}${fil}`;
       }
       const t = { data: 'type="date"', numero: 'type="number" min="0"', email: 'type="email"', telefone: 'inputmode="tel"', cpf: 'inputmode="numeric"', cnpj: 'inputmode="numeric"', cep: 'inputmode="numeric"' }[c.tipo] || '';
@@ -360,27 +368,36 @@ async function iniciar() {
     const desenharFil = (bl, lista) => { const k = bl.dataset.fil, n = Math.min(50, Math.max(0, parseInt(bl.querySelector('[data-filq]').value, 10) || 0)), rows = bl.querySelector('.e4filrows'); const atual = lista || [...rows.children].map(r => ({ tipo: r.querySelector('[data-filt]').value, cnpj: r.querySelector('[data-filc]').value })); rows.innerHTML = Array.from({ length: n }, (_, i) => filLinha(k, i, atual[i] || {})).join(''); };
     box.querySelectorAll('[data-fil]').forEach(bl => { desenharFil(bl, v[bl.dataset.fil + '__fil'] || []); bl.querySelector('[data-filq]').addEventListener('input', () => desenharFil(bl)); });
     box.addEventListener('input', ev => { if (ev.target.matches('[data-filc]')) { const d = ev.target.value.replace(/\D/g, '').slice(0, 14); ev.target.value = d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : d; ev.target.style.borderColor = ''; } if (ev.target.matches('[data-filt],[data-filq]')) ev.target.style.borderColor = ''; });
-    const syncFil = () => box.querySelectorAll('[data-fil]').forEach(bl => { const sel = box.querySelector(`select[data-k="${CSS.escape(bl.dataset.fil)}"]`); const on = !!sel && !sel.disabled && sel.value.toLowerCase() === bl.dataset.op.toLowerCase(); bl.hidden = !on; bl.querySelectorAll('input,select').forEach(x => x.disabled = !on); });
-    box.addEventListener('change', () => { syncDet(); syncFil(); }); syncDet(); syncFil();
+    // Multi condicional: cada opção mostra os seus campos adicionais
+    const syncCond = () => box.querySelectorAll('[data-cond]').forEach(bl => { const sel = box.querySelector(`select[data-k="${CSS.escape(bl.dataset.cond)}"]`); const on = !!sel && !sel.disabled && sel.value === bl.dataset.op; bl.hidden = !on; bl.querySelectorAll('input,select,textarea').forEach(x => x.disabled = !on); });
+    const syncFil = () => box.querySelectorAll('[data-fil]').forEach(bl => { let on; if (bl.dataset.op) { const sel = box.querySelector(`select[data-k="${CSS.escape(bl.dataset.fil)}"]`); on = !!sel && !sel.disabled && sel.value.toLowerCase() === bl.dataset.op.toLowerCase(); } else on = !bl.parentElement.closest('[hidden]'); bl.hidden = !on; bl.querySelectorAll('input,select').forEach(x => x.disabled = !on); });
+    box.addEventListener('change', () => { syncDet(); syncCond(); syncFil(); }); syncDet(); syncCond(); syncFil();
   }
   async function salvarE4(p, card, bt) {
     const box = card.querySelector('.e4box'), valores = {}, campos = {}; let falta = null;
-    e4Visiveis().forEach(sc => sc.campos.forEach(c => {
-      const els = [...box.querySelectorAll(`[data-k="${CSS.escape(c.k)}"]`)].filter(x => !x.disabled); if (!els.length) return;
+    const rotulo = (sc, l) => campos[l] != null ? sc.titulo + ' - ' + l : l;
+    const pegaFil = (sc, k, label) => {
+      const bl = box.querySelector(`[data-fil="${CSS.escape(k)}"]`); if (!bl || bl.hidden) return;
+      const q = bl.querySelector('[data-filq]'), rows = [...bl.querySelectorAll('.e4filrow')];
+      if (!rows.length) { falta = falta || q; q.style.borderColor = 'var(--danger)'; }
+      const fil = rows.map((r, i) => { const t = r.querySelector('[data-filt]'), cn = r.querySelector('[data-filc]'); if (!t.value) { falta = falta || t; t.style.borderColor = 'var(--danger)'; } if (cn.value.replace(/\D/g, '').length !== 14) { falta = falta || cn; cn.style.borderColor = 'var(--danger)'; } return { cod: 'F' + (i + 1), tipo: t.value, cnpj: cn.value }; });
+      if (fil.length) { valores[k + '__fil'] = fil; campos[rotulo(sc, label)] = fil.map(f => `${f.cod} - ${f.tipo} - ${f.cnpj}`).join('\n'); }
+    };
+    const pega = (sc, c) => {
+      const els = [...box.querySelectorAll(`[data-k="${CSS.escape(c.k)}"]`)].filter(x => !x.disabled); if (!els.length) return '';
       let val = els[0].type === 'radio' ? (els.find(x => x.checked)?.value || '') : els[0].value.trim();
       const o = box.querySelector(`[data-outro="${CSS.escape(c.k)}"]`); if (o && !o.hidden && val && o.value.trim()) val += ': ' + o.value.trim();
       els.forEach(x => x.style.borderColor = '');
       if (c.req && !val) { falta = falta || els[0]; els.forEach(x => x.style.borderColor = 'var(--danger)'); }
-      if (val) { valores[c.k] = val; const lab = campos[c.label] != null ? sc.titulo + ' - ' + c.label : c.label; campos[lab] = c.tipo === 'data' ? fmtD(val) : val; }
-      const bl = box.querySelector(`[data-fil="${CSS.escape(c.k)}"]`);
-      if (val && bl && !bl.hidden) {
-        const q = bl.querySelector('[data-filq]'), rows = [...bl.querySelectorAll('.e4filrow')];
-        if (!rows.length) { falta = falta || q; q.style.borderColor = 'var(--danger)'; }
-        const fil = rows.map((r, i) => { const t = r.querySelector('[data-filt]'), cn = r.querySelector('[data-filc]'); if (!t.value) { falta = falta || t; t.style.borderColor = 'var(--danger)'; } if (cn.value.replace(/\D/g, '').length !== 14) { falta = falta || cn; cn.style.borderColor = 'var(--danger)'; } return { cod: 'F' + (i + 1), tipo: t.value, cnpj: cn.value }; });
-        if (fil.length) { valores[c.k + '__fil'] = fil; campos[c.label + ' - Filiais'] = fil.map(f => `${f.cod} - ${f.tipo} - ${f.cnpj}`).join('\n'); }
-      }
+      if (val) { valores[c.k] = val; campos[rotulo(sc, c.label)] = c.tipo === 'data' ? fmtD(val) : val; }
+      return val;
+    };
+    e4Visiveis().forEach(sc => sc.campos.forEach(c => {
+      const val = pega(sc, c);
+      if (val && c.tipo === 'multicond') ((c.cond || {})[val] || []).forEach(x => x.tipo === 'filiais' ? pegaFil(sc, x.k, x.label) : pega(sc, x));
+      if (val && c.filiaisOp) pegaFil(sc, c.k, c.label + ' - Filiais');
       const dt = box.querySelector(`textarea[data-detk="${CSS.escape(c.k)}"]`);
-      if (val && dt && !dt.disabled && dt.value.trim()) { valores[c.k + '__det'] = dt.value.trim(); campos[(campos[c.label + ' - ' + c.detalhe] != null ? sc.titulo + ' - ' : '') + c.label + ' - ' + c.detalhe] = dt.value.trim(); }
+      if (val && dt && !dt.disabled && dt.value.trim()) { valores[c.k + '__det'] = dt.value.trim(); campos[rotulo(sc, c.label + ' - ' + c.detalhe)] = dt.value.trim(); }
     }));
     if (falta) { box.querySelector('.e4msg').textContent = 'Preencha os campos obrigatórios (CNPJ das filiais com 14 dígitos).'; falta.focus(); return; }
     bt.disabled = true; box.querySelector('.e4msg').textContent = 'Salvando…';
@@ -607,6 +624,12 @@ async function iniciar() {
     $('e2Secoes').innerHTML = htmlSecoes(E2, TIPOS, 'o cliente');
   }
   // Editor de seções/campos (usado na Etapa 2 e na Etapa 4)
+  // Editor do Multi condicional: para cada opção, a lista de campos adicionais
+  const TIPOSCOND = { texto: 'Texto', textolongo: 'Texto longo', numero: 'Número', data: 'Data', cnpj: 'CNPJ', telefone: 'Telefone', email: 'E-mail', filiais: 'Filiais (quantidade + F1, F2… com Posto/Loja e CNPJ)' };
+  function condEditor(c, ci) {
+    const ops = String(c.opcoes || '').split(/[,;\n]/).map(o => o.trim()).filter(Boolean);
+    return `<tr data-ci="${ci}" class="condrow"><td colspan="6">${ops.length ? ops.map(op => `<div class="condop" data-op="${esc(op)}"><b>Ao escolher “${esc(op)}”:</b>${((c.cond || {})[op] || []).map((x, xi) => `<div class="condx" data-xi="${xi}"><input data-cf="label" value="${esc(x.label)}" placeholder="Descrição do campo" aria-label="Descrição do campo"><select data-cf="tipo" aria-label="Tipo">${Object.entries(TIPOSCOND).map(([k, t]) => `<option value="${k}"${x.tipo === k ? ' selected' : ''}>${t}</option>`).join('')}</select><label class="chk"><input type="checkbox" data-cf="req"${x.req ? ' checked' : ''}> Obrigatório</label><button type="button" data-cx="del" aria-label="Excluir campo">✕</button></div>`).join('') || '<span class="hint">Nenhum campo adicional.</span>'}<button type="button" data-cx="add">+ Campo</button></div>`).join('') : '<span class="hint">Digite as opções acima para configurar os campos de cada uma.</span>'}</td></tr>`;
+  }
   function htmlSecoes(CFGX, TIP, quem) {
     const E2 = CFGX;
     return E2.secoes.map((s, si) => `
@@ -621,9 +644,9 @@ async function iniciar() {
           <td class="t"><select data-f="tipo" ${c.custom ? '' : 'disabled'} aria-label="Tipo">${Object.entries(TIP).map(([k, v]) => `<option value="${k}"${c.tipo === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
           <td class="c"><input type="checkbox" data-f="show" ${c.show !== false || c.fixo ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Mostrar"></td>
           <td class="c"><input type="checkbox" data-f="req" ${c.req ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Obrigatório"></td>
-          <td class="o">${c.tipo === 'simnao' ? `<label class="chk"><input type="checkbox" data-f="abre" ${abreSim(s, ci) ? 'checked' : ''}> Só mostrar os campos abaixo desta seção se responder Sim</label>` : c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>${quem === 'o vendedor' ? `<input data-f="detalhe" value="${esc(c.detalhe || '')}" placeholder="Ao escolher, abrir texto longo com esta descrição (vazio = não abre)" aria-label="Descrição do texto longo"><input data-f="filiaisOp" value="${esc(c.filiaisOp || '')}" placeholder="Opção que pede filiais (ex.: Central)" aria-label="Opção que pede filiais">` : ''}` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
+          <td class="o">${c.tipo === 'simnao' ? `<label class="chk"><input type="checkbox" data-f="abre" ${abreSim(s, ci) ? 'checked' : ''}> Só mostrar os campos abaixo desta seção se responder Sim</label>` : c.tipo === 'multicond' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><span class="hint">Configure abaixo os campos de cada opção.</span>` : c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>${quem === 'o vendedor' ? `<input data-f="detalhe" value="${esc(c.detalhe || '')}" placeholder="Ao escolher, abrir texto longo com esta descrição (vazio = não abre)" aria-label="Descrição do texto longo">${c.filiaisOp ? `<input data-f="filiaisOp" value="${esc(c.filiaisOp)}" placeholder="Opção que pede filiais" aria-label="Opção que pede filiais">` : ''}` : ''}` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}</td>
           <td class="a"><button type="button" data-ca="up" ${ci === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-ca="down" ${ci === s.campos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button>${c.fixo ? '' : '<button type="button" data-ca="del" aria-label="Excluir campo" title="Excluir campo">✕</button>'}</td>
-        </tr>`).join('')}
+        </tr>${c.tipo === 'multicond' ? condEditor(c, ci) : ''}`).join('')}
         </tbody></table></div>
         <div class="tools"><button type="button" data-sa="add">+ Campo nesta seção</button></div>
       </div></section>`).join('');
@@ -639,6 +662,7 @@ async function iniciar() {
   el.addEventListener('input', e => {
     const sec = e.target.closest('[data-si]'); if (!sec || !get()) return; const E2 = get(), s = E2.secoes[+sec.dataset.si];
     if (e.target.dataset.s) { s.titulo = e.target.value; marcar(); return; }
+    if (e.target.dataset.cf) { const c = s.campos[+e.target.closest('[data-ci]').dataset.ci], op = e.target.closest('[data-op]').dataset.op, x = c.cond[op][+e.target.closest('[data-xi]').dataset.xi]; x[e.target.dataset.cf] = e.target.type === 'checkbox' ? e.target.checked : e.target.value; marcar(); return; }
     const tr = e.target.closest('[data-ci]'); const f = e.target.dataset.f; if (!tr || !f) return;
     const c = s.campos[+tr.dataset.ci];
     if (e.target.type === 'checkbox') { c[f] = e.target.checked; tr.classList.toggle('off', c.show === false); }
@@ -646,11 +670,12 @@ async function iniciar() {
     marcar();
     if (f === 'tipo') redesenhar();
   });
-  el.addEventListener('change', e => { if (e.target.dataset.f === 'tipo') { const sec = e.target.closest('[data-si]'), tr = e.target.closest('[data-ci]'); get().secoes[+sec.dataset.si].campos[+tr.dataset.ci].tipo = e.target.value; marcar(); redesenhar(); } });
+  el.addEventListener('change', e => { if (e.target.dataset.f === 'opcoes') { const sec = e.target.closest('[data-si]'), tr = e.target.closest('[data-ci]'); if (get().secoes[+sec.dataset.si].campos[+tr.dataset.ci].tipo === 'multicond') redesenhar(); return; } if (e.target.dataset.f === 'tipo') { const sec = e.target.closest('[data-si]'), tr = e.target.closest('[data-ci]'); get().secoes[+sec.dataset.si].campos[+tr.dataset.ci].tipo = e.target.value; marcar(); redesenhar(); } });
   el.addEventListener('click', e => {
     const sec = e.target.closest('[data-si]'); if (!sec || !get()) return; const E2 = get(), si = +sec.dataset.si, s = E2.secoes[si];
     const troca = (arr, i, j) => { [arr[i], arr[j]] = [arr[j], arr[i]]; };
-    const sa = e.target.dataset.sa, ca = e.target.dataset.ca;
+    const sa = e.target.dataset.sa, ca = e.target.dataset.ca, cx = e.target.dataset.cx;
+    if (cx) { const c = s.campos[+e.target.closest('[data-ci]').dataset.ci], op = e.target.closest('[data-op]').dataset.op; c.cond = c.cond || {}; const l = c.cond[op] = c.cond[op] || []; if (cx === 'add') l.push({ k: 'x' + Date.now().toString(36), label: 'Novo campo', tipo: 'texto', req: false }); else l.splice(+e.target.closest('[data-xi]').dataset.xi, 1); marcar(); redesenhar(); return; }
     if (sa === 'up' && si > 0) troca(E2.secoes, si, si - 1);
     else if (sa === 'down' && si < E2.secoes.length - 1) troca(E2.secoes, si, si + 1);
     else if (sa === 'del') E2.secoes.splice(si, 1);
@@ -669,7 +694,7 @@ async function iniciar() {
 
   /* ---------- Parâmetros da Etapa 4 - Referência Implantação (ADM) ---------- */
   const E4DOC = F.doc(db, 'config', 'etapa4');
-  const TIPOS4 = Object.fromEntries(Object.entries(TIPOS).filter(([k]) => k !== 'arquivo'));
+  const TIPOS4 = { ...Object.fromEntries(Object.entries(TIPOS).filter(([k]) => k !== 'arquivo')), multicond: 'Multi condicional' };
   let E4 = null, e4Sujo = false;
   const e4Status = t => { $('e4Status').textContent = t; };
   const cfgE4 = () => E4 || copia(window.ETAPA4_PADRAO);
