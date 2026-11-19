@@ -39,6 +39,7 @@ function iniciar() {
     if ($('tkDlg').open && $('tkDlg').dataset.modo === 'templates') desenharTemplates();
   }, () => {});
   F.getDocs(F.collection(db, 'usuarios')).then(qs => {
+    todosU = qs.docs.map(d => ({ uid: d.id, nome: d.data().nome || d.data().email || '' }));
     resps = qs.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => u.ativo && !u.excluido && (u.papel === 'task' || u.papel === 'adm' || (u.papeis || []).some(x => x === 'task' || x === 'adm')))
       .map(u => ({ uid: u.uid, nome: u.nome || u.email })).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
     desenhar();
@@ -293,7 +294,7 @@ async function datasE4(pid) {
     const nc = c.find(([k, v]) => /nome.*central|central.*nome/i.test(k) && v && !/\n/.test(v)) || c.find(([k, v]) => /central/i.test(k) && !/filia/i.test(k) && v && !/\n/.test(v) && !/^\s*central\s*$/i.test(v));
     const central = filiais.length || nc ? { nome: nc ? String(nc[1]).trim() : '', filiais: filiais.map(f => ({ cod: f.cod || '', tipo: f.tipo || '', cnpj: f.cnpj || '', razao: f.razao || '', info: f.info || null, dados: f.dados || null })) } : null;
     const simples = !central && c.some(([k, v]) => /^\s*(posto\s+)?simples\s*$/i.test(String(v || '')));
-    return { dataBase: achar(/da[dt]a.*base|base.*da[dt]a/i, /base/i), start: achar(/start|in[ií]cio da implanta/i), central, simples, campos: Object.fromEntries(c) };
+    return { dataBase: achar(/da[dt]a.*base|base.*da[dt]a/i, /base/i), start: achar(/start|in[ií]cio da implanta/i), central, simples, campos: Object.fromEntries(c), por: r.data().por || '', porUid: r.data().porUid || '' };
   } catch (e) { return null; }
 }
 // Logo do posto ou rede: anexo da Etapa 2 com "logo" no nome do campo, reduzido para uma miniatura
@@ -363,6 +364,9 @@ function anexosFiliais(t) {
   if (t && t.propostaId && c.tipo !== 'simples') anexosE4(t.propostaId).then(arqs => document.querySelectorAll('#tkDlgBody .tkfilanx').forEach(el => { const pre = el.dataset.cod + ' - '; el.innerHTML = botoesAnexos(t.propostaId, arqs.filter(a => String(a.campo || '').startsWith(pre)), pre); }));
   else if (t && t.propostaId) anexosE4(t.propostaId).then(arqs => { const el = document.querySelector('#tkDlgBody .tkfilanx'); if (el) el.innerHTML = botoesAnexos(t.propostaId, arqs); });
 }
+// Quem preencheu a Etapa 4 vira o responsável pelo cadastro
+let todosU = [];
+const respE4 = d => { if (!d || !d.por) return null; const u = (d.porUid && todosU.find(x => x.uid === d.porUid)) || todosU.find(x => x.nome === d.por); return { uid: u ? u.uid : (d.porUid || 'nome:' + d.por), nome: u ? u.nome : d.por }; };
 const completando = new Set();
 function completarDatas() {
   // A Central é conferida uma vez por sessão, para refletir alterações feitas depois na Etapa 4
@@ -370,7 +374,7 @@ function completarDatas() {
     completando.add(t.id);
     (async () => {
       const up = {};
-      { const d = await datasE4(t.propostaId); baseSimples(d, t.cnpj); if (d && d.central) await razoesFiliais(d.central, t.central); const sig = c => c ? [c.tipo || '', c.nome, ...(c.filiais || []).map(f => [f.cod, f.tipo, f.cnpj, f.razao || '', f.info ? 1 : 0, JSON.stringify(Object.entries(f.dados || {}).sort())].join('|'))].join('\n') : ''; if (d && sig(d.central) !== sig(t.central)) up.central = d.central || null; }
+      { const d = await datasE4(t.propostaId); baseSimples(d, t.cnpj); if (!t.respCadastro?.nome && respE4(d)) up.respCadastro = respE4(d); if (d && d.central) await razoesFiliais(d.central, t.central); const sig = c => c ? [c.tipo || '', c.nome, ...(c.filiais || []).map(f => [f.cod, f.tipo, f.cnpj, f.razao || '', f.info ? 1 : 0, JSON.stringify(Object.entries(f.dados || {}).sort())].join('|'))].join('\n') : ''; if (d && sig(d.central) !== sig(t.central)) up.central = d.central || null; }
       if (!t.dataBase) { const d = await datasE4(t.propostaId); if (d && d.dataBase) up.dataBase = d.dataBase; else if (t.dataBase === undefined) up.dataBase = ''; if (!t.start && d && d.start) up.start = d.start; }
       // Logo: refaz se é de versão antiga ou se ainda não tinha (o anexo pode ter chegado depois)
       if (t.logoV !== 3 || !t.logo) { const lg = await logoDe(t.propostaId); if (lg !== (t.logo || '') || t.logoV !== 3) { up.logo = lg; up.logoV = 3; } }
@@ -391,7 +395,7 @@ async function criarDaProposta(pid, auto) {
   const novo = { dataBase: d4.dataBase || '', central: d4.central || null, logo: await logoDe(pid), logoV: 3,
     apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
-    respCadastro: auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: d4.start || v.dataImpl || '', obs: v.obs || '',
+    respCadastro: respE4(d4) || (auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }), respStart: null, start: d4.start || v.dataImpl || '', obs: v.obs || '',
     propostaId: pid, propostaNumero: p.numero || '', vendedor: p.vendedor || '', finalizado: false, status: 'fut', checklists: [],
     criado: F.serverTimestamp(), criadoPor: auto ? 'Automático (Etapa 4 concluída)' : (perfil.nome || perfil.email), auto: !!auto
   };
