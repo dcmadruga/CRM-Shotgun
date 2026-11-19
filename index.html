@@ -130,7 +130,8 @@ body:not(.is-admin) .admin{display:none!important}
 body.is-admin .noadmin{display:none!important}
 /* Parametrização: só administrador (no modo com login) */
 body.fb:not(.is-admin) .cfgtab,body.fb:not(.is-admin) #viewCfg{display:none!important}
-body:not(.is-admin):not(.is-task) .tasktab{display:none!important}
+body:not(.is-admin):not(.is-task):not(.tem-task) .tasktab{display:none!important}
+.upapeis{display:flex;flex-direction:column;gap:2px;font-size:13px;white-space:nowrap}
 
 /* ---------- Módulo TASK ---------- */
 .tkhead h2{font-family:var(--display);font-size:20px;margin:0}

@@ -38,7 +38,7 @@ function iniciar() {
     if ($('tkDlg').open && $('tkDlg').dataset.modo === 'templates') desenharTemplates();
   }, () => {});
   F.getDocs(F.collection(db, 'usuarios')).then(qs => {
-    resps = qs.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => u.ativo && !u.excluido && (u.papel === 'task' || u.papel === 'adm'))
+    resps = qs.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => u.ativo && !u.excluido && (u.papel === 'task' || u.papel === 'adm' || (u.papeis || []).some(x => x === 'task' || x === 'adm')))
       .map(u => ({ uid: u.uid, nome: u.nome || u.email })).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
     desenhar();
   }).catch(() => { resps = [{ uid: perfil.uid, nome: perfil.nome || perfil.email }]; desenhar(); });

@@ -130,7 +130,7 @@ async function iniciar() {
   }
 
   A.onAuthStateChanged(auth, async user => {
-    perfil = null; fb.admin = false; fb.task = false; body.classList.remove('is-admin', 'is-task'); window.dispatchEvent(new Event('argo-sair'));
+    perfil = null; fb.admin = false; fb.task = false; fb.temTask = false; body.classList.remove('is-admin', 'is-task', 'tem-task'); window.dispatchEvent(new Event('argo-sair'));
     if (!user) { sbox.hidden = true; trocaOk = null; fbox.hidden = true; fotoOk = null; pararCam(); }
     if (!user) { mostrarLogin('Entre com o e-mail e a senha que o administrador cadastrou para você.'); return; }
     try {
@@ -148,15 +148,19 @@ async function iniciar() {
     }
     if (perfil.trocarSenha === true) { await exigirTroca(); if (auth.currentUser?.uid !== user.uid) return; perfil.trocarSenha = false; }
     if (await precisaFoto(user.uid)) { await exigirFoto(); if (auth.currentUser?.uid !== user.uid) return; }
-    fb.admin = perfil.papel === 'adm';
-    fb.task = perfil.papel === 'task'; body.classList.toggle('is-task', fb.task);
+    // Perfis: a pessoa pode ter mais de um (papeis); "papel" guarda o principal
+    const papeis = Array.isArray(perfil.papeis) && perfil.papeis.length ? perfil.papeis : [perfil.papel || 'vendedor'];
+    fb.admin = perfil.papel === 'adm' || papeis.includes('adm');
+    fb.temTask = !fb.admin && papeis.includes('task');
+    fb.task = fb.temTask && !papeis.includes('vendedor'); // só TASK
+    body.classList.toggle('is-task', fb.task); body.classList.toggle('tem-task', fb.temTask);
     if (fb.task) {
       box.hidden = true; body.classList.remove('locked');
       $('tabUser').textContent = perfil.nome || perfil.email;
       aplicarModo(); abrirAba('tabTask');
       window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: false } })); return;
     }
-    if (fb.admin) window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: true } }));
+    if (fb.admin || fb.temTask) window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: fb.admin } }));
     box.hidden = true; body.classList.remove('locked');
     $('tabUser').textContent = perfil.nome || perfil.email;
     aplicarPerfil();
@@ -1114,7 +1118,7 @@ async function iniciar() {
         <td><input data-f="nome" value="${esc(u.nome)}" aria-label="Nome"></td>
         <td>${esc(u.email)}</td>
         <td><input data-f="fone" value="${esc(u.fone)}" aria-label="Telefone" inputmode="tel"></td>
-        <td><select data-f="papel" ${eu ? 'disabled' : ''} aria-label="Perfil"><option value="vendedor"${u.papel !== 'adm' && u.papel !== 'task' ? ' selected' : ''}>Vendedor</option><option value="task"${u.papel === 'task' ? ' selected' : ''}>TASK</option><option value="adm"${u.papel === 'adm' ? ' selected' : ''}>Administrador</option></select></td>
+        <td>${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; return `<div class="upapeis">${[['vendedor', 'Vendedor'], ['task', 'TASK'], ['adm', 'Administrador']].map(([k, l]) => `<label class="chk"><input type="checkbox" data-papel="${k}"${ps.includes(k) ? ' checked' : ''}${eu ? ' disabled' : ''}> ${l}</label>`).join('')}</div>`; })()}</td>
         <td><span class="pill ${u.ativo ? '' : 'off'}">${u.ativo ? 'Liberado' : 'Bloqueado'}</span></td>
         <td>${eu ? '<span class="hint">você</span>' : `<button type="button" data-a="toggle">${u.ativo ? 'Bloquear' : 'Liberar'}</button>`}${eu ? '' : '<button type="button" data-a="excluir" class="danger">Excluir</button>'}
             <button type="button" data-a="reset">Nova senha</button>${fotosU[u.uid] ? '<button type="button" data-a="novafoto">Pedir nova foto</button>' : ''}</td></tr>`;
@@ -1122,6 +1126,14 @@ async function iniciar() {
     lista.filter(u => !(u.uid in fotosU)).forEach(u => { fotosU[u.uid] = ''; F.getDoc(F.doc(db, 'fotos', u.uid)).then(sn => { if (sn.exists()) { fotosU[u.uid] = sn.data().b64 || ''; desenharUsuarios(); } }).catch(() => {}); });
   }
   $('usersBody').addEventListener('change', async e => {
+    if (e.target.dataset.papel) {
+      const tr = e.target.closest('tr'), papeis = [...tr.querySelectorAll('[data-papel]:checked')].map(x => x.dataset.papel);
+      if (!papeis.length) { e.target.checked = true; uStatus('A pessoa precisa ter pelo menos um perfil.'); return; }
+      const papel = papeis.includes('adm') ? 'adm' : papeis.includes('vendedor') ? 'vendedor' : 'task';
+      try { await F.updateDoc(F.doc(db, 'usuarios', tr.dataset.uid), { papeis, papel }); uStatus('Perfis salvos. Valem no próximo acesso da pessoa.'); }
+      catch (err) { uStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); }
+      return;
+    }
     const tr = e.target.closest('tr'), f = e.target.dataset.f; if (!tr || !f) return;
     try { await F.updateDoc(F.doc(db, 'usuarios', tr.dataset.uid), { [f]: e.target.value.trim() }); uStatus('Alteração salva.'); }
     catch (err) { uStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); }
@@ -1154,7 +1166,7 @@ async function iniciar() {
       app2 = app2 || initializeApp(C, 'cadastro');
       const auth2 = A.getAuth(app2);
       const cred = await A.createUserWithEmailAndPassword(auth2, email, senha);
-      await F.setDoc(F.doc(db, 'usuarios', cred.user.uid), { nome, email, fone, papel, ativo: true, trocarSenha: true, criado: F.serverTimestamp() });
+      await F.setDoc(F.doc(db, 'usuarios', cred.user.uid), { nome, email, fone, papel, papeis: [papel], ativo: true, trocarSenha: true, criado: F.serverTimestamp() });
       await A.signOut(auth2);
       ['u-nome', 'u-email', 'u-fone', 'u-senha'].forEach(id => $(id).value = ''); $('u-papel').value = 'vendedor';
       uStatus(`${nome} cadastrado. Passe para a pessoa o link do app, o e-mail e a senha inicial. No primeiro acesso o app pede para ela criar uma senha nova.`);
@@ -1166,7 +1178,7 @@ async function iniciar() {
           const qs = await F.getDocs(F.query(F.collection(db, 'usuarios'), F.where('email', '==', email)));
           const ant = qs.docs[0];
           if (ant && ant.data().excluido) {
-            await F.updateDoc(ant.ref, { nome, fone, papel, ativo: true, excluido: false, trocarSenha: false });
+            await F.updateDoc(ant.ref, { nome, fone, papel, papeis: [papel], ativo: true, excluido: false, trocarSenha: false });
             await A.sendPasswordResetEmail(auth, email);
             ['u-nome', 'u-email', 'u-fone', 'u-senha'].forEach(id => $(id).value = ''); $('u-papel').value = 'vendedor';
             uStatus(`${nome} já tinha sido cadastrado antes e foi reativado. A senha inicial não vale para ele: chegou um e-mail em ${email} para criar uma nova.`);
