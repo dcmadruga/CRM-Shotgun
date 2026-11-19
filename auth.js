@@ -416,7 +416,7 @@ async function iniciar() {
         <div class="etapa${p.e4Em ? '' : ' bloq'}" data-passo="4"${oc(4)}><div class="etit">Passo 5 · TASK ${p.e4Em ? '<span class="pill ok">NO TASK</span>' : ''}</div>
           <div class="acts">${p.e4Em ? `<span class="hint">O card desta proposta foi para o quadro do TASK, onde a equipe de implantação acompanha os checklists.</span>${fb.admin ? '<button type="button" data-a="irtask">Abrir o TASK</button>' : ''}` : '<span class="hint">O card entra sozinho no TASK quando o passo 4 for salvo.</span>'}</div></div>
         </div>`;
-    }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "Enviar proposta para aprovação" na aba Proposta.'}</p>`;
+    }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Clique em "+ Nova proposta" para criar a primeira.'}</p>`;
   }
   /* ---------- Etapa 4: dados de referência para a implantação (vendedor) ---------- */
   const e4Visiveis = () => (cfgE4().secoes || []).map(sc => ({ ...sc, campos: (sc.campos || []).filter(c => c.show !== false && c.tipo !== 'arquivo') })).filter(sc => sc.campos.length);
