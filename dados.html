@@ -116,6 +116,7 @@ label.socio small{display:block;color:var(--muted);font-size:13px;overflow-wrap:
 <script src="firebase-config.js"></script>
 <script src="etapa2-padrao.js"></script>
 <script src="contrato-social.js"></script>
+<script src="lib/municipios.js" defer></script>
 <script>
 const $=s=>document.querySelector(s);
 const f=$('#f');
@@ -422,16 +423,36 @@ async function lerContrato(el){
   }catch(e){ if(id!==leitura) return; console.error(e); csStatus('Não conseguimos ler o arquivo agora. Ele será enviado mesmo assim. Preencha os dados do representante legal abaixo.','bad') }
 }
 // "Praça dos Motoristas, 59, Poção, Cuiabá-MT" -> logradouro, número, complemento, bairro, cidade, UF
+// Cidades do IBGE (lib/municipios.js) e estados por extenso, para reconhecer cidade e UF no endereço do contrato
+const nz=x=>String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+const ESTADOS={'acre':'AC','alagoas':'AL','amapa':'AP','amazonas':'AM','bahia':'BA','ceara':'CE','distrito federal':'DF','espirito santo':'ES','goias':'GO','maranhao':'MA','mato grosso':'MT','mato grosso do sul':'MS','minas gerais':'MG','para':'PA','paraiba':'PB','parana':'PR','pernambuco':'PE','piaui':'PI','rio de janeiro':'RJ','rio grande do norte':'RN','rio grande do sul':'RS','rondonia':'RO','roraima':'RR','santa catarina':'SC','sao paulo':'SP','sergipe':'SE','tocantins':'TO'};
+const SIGLAS=new Set(Object.values(ESTADOS));
+let CID=null;
+function cidades(){
+  if(CID||!window.MUNICIPIOS) return CID; CID=new Map();
+  for(const [uf,lista] of Object.entries(window.MUNICIPIOS)) lista.split('|').forEach(n=>{ const k=nz(n); if(!CID.has(k)) CID.set(k,[]); CID.get(k).push({n,uf}) });
+  return CID;
+}
+function ufDe(t){ const k=nz(t).replace(/^(estado|uf)( d[eoa])?\s*/,''); if(ESTADOS[k]) return ESTADOS[k]; const s=k.toUpperCase(); return SIGLAS.has(s)?s:'' }
+// Procura a cidade no IBGE; com a UF conhecida, prefere a da mesma UF
+function acharCidade(t,uf){ const C=cidades(); if(!C) return null; const l=C.get(nz(t)); if(!l) return null; return l.find(x=>x.uf===uf)||(l.length===1||!uf?l[0]:null) }
 function partesEndereco(e){
   const r={}; const cap=x=>/[a-zà-ú]/.test(x)?x:x.toLowerCase().replace(/(^|[\s\/(-])(\S)/g,(m,a,b)=>a+b.toUpperCase()).replace(/\s(D[aeo]s?|E|De)\s/g,m=>m.toLowerCase());
-  let ps=String(e||'').split(/,|;/).map(x=>x.trim()).filter(Boolean); if(!ps.length) return r;
+  // tira conectivos do contrato: "na Rua...", "e Comarca de...", "Estado de Mato Grosso"
+  let ps=String(e||'').split(/,|;/).map(x=>x.trim().replace(/^(?:e\s+)?(?:n[oa]s?|em|à|ao)\s+/i,'').replace(/\.$/,'').trim()).filter(Boolean); if(!ps.length) return r;
   const tira=(re)=>{ const i=ps.findIndex(x=>re.test(x)); if(i<0) return null; const v=ps[i]; ps.splice(i,1); return v };
+  const PREF_CID=/^(?:e\s+)?(?:(?:cidade|munic[ií]pio|comarca|distrito)(?:\s+e\s+(?:cidade|munic[ií]pio|comarca|distrito))*)\s*(?:de|do|da|:)?\s*/i;
   let v;
-  if((v=tira(/^(munic[ií]pio|cidade)\b/i))){ const m=v.replace(/^(munic[ií]pio|cidade)\s*(de|:)?\s*/i,'').match(/^(.+?)(?:\s*[-\/–]\s*([A-Za-z]{2}))?\.?$/); r.cidade=m[1]; if(m[2]) r.uf=m[2].toUpperCase() }
+  if((v=tira(/^(estado|uf)\b/i))) r.uf=ufDe(v)||v.replace(/^(estado|uf)\s*(de|do|da|:)?\s*/i,'').slice(0,2).toUpperCase();
+  else { const i=ps.findIndex((x,j)=>j>0&&ESTADOS[nz(x)]); if(i>0){ r.uf=ESTADOS[nz(ps[i])]; ps.splice(i,1) } }
+  if((v=tira(/^(?:e\s+)?(munic[ií]pio|cidade|comarca|distrito)\b/i))){ const m=v.replace(PREF_CID,'').match(/^(.+?)(?:\s*[-\/–]\s*([A-Za-z]{2}))?\.?$/); r.cidade=m[1]; if(m[2]&&!r.uf) r.uf=m[2].toUpperCase() }
   else { const ult=ps[ps.length-1].match(/^(.+?)\s*[-\/–]\s*([A-Za-z]{2})\.?$/);
-    if(ult){ r.cidade=ult[1]; r.uf=ult[2].toUpperCase(); ps.pop() }
-    else if(ps.length>1 && /^[A-Za-z]{2}\.?$/.test(ps[ps.length-1])){ r.uf=ps.pop().replace('.','').toUpperCase(); r.cidade=ps.pop() } }
-  if((v=tira(/^(estado|uf)\b/i))) r.uf=r.uf||v.replace(/^(estado|uf)\s*(de|:)?\s*/i,'').slice(0,2).toUpperCase();
+    if(ult&&SIGLAS.has(ult[2].toUpperCase())){ r.cidade=ult[1]; r.uf=r.uf||ult[2].toUpperCase(); ps.pop() }
+    else if(ps.length>1 && /^[A-Za-z]{2}\.?$/.test(ps[ps.length-1])&&SIGLAS.has(ps[ps.length-1].replace('.','').toUpperCase())){ r.uf=r.uf||ps.pop().replace('.','').toUpperCase(); r.cidade=ps.pop() } }
+  // Sem cidade identificada: procura entre as partes (menos a primeira, que é a rua) uma cidade que exista no IBGE
+  if(!r.cidade && cidades()){ for(let i=ps.length-1;i>0;i--){ const c=acharCidade(ps[i],r.uf); if(c){ r.cidade=c.n; ps.splice(i,1); break } } }
+  // Confere a cidade no IBGE: usa o nome oficial e, se o estado não veio ou não bate, traz o estado de lá
+  if(r.cidade){ const c=acharCidade(r.cidade,r.uf)||acharCidade(r.cidade,''); if(c){ r.cidade=c.n; if(!r.uf||!(cidades().get(nz(c.n))||[]).some(x=>x.uf===r.uf)) r.uf=c.uf } }
   if((v=tira(/^bairro\b/i))) r.bairro=v.replace(/^bairro\s*:?\s*/i,'');
   if((v=tira(/^(complemento|sala|apto|apartamento|ap\.|bloco|casa|lote|quadra|qd\.?|lt\.?)\b/i))) r.complemento=v.replace(/^complemento\s*:?\s*/i,'');
   r.logradouro=(ps.shift()||'').replace(/^(endere[cç]o|logradouro)\s*:?\s*/i,'');
