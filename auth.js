@@ -646,7 +646,8 @@ async function iniciar() {
         await F.setDoc(ref, meta); u.lista.push({ id: ref.id, nome: u.nome, orig: u.f.name, tipo: meta.tipo, tamanho: u.f.size });
       }
       box._pend = {};
-      await F.setDoc(F.doc(db, 'propostas', p.id, 'etapa4', 'dados'), { valores, campos, em: F.serverTimestamp(), por });
+      const secoes = e4Visiveis().map(sc => ({ titulo: sc.titulo, labels: sc.campos.flatMap(c => [c.label, ...Object.values(c.cond || {}).flatMap(l => (l || []).map(x => x.label))]) })); // para o TASK agrupar os dados
+      await F.setDoc(F.doc(db, 'propostas', p.id, 'etapa4', 'dados'), { valores, campos, secoes, em: F.serverTimestamp(), por });
       await F.updateDoc(F.doc(db, 'propostas', p.id), { e4Em: F.serverTimestamp(), e4Por: por });
       box.hidden = true; pMsg(`Dados de referência da proposta nº ${p.numero} salvos.`);
     } catch (err) { box.querySelector('.e4msg').textContent = 'Não foi possível salvar (' + (err.code || err.message) + ').'; }

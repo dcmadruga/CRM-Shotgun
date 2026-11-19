@@ -10,7 +10,8 @@ const fmtD = iso => { if (!iso) return ''; const [y, m, d] = String(iso).split('
 const fmtTs = ts => ts && ts.toDate ? ts.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
 const fmtCnpj = v => { const d = dig(v); return d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : (v || ''); };
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-const statusDe = t => t.finalizado ? 'fin' : (t.start && t.start > hoje() ? 'fut' : 'and');
+// Status de progressão manual (escolhido em Dados gerais); novo cadastro começa como Futuro
+const statusDe = t => STATUS[t.status] ? t.status : t.finalizado ? 'fin' : 'fut';
 const STATUS = { and: 'Em andamento', fut: 'Futuro', fin: 'Finalizado' };
 const progresso = t => { const it = (t.checklists || []).flatMap(c => c.itens || []); return { feitos: it.filter(i => i.ok).length, total: it.length }; };
 const msg = t => { const el = $('tkMsg'); el.textContent = t || ''; el.hidden = !t; };
@@ -97,7 +98,7 @@ function cartao(t) {
 /* ---------- Diálogo ---------- */
 const dlg = () => $('tkDlg');
 function abrirDlg(modo, titulo, html) {
-  const d = dlg(); d.dataset.modo = modo; $('tkDlgTit').textContent = titulo; $('tkDlgBody').innerHTML = html; $('tkDlgMsg').textContent = '';
+  const d = dlg(); d.dataset.modo = modo; d.classList.remove('largo'); $('tkDlgTit').textContent = titulo; $('tkDlgBody').innerHTML = html; $('tkDlgMsg').textContent = '';
   if (!d.open) d.showModal();
 }
 const dmsg = t => { $('tkDlgMsg').textContent = t || ''; };
@@ -105,29 +106,92 @@ let armado = null;
 function confirmar(bt, chave, texto) { if (armado === chave) { armado = null; return true; } armado = chave; bt.textContent = texto; dmsg('Clique de novo para confirmar.'); setTimeout(() => { if (armado === chave) armado = null; }, 5000); return false; }
 
 /* Dados gerais / novo cadastro */
+// Dados gerais: menu lateral por assunto (como um cadastro em etapas), com os campos editáveis do TASK
+// e, ao lado, as respostas da Etapa 2 e da Etapa 4 agrupadas pelas seções configuradas
+const ICONES = {
+  status: '<path d="M3 12h4l3-8 4 16 3-8h4"/>', posto: '<path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M6 9h6M14 10h2a2 2 0 0 1 2 2v4a2 2 0 0 0 4 0V8l-3-3"/>',
+  pessoas: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>', banco: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+  globo: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>', cartao: '<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19"/>',
+  chip: '<rect x="6" y="6" width="12" height="12" rx="1.5"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/>', ajustes: '<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>',
+  monitor: '<rect x="2.5" y="4" width="19" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>', clipe: '<path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L10.2 17.7a1.7 1.7 0 0 1-2.4-2.4L15.5 7.6"/>',
+  agenda: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', lista: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>'
+};
+const iconeDe = t => { t = String(t || '').toLowerCase(); const k = /status/.test(t) ? 'status' : /posto|empresa|base/.test(t) ? 'posto' : /respons|contato|financ|s[oó]cio/.test(t) ? 'pessoas' : /legado|convers/.test(t) ? 'banco' : /argo|sistema/.test(t) ? 'globo' : /tef|pix|pos|cart|pagamento/.test(t) ? 'cartao' : /automa/.test(t) ? 'chip' : /computa|equipa|hardware|m[aá]quina/.test(t) ? 'monitor' : /anexo|arquivo/.test(t) ? 'clipe' : /data|agenda|prazo/.test(t) ? 'agenda' : /extra|opera|outro/.test(t) ? 'ajustes' : 'lista'; return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[k]}</svg>`; };
+const marcaDe = (feitos, total) => !total || !feitos ? '<span class="dgm vazio"></span>' : feitos >= total ? '<span class="dgm ok" title="Completo">✓</span>' : '<span class="dgm parcial" title="Incompleto"></span>';
 function formDados(t) {
   t = t || { respCadastro: { uid: perfil.uid, nome: perfil.nome || perfil.email } };
   const sel = (id, r) => `<select id="${id}"><option value="">Ninguém</option>${opcoesResp(null, r?.uid)}</select>`;
-  abrirDlg('dados', t.id ? 'Dados gerais' : 'Novo cadastro', `
-    <form id="tkForm" class="tkform" data-id="${esc(t.id || '')}" novalidate>
-      <label class="full">Nome do cadastro (como aparece no cartão)<input id="tkApelido" value="${esc(t.apelido || '')}" placeholder="Ex.: Rede - Filial 1 - POSTO CONTINENTAL" required></label>
-      <label>CNPJ<span class="tkrow"><input id="tkCnpj" value="${esc(fmtCnpj(t.cnpj))}" inputmode="numeric" placeholder="00.000.000/0000-00"><button type="button" id="tkBuscaCnpj">Pesquisar</button></span></label>
-      <label>Razão social<input id="tkRazao" value="${esc(t.razao || '')}"></label>
-      <label>Cidade<input id="tkCidade" value="${esc(t.cidade || '')}"></label>
-      <label>UF<input id="tkUf" value="${esc(t.uf || '')}" maxlength="2" style="text-transform:uppercase"></label>
-      <label>E-mail<input id="tkEmail" type="email" value="${esc(t.email || '')}"></label>
-      <label>Contato no posto<input id="tkContato" value="${esc(t.contato || '')}"></label>
-      <label>Telefone / WhatsApp<input id="tkFone" inputmode="tel" value="${esc(t.fone || '')}"></label>
+  const cheios = (...v) => v.filter(x => String(x || '').trim()).length;
+  const secs = [
+    { id: 'status', titulo: 'Status', marca: marcaDe(cheios(t.dataBase, t.start, t.respStart?.uid), 3), html: `
+      <label>Status<select id="tkStatus">${['fut', 'and', 'fin'].map(k => `<option value="${k}"${statusDe(t) === k ? ' selected' : ''}>${STATUS[k]}</option>`).join('')}</select></label>
       <label>Data da base<input id="tkBase" type="date" value="${esc(t.dataBase || '')}"></label>
       <label>Data do start<input id="tkStart" type="date" value="${esc(t.start || '')}"></label>
       <label>Responsável pelo cadastro${sel('tkRC', t.respCadastro)}</label>
       <label>Responsável pelo start${sel('tkRS', t.respStart)}</label>
       <label class="full">Observações<textarea id="tkObs" rows="3">${esc(t.obs || '')}</textarea></label>
-      ${t.id ? `<label class="chk full"><input type="checkbox" id="tkFin" ${t.finalizado ? 'checked' : ''}> Implantação finalizada</label>` : ''}
-      ${t.propostaId ? `<p class="hint full">Importado da proposta nº ${esc(t.propostaNumero || '')}.</p>` : ''}
-      <div class="tkacts full"><button type="submit" class="primary">Salvar</button>${t.id && admin ? '<button type="button" class="danger" id="tkExcluir">Excluir cadastro</button>' : ''}</div>
+      ${t.propostaId ? `<p class="hint full">Importado da proposta nº ${esc(t.propostaNumero || '')}.</p>` : ''}` },
+    { id: 'posto', titulo: 'Posto', marca: marcaDe(cheios(t.apelido, t.cnpj, t.razao, t.cidade, t.uf), 5), html: `
+      <label class="full">Nome do cadastro (como aparece no cartão)<input id="tkApelido" value="${esc(t.apelido || '')}" placeholder="Ex.: Rede - Filial 1 - POSTO CONTINENTAL" required></label>
+      <label>CNPJ<span class="tkrow"><input id="tkCnpj" value="${esc(fmtCnpj(t.cnpj))}" inputmode="numeric" placeholder="00.000.000/0000-00"><button type="button" id="tkBuscaCnpj">Pesquisar</button></span></label>
+      <label>Razão social<input id="tkRazao" value="${esc(t.razao || '')}"></label>
+      <label>Cidade<input id="tkCidade" value="${esc(t.cidade || '')}"></label>
+      <label>UF<input id="tkUf" value="${esc(t.uf || '')}" maxlength="2" style="text-transform:uppercase"></label>
+      ${t.central && t.central.tipo !== 'simples' ? `<div class="full dgcentral"><small>Central</small><b>${esc(t.central.nome || '')}</b>${(t.central.filiais || []).map(f => `<div>${esc([f.cod, f.tipo, f.cnpj, f.razao].filter(Boolean).join(' - '))}</div>`).join('')}</div>` : ''}` },
+    { id: 'resp', titulo: 'Responsáveis', marca: marcaDe(cheios(t.contato, t.email, t.fone), 3), html: `
+      <label>Contato no posto<input id="tkContato" value="${esc(t.contato || '')}"></label>
+      <label>E-mail<input id="tkEmail" type="email" value="${esc(t.email || '')}"></label>
+      <label>Telefone / WhatsApp<input id="tkFone" inputmode="tel" value="${esc(t.fone || '')}"></label>` }
+  ];
+  const navItem = sc => `<button type="button" class="dgnav" data-dg="${esc(sc.id)}" aria-selected="false">${iconeDe(sc.titulo)}<span>${esc(sc.titulo)}</span>${sc.marca || ''}</button>`;
+  const painel = sc => `<section class="dgpainel${sc.ro ? ' ro' : ''}" data-dgp="${esc(sc.id)}" hidden><h4>${esc(sc.titulo)}${sc.sub ? `<small>${esc(sc.sub)}</small>` : ''}</h4><div class="${sc.ro ? 'dgro' : 'tkform'}">${sc.html}</div></section>`;
+  abrirDlg('dados', t.id ? 'Dados gerais' + (t.apelido ? ' · ' + t.apelido : '') : 'Novo cadastro', `
+    <form id="tkForm" class="dgwrap" data-id="${esc(t.id || '')}" novalidate>
+      <nav class="dgmenu" aria-label="Seções">${secs.map(navItem).join('')}<div class="dgmais"></div></nav>
+      <div class="dgcorpo">${secs.map(painel).join('')}<div class="dgmaisp"></div>
+        <div class="tkacts"><button type="submit" class="primary">Salvar</button>${t.id && admin ? '<button type="button" class="danger" id="tkExcluir">Excluir cadastro</button>' : ''}</div></div>
     </form>`);
-  setTimeout(() => $('tkApelido').focus(), 30);
+  dlg().classList.add('largo');
+  mostrarDg(t.id ? 'status' : 'posto');
+  if (!t.id) setTimeout(() => $('tkApelido').focus(), 30);
+  if (t.propostaId) carregarDg(t, navItem, painel);
+}
+function mostrarDg(id) {
+  document.querySelectorAll('#tkForm .dgnav').forEach(b => b.setAttribute('aria-selected', b.dataset.dg === id));
+  document.querySelectorAll('#tkForm .dgpainel').forEach(p => { p.hidden = p.dataset.dgp !== id; });
+}
+// Respostas da Etapa 2 e da Etapa 4, agrupadas pelas seções dos formulários
+async function carregarDg(t, navItem, painel) {
+  const pid = t.propostaId, form = $('tkForm');
+  const ler = async (...c) => { try { const r = await F.getDoc(F.doc(db, ...c)); return r.exists() ? r.data() : null; } catch (e) { return null; } };
+  const [e2, e4, pub2, cfg4] = await Promise.all([ler('propostas', pid, 'etapa2', 'resposta'), ler('propostas', pid, 'etapa4', 'dados'), ler('publico', 'etapa2'), ler('config', 'etapa4')]);
+  let an = []; try { an = (await F.getDocs(F.collection(db, 'propostas', pid, 'anexos'))).docs.map(x => ({ id: x.id, ...x.data() })); } catch (e) {}
+  if (!form.isConnected || $('tkForm') !== form) return;
+  const json = d => { try { return d && d.json ? JSON.parse(d.json) : null; } catch (e) { return null; } };
+  const titulosDe = cfg => ((cfg && cfg.secoes) || []).map(sc => ({ titulo: sc.titulo, labels: (sc.campos || []).filter(c => c.show !== false).map(c => c.label) }));
+  // Agrupa "Rótulo: valor" pelas seções; aceita prefixo de filial (F1 - ...) e complementos (... - Senha)
+  const agrupar = (campos, secoes, pre) => {
+    const ent = Object.entries(campos || {}), usados = new Set(), out = [];
+    secoes.forEach((sc, si) => {
+      const rows = ent.filter(([k]) => !usados.has(k) && sc.labels.some(L => k === L || k.startsWith(L + ' - ') || k.endsWith(' - ' + L) || k.includes(' - ' + L + ' - ')));
+      rows.forEach(([k]) => usados.add(k));
+      out.push({ id: pre + si, titulo: sc.titulo, rows, total: sc.labels.length });
+    });
+    const resto = ent.filter(([k]) => !usados.has(k)); if (resto.length) out.push({ id: pre + 'x', titulo: secoes.length ? 'Outros' : 'Dados', rows: resto, total: resto.length });
+    return out.filter(g => g.rows.length);
+  };
+  const linhas = rows => `<table class="tkdados"><tbody>${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td style="white-space:pre-wrap">${valorOuLink(v)}</td></tr>`).join('')}</tbody></table>`;
+  const grupos = [];
+  if (e2) agrupar(e2.campos, titulosDe(json(pub2) || window.ETAPA2_PADRAO), 'e2_').forEach(g => grupos.push({ ...g, sub: 'Dados do cliente (Etapa 2)' }));
+  if (e4) agrupar(e4.campos, e4.secoes || titulosDe(json(cfg4)), 'e4_').forEach(g => grupos.push({ ...g, sub: 'Referência da implantação (Etapa 4)' }));
+  const nomes4 = {}; Object.values((e4 && e4.valores) || {}).forEach(l => { if (Array.isArray(l)) l.forEach(a => { if (a && a.id && a.nome) nomes4[a.id] = a.nome; }); });
+  const v2 = (e2 && e2.valores) || {};
+  const arqs = an.map(x => { let nome = x.etapa === 4 ? nomes4[x.id] || x.nome : x.nome; if (!x.etapa && /logo/i.test(x.campo || '')) nome = [dig(v2.cnpj), v2.razao].map(y => String(y || '').replace(/[\\/:*?"<>|]+/g, '-').trim()).filter(Boolean).concat('Logo').join('_') + ((String(x.nome || '').match(/\.[^.]+$/) || [''])[0]); return { ...x, nome }; });
+  const secs = grupos.map(g => ({ id: g.id, titulo: g.titulo, sub: g.sub, ro: true, marca: marcaDe(g.rows.length, Math.max(g.total, g.rows.length)), html: linhas(g.rows) }));
+  if (arqs.length) secs.push({ id: 'anexos', titulo: 'Anexos', ro: true, marca: marcaDe(1, 1), html: botoesAnexos(pid, arqs) });
+  if (!secs.length) return;
+  form.querySelector('.dgmais').innerHTML = secs.map(navItem).join('');
+  form.querySelector('.dgmaisp').innerHTML = secs.map(painel).join('');
 }
 async function buscarCnpj() {
   const d = dig($('tkCnpj').value); if (d.length !== 14) { dmsg('Digite um CNPJ com 14 números.'); return; }
@@ -143,18 +207,18 @@ async function buscarCnpj() {
 }
 const respDe = id => { const v = $(id).value; if (!v) return null; const r = resps.find(x => x.uid === v) || tasks.flatMap(t => [t.respCadastro, t.respStart]).find(x => x?.uid === v); return r ? { uid: r.uid, nome: r.nome } : null; };
 async function salvarDados(form) {
-  const apelido = $('tkApelido').value.trim(); if (!apelido) { dmsg('Informe o nome do cadastro.'); $('tkApelido').focus(); return; }
+  const apelido = $('tkApelido').value.trim(); if (!apelido) { dmsg('Informe o nome do cadastro.'); mostrarDg('posto'); $('tkApelido').focus(); return; }
   const dados = { apelido, cnpj: dig($('tkCnpj').value), razao: $('tkRazao').value.trim(), cidade: $('tkCidade').value.trim(), uf: $('tkUf').value.trim().toUpperCase(),
     email: $('tkEmail').value.trim(), contato: $('tkContato').value.trim(), fone: $('tkFone').value.trim(), start: $('tkStart').value, dataBase: $('tkBase').value, obs: $('tkObs').value.trim(),
-    respCadastro: respDe('tkRC'), respStart: respDe('tkRS') };
+    respCadastro: respDe('tkRC'), respStart: respDe('tkRS'), status: $('tkStatus').value };
   const id = form.dataset.id;
   try {
     if (id) {
-      const t = tasks.find(x => x.id === id), fin = $('tkFin').checked;
+      const t = tasks.find(x => x.id === id), fin = dados.status === 'fin';
       if (fin !== !!t.finalizado) { dados.finalizado = fin; dados.finalizadoEm = fin ? F.serverTimestamp() : null; }
       await F.updateDoc(F.doc(db, 'tasks', id), { ...dados, alteradoEm: F.serverTimestamp(), alteradoPor: perfil.nome || perfil.email });
     } else {
-      await F.addDoc(F.collection(db, 'tasks'), { ...dados, finalizado: false, checklists: [], criado: F.serverTimestamp(), criadoPor: perfil.nome || perfil.email });
+      await F.addDoc(F.collection(db, 'tasks'), { ...dados, finalizado: dados.status === 'fin', checklists: [], criado: F.serverTimestamp(), criadoPor: perfil.nome || perfil.email });
     }
     dlg().close(); msg(id ? 'Cadastro salvo.' : 'Cadastro criado. Agora adicione os checklists.');
   } catch (e) { dmsg('Não foi possível salvar (' + (e.code || 'erro') + ').'); }
@@ -181,9 +245,9 @@ async function salvarChecklists(id, fn) {
   fn(cl);
   try {
     const pr = progresso({ checklists: cl }); const extra = {};
-    if (pr.total && pr.feitos === pr.total && !t.finalizado) { extra.finalizado = true; extra.finalizadoEm = F.serverTimestamp(); }
+    if (pr.total && pr.feitos === pr.total && !t.finalizado) { extra.finalizado = true; extra.status = 'fin'; extra.finalizadoEm = F.serverTimestamp(); }
     await F.updateDoc(F.doc(db, 'tasks', id), { checklists: cl, alteradoEm: F.serverTimestamp(), alteradoPor: perfil.nome || perfil.email, ...extra });
-    t.checklists = cl; if (extra.finalizado) { t.finalizado = true; }
+    t.checklists = cl; if (extra.finalizado) { t.finalizado = true; t.status = 'fin'; }
     formCheck(id); if (extra.finalizado) dmsg('Todos os itens concluídos: o cadastro foi marcado como finalizado.');
   } catch (e) { dmsg('Não foi possível salvar (' + (e.code || 'erro') + ').'); }
 }
@@ -317,7 +381,7 @@ async function criarDaProposta(pid, auto) {
     apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
     respCadastro: auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: d4.start || v.dataImpl || '', obs: v.obs || '',
-    propostaId: pid, propostaNumero: p.numero || '', vendedor: p.vendedor || '', finalizado: false, checklists: [],
+    propostaId: pid, propostaNumero: p.numero || '', vendedor: p.vendedor || '', finalizado: false, status: 'fut', checklists: [],
     criado: F.serverTimestamp(), criadoPor: auto ? 'Automático (Etapa 4 concluída)' : (perfil.nome || perfil.email), auto: !!auto
   };
   await F.setDoc(ref, novo);
@@ -466,6 +530,7 @@ function ligar() {
   });
   $('tkDlgBody').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-novo]')) { e.preventDefault(); e.target.closest('.tkck').querySelector('[data-ck=additem]').click(); } });
   $('tkDlgBody').addEventListener('click', async e => {
+    const dg = e.target.closest('[data-dg]'); if (dg) return mostrarDg(dg.dataset.dg);
     const cl = e.target.closest('[data-link]');
     if (cl) { try { await navigator.clipboard.writeText(cl.dataset.link); } catch (er) { const ta = document.createElement('textarea'); ta.value = cl.dataset.link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } cl.textContent = 'Link copiado ✓'; setTimeout(() => { cl.textContent = 'Copiar link'; }, 1800); return; }
     const b = e.target.closest('button'); if (!b) return;
