@@ -208,7 +208,7 @@ async function formImportar() {
     const qs = await F.getDocs(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')));
     const ja = new Set(tasks.map(t => t.propostaId).filter(Boolean));
     const ps = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !ja.has(p.id)).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0));
-    $('tkDlgBody').innerHTML = ps.length ? `<p class="hint">Quando o cliente aceita o contrato (Etapa 3), o cadastro é criado sozinho. Use esta lista para trazer antes uma proposta aprovada que ainda não chegou nessa fase, ou para trazer de volta um card removido.</p>
+    $('tkDlgBody').innerHTML = ps.length ? `<p class="hint">Quando o vendedor conclui a Etapa 4 (Dados Referência Implantação), o cadastro é criado sozinho. Use esta lista para trazer antes uma proposta aprovada que ainda não chegou nessa fase, ou para trazer de volta um card removido.</p>
       <ul class="tkimp">${ps.map(p => `<li><div><b>${esc(p.cliente)}</b><small>Nº ${esc(p.numero)} · ${esc(p.cidade || '')} · ${esc(p.vendedor || '')}${p.e2Em ? ' · dados complementares recebidos' : ''}</small></div><button type="button" data-imp="${esc(p.id)}">Importar</button></li>`).join('')}</ul>`
       : '<p class="hint">Nenhuma proposta aprovada pendente de importação.</p>';
   } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar as propostas (${esc(e.code || 'erro')}).</p>`; }
@@ -227,7 +227,7 @@ async function criarDaProposta(pid, auto) {
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
     respCadastro: auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: v.dataImpl || '', obs: v.obs || '',
     propostaId: pid, propostaNumero: p.numero || '', vendedor: p.vendedor || '', finalizado: false, checklists: [],
-    criado: F.serverTimestamp(), criadoPor: auto ? 'Automático (contrato aceito)' : (perfil.nome || perfil.email), auto: !!auto
+    criado: F.serverTimestamp(), criadoPor: auto ? 'Automático (Etapa 4 concluída)' : (perfil.nome || perfil.email), auto: !!auto
   };
   await F.setDoc(ref, novo);
   return novo;
@@ -253,14 +253,14 @@ async function importar(pid, bt) {
   try { const n = await criarDaProposta(pid, false); bt.closest('li').remove(); dmsg(n ? `${n.apelido} importado.` : 'Essa proposta já tinha virado cadastro.'); }
   catch (e) { bt.disabled = false; bt.textContent = 'Importar'; dmsg('Não foi possível importar (' + (e.code || 'erro') + ').'); }
 }
-// Alimentação automática: contrato aceito (Etapa 3 concluída) vira cadastro no TASK
+// Alimentação automática: Etapa 4 concluída (dados de referência salvos pelo vendedor) vira cadastro no TASK
 const criando = new Set();
 function sincronizar() {
   if (!tasksOk || !aprovadas) return;
   const tem = new Set([...tasks.flatMap(t => [t.id, t.propostaId]).filter(Boolean), ...removidas]);
-  aprovadas.filter(p => p.ctAceitoEm && !tem.has(p.id) && !criando.has(p.id)).forEach(p => {
+  aprovadas.filter(p => p.ctAceitoEm && p.e4Em && !tem.has(p.id) && !criando.has(p.id)).forEach(p => {
     criando.add(p.id);
-    criarDaProposta(p.id, true).then(n => { if (n) msg(`Novo cadastro automático: ${n.apelido} (contrato aceito).`); })
+    criarDaProposta(p.id, true).then(n => { if (n) msg(`Novo cadastro automático: ${n.apelido} (Etapa 4 concluída).`); })
       .catch(e => console.warn('TASK automático', p.id, e)).finally(() => criando.delete(p.id));
   });
 }
