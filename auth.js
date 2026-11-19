@@ -501,7 +501,11 @@ async function iniciar() {
     box._desAnx = desenharAnx;
     if (!box._anxLigado) {
       box._anxLigado = true; // o quadro é reaproveitado: liga só uma vez e usa o estado atual guardado no box
-      box.addEventListener('change', ev => { const inp = ev.target.closest('[data-anxin]'); if (!inp) return; const k = inp.dataset.anxin, fs = [...inp.files], ok = fs.filter(f => f.size <= 10485760); box._pend[k] = (box._pend[k] || []).concat(ok); const m = box.querySelector('.e4msg'); if (m) m.textContent = ok.length < fs.length ? 'Arquivos acima de 10 MB não são aceitos: ' + fs.filter(f => f.size > 10485760).map(f => f.name).join(', ') : ''; inp.value = ''; const el = inp.closest('[data-anx]'); el.style.outline = ''; box._desAnx(el); });
+      box.addEventListener('change', ev => { const inp = ev.target.closest('[data-anxin]'); if (!inp) return; const k = inp.dataset.anxin, fs = [...inp.files], pf = n => /\.(pfx|p12)$/i.test(n || ''); let ok = fs.filter(f => f.size <= 10485760); const avisos = ok.length < fs.length ? ['Arquivos acima de 10 MB não são aceitos: ' + fs.filter(f => f.size > 10485760).map(f => f.name).join(', ') + '.'] : [];
+        // Apenas um certificado digital por CNPJ: o novo substitui o anterior
+        const certs = ok.filter(f => pf(f.name));
+        if (certs.length) { const novo = certs[certs.length - 1]; ok = ok.filter(f => !pf(f.name) || f === novo); const tinha = (box._v[k] || []).some(a => pf(a.nome)) || (box._pend[k] || []).some(f => pf(f.name)); box._v[k] = (box._v[k] || []).filter(a => !pf(a.nome)); box._pend[k] = (box._pend[k] || []).filter(f => !pf(f.name)); if (tinha || certs.length > 1) avisos.push('Só é permitido um certificado digital por CNPJ. Ficou o ' + novo.name + '.'); }
+        box._pend[k] = (box._pend[k] || []).concat(ok); const m = box.querySelector('.e4msg'); if (m) m.textContent = avisos.join(' '); inp.value = ''; const el = inp.closest('[data-anx]'); el.style.outline = ''; box._desAnx(el); });
       box.addEventListener('click', ev => { const b = ev.target.closest('[data-anxrm]'); if (!b) return; const el = b.closest('[data-anx]'), k = el.dataset.anx, i = +b.dataset.anxrm.slice(1); if (b.dataset.anxrm[0] === 's') box._v[k] = (box._v[k] || []).filter((_, j) => j !== i); else box._pend[k].splice(i, 1); box._desAnx(el); });
     }
     const ligar = root => {
