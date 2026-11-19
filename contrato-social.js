@@ -238,5 +238,16 @@
     await pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
     const url = c.toDataURL('image/jpeg', 0.8); pdf.destroy && pdf.destroy(); return { url, paginas: pdf.numPages };
   }
-  window.ContratoSocial = { ler, extrair, cpfOk, miniatura };
+  // Todas as páginas de um PDF como imagens, uma a uma (para abrir o documento na tela)
+  async function paginas(file, larg, cadaUma) {
+    const pdf = await pdfDoc(file);
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const pg = await pdf.getPage(i), v1 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: larg / v1.width });
+      const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+      await pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+      if (cadaUma(c.toDataURL('image/jpeg', 0.85), i, pdf.numPages) === false) break;
+    }
+    pdf.destroy && pdf.destroy(); return pdf.numPages;
+  }
+  window.ContratoSocial = { ler, extrair, cpfOk, miniatura, paginas };
 })();

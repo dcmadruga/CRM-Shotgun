@@ -32,7 +32,13 @@ main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
 .sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
 .body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .full{grid-column:1/-1}
-.prev{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.prev figure{margin:0;display:grid;gap:3px;justify-items:start}.prev figcaption{font-size:11.5px;color:var(--muted)}.prev img{max-height:140px;max-width:220px;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff;padding:4px}
+.prev{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.prev figure{margin:0;display:grid;gap:3px;justify-items:start}.prev figcaption{font-size:11.5px;color:var(--muted)}.prev img{max-height:140px;max-width:220px;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff;padding:4px;cursor:zoom-in}.prev figure{cursor:zoom-in}
+#visor{position:fixed;inset:0;z-index:1000;background:rgba(10,10,14,.92);display:flex;flex-direction:column}
+#visor .vtopo{background:#111;display:flex;align-items:center;gap:10px;padding:10px 16px;color:#fff;font-size:14px}#visor .vtopo span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#visor .vtopo button{border:0;background:rgba(255,255,255,.15);color:#fff;font-size:22px;line-height:1;width:40px;height:40px;border-radius:50%;cursor:pointer}
+#visor .vcorpo{flex:1;overflow:auto;padding:0 16px 24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+#visor .vcorpo img{max-width:min(100%,1000px);background:#fff;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+#visor .vmsg{color:#ddd;font-size:13px;padding:8px}
 .cfclink{font-size:12.5px;color:var(--purple,#7030a0);font-weight:600;margin-top:4px;text-decoration:none}.cfclink:hover{text-decoration:underline}.cfchint{font-size:11.5px;color:var(--muted)}
 .nsug{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.nsug small{color:var(--muted);font-size:12px}.nsug button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}
 @media (min-width:700px){.body>label:has(.busca){grid-column:span 2}}
@@ -385,7 +391,10 @@ function desenharArquivos(el){
   const imgs=lista.filter(x=>(/^image\//.test(x.type)||/pdf$/i.test(x.type)||/\.pdf$/i.test(x.name))&&x.size<=MAXF);
   if(imgs.length){ pv=document.createElement('span'); pv.className='prev'; lab.appendChild(pv);
     imgs.slice(0,12).forEach(x=>{
-      const fig=document.createElement('figure'), i=document.createElement('img'); i.alt=x.name; i.title=x.name; fig.appendChild(i); pv.appendChild(fig);
+      const fig=document.createElement('figure'), i=document.createElement('img'); i.alt=x.name; i.title='Toque para ver o documento'; fig.appendChild(i); pv.appendChild(fig);
+      fig.tabIndex=0; fig.setAttribute('role','button'); fig.setAttribute('aria-label','Ver '+x.name);
+      fig.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); verDocumento(x) });
+      fig.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); verDocumento(x) } });
       if(/^image\//.test(x.type)){ i.src=URL.createObjectURL(x); return }
       // PDF: miniatura da 1ª página
       const cap=document.createElement('figcaption'); cap.textContent='PDF · carregando…'; fig.appendChild(cap);
@@ -394,6 +403,24 @@ function desenharArquivos(el){
     });
   }
   sincronizarSenhaCert(); valida(el);
+}
+// Abre o documento (imagem ou todas as páginas do PDF) em tela cheia
+function verDocumento(x){
+  document.getElementById('visor')?.remove();
+  const v=document.createElement('div'); v.id='visor'; v.setAttribute('role','dialog'); v.setAttribute('aria-modal','true');
+  v.innerHTML=`<div class="vtopo"><span>${esc(x.name)}</span><button type="button" aria-label="Fechar">×</button></div><div class="vcorpo"></div>`;
+  const corpo=v.querySelector('.vcorpo'), urls=[]; let aberto=true;
+  const fechar=()=>{ aberto=false; urls.forEach(u=>URL.revokeObjectURL(u)); v.remove(); document.removeEventListener('keydown',tecla); document.body.style.overflow='' };
+  const tecla=e=>{ if(e.key==='Escape') fechar() };
+  v.querySelector('button').addEventListener('click',fechar);
+  v.addEventListener('click',e=>{ if(e.target===v||e.target===corpo) fechar() });
+  document.addEventListener('keydown',tecla); document.body.style.overflow='hidden';
+  document.body.appendChild(v); v.querySelector('button').focus();
+  if(/^image\//.test(x.type)){ const u=URL.createObjectURL(x); urls.push(u); const i=document.createElement('img'); i.src=u; i.alt=x.name; corpo.appendChild(i); return }
+  const msg=document.createElement('div'); msg.className='vmsg'; msg.textContent='Carregando o documento…'; corpo.appendChild(msg);
+  const larg=Math.min(1600,Math.round(Math.min(window.innerWidth,1000)*(window.devicePixelRatio||1)));
+  window.ContratoSocial.paginas(x,larg,(url,n,tot)=>{ if(!aberto) return false; const i=document.createElement('img'); i.src=url; i.alt='Página '+n+' de '+tot; corpo.insertBefore(i,msg); msg.textContent=n<tot?'Carregando página '+(n+1)+' de '+tot+'…':tot+(tot>1?' páginas':' página') })
+    .catch(()=>{ msg.textContent='Não foi possível abrir este PDF aqui.' });
 }
 // Campo "Senha do certificado" dos Parâmetros: a senha agora é pedida em cada certificado; o campo fica oculto e recebe as senhas
 function camposSenhaCert(){ return [...f.querySelectorAll('#secoes label')].filter(l=>{ const t=(l.querySelector('span')?.textContent||''); return /senha/i.test(t)&&/certificado|pfx|p12/i.test(t) }).map(l=>({l,inp:l.querySelector('input,textarea')})).filter(x=>x.inp) }
