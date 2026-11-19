@@ -323,6 +323,7 @@ async function iniciar() {
             ${ok ? '' : '<button type="button" data-a="reenviar">Reenviar pelo WhatsApp</button>'}
             <button type="button" data-a="copiar">Copiar link da proposta</button>
             <span class="pill ${st.cls}">${st.txt}</span>
+            ${fb.admin ? '<button type="button" class="danger" data-a="excluirp" style="margin-left:auto">Excluir proposta</button>' : ''}
           </div></div>
         <div class="etapa${ok ? '' : ' bloq'}"><div class="etit">Etapa 2 - Dados Complementares ${p.e2Em ? `<span class="pill ok">DADOS RECEBIDOS</span> <span class="meta">em ${esc(fmtTs(p.e2Em))}${p.e2Anexos ? ' · ' + p.e2Anexos + ' anexo' + (p.e2Anexos > 1 ? 's' : '') : ''}</span>` : ''}</div>
           <div class="acts">
@@ -463,6 +464,26 @@ async function iniciar() {
     const v = { contato: p.contato || '', cliente: p.cliente || '', numero: p.numero || '', link, vendedor: perfil.nome || p.vendedor || '' };
     return t.replace(/\{(contato|cliente|numero|link|vendedor)\}/g, (_, k) => v[k]).replace(/ +([,!.?])/g, '$1').replace(/ +\n/g, '\n');
   }
+  // Exclusão pelo ADM, em qualquer etapa: apaga a proposta, os dados das etapas, anexos, arquivos e o card do TASK
+  let excluirPArm = null;
+  async function excluirProposta(p, bt) {
+    if (!fb.admin) return;
+    if (excluirPArm !== p.id) { excluirPArm = p.id; bt.textContent = 'Confirmar exclusão'; pMsg(`Clique de novo em "Confirmar exclusão" para apagar de vez a proposta nº ${p.numero} (${p.cliente}), com os dados das etapas, anexos, contrato e o card do TASK.`); setTimeout(() => { if (excluirPArm === p.id) { excluirPArm = null; bt.textContent = 'Excluir proposta'; } }, 6000); return; }
+    excluirPArm = null; bt.disabled = true; bt.textContent = 'Excluindo…';
+    const base = ['propostas', p.id], del = (...c) => F.deleteDoc(F.doc(db, ...base, ...c)).catch(() => {});
+    try {
+      const an = await F.getDocs(F.collection(db, ...base, 'anexos')).catch(() => ({ docs: [] }));
+      for (const a of an.docs) {
+        const pt = await F.getDocs(F.collection(db, ...base, 'anexos', a.id, 'partes')).catch(() => ({ docs: [] }));
+        await Promise.all(pt.docs.map(x => del('anexos', a.id, 'partes', x.id)));
+        await del('anexos', a.id);
+      }
+      await Promise.all([del('etapa2', 'resposta'), del('etapa4', 'dados'), del('arquivo', 'pdf'), del('arquivo', 'contrato')]);
+      await F.deleteDoc(F.doc(db, ...base));
+      await F.deleteDoc(F.doc(db, 'tasks', p.id)).catch(() => {});
+      pMsg(`Proposta nº ${p.numero} (${p.cliente}) excluída.`);
+    } catch (err) { bt.disabled = false; bt.textContent = 'Excluir proposta'; pMsg('Não foi possível excluir (' + (err.code || 'erro') + ').'); }
+  }
   function linkEtapa2(p) {
     const sc = splitCidade(p.cidade);
     const dados = { c: p.cnpj, r: p.cliente, cid: sc.cidade, uf: sc.uf, v: perfil.nome || p.vendedor, w: dig(perfil.fone) || p.vendedorFone, n: p.numero, p: p.id };
@@ -474,6 +495,7 @@ async function iniciar() {
   $('pList').addEventListener('click', async e => {
     const bt = e.target.closest('[data-a]'), a = bt && bt.dataset.a, card = e.target.closest('.pcard'); if (!a || !card) return;
     const p = props.find(x => x.id === card.dataset.id); if (!p) return;
+    if (a === 'excluirp') return excluirProposta(p, bt);
     if (a === 'e4' || a === 'e4ver') return etapa4(p, card, a === 'e4');
     if (a === 'e4salvar') return salvarE4(p, card, bt);
     if (a === 'e4cancelar') { card.querySelector('.e4box').hidden = true; return; }
