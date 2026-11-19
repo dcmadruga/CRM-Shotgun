@@ -28,7 +28,7 @@ function iniciar() {
     // Cards removidos pelo ADM ficam só como marca (removido: true), para o automático não recriar
     removidas = new Set(todos.filter(t => t.removido).flatMap(t => [t.id, t.propostaId]).filter(Boolean));
     tasks = todos.filter(t => !t.removido);
-    tasksOk = true; desenhar(); sincronizar();
+    tasksOk = true; desenhar(); sincronizar(); completarDatas();
   }, e => msg('Não foi possível carregar os cadastros (' + (e.code || 'erro') + ').'));
   unsubP = F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')), qs => {
     aprovadas = qs.docs.map(d => ({ id: d.id, ...d.data() })); sincronizar(); desenhar();
@@ -81,11 +81,11 @@ function etapas(t) {
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
-    <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${t.start ? `<span class="tkstart">Start: ${esc(fmtD(t.start))}</span>` : ''}${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
+    <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${t.dataBase ? `<span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
     <h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}
     <div class="tkmeta">${t.email ? `<span class="tkmail">${esc(t.email)}</span>` : ''}${t.criado ? `<span>Criado em ${esc(fmtTs(t.criado))}</span>` : ''}</div>
-    <div class="tkmeta"><span>Cad: ${esc(t.respCadastro?.nome || (t.auto ? 'Automático' : '-'))}</span><span class="tkst2">Start: ${esc(t.respStart?.nome || '-')}</span></div>
+    <div class="tkmeta"><span>Cad: ${esc(t.respCadastro?.nome || (t.auto ? 'Automático' : '-'))}</span><span class="tkst2">Resp. start: ${esc(t.respStart?.nome || '-')}</span></div>
     ${etapas(t)}
     <div class="tkbox"><div><small>CNPJ</small>${esc(fmtCnpj(t.cnpj) || '-')}</div><div><small>Cidade / UF</small>${esc([t.cidade, t.uf].filter(Boolean).join(' / ') || '-')}</div></div>
     <div class="tkprog" title="${pr.feitos} de ${pr.total} itens concluídos"><span style="width:${pct}%"></span></div>
@@ -118,6 +118,7 @@ function formDados(t) {
       <label>E-mail<input id="tkEmail" type="email" value="${esc(t.email || '')}"></label>
       <label>Contato no posto<input id="tkContato" value="${esc(t.contato || '')}"></label>
       <label>Telefone / WhatsApp<input id="tkFone" inputmode="tel" value="${esc(t.fone || '')}"></label>
+      <label>Data da base<input id="tkBase" type="date" value="${esc(t.dataBase || '')}"></label>
       <label>Data do start<input id="tkStart" type="date" value="${esc(t.start || '')}"></label>
       <label>Responsável pelo cadastro${sel('tkRC', t.respCadastro)}</label>
       <label>Responsável pelo start${sel('tkRS', t.respStart)}</label>
@@ -144,7 +145,7 @@ const respDe = id => { const v = $(id).value; if (!v) return null; const r = res
 async function salvarDados(form) {
   const apelido = $('tkApelido').value.trim(); if (!apelido) { dmsg('Informe o nome do cadastro.'); $('tkApelido').focus(); return; }
   const dados = { apelido, cnpj: dig($('tkCnpj').value), razao: $('tkRazao').value.trim(), cidade: $('tkCidade').value.trim(), uf: $('tkUf').value.trim().toUpperCase(),
-    email: $('tkEmail').value.trim(), contato: $('tkContato').value.trim(), fone: $('tkFone').value.trim(), start: $('tkStart').value, obs: $('tkObs').value.trim(),
+    email: $('tkEmail').value.trim(), contato: $('tkContato').value.trim(), fone: $('tkFone').value.trim(), start: $('tkStart').value, dataBase: $('tkBase').value, obs: $('tkObs').value.trim(),
     respCadastro: respDe('tkRC'), respStart: respDe('tkRS') };
   const id = form.dataset.id;
   try {
@@ -213,6 +214,23 @@ async function formImportar() {
       : '<p class="hint">Nenhuma proposta aprovada pendente de importação.</p>';
   } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar as propostas (${esc(e.code || 'erro')}).</p>`; }
 }
+// Datas da Etapa 4 (pelo nome do campo): "Data da base" e a data do start
+const isoDe = v => { const m = String(v || '').match(/(\d{2})\/(\d{2})\/(\d{4})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : (/^\d{4}-\d{2}-\d{2}$/.test(v) ? v : ''); };
+async function datasE4(pid) {
+  try {
+    const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados')); if (!r.exists()) return null;
+    const c = Object.entries(r.data().campos || {});
+    const achar = re => { const e = c.find(([k, v]) => re.test(k) && isoDe(v)); return e ? isoDe(e[1]) : ''; };
+    return { dataBase: achar(/data.*\bbase\b|\bbase\b.*data/i), start: achar(/start|in[ií]cio da implanta/i) };
+  } catch (e) { return null; }
+}
+const completando = new Set();
+function completarDatas() {
+  tasks.filter(t => t.propostaId && t.dataBase === undefined && !completando.has(t.id)).forEach(t => {
+    completando.add(t.id);
+    datasE4(t.propostaId).then(d => { if (!d) return; const up = { dataBase: d.dataBase || '' }; if (!t.start && d.start) up.start = d.start; return F.updateDoc(F.doc(db, 'tasks', t.id), up); }).catch(() => {});
+  });
+}
 // Cria o cadastro a partir da proposta (id do cadastro = id da proposta, para não duplicar)
 async function criarDaProposta(pid, auto) {
   const ref = F.doc(db, 'tasks', pid);
@@ -222,10 +240,11 @@ async function criarDaProposta(pid, auto) {
   const p = (await F.getDoc(F.doc(db, 'propostas', pid))).data();
   let v = {}; try { const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')); if (r.exists()) v = r.data().valores || {}; } catch (e) {}
   const sc = window.splitCidade ? window.splitCidade(p.cidade) : { cidade: p.cidade || '', uf: '' };
-  const novo = {
+  const d4 = (await datasE4(pid)) || {};
+  const novo = { dataBase: d4.dataBase || '',
     apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
-    respCadastro: auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: v.dataImpl || '', obs: v.obs || '',
+    respCadastro: auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: d4.start || v.dataImpl || '', obs: v.obs || '',
     propostaId: pid, propostaNumero: p.numero || '', vendedor: p.vendedor || '', finalizado: false, checklists: [],
     criado: F.serverTimestamp(), criadoPor: auto ? 'Automático (Etapa 4 concluída)' : (perfil.nome || perfil.email), auto: !!auto
   };
