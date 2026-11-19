@@ -154,6 +154,7 @@ async function iniciar() {
     if (fb.admin) { ouvirUsuarios(); carregarE2(); carregarE3(); }
     carregarE4();
     ouvirPropostas();
+    abrirAba('tabHoje');
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa2')).then(s => { if (s.exists() && s.data().json) E2PUB = JSON.parse(s.data().json); }).catch(() => {});
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa3')).then(s => { if (s.exists() && s.data().json) E3PUB = JSON.parse(s.data().json); }).catch(() => {});
   });
@@ -195,7 +196,7 @@ async function iniciar() {
   }
 
   /* ---------- Abas ---------- */
-  const EXTRA = { tabTask: 'viewTask', tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4' };
+  const EXTRA = { tabHoje: 'viewHoje', tabTask: 'viewTask', tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4' };
   function abrirAba(tab) {
     Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
     document.body.classList.toggle('semBarra', !!EXTRA[tab]);
@@ -303,6 +304,66 @@ async function iniciar() {
     if (p.validade && p.validade < hojeIso()) return { cls: 'exp', txt: 'Vencida' };
     return { cls: 'wait', txt: 'Aguardando aprovação' };
   }
+  /* Jornada: 5 passos da proposta até o TASK */
+  const PASSOS = ['Proposta', 'Dados', 'Contrato', 'Implantação', 'TASK'];
+  const feitosDe = p => [p.status === 'aprovada', !!p.e2Em, !!p.ctAceitoEm, !!p.e4Em, !!p.e4Em];
+  const passoAtual = p => { const i = feitosDe(p).indexOf(false); return i < 0 ? 4 : i; };
+  const passoSel = {};
+  function passosHtml(p, sel) {
+    const f = feitosDe(p), cur = passoAtual(p);
+    return `<div class="jsteps" role="group" aria-label="Passos da proposta">${PASSOS.map((t, i) => `<button type="button" class="jst ${f[i] ? 'done' : i === cur ? 'cur' : 'lock'}" data-a="passo" data-i="${i}" aria-current="${i === sel ? 'step' : 'false'}" title="${t}${f[i] ? ': concluído' : i === cur ? ': próximo passo' : ': ainda bloqueado'}"><span class="bar"></span><span class="lbl"><span class="dot">${f[i] ? '✓' : i + 1}</span><em>${t}</em></span></button>`).join('')}</div>`;
+  }
+  function mostrarPasso(card, i) {
+    passoSel[card.dataset.id] = i;
+    card.querySelectorAll('[data-passo]').forEach(el => { el.hidden = +el.dataset.passo !== i; });
+    card.querySelectorAll('.jst').forEach(b => b.setAttribute('aria-current', +b.dataset.i === i ? 'step' : 'false'));
+  }
+  /* Quadro por etapa */
+  let modoQuadro = true, foco = null;
+  try { modoQuadro = localStorage.getItem('argo-pmodo') !== 'lista'; } catch (_) {}
+  const COLS = ['Proposta', 'Dados', 'Contrato', 'Implantação', 'No TASK'];
+  function miniStatus(p) {
+    const c = passoAtual(p), ven = p.status !== 'aprovada' && p.validade && p.validade < hojeIso();
+    return [ven ? ['exp', 'vencida'] : ['wait', 'aguardando aprovação'], ['wait', 'aguardando dados'], p.ctEm ? ['wait', 'aguardando aceite'] : ['', 'gerar contrato'], ['', 'com o vendedor'], ['ok', 'no TASK']][c];
+  }
+  function desenharQuadro(vis) {
+    $('pBoard').innerHTML = COLS.map((t, ci) => {
+      const cs = vis.filter(p => passoAtual(p) === ci);
+      return `<div class="pcol"><h4>${t}<span>${cs.length}</span></h4>${cs.map(p => { const ms = miniStatus(p); return `<button type="button" class="pmini" data-foco="${esc(p.id)}" aria-pressed="${p.id === foco}"><b>${esc(p.cliente)}</b><small>Nº ${esc(p.numero)}${fb.admin && p.vendedor ? ' · ' + esc(p.vendedor) : ''}</small>${ms[1] ? `<span class="pill ${ms[0]}">${esc(ms[1])}</span>` : ''}</button>`; }).join('') || '<span class="vazio">Nenhuma</span>'}</div>`;
+    }).join('');
+  }
+  function aplicarModo2() { $('pModoQuadro').setAttribute('aria-pressed', String(modoQuadro)); $('pModoLista').setAttribute('aria-pressed', String(!modoQuadro)); $('pBoard').hidden = !modoQuadro; }
+  $('pModoQuadro').addEventListener('click', () => { modoQuadro = true; try { localStorage.setItem('argo-pmodo', 'quadro'); } catch (_) {} desenharPropostas(); });
+  $('pModoLista').addEventListener('click', () => { modoQuadro = false; foco = null; try { localStorage.setItem('argo-pmodo', 'lista'); } catch (_) {} desenharPropostas(); });
+  $('pBoard').addEventListener('click', e => { const b = e.target.closest('[data-foco]'); if (!b) return; foco = foco === b.dataset.foco ? null : b.dataset.foco; desenharPropostas(); if (foco) setTimeout(() => $('pList').scrollIntoView({ block: 'start', behavior: 'smooth' }), 0); });
+  function abrirJornada(id, passo) {
+    passoSel[id] = passo; foco = id; $('pBusca').value = ''; $('pFiltro').value = '';
+    abrirAba('tabList'); desenharPropostas();
+    setTimeout(() => { const c = $('pList').querySelector(`.pcard[data-id="${CSS.escape(id)}"]`); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 0);
+  }
+  /* Hoje: o próximo passo de cada proposta */
+  function pendencia(p) {
+    const ven = p.validade && p.validade < hojeIso();
+    if (p.status !== 'aprovada') return ven ? { t: 'Proposta vencida', d: `Válida até ${fmtD(p.validade)}. Revise e reenvie ao cliente.`, passo: 0, b: 'Abrir proposta' }
+      : { t: 'Aguardando o cliente aprovar', d: `Enviada em ${fmtTs(p.criado) || fmtD(p.data)}. Se demorar, reenvie o link.`, passo: 0, b: 'Ver proposta', cli: true };
+    if (!p.e2Em) return { t: 'Enviar o formulário de dados complementares', d: `Aprovada em ${fmtTs(p.aprovadoEm)}. Envie o link ao cliente ou preencha por ele.`, passo: 1, b: 'Enviar dados' };
+    if (!p.ctEm) return { t: 'Gerar e enviar o contrato', d: `Dados recebidos em ${fmtTs(p.e2Em)}.`, passo: 2, b: 'Gerar contrato' };
+    if (!p.ctAceitoEm) return { t: 'Aguardando o aceite do contrato', d: `Contrato gerado em ${fmtTs(p.ctEm)}. Se demorar, reenvie o link.`, passo: 2, b: 'Ver contrato', cli: true };
+    if (!p.e4Em) return { t: 'Preencher a referência de implantação', d: `Contrato aceito em ${fmtTs(p.ctAceitoEm)}. Ao salvar, o card vai para o TASK.`, passo: 3, b: 'Preencher agora' };
+    return null;
+  }
+  function desenharHoje() {
+    if (!$('hList')) return;
+    const minhas = fb.admin && $('hMinhas').checked;
+    const itens = props.filter(p => !minhas || p.owner === perfil?.uid).map(p => ({ p, x: pendencia(p) })).filter(o => o.x)
+      .sort((a, b) => (a.x.cli === b.x.cli ? 0 : a.x.cli ? 1 : -1));
+    const meus = itens.filter(o => !o.x.cli).length;
+    $('hCount').textContent = itens.length ? `${meus} com você · ${itens.length - meus} aguardando cliente` : '';
+    $('hList').innerHTML = itens.length ? itens.map((o, i) => `<div class="hitem${o.x.cli ? ' cli' : ''}"><span class="n">${o.x.passo + 1}</span><div><b>${esc(o.x.t)} · ${esc(o.p.cliente)}</b><small>${esc(o.x.d)}${fb.admin && o.p.vendedor ? ' · ' + esc(o.p.vendedor) : ''}</small></div><button type="button"${o.x.cli ? '' : ' class="primary"'} data-hoje="${esc(o.p.id)}" data-passo="${o.x.passo}">${esc(o.x.b)}</button></div>`).join('')
+      : `<p class="hint">${props.length ? 'Nenhuma pendência. Todas as propostas já estão no TASK.' : 'Nenhuma proposta ainda.'} Clique em <b>+ Nova proposta</b> para começar outra.</p>`;
+  }
+  $('hList').addEventListener('click', e => { const b = e.target.closest('[data-hoje]'); if (b) abrirJornada(b.dataset.hoje, +b.dataset.passo); });
+  $('hMinhas').addEventListener('change', desenharHoje);
   function desenharPropostas() {
     const busca = $('pBusca').value.trim().toLowerCase(), filtro = $('pFiltro').value;
     const passa = p => !filtro || (filtro === 'ctok' ? !!p.ctAceitoEm : filtro === 'ctenv' ? (!!p.ctEm && !p.ctAceitoEm) : p.status === filtro);
@@ -310,42 +371,50 @@ async function iniciar() {
       (!busca || [p.cliente, p.cnpj, p.numero, p.cidade, p.vendedor].join(' ').toLowerCase().includes(busca)));
     const ap = props.filter(p => p.status === 'aprovada').length;
     $('pCount').textContent = `${props.length} no total · ${ap} aprovada${ap === 1 ? '' : 's'}`;
-    $('pList').innerHTML = vis.length ? vis.map(p => {
+    desenharHoje(); aplicarModo2();
+    if (modoQuadro) desenharQuadro(vis);
+    const lista = modoQuadro ? vis.filter(p => p.id === foco) : vis;
+    if (modoQuadro && !lista.length) { $('pList').innerHTML = vis.length ? '<p class="hint">Clique em um card do quadro para abrir os passos da proposta.</p>' : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "+ Nova proposta".'}</p>`; return; }
+    $('pList').innerHTML = lista.length ? lista.map(p => {
       const st = statusDe(p), ok = p.status === 'aprovada';
+      const sel = passoSel[p.id] != null ? passoSel[p.id] : passoAtual(p), oc = i => i === sel ? '' : ' hidden';
       return `<div class="pcard" data-id="${esc(p.id)}">
-        <div><b>${esc(p.cliente)}</b><div class="meta">Nº ${esc(p.numero)} · ${esc(p.cidade || '')}${fb.admin ? ' · ' + esc(p.vendedor) : ''}</div></div>
+        <div class="top"><div><b>${esc(p.cliente)}</b><div class="meta">Nº ${esc(p.numero)} · ${esc(p.cidade || '')}${fb.admin ? ' · ' + esc(p.vendedor) : ''}</div></div>
+          ${fb.admin ? '<button type="button" class="danger" data-a="excluirp">Excluir proposta</button>' : ''}</div>
         <div class="vals">Licenças ${brl(p.totLic)} · Mensalidade ${brl(p.totMen)} · Deslocamento ${brl(p.totDes)}</div>
         <div class="meta">Enviada em ${esc(fmtTs(p.criado) || fmtD(p.data))}${p.validade ? ' · válida até ' + esc(fmtD(p.validade)) : ''}${ok ? `<br><b style="color:#1f7a46">Aprovada por ${esc(p.aprovadoNome)}${p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : ''} em ${esc(fmtTs(p.aprovadoEm))}</b>` : ''}</div>
-        <div class="etapa"><div class="etit">Etapa 1 - Proposta</div>
+        ${passosHtml(p, sel)}
+        <div class="etapa" data-passo="0"${oc(0)}><div class="etit">Passo 1 · Proposta</div>
           <div class="acts">
             <button type="button" data-a="pdf">Ver PDF</button>
             <button type="button" data-a="abrir">Abrir no formulário</button>
             ${ok ? '' : '<button type="button" data-a="reenviar">Reenviar pelo WhatsApp</button>'}
             <button type="button" data-a="copiar">Copiar link da proposta</button>
             <span class="pill ${st.cls}">${st.txt}</span>
-            ${fb.admin ? '<button type="button" class="danger" data-a="excluirp" style="margin-left:auto">Excluir proposta</button>' : ''}
           </div></div>
-        <div class="etapa${ok ? '' : ' bloq'}"><div class="etit">Etapa 2 - Dados Complementares ${p.e2Em ? `<span class="pill ok">DADOS RECEBIDOS</span> <span class="meta">em ${esc(fmtTs(p.e2Em))}${p.e2Anexos ? ' · ' + p.e2Anexos + ' anexo' + (p.e2Anexos > 1 ? 's' : '') : ''}</span>` : ''}</div>
+        <div class="etapa${ok ? '' : ' bloq'}" data-passo="1"${oc(1)}><div class="etit">Passo 2 · Dados complementares ${p.e2Em ? `<span class="pill ok">DADOS RECEBIDOS</span> <span class="meta">em ${esc(fmtTs(p.e2Em))}${p.e2Anexos ? ' · ' + p.e2Anexos + ' anexo' + (p.e2Anexos > 1 ? 's' : '') : ''}</span>` : ''}</div>
           <div class="acts">
             ${p.e2Em ? '<button type="button" class="primary" data-a="e2ver">Ver dados e anexos</button>' : ''}
             ${ok ? `<button type="button"${p.e2Em ? '' : ' class="primary"'} data-a="etapa2">Enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link da Etapa 2</button><button type="button" data-a="etapa2vend">Preencher pelo vendedor</button>`
                  : '<button type="button" disabled>Enviar pelo WhatsApp</button><button type="button" disabled>Copiar link da Etapa 2</button><span class="hint">Libera quando o cliente aprovar a proposta.</span>'}
           </div>
           <div class="e2dados" hidden></div></div>
-        <div class="etapa${p.e2Em ? '' : ' bloq'}"><div class="etit">Etapa 3 - Contrato ${p.ctAceitoEm ? '<span class="pill ok">CONTRATO ACEITO</span>' : p.ctEm ? '<span class="pill wait">Aguardando aceite</span>' : ''}</div>
+        <div class="etapa${p.e2Em ? '' : ' bloq'}" data-passo="2"${oc(2)}><div class="etit">Passo 3 · Contrato ${p.ctAceitoEm ? '<span class="pill ok">CONTRATO ACEITO</span>' : p.ctEm ? '<span class="pill wait">Aguardando aceite</span>' : ''}</div>
           ${p.ctAceitoEm ? `<div class="ctinfo">Aceito por ${esc(p.ctAceitoNome)}${p.ctAceitoCargo ? ' (' + esc(p.ctAceitoCargo) + ')' : ''}, CPF ${esc(p.ctAceitoCpf || '')}, em ${esc(fmtTs(p.ctAceitoEm))}</div>` : p.ctEm ? `<div class="meta">Contrato gerado em ${esc(fmtTs(p.ctEm))}</div>` : ''}
           <div class="acts">
             ${!p.e2Em ? '<button type="button" disabled>Gerar e enviar pelo WhatsApp</button><button type="button" disabled>Copiar link do contrato</button><span class="hint">Libera quando o cliente enviar os dados complementares.</span>'
               : p.ctAceitoEm ? '<button type="button" class="primary" data-a="ctpdf">Ver contrato aceito (PDF)</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>'
               : `<button type="button" class="primary" data-a="ctenviar">${p.ctEm ? 'Gerar de novo e enviar pelo WhatsApp' : 'Gerar e enviar pelo WhatsApp'}</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>${p.ctEm ? '<button type="button" data-a="ctpdf">Ver contrato (PDF)</button>' : ''}`}
           </div></div>
-        <div class="etapa${p.ctAceitoEm ? '' : ' bloq'}"><div class="etit">Etapa 4 - Dados Referência Implantação ${p.e4Em ? `<span class="pill ok">PREENCHIDO</span> <span class="meta">em ${esc(fmtTs(p.e4Em))}${p.e4Por ? ' por ' + esc(p.e4Por) : ''}</span>` : ''}</div>
+        <div class="etapa${p.ctAceitoEm ? '' : ' bloq'}" data-passo="3"${oc(3)}><div class="etit">Passo 4 · Referência de implantação ${p.e4Em ? `<span class="pill ok">PREENCHIDO</span> <span class="meta">em ${esc(fmtTs(p.e4Em))}${p.e4Por ? ' por ' + esc(p.e4Por) : ''}</span>` : ''}</div>
           <div class="acts">
             ${!p.ctAceitoEm ? '<button type="button" disabled>Preencher dados</button><span class="hint">Libera quando o cliente aceitar o contrato. Responsabilidade do vendedor.</span>'
               : p.e4Em ? '<button type="button" data-a="e4ver">Ver dados</button><button type="button" data-a="e4">Editar dados</button>'
               : '<button type="button" class="primary" data-a="e4">Preencher dados</button><span class="hint">Responsabilidade do vendedor.</span>'}
           </div>
           <div class="e4box" hidden></div></div>
+        <div class="etapa${p.e4Em ? '' : ' bloq'}" data-passo="4"${oc(4)}><div class="etit">Passo 5 · TASK ${p.e4Em ? '<span class="pill ok">NO TASK</span>' : ''}</div>
+          <div class="acts">${p.e4Em ? `<span class="hint">O card desta proposta foi para o quadro do TASK, onde a equipe de implantação acompanha os checklists.</span>${fb.admin ? '<button type="button" data-a="irtask">Abrir o TASK</button>' : ''}` : '<span class="hint">O card entra sozinho no TASK quando o passo 4 for salvo.</span>'}</div></div>
         </div>`;
     }).join('') : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "Enviar proposta para aprovação" na aba Proposta.'}</p>`;
   }
@@ -495,6 +564,8 @@ async function iniciar() {
   $('pList').addEventListener('click', async e => {
     const bt = e.target.closest('[data-a]'), a = bt && bt.dataset.a, card = e.target.closest('.pcard'); if (!a || !card) return;
     const p = props.find(x => x.id === card.dataset.id); if (!p) return;
+    if (a === 'passo') return mostrarPasso(card, +bt.dataset.i);
+    if (a === 'irtask') return abrirAba('tabTask');
     if (a === 'excluirp') return excluirProposta(p, bt);
     if (a === 'e4' || a === 'e4ver') return etapa4(p, card, a === 'e4');
     if (a === 'e4salvar') return salvarE4(p, card, bt);

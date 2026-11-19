@@ -247,6 +247,43 @@ table.users{min-width:640px}
 .pcard .etit{font-family:var(--display);font-weight:600;font-size:13px}
 .pcard .etapa.bloq .etit{color:var(--muted)}
 .pcard .acts .pill{margin-left:4px}
+/* Jornada da proposta: barra de passos, um passo aberto por vez */
+.pcard .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.jsteps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:4px}
+.jst{font:inherit;text-align:left;background:none;border:0;padding:4px 0 0;cursor:pointer;display:grid;gap:5px;color:var(--fg);min-width:0;border-radius:4px}
+.jst .bar{height:4px;border-radius:2px;background:var(--line)}
+.jst .lbl{font-size:12px;display:flex;gap:6px;align-items:center;min-width:0}
+.jst .lbl em{font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jst .dot{width:20px;height:20px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;background:var(--line);color:var(--muted)}
+.jst.done .bar,.jst.done .dot{background:#1f7a46;color:#fff}
+.jst.cur .dot{background:var(--purple);color:#fff}.jst.cur .bar{background:var(--purple)}
+.jst.lock{opacity:.55}
+.jst[aria-current="step"] .lbl em{font-weight:700}
+.jst[aria-current="step"]{outline:2px solid var(--purple);outline-offset:3px}
+.jst:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media (max-width:560px){.jst .lbl em{display:none}}
+.pcard .etapa[hidden]{display:none}
+/* Quadro por etapa */
+.pmodo{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.pmodo button{border:0;border-radius:0;padding:6px 12px;background:var(--surface);color:var(--fg);font:inherit;font-size:13px;cursor:pointer}
+.pmodo button[aria-pressed="true"]{background:var(--purple);color:#fff}
+.pboard{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+.pboard[hidden]{display:none}
+.pcol{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:170px}
+.pcol h4{margin:0;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between}
+.pmini{font:inherit;text-align:left;border:1px solid var(--line);background:var(--field);border-radius:6px;padding:8px;display:grid;gap:3px;cursor:pointer;color:var(--fg)}
+.pmini b{font-size:13px;overflow-wrap:anywhere}.pmini small{font-size:11.5px;color:var(--muted)}
+.pmini[aria-pressed="true"]{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
+.pmini .pill{justify-self:start;font-size:10px}
+.pcol .vazio{font-size:12px;color:var(--muted);padding:4px}
+/* Hoje */
+.hojetools{justify-content:space-between}
+.hlist{display:flex;flex-direction:column;gap:8px}
+.hitem{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--field)}
+.hitem .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:12px;background:rgba(112,48,160,.14);color:var(--purple)}
+.hitem.cli .n{background:rgba(214,140,20,.18);color:#b06a00}
+.hitem b{display:block;font-size:14px}.hitem small{color:var(--muted);font-size:12.5px}
+@media (max-width:560px){.hitem{grid-template-columns:auto minmax(0,1fr)}.hitem button{grid-column:1/-1}}
 .pcard .e4box{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px}
 .e4grid .full{grid-column:1/-1}
 .e4fil{display:grid;gap:8px}.e4filq{max-width:220px}.e4filq input{text-align:left}.e4filrows{display:grid;gap:6px}
@@ -299,14 +336,15 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <button type="button" id="btnInstall" hidden>Instalar app</button>
 </div></header>
 <nav class="tabs" aria-label="Seções"><div class="wrap" role="tablist">
-  <button type="button" role="tab" id="tabProp" aria-selected="true">Etapa 1 - Proposta</button>
+  <button type="button" role="tab" id="tabHoje" aria-selected="false" class="fbonly">Hoje</button>
   <button type="button" role="tab" id="tabList" aria-selected="false" class="fbonly">Propostas</button>
+  <button type="button" role="tab" id="tabProp" aria-selected="true">+ Nova proposta</button>
   <button type="button" role="tab" id="tabTask" aria-selected="false" class="fbonly tasktab">TASK</button>
-  <button type="button" role="tab" id="tabUsers" aria-selected="false" class="admin fbonly">Usuários</button>
-  <button type="button" role="tab" id="tabParam" aria-selected="false" aria-expanded="false" aria-controls="subParam" class="cfgtab">Parâmetros ▾</button>
+  <button type="button" role="tab" id="tabParam" aria-selected="false" aria-expanded="false" aria-controls="subParam" class="cfgtab">Administração ▾</button>
   <span class="tabuser fbonly" id="tabUser"></span><button type="button" class="linkbtn fbonly" id="btnSair">Sair</button>
 </div>
-<div class="subtabs" id="subParam" hidden><div class="wrap" role="tablist" aria-label="Parâmetros">
+<div class="subtabs" id="subParam" hidden><div class="wrap" role="tablist" aria-label="Administração">
+  <button type="button" role="tab" id="tabUsers" aria-selected="false" class="admin fbonly">Usuários</button>
   <button type="button" role="tab" id="tabCfg" aria-selected="false" class="cfgtab">Parâmetros Proposta</button>
   <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Parâmetros Complementares</button>
   <button type="button" role="tab" id="tabE4" aria-selected="false" class="admin fbonly">Parâmetros Implantação</button>
@@ -456,12 +494,21 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   </div></section>
 </main>
 
+<main id="viewHoje" hidden>
+  <section class="sec"><h2>Hoje <span id="hCount"></span></h2><div class="body">
+    <div class="tools hojetools"><p class="hint" style="margin:0">O próximo passo de cada proposta. Clique para abrir direto no passo.</p><label class="chk admin fbonly"><input type="checkbox" id="hMinhas"> Só as minhas</label></div>
+    <div id="hList" class="hlist"></div>
+  </div></section>
+</main>
+
 <main id="viewList" hidden>
   <section class="sec"><h2>Propostas <span id="pCount"></span></h2><div class="body">
     <div class="tools ptools">
       <input id="pBusca" placeholder="Buscar por cliente, CNPJ ou número" autocomplete="off">
+      <span class="pmodo" role="group" aria-label="Modo de exibição"><button type="button" id="pModoQuadro" aria-pressed="true">Quadro</button><button type="button" id="pModoLista" aria-pressed="false">Lista</button></span>
       <select id="pFiltro" aria-label="Filtrar por status"><option value="">Todas</option><option value="enviada">Aguardando aprovação</option><option value="aprovada">Aprovadas</option><option value="ctenv">Contrato aguardando aceite</option><option value="ctok">Contrato aceito</option></select>
     </div>
+    <div id="pBoard" class="pboard"></div>
     <div id="pList" class="plist"></div>
     <p class="hint" id="pMsg"></p>
   </div></section>
@@ -631,11 +678,11 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <script src="etapa4-padrao.js"></script>
 <script src="contrato-pdf.js"></script>
 <script>
-/* Menu Parâmetros: abre a primeira subaba e mostra a linha de subabas enquanto uma delas estiver aberta */
+/* Menu Administração: abre a primeira subaba e mostra a linha de subabas enquanto uma delas estiver aberta */
 (function(){
-  const ids=['tabCfg','tabE2','tabE4','tabE3'], el=id=>document.getElementById(id), sub=el('subParam'), bt=el('tabParam');
+  const ids=['tabUsers','tabCfg','tabE2','tabE4','tabE3'], el=id=>document.getElementById(id), sub=el('subParam'), bt=el('tabParam');
   const sync=()=>{ const on=ids.some(id=>el(id).getAttribute('aria-selected')==='true'); sub.hidden=!on; bt.setAttribute('aria-selected',String(on)); bt.setAttribute('aria-expanded',String(on)) };
-  bt.addEventListener('click',()=>{ const ab=ids.map(el).find(b=>b.getAttribute('aria-selected')==='true'); (ab||el('tabCfg')).click() });
+  bt.addEventListener('click',()=>{ const ab=ids.map(el).find(b=>b.getAttribute('aria-selected')==='true'); (ab||(document.body.classList.contains('is-admin')?el('tabUsers'):el('tabCfg'))).click() });
   new MutationObserver(sync).observe(sub,{subtree:true,attributes:true,attributeFilter:['aria-selected']}); sync();
 })();
 </script>
