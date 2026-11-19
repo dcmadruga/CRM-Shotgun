@@ -574,10 +574,10 @@ async function iniciar() {
       if (fil.length) { valores[k + '__fil'] = fil; campos[rotulo(sc, label)] = fil.map(f => [f.cod, f.tipo, f.cnpj, f.razao].filter(Boolean).join(' - ')).join('\n'); }
     };
     const subir = []; // anexos novos para enviar depois da validação
-    // Nome padrão dos anexos: F1_CNPJ_Senha.pfx (certificado) ou F1_CNPJ_nome-original (demais)
+    // Nome padrão dos anexos: F1_CNPJ_RAZÃO_(Senha).pfx (certificado) ou F1_CNPJ_RAZÃO_nome-original (demais)
     let filAtual = null; const cnpjProp = String(p.cnpj || '').replace(/\D/g, '');
     const limpa = x => String(x || '').replace(/[\\/:*?"<>|]+/g, '-').trim();
-    const nomePad = (orig, senha) => { const m = String(orig).match(/^(.*?)(\.[^.]+)?$/), ext = m[2] || '', pfx = /^\.(pfx|p12)$/i.test(ext), ctx = filAtual || { cod: '', cnpj: cnpjProp }; return [ctx.cod, String(ctx.cnpj || '').replace(/\D/g, ''), pfx ? senha : m[1]].map(limpa).filter(Boolean).join('_') + ext; };
+    const nomePad = (orig, senha) => { const m = String(orig).match(/^(.*?)(\.[^.]+)?$/), ext = m[2] || '', pfx = /^\.(pfx|p12)$/i.test(ext), ctx = filAtual || { cod: '', cnpj: cnpjProp, razao: p.cliente || '' }; return [ctx.cod, String(ctx.cnpj || '').replace(/\D/g, ''), ctx.razao, pfx ? (limpa(senha) ? '(' + senha + ')' : '') : m[1]].map(limpa).filter(Boolean).join('_') + ext; };
     const pega = (sc, c) => {
       if (c.tipo === 'anexo') {
         const el = box.querySelector(`[data-anx="${CSS.escape(c.k)}"]`); if (!el) return '';
@@ -614,7 +614,7 @@ async function iniciar() {
       const lista = Object.keys(valores).filter(k => /__fil$/.test(k)).map(k => valores[k])[0] || [];
       area.querySelectorAll('.e4pf').forEach(pf => {
         const i = +pf.dataset.fi, cod = (lista[i] && lista[i].cod) || pf.dataset.cod, pref = 'f' + i + '__', antes = new Set(Object.keys(campos)), dados = {};
-        filAtual = { cod, cnpj: (lista[i] && lista[i].cnpj) || '' };
+        filAtual = { cod, cnpj: (lista[i] && lista[i].cnpj) || '', razao: (lista[i] && lista[i].razao) || '' };
         const lab = c => ({ ...c, label: cod + ' - ' + c.label, cond: c.cond ? Object.fromEntries(Object.entries(c.cond).map(([o, l]) => [o, (l || []).map(x => ({ ...x, label: cod + ' - ' + x.label }))])) : c.cond });
         secs.filter(sc => !e4TemFil(sc)).forEach(sc => sc.campos.map(e4Pref(pref)).map(lab).forEach(proc(sc)));
         Object.keys(campos).filter(k => !antes.has(k)).forEach(k => { dados[k.replace(cod + ' - ', '')] = campos[k]; });
