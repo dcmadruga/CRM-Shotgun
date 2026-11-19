@@ -1114,34 +1114,32 @@ async function iniciar() {
     $('uCount').textContent = lista.length + (lista.length === 1 ? ' usuário' : ' usuários');
     $('usersBody').innerHTML = lista.map(u => {
       const eu = perfil && u.uid === perfil.uid;
-      return `<tr data-uid="${esc(u.uid)}">
-        <td>${fotosU[u.uid] ? `<img class="ufoto" src="${fotosU[u.uid]}" alt="Foto de ${esc(u.nome)}">` : `<span class="ufoto" title="${fotosU[u.uid] === '' ? 'Ainda não enviou a foto' : 'Carregando'}"></span>`}</td>
-        <td><input data-f="nome" value="${esc(u.nome)}" aria-label="Nome"></td>
-        <td>${esc(u.email)}</td>
-        <td><input data-f="fone" value="${esc(u.fone)}" aria-label="Telefone" inputmode="tel"></td>
-        <td>${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; return `<div class="upapeis">${[['vendedor', 'Vendedor'], ['task', 'TASK'], ['adm', 'Administrador']].map(([k, l]) => `<label class="chk"><input type="checkbox" data-papel="${k}"${ps.includes(k) ? ' checked' : ''}${eu ? ' disabled' : ''}> ${l}</label>`).join('')}</div>`; })()}</td>
-        <td><span class="pill ${u.ativo ? '' : 'off'}">${u.ativo ? 'Liberado' : 'Bloqueado'}</span></td>
-        <td>${eu ? '<span class="hint">você</span>' : `<button type="button" data-a="toggle">${u.ativo ? 'Bloquear' : 'Liberar'}</button>`}${eu ? '' : '<button type="button" data-a="excluir" class="danger">Excluir</button>'}
-            <button type="button" data-a="reset">Nova senha</button>${fotosU[u.uid] ? '<button type="button" data-a="novafoto">Pedir nova foto</button>' : ''}</td></tr>`;
+      return `<div class="ucard" data-uid="${esc(u.uid)}">
+        <div class="ucol0">${fotosU[u.uid] ? `<img class="ufoto" src="${fotosU[u.uid]}" alt="Foto de ${esc(u.nome)}">` : `<span class="ufoto" title="${fotosU[u.uid] === '' ? 'Ainda não enviou a foto' : 'Carregando'}"></span>`}</div>
+        <div class="ucol1"><label class="ulab">Nome<input data-f="nome" value="${esc(u.nome)}" aria-label="Nome"></label><span class="umail">${esc(u.email)}</span></div>
+        <label class="ulab ucol2">Telefone<input data-f="fone" value="${esc(u.fone)}" aria-label="Telefone" inputmode="tel"></label>
+        <div class="ucol3"><span class="ulabt">Perfil</span>${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; return `<div class="upapeis">${[['vendedor', 'Vendedor'], ['task', 'TASK'], ['adm', 'Administrador']].map(([k, l]) => `<label class="uchip"><input type="checkbox" data-papel="${k}"${ps.includes(k) ? ' checked' : ''}${eu ? ' disabled' : ''}> ${l}</label>`).join('')}</div>`; })()}</div>
+        <div class="ucol4"><span class="pill ${u.ativo ? '' : 'off'}">${u.ativo ? 'Liberado' : 'Bloqueado'}</span>${eu ? '<span class="hint">você</span>' : ''}</div>
+        <div class="uacts">${eu ? '' : `<button type="button" data-a="toggle">${u.ativo ? 'Bloquear' : 'Liberar'}</button><button type="button" data-a="excluir" class="danger">Excluir</button>`}<button type="button" data-a="reset">Nova senha</button>${fotosU[u.uid] ? '<button type="button" data-a="novafoto">Pedir nova foto</button>' : ''}</div></div>`;
     }).join('');
     lista.filter(u => !(u.uid in fotosU)).forEach(u => { fotosU[u.uid] = ''; F.getDoc(F.doc(db, 'fotos', u.uid)).then(sn => { if (sn.exists()) { fotosU[u.uid] = sn.data().b64 || ''; desenharUsuarios(); } }).catch(() => {}); });
   }
   $('usersBody').addEventListener('change', async e => {
     if (e.target.dataset.papel) {
-      const tr = e.target.closest('tr'), papeis = [...tr.querySelectorAll('[data-papel]:checked')].map(x => x.dataset.papel);
+      const tr = e.target.closest('[data-uid]'), papeis = [...tr.querySelectorAll('[data-papel]:checked')].map(x => x.dataset.papel);
       if (!papeis.length) { e.target.checked = true; uStatus('A pessoa precisa ter pelo menos um perfil.'); return; }
       const papel = papeis.includes('adm') ? 'adm' : papeis.includes('vendedor') ? 'vendedor' : 'task';
       try { await F.updateDoc(F.doc(db, 'usuarios', tr.dataset.uid), { papeis, papel }); uStatus('Perfis salvos. Valem no próximo acesso da pessoa.'); }
       catch (err) { uStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); }
       return;
     }
-    const tr = e.target.closest('tr'), f = e.target.dataset.f; if (!tr || !f) return;
+    const tr = e.target.closest('[data-uid]'), f = e.target.dataset.f; if (!tr || !f) return;
     try { await F.updateDoc(F.doc(db, 'usuarios', tr.dataset.uid), { [f]: e.target.value.trim() }); uStatus('Alteração salva.'); }
     catch (err) { uStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); }
   });
   let excluirArm = {};
   $('usersBody').addEventListener('click', async e => {
-    const a = e.target.dataset.a, tr = e.target.closest('tr'); if (!a || !tr) return;
+    const a = e.target.dataset.a, tr = e.target.closest('[data-uid]'); if (!a || !tr) return;
     const u = lista.find(x => x.uid === tr.dataset.uid); if (!u) return;
     try {
       if (a === 'toggle') { await F.updateDoc(F.doc(db, 'usuarios', u.uid), { ativo: !u.ativo }); uStatus(u.ativo ? `${u.nome} bloqueado.` : `${u.nome} liberado.`); }
