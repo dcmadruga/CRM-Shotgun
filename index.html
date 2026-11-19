@@ -198,6 +198,27 @@ body:not(.is-admin):not(.is-task):not(.tem-task) .tasktab{display:none!important
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tkst.and{background:#3a2a10;color:#f3b45c}:root:not([data-theme="light"]) .tkst.fut{background:#1b2740;color:#8fb0f0}:root:not([data-theme="light"]) .tkst.fin{background:#163323;color:#7ed3a0}:root:not([data-theme="light"]) .tkstart{background:#2c1f3a}:root:not([data-theme="light"]) .tkst2{color:#f3b45c}}
 :root[data-theme="dark"] .tkst.and{background:#3a2a10;color:#f3b45c}:root[data-theme="dark"] .tkst.fut{background:#1b2740;color:#8fb0f0}:root[data-theme="dark"] .tkst.fin{background:#163323;color:#7ed3a0}:root[data-theme="dark"] .tkstart{background:#2c1f3a}:root[data-theme="dark"] .tkst2{color:#f3b45c}
 .tkdlg{border:1px solid var(--line);border-radius:12px;padding:0;width:min(640px,calc(100vw - 24px));max-height:calc(100vh - 32px);background:var(--surface);color:var(--fg)}
+.modtit{font-family:var(--display);font-size:19px;margin:28px 0 4px}
+.modproc{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}.modproc h3{font-size:14px;margin:0 0 6px}.modproc .e2tab input{width:100%}.modpai{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;font-size:13px}.modpai select{max-width:260px}.secfil{display:flex;gap:6px;align-items:center;font-size:13px;margin:0 0 10px}
+.tkmods{display:grid;gap:5px;margin:4px 0}
+.tkmod{display:grid;grid-template-columns:96px 1fr 38px;gap:8px;align-items:center;font-size:12px}
+.tkmod i{display:block;height:6px;border-radius:99px;background:var(--line);overflow:hidden}.tkmod i b{display:block;height:100%;background:var(--purple)}
+.tkmod em{font-style:normal;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.tkmod.parado i b{background:var(--danger)}
+.tkparado{align-self:flex-start;font-size:11.5px;font-weight:600;color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,transparent);border-radius:999px;padding:2px 9px}
+.dgnav.sub{padding-left:30px;font-weight:500;font-size:13.5px}
+.dgnav .mdn{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}.dgnav .mdn.ok{color:#16a34a}.dgnav .mdn.pa{color:var(--danger);font-weight:700}
+.dgnav[aria-selected=true] .mdn{color:#fff}
+.mdtopo{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:6px}.mdtopo h4{margin:0;font-family:var(--display);font-size:17px;display:flex;flex-direction:column}.mdtopo h4 small{font-family:var(--body);font-size:12px;color:var(--muted);font-weight:500}
+#tkMods .dgcorpo{display:flex;flex-direction:column;gap:12px}
+.mdprocs{padding:4px 14px}
+.mdproc{display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.mdproc:last-child{border-bottom:0}
+.mdproc .t{font-weight:600}.mdproc .d{font-size:12px;color:var(--muted)}
+.mdproc .ptseg button{padding:5px 10px;font-size:12px}
+.mdproc .ptseg button[data-pst=ni][aria-pressed=true]{background:var(--muted)}.mdproc .ptseg button[data-pst=in][aria-pressed=true]{background:#2b6cb0}.mdproc .ptseg button[data-pst=an][aria-pressed=true]{background:#b7791f}.mdproc .ptseg button[data-pst=pa][aria-pressed=true]{background:var(--danger)}.mdproc .ptseg button[data-pst=fi][aria-pressed=true]{background:#2f8f57}
+.mdmot{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.mdmot input{flex:1;min-width:200px}
+@media (max-width:760px){.mdproc{grid-template-columns:1fr}}
+.tk100{display:inline-block;font-size:10px;font-weight:700;background:var(--purple);color:#fff;border-radius:999px;padding:1px 6px;margin-left:4px;vertical-align:middle}
 .tkdlg.largo{width:min(1080px,calc(100vw - 24px))}
 .dgwrap{display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:start}
 .dgmenu{display:flex;flex-direction:column;gap:4px;position:sticky;top:64px}
@@ -587,7 +608,16 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <p class="hint">Formulário da Etapa 4, preenchido pelo vendedor no cartão da proposta depois que o cliente aceita o contrato. Os dados aparecem para a equipe no módulo TASK.</p>
   <div id="e4Secoes" style="display:flex;flex-direction:column;gap:18px"></div>
   <div class="tools"><button type="button" id="btnE4Secao">+ Nova seção</button></div>
-  <p class="hint">O ✕ exclui o campo; para só esconder, desmarque "Mostrar". As alterações valem para todas as propostas assim que você publicar. Dados já preenchidos continuam guardados.</p>
+  <p class="hint">O ✕ exclui o campo; para só esconder, desmarque "Mostrar". As alterações valem para todas as propostas assim que você publicar. Dados já preenchidos continuam guardados. Status, datas, modalidade, tipo de base e filiais ficam no cabeçalho fixo do Pré TASK.</p>
+  <h2 class="modtit" id="modTit">Módulos do TASK</h2>
+  <div class="savebar">
+    <button type="button" class="primary" id="btnModSalvar">Salvar e publicar módulos</button>
+    <button type="button" id="btnModPadrao">Restaurar padrão</button>
+    <span id="modStatus" class="hint"></span>
+  </div>
+  <p class="hint">Cada módulo aparece no card do TASK com os seus campos (dados) e a lista de processos. Cada processo recebe um status: Não iniciado, Iniciado, Em andamento, Parado ou Finalizado. Um módulo pode ser etapa de outro (ex.: Homologação de Boletos dentro de Implantação).</p>
+  <div id="modSecoes" style="display:flex;flex-direction:column;gap:18px"></div>
+  <div class="tools"><button type="button" id="btnModNovo">+ Novo módulo</button></div>
 </main>
 
 <main id="viewE3" hidden>
@@ -726,6 +756,8 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   new MutationObserver(sync).observe(sub,{subtree:true,attributes:true,attributeFilter:['aria-selected']}); sync();
 })();
 </script>
+<script src="modulos-padrao.js"></script>
+<script src="pretask.js"></script>
 <script type="module" src="auth.js"></script>
 <script type="module" src="task.js"></script>
 <script>

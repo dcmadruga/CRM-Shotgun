@@ -1,6 +1,8 @@
 // Módulo TASK: checklist de implantação. Roda para usuários TASK e administradores.
 // Dados: tasks/{id} (cadastros com checklists) e taskTemplates/{id} (modelos de checklist).
-let F, db, perfil, admin = false, unsubT = null, unsubM = null, unsubP = null, tasksOk = false, aprovadas = null;
+let F, db, perfil, admin = false, unsubT = null, unsubM = null, unsubP = null, unsubMod = null, tasksOk = false, aprovadas = null;
+// Módulos do TASK (Implantação, TEF/PIX…): configurados em Parâmetros Pré TASK
+let MODS = window.MODULOS_PADRAO ? JSON.parse(JSON.stringify(window.MODULOS_PADRAO)) : { secoes: [] };
 let tasks = [], removidas = new Set(), templates = [], resps = [], aba = 'and';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -17,7 +19,7 @@ const progresso = t => { const it = (t.checklists || []).flatMap(c => c.itens ||
 const msg = t => { const el = $('tkMsg'); el.textContent = t || ''; el.hidden = !t; };
 
 window.addEventListener('argo-perfil', e => { ({ F, db, perfil, admin } = e.detail); iniciar(); });
-window.addEventListener('argo-sair', () => { if (unsubT) unsubT(); if (unsubM) unsubM(); if (unsubP) unsubP(); unsubT = unsubM = unsubP = null; aprovadas = null; tasksOk = false; tasks = []; templates = []; });
+window.addEventListener('argo-sair', () => { if (unsubT) unsubT(); if (unsubM) unsubM(); if (unsubP) unsubP(); if (unsubMod) unsubMod(); unsubT = unsubM = unsubP = unsubMod = null; aprovadas = null; tasksOk = false; tasks = []; templates = []; });
 
 function iniciar() {
   if (unsubT) unsubT();
@@ -34,6 +36,8 @@ function iniciar() {
   unsubP = F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')), qs => {
     aprovadas = qs.docs.map(d => ({ id: d.id, ...d.data() })); sincronizar(); desenhar();
   }, () => {});
+  if (unsubMod) unsubMod();
+  unsubMod = F.onSnapshot(F.doc(db, 'config', 'modulos'), d => { try { const j = d && d.exists && d.exists() && d.data().json; if (j) MODS = JSON.parse(j); } catch (e) {} desenhar(); if ($('tkDlg').open && $('tkDlg').dataset.modo === 'mods') formMods($('tkMods').dataset.id, $('tkMods').dataset.mid); }, () => {});
   unsubM = F.onSnapshot(F.collection(db, 'taskTemplates'), qs => {
     templates = qs.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
     if ($('tkDlg').open && $('tkDlg').dataset.modo === 'templates') desenharTemplates();
@@ -84,16 +88,59 @@ function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
     <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
-    ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}</div>` : ''}
+    ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}${t.modalidade ? `<span class="tkstart tkmod">${esc(t.modalidade)}</span>` : ''}</div>` : ''}
     ${t.logo ? `<div class="tklogobox"><img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}"></div>` : ''}
     ${t.central ? '' : `<h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}`}
-    ${t.central ? `<div class="tkcentral"><small>${t.central.tipo === 'simples' ? 'Posto simples' : 'Central'}</small>${t.central.tipo === 'simples' ? `<b>${esc(t.apelido || t.razao || '')}</b>` : t.central.nome ? `<b>${esc(t.central.nome)}</b>` : ''}${(t.central.filiais || []).map(f => `<div class="tkfil">${esc([f.cod, f.tipo, f.cnpj].filter(Boolean).join(' - '))}</div>`).join('')}${(t.central.filiais || []).length ? `<button type="button" class="tkver" data-tk="filiais">${t.central.tipo === 'simples' ? 'Dados do posto' : 'Dados das filiais'}</button>` : ''}</div>` : ''}
+    ${t.central ? `<div class="tkcentral"><small>${t.central.tipo === 'simples' ? 'Posto simples' : 'Central'}</small>${t.central.tipo === 'simples' ? `<b>${esc(t.apelido || t.razao || '')}</b>` : t.central.nome ? `<b>${esc(t.central.nome)}</b>` : ''}${(t.central.filiais || []).map(f => `<div class="tkfil">${esc([f.cod, f.tipo, f.cnpj].filter(Boolean).join(' - '))}${f.f100 || (t.central.f100 && t.central.f100 === f.cod) ? ' <span class="tk100">F100</span>' : ''}</div>`).join('')}${(t.central.filiais || []).length ? `<button type="button" class="tkver" data-tk="filiais">${t.central.tipo === 'simples' ? 'Dados do posto' : 'Dados das filiais'}</button>` : ''}</div>` : ''}
     ${etapas(t)}
-    <div class="tkprog" title="${pr.feitos} de ${pr.total} itens concluídos"><span style="width:${pct}%"></span></div>
-    <div class="tkprogtxt">${pr.total ? `${pr.feitos} de ${pr.total} itens concluídos (${pct}%)` : 'Nenhum checklist ainda'}</div>
-    <div class="tkacts"><button type="button" data-tk="dados">Dados gerais</button><button type="button" class="primary" data-tk="check">Checklists</button></div>
+    ${modsCard(t)}
+    ${pr.total ? `<div class="tkprogtxt">Checklists antigos: ${pr.feitos} de ${pr.total} itens (${pct}%)</div>` : ''}
+    <div class="tkacts"><button type="button" data-tk="dados">${t.propostaId ? 'Pré TASK' : 'Dados gerais'}</button><button type="button" class="primary" data-tk="mods">Módulos</button>${pr.total ? '<button type="button" data-tk="check">Checklists</button>' : ''}</div>
   </article>`;
+}
+
+/* ---------- Módulos: andamento por processo ---------- */
+const PST = window.PROC_STATUS || { ni: 'Não iniciado', in: 'Iniciado', an: 'Em andamento', pa: 'Parado', fi: 'Finalizado' };
+const procDe = (t, mid, pid) => ((((t.mods || {})[mid] || {}).proc || {})[pid]) || null;
+const filhosDe = m => [m, ...(MODS.secoes || []).filter(x => x.pai === m.id)];
+function contaMod(t, lista) { let f = 0, tot = 0; const pa = []; lista.forEach(m => (m.processos || []).forEach(p => { tot++; const s = procDe(t, m.id, p.id); if (s && s.st === 'fi') f++; if (s && s.st === 'pa') pa.push(m.titulo + ': ' + p.t); })); return { f, tot, pa }; }
+function modsCard(t) {
+  const top = (MODS.secoes || []).filter(m => !m.pai); if (!top.length) return '';
+  const linhas = top.map(m => { const c = contaMod(t, filhosDe(m)), pct = c.tot ? Math.round(c.f * 100 / c.tot) : 0; return `<div class="tkmod${c.pa.length ? ' parado' : ''}" title="${esc(c.f + ' de ' + c.tot + ' processos finalizados')}"><span>${esc(m.titulo)}</span><i><b style="width:${pct}%"></b></i><em>${c.f}/${c.tot}</em></div>`; }).join('');
+  const pa = contaMod(t, MODS.secoes || []).pa;
+  return `<div class="tkmods">${linhas}</div>${pa.length ? `<div class="tkparado" title="${esc(pa.join('\n'))}">${pa.length} processo${pa.length > 1 ? 's' : ''} parado${pa.length > 1 ? 's' : ''} · ${esc(pa[0].split(':')[0])}</div>` : ''}`;
+}
+function formMods(id, mid) {
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  const L = MODS.secoes || [], ordem = []; L.filter(m => !m.pai).forEach(m => { ordem.push(m); L.filter(x => x.pai === m.id).forEach(x => ordem.push(x)); });
+  const m = ordem.find(x => x.id === mid) || ordem[0]; if (!m) { abrirDlg('mods', 'Módulos', '<p class="hint">Nenhum módulo configurado. O administrador cria em Parâmetros Pré TASK.</p>'); return; }
+  const d = dlg(), top = d.open ? d.scrollTop : 0;
+  const nav = x => { const c = contaMod(t, [x]); return `<button type="button" class="dgnav${x.pai ? ' sub' : ''}" data-md="${esc(x.id)}" aria-selected="${x.id === m.id}">${iconeDe(x.titulo)}<span>${esc(x.titulo)}</span><small class="mdn${c.pa.length ? ' pa' : c.tot && c.f === c.tot ? ' ok' : ''}">${c.f}/${c.tot}</small></button>`; };
+  const c = contaMod(t, [m]), pct = c.tot ? Math.round(c.f * 100 / c.tot) : 0, dados = ((t.mods || {})[m.id] || {}).dados || {};
+  const fmtDia = ms => ms ? new Date(ms).toLocaleDateString('pt-BR') : '';
+  const prazo = p => { if (p.prazo === '' || p.prazo == null || !t.dataBase) return ''; const dt = new Date(t.dataBase + 'T12:00:00'); dt.setDate(dt.getDate() + (+p.prazo || 0)); return 'prazo ' + dt.toLocaleDateString('pt-BR'); };
+  const meta = (p, s) => { const st = s ? s.st : 'ni'; const quem = s && s.por ? ' · ' + s.por : ''; const txt = st === 'fi' ? `Finalizado em ${fmtDia(s.em)}${quem}` : st === 'pa' ? `Parado desde ${fmtDia(s.desde || s.em)}${quem}` : st === 'an' ? `Em andamento desde ${fmtDia(s.desde || s.em)}${quem}` : st === 'in' ? `Iniciado em ${fmtDia(s.desde || s.em)}${quem}` : 'Não iniciado'; return [txt, p.resp ? 'resp.: ' + p.resp : '', prazo(p)].filter(Boolean).join(' · '); };
+  window.PtCampos && window.PtCampos.estilos();
+  abrirDlg('mods', 'Módulos · ' + (t.apelido || t.razao || ''), `<div class="dgwrap" id="tkMods" data-id="${esc(id)}" data-mid="${esc(m.id)}">
+    <nav class="dgmenu" aria-label="Módulos">${ordem.map(nav).join('')}</nav>
+    <div class="dgcorpo">
+      <div class="mdtopo"><h4>${esc(m.titulo)}${m.pai ? `<small>etapa de ${esc((L.find(x => x.id === m.pai) || {}).titulo || '')}</small>` : ''}</h4><span class="hint">${c.f} de ${c.tot} processos finalizados</span></div>
+      <div class="tkprog"><span style="width:${pct}%"></span></div>
+      ${(m.campos || []).filter(x => x.show !== false).length ? `<div class="ptsec"><h5>Dados</h5><div class="ptgrid" id="mdDados">${window.PtCampos ? window.PtCampos.camposHtml((m.campos || []).filter(x => x.show !== false), '', dados, {}) : ''}<div class="ptbtns full"><button type="button" class="primary" data-mdsalvar="1">Salvar dados</button></div></div></div>` : ''}
+      <div class="ptsec"><h5>Processos</h5><div class="mdprocs">${(m.processos || []).map(p => { const s = procDe(t, m.id, p.id), st = s ? s.st : 'ni'; return `<div class="mdproc" data-pid="${esc(p.id)}"><div><div class="t">${esc(p.t)}</div><div class="d">${esc(meta(p, s))}</div>${st === 'pa' ? `<div class="mdmot"><input data-mot="${esc(p.id)}" value="${esc(s.motivo || '')}" placeholder="Motivo da parada (ex.: aguardando o banco)" aria-label="Motivo da parada"><button type="button" data-motok="${esc(p.id)}">Salvar motivo</button></div>` : ''}</div>
+        <div class="ptseg ps" role="group" aria-label="Status de ${esc(p.t)}">${Object.entries(PST).map(([k, n]) => `<button type="button" data-pst="${k}" data-pid="${esc(p.id)}" aria-pressed="${st === k}">${n}</button>`).join('')}</div></div>`; }).join('') || '<p class="hint">Nenhum processo neste módulo.</p>'}</div></div>
+    </div></div>`);
+  d.classList.add('largo');
+  if (window.PtCampos && $('mdDados')) { window.PtCampos.ligarCampos($('mdDados')); window.PtCampos.sincronizar($('mdDados')); }
+  d.scrollTop = top;
+}
+async function salvarMods(id, fn, mid) {
+  const t = tasks.find(x => x.id === id); if (!t) return;
+  const mods = JSON.parse(JSON.stringify(t.mods || {}));
+  fn(mods);
+  try { await F.updateDoc(F.doc(db, 'tasks', id), { mods, alteradoEm: F.serverTimestamp(), alteradoPor: perfil.nome || perfil.email }); t.mods = mods; formMods(id, mid); return true; }
+  catch (e) { dmsg('Não foi possível salvar (' + (e.code || 'erro') + ').'); return false; }
 }
 
 /* ---------- Diálogo ---------- */
@@ -118,8 +165,14 @@ const ICONES = {
   agenda: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', lista: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>'
 };
 const iconeDe = t => { t = String(t || '').toLowerCase(); const k = /status/.test(t) ? 'status' : /posto|empresa|base|central|rede/.test(t) ? 'posto' : /respons|contato|financ|s[oó]cio/.test(t) ? 'pessoas' : /legado|convers/.test(t) ? 'banco' : /argo|sistema/.test(t) ? 'globo' : /tef|pix|pos|cart|pagamento/.test(t) ? 'cartao' : /automa/.test(t) ? 'chip' : /computa|equipa|hardware|m[aá]quina/.test(t) ? 'monitor' : /anexo|arquivo/.test(t) ? 'clipe' : /data|agenda|prazo/.test(t) ? 'agenda' : /extra|opera|outro/.test(t) ? 'ajustes' : 'lista'; return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[k]}</svg>`; };
+window.TK_ICONE = iconeDe;
 const marcaDe = (feitos, total) => !total || !feitos ? '<span class="dgm vazio"></span>' : feitos >= total ? '<span class="dgm ok" title="Completo">✓</span>' : '<span class="dgm parcial" title="Incompleto"></span>';
 function formDados(t) {
+  // Card que veio de proposta: abre o Pré TASK (mesma tela do Passo 4), onde tudo é revisado e editado
+  if (t && t.propostaId && window.PreTask) {
+    if (dlg().open) dlg().close();
+    return window.PreTask.abrir({ F, db, perfil, pid: t.propostaId, origem: 'task', task: t, podeTask: true, verContrato });
+  }
   t = t || { respCadastro: { uid: perfil.uid, nome: perfil.nome || perfil.email } };
   const sel = (id, r) => `<select id="${id}"><option value="">Ninguém</option>${opcoesResp(null, r?.uid)}</select>`;
   const cheios = (...v) => v.filter(x => String(x || '').trim()).length;
@@ -285,7 +338,10 @@ const isoDe = v => { v = String(v || ''); let m = v.match(/(\d{4})-(\d{2})-(\d{2
 async function datasE4(pid) {
   try {
     const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados')); if (!r.exists()) return null;
-    const c = Object.entries(r.data().campos || {});
+    const c = Object.entries(r.data().campos || {}), em = r.data().em, emMs = em && em.toMillis ? em.toMillis() : em && em.seconds ? em.seconds * 1000 : 0;
+    // Novo Pré TASK: cabeçalho estruturado (status, datas, modalidade, base e filiais)
+    const pre = r.data().pre;
+    if (pre && window.PreTask) return { pre, emMs, dataBase: pre.dataBase || '', start: pre.start || '', modalidade: pre.modalidade || '', status: pre.status || 'fut', central: window.PreTask.centralDoPre(pre), simples: false, campos: Object.fromEntries(c), por: r.data().por || '', porUid: r.data().porUid || '', porEmail: r.data().porEmail || '' };
     // Só aceita valores que são uma data inteira (evita pegar números de links, por exemplo)
     const ehData = v => /^\s*(\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}|\d{4}-\d{2}-\d{2})\s*$/.test(String(v || ''));
     const achar = (...res) => { for (const re of res) { const e = c.find(([k, v]) => re.test(k) && ehData(v)); if (e) return isoDe(e[1]); } return ''; };
@@ -352,8 +408,8 @@ function filiaisHtml(t) {
   const c = (t && t.central) || {}, fd = v => { const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : v || ''; };
   const tel = v => { v = dig(v); return v.length >= 10 ? v.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : v; };
   const linha = (l, v) => v ? `<div><small>${l}</small>${esc(v)}</div>` : '';
-  return (c.filiais || []).map(f => { const i = f.info || {}; return `<div class="tkfilinfo"><h4>${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}<span>${esc(f.cnpj)}</span></h4>
-    ${linha('Razão social', f.razao || i.razao)}${linha('Nome fantasia', i.fantasia)}${linha('Situação', i.situacao)}${linha('Abertura', fd(i.abertura))}${linha('Atividade principal', i.atividade)}${linha('Endereço', [i.endereco, [i.municipio, i.uf].filter(Boolean).join(' / '), i.cep ? 'CEP ' + String(i.cep).replace(/^(\d{5})(\d{3})$/, '$1-$2') : ''].filter(Boolean).join(' - '))}${linha('Telefone', tel(i.telefone))}${linha('E-mail', i.email)}
+  return (c.filiais || []).map(f => { const i = f.info || {}; return `<div class="tkfilinfo"><h4>${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}${f.f100 || (c.f100 && c.f100 === f.cod) ? ' <span class="tk100">F100</span>' : ''}<span>${esc(f.cnpj)}</span></h4>
+    ${linha('Razão social', f.razao || i.razao)}${!i.municipio && f.cidade ? linha('Cidade', [f.cidade, f.uf].filter(Boolean).join(' - ')) : ''}${linha('Nome fantasia', i.fantasia)}${linha('Situação', i.situacao)}${linha('Abertura', fd(i.abertura))}${linha('Atividade principal', i.atividade)}${linha('Endereço', [i.endereco, [i.municipio, i.uf].filter(Boolean).join(' / '), i.cep ? 'CEP ' + String(i.cep).replace(/^(\d{5})(\d{3})$/, '$1-$2') : ''].filter(Boolean).join(' - '))}${linha('Telefone', tel(i.telefone))}${linha('E-mail', i.email)}
     ${Object.keys(f.dados || {}).length ? `<div class="tkfildados"><small>Dados da implantação</small><table>${Object.entries(f.dados).map(([k, x]) => `<tr><td>${esc(k)}</td><td>${valorOuLink(x)}</td></tr>`).join('')}</table></div>` : ''}
     <div class="tkfilanx" data-cod="${esc(f.cod)}"></div>
     ${f.info ? '' : '<p class="hint">Consulta do CNPJ ainda não disponível. Abra o TASK de novo em alguns instantes.</p>'}</div>`; }).join('') || '<p class="hint">Nenhuma filial informada.</p>';
@@ -366,7 +422,7 @@ function anexosFiliais(t) {
 }
 // Quem preencheu a Etapa 4 vira o responsável pelo cadastro
 let todosU = [];
-const respE4 = d => { if (!d || !d.por) return null; const u = (d.porUid && todosU.find(x => x.uid === d.porUid)) || todosU.find(x => x.nome === d.por); return { uid: u ? u.uid : (d.porUid || 'nome:' + d.por), nome: u ? u.nome : d.por }; };
+const respE4 = d => { if (!d || !d.por) return null; const u = (d.porUid && todosU.find(x => x.uid === d.porUid)) || todosU.find(x => x.nome === d.por); return { uid: u ? u.uid : (d.porUid || 'nome:' + d.por), nome: u ? u.nome : d.por, email: d.porEmail || '' }; };
 const completando = new Set();
 function completarDatas() {
   // A Central é conferida uma vez por sessão, para refletir alterações feitas depois na Etapa 4
@@ -374,8 +430,10 @@ function completarDatas() {
     completando.add(t.id);
     (async () => {
       const up = {};
-      { const d = await datasE4(t.propostaId); baseSimples(d, t.cnpj); if (!t.respCadastro?.nome && respE4(d)) up.respCadastro = respE4(d); if (d && d.central) await razoesFiliais(d.central, t.central); const sig = c => c ? [c.tipo || '', c.nome, ...(c.filiais || []).map(f => [f.cod, f.tipo, f.cnpj, f.razao || '', f.info ? 1 : 0, JSON.stringify(Object.entries(f.dados || {}).sort())].join('|'))].join('\n') : ''; if (d && sig(d.central) !== sig(t.central)) up.central = d.central || null; }
-      if (!t.dataBase) { const d = await datasE4(t.propostaId); if (d && d.dataBase) up.dataBase = d.dataBase; else if (t.dataBase === undefined) up.dataBase = ''; if (!t.start && d && d.start) up.start = d.start; }
+      { const d = await datasE4(t.propostaId); baseSimples(d, t.cnpj);
+        // Pré TASK salvo depois da última sincronização: o card passa a refletir o que foi validado
+        if (d && d.pre && d.emMs && d.emMs > (t.preSync || 0)) { Object.assign(up, { status: d.status, finalizado: d.status === 'fin', dataBase: d.dataBase, start: d.start, modalidade: d.modalidade, preSync: d.emMs }); if (respE4(d)) up.respCadastro = { ...respE4(d), email: d.porEmail || '' }; if (d.status === 'fin' && !t.finalizado) up.finalizadoEm = F.serverTimestamp(); } if (!t.respCadastro?.nome && respE4(d)) up.respCadastro = respE4(d); if (d && d.central) await razoesFiliais(d.central, t.central); const sig = c => c ? [c.tipo || '', c.nome, ...(c.filiais || []).map(f => [f.cod, f.tipo, f.cnpj, f.razao || '', f.info ? 1 : 0, JSON.stringify(Object.entries(f.dados || {}).sort())].join('|'))].join('\n') : ''; if (d && sig(d.central) !== sig(t.central)) up.central = d.central || null; }
+      if (!t.dataBase && !up.preSync) { const d = await datasE4(t.propostaId); if (d && d.dataBase) up.dataBase = d.dataBase; else if (t.dataBase === undefined) up.dataBase = ''; if (!t.start && d && d.start) up.start = d.start; }
       // Logo: refaz se é de versão antiga ou se ainda não tinha (o anexo pode ter chegado depois)
       if (t.logoV !== 3 || !t.logo) { const lg = await logoDe(t.propostaId); if (lg !== (t.logo || '') || t.logoV !== 3) { up.logo = lg; up.logoV = 3; } }
       if (Object.keys(up).length) await F.updateDoc(F.doc(db, 'tasks', t.id), up);
@@ -396,7 +454,7 @@ async function criarDaProposta(pid, auto) {
     apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
     respCadastro: respE4(d4) || (auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }), respStart: null, start: d4.start || v.dataImpl || '', obs: v.obs || '',
-    propostaId: pid, propostaNumero: p.numero || '', vendedor: p.vendedor || '', finalizado: false, status: 'fut', checklists: [],
+    propostaId: pid, propostaNumero: p.numero || '', vendedor: p.vendedor || '', finalizado: d4.status === 'fin', status: d4.status || 'fut', modalidade: d4.modalidade || '', preSync: d4.emMs || 0, checklists: [],
     criado: F.serverTimestamp(), criadoPor: auto ? 'Automático (Etapa 4 concluída)' : (perfil.nome || perfil.email), auto: !!auto
   };
   await F.setDoc(ref, novo);
@@ -532,6 +590,7 @@ function ligar() {
     if (b.dataset.tk === 'ct') return verContrato(b.dataset.pid, b);
     if (b.dataset.tk === 'e4') return verRef(b.dataset.pid);
     if (b.dataset.tk === 'filiais') return verFiliais(tasks.find(t => t.id === id));
+    if (b.dataset.tk === 'mods') return formMods(id);
     if (b.dataset.tk === 'dados') formDados(tasks.find(t => t.id === id)); else formCheck(id);
   });
   $('tkDlgFechar').addEventListener('click', () => dlg().close());
@@ -546,6 +605,21 @@ function ligar() {
   $('tkDlgBody').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-novo]')) { e.preventDefault(); e.target.closest('.tkck').querySelector('[data-ck=additem]').click(); } });
   $('tkDlgBody').addEventListener('click', async e => {
     const dg = e.target.closest('[data-dg]'); if (dg) return mostrarDg(dg.dataset.dg);
+    const md = e.target.closest('[data-md]'); if (md) return formMods($('tkMods').dataset.id, md.dataset.md);
+    const ps = e.target.closest('[data-pst]');
+    if (ps) {
+      const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, pid = ps.dataset.pid, st = ps.dataset.pst, quem = perfil.nome || perfil.email;
+      return salvarMods(id, mods => { const m = mods[mid] = mods[mid] || {}; m.proc = m.proc || {}; const ant = m.proc[pid] || {}; m.proc[pid] = { st, por: quem, em: Date.now(), desde: ant.st === st ? (ant.desde || ant.em || Date.now()) : Date.now(), motivo: st === 'pa' ? (ant.motivo || '') : '' }; }, mid).then(ok => { if (ok && st === 'pa') { const i = document.querySelector(`[data-mot="${CSS.escape(pid)}"]`); if (i) i.focus(); dmsg('Informe o motivo da parada.'); } });
+    }
+    const mk = e.target.closest('[data-motok]');
+    if (mk) { const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, pid = mk.dataset.motok, v = document.querySelector(`[data-mot="${CSS.escape(pid)}"]`).value.trim(); return salvarMods(id, mods => { const p = ((mods[mid] || {}).proc || {})[pid]; if (p) p.motivo = v; }, mid).then(ok => { if (ok) dmsg('Motivo salvo.'); }); }
+    const ms = e.target.closest('[data-mdsalvar]');
+    if (ms) {
+      const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, m = (MODS.secoes || []).find(x => x.id === mid), root = $('mdDados');
+      const r = window.PtCampos.lerCampos(root, (m.campos || []).filter(x => x.show !== false), '', {});
+      if (r.falta) { dmsg('Preencha os campos obrigatórios.'); r.falta.focus(); return; }
+      return salvarMods(id, mods => { const x = mods[mid] = mods[mid] || {}; x.dados = r.valores; x.dadosPor = perfil.nome || perfil.email; x.dadosEm = Date.now(); }, mid).then(ok => { if (ok) dmsg('Dados salvos.'); });
+    }
     const cl = e.target.closest('[data-link]');
     if (cl) { try { await navigator.clipboard.writeText(cl.dataset.link); } catch (er) { const ta = document.createElement('textarea'); ta.value = cl.dataset.link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } cl.textContent = 'Link copiado ✓'; setTimeout(() => { cl.textContent = 'Copiar link'; }, 1800); return; }
     const b = e.target.closest('button'); if (!b) return;

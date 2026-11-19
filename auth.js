@@ -167,7 +167,7 @@ async function iniciar() {
     aplicarModo();
     await carregar(false);
     if (fb.admin) { ouvirUsuarios(); carregarE2(); carregarE3(); }
-    carregarE4();
+    carregarE4(); if (fb.admin) carregarMod();
     ouvirPropostas();
     abrirAba('tabHoje');
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa2')).then(s => { if (s.exists() && s.data().json) E2PUB = JSON.parse(s.data().json); }).catch(() => {});
@@ -668,6 +668,22 @@ async function iniciar() {
     finally { bt.disabled = false; }
   }
   let E2PUB = null; // formulário publicado (para a mensagem de envio)
+  // Pré TASK: a mesma tela de validação final usada no card do TASK
+  function abrirPreTask(p) {
+    if (!window.PreTask) { pMsg('Recarregue a página (Ctrl+Shift+R) para abrir o Pré TASK.'); return; }
+    window.PreTask.abrir({ F, db, perfil, pid: p.id, origem: 'proposta', podeTask: fb.admin || fb.temTask,
+      verContrato: async (pid, bt) => {
+        bt.disabled = true;
+        try {
+          const d = (await F.getDoc(F.doc(db, 'propostas', pid, 'arquivo', 'contrato'))).data();
+          const doc = window.contratoPdf({ titulo: d.titulo, texto: d.texto, numero: p.numero, logo: logoAtual(), logoW: CFG.logoW, logoH: CFG.logoH,
+            aceite: p.ctAceitoEm ? { nome: p.ctAceitoNome, cpf: p.ctAceitoCpf, cargo: p.ctAceitoCargo, em: fmtTs(p.ctAceitoEm), cliente: p.cliente } : null });
+          const url = URL.createObjectURL(doc.output('blob')); window.open(url, '_blank'); setTimeout(() => URL.revokeObjectURL(url), 120000);
+        } catch (err) { pMsg('Não foi possível abrir o contrato (' + (err.code || err.message) + ').'); }
+        finally { bt.disabled = false; }
+      },
+      aoSalvar: () => pMsg(`Pré TASK da proposta nº ${p.numero} salvo.`) });
+  }
   function msgEtapa2(p, link) {
     const cfg = E2 || E2PUB || window.ETAPA2_PADRAO;
     let t = String(cfg.msgEnvio || window.ETAPA2_PADRAO.msgEnvio);
@@ -711,7 +727,8 @@ async function iniciar() {
     if (a === 'duvresp') { abrirWa(p.waCli, `Olá ${bt.dataset.nome || p.contato || ''}! Sobre a sua dúvida na proposta nº ${p.numero}:\n`); return; }
     if (a === 'irtask') return abrirAba('tabTask');
     if (a === 'excluirp') return excluirProposta(p, bt);
-    if (a === 'e4' || a === 'e4ver') return etapa4(p, card, a === 'e4');
+    if (a === 'e4') return abrirPreTask(p);
+    if (a === 'e4ver') return etapa4(p, card, false);
     if (a === 'e4salvar') return salvarE4(p, card, bt);
     if (a === 'e4cancelar') { card.querySelector('.e4box').hidden = true; return; }
     if (a === 'reenviar') { abrirWa(p.waCli, textoAprov(p)); pMsg('WhatsApp aberto com o link da proposta.'); }
@@ -992,7 +1009,66 @@ async function iniciar() {
     e4Sujo = false; desenharE4();
   }
   function marcarE4() { e4Sujo = true; e4Status('Alterações ainda não publicadas.'); }
-  function desenharE4() { if (E4 && fb.admin) $('e4Secoes').innerHTML = htmlSecoes(E4, TIPOS4, 'o vendedor'); }
+  function desenharE4() {
+    if (!E4 || !fb.admin) return;
+    $('e4Secoes').innerHTML = htmlSecoes(E4, TIPOS4, 'o vendedor');
+    // Central: cada seção pode ser preenchida filial por filial (padrão) ou uma vez só para a Central
+    $('e4Secoes').querySelectorAll('.sec[data-si]').forEach(sec => { const s = E4.secoes[+sec.dataset.si]; const d = document.createElement('label'); d.className = 'chk secfil'; d.innerHTML = `<input type="checkbox" data-porfil${s.porFilial === false ? '' : ' checked'}> Em Central, preencher esta seção filial por filial`; sec.querySelector('.body').prepend(d); });
+  }
+  $('e4Secoes').addEventListener('change', e => { if (!e.target.matches('[data-porfil]') || !E4) return; E4.secoes[+e.target.closest('[data-si]').dataset.si].porFilial = e.target.checked; marcarE4(); });
+
+  /* ---------- Módulos do TASK (ADM) ---------- */
+  const MODDOC = F.doc(db, 'config', 'modulos');
+  const TIPOSM = Object.fromEntries(Object.entries(TIPOS).filter(([k]) => k !== 'arquivo'));
+  let MOD = null, modSujo = false;
+  const modStatus = t => { $('modStatus').textContent = t; };
+  async function carregarMod() {
+    try {
+      const snap = await F.getDoc(MODDOC);
+      MOD = snap.exists() && snap.data().json ? JSON.parse(snap.data().json) : copia(window.MODULOS_PADRAO);
+      if (fb.admin) modStatus(snap.exists() ? (snap.data().por ? 'Publicado por ' + snap.data().por + (snap.data().em ? ' em ' + fmtQuando(snap.data().em) : '') + '.' : '') : 'Usando os módulos padrão. Ajuste e publique.');
+    } catch (e) { MOD = copia(window.MODULOS_PADRAO); }
+    modSujo = false; desenharMod();
+  }
+  function marcarMod() { modSujo = true; modStatus('Alterações ainda não publicadas.'); }
+  function desenharMod() {
+    if (!MOD || !fb.admin) return;
+    MOD.secoes.forEach(s => { s.processos = s.processos || []; s.campos = s.campos || []; });
+    $('modSecoes').innerHTML = htmlSecoes(MOD, TIPOSM, 'a equipe').replace(/<h2>Seção (\d+) /g, '<h2>Módulo $1 ');
+    $('modSecoes').querySelectorAll('.sec[data-si]').forEach(sec => {
+      const si = +sec.dataset.si, s = MOD.secoes[si], body = sec.querySelector('.body');
+      const pais = MOD.secoes.filter((x, i) => i !== si && !x.pai);
+      const pai = document.createElement('div'); pai.className = 'modpai';
+      pai.innerHTML = `<span>Este módulo é</span><select data-mpai aria-label="Etapa de outro módulo"><option value="">um módulo principal</option>${pais.map(x => `<option value="${esc(x.id)}"${s.pai === x.id ? ' selected' : ''}>etapa dentro de ${esc(x.titulo)}</option>`).join('')}</select>`;
+      body.prepend(pai);
+      const pr = document.createElement('div'); pr.className = 'modproc';
+      pr.innerHTML = `<h3>Processos (${s.processos.length})</h3><div class="refwrap"><table class="e2tab"><thead><tr><th>Processo</th><th>Responsável padrão</th><th>Prazo (dias após a Data da Base)</th><th><span class="sr">Ações</span></th></tr></thead><tbody>${s.processos.map((x, pi) => `<tr data-pi="${pi}"><td><input data-mp="t" value="${esc(x.t)}" aria-label="Processo"></td><td><input data-mp="resp" value="${esc(x.resp || '')}" placeholder="Ex.: Implantação" aria-label="Responsável padrão"></td><td><input data-mp="prazo" type="number" min="0" value="${esc(x.prazo || '')}" aria-label="Prazo em dias" style="max-width:110px"></td><td class="a"><button type="button" data-mpa="up" ${pi === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-mpa="down" ${pi === s.processos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button><button type="button" data-mpa="del" aria-label="Excluir processo">✕</button></td></tr>`).join('') || '<tr><td colspan="4" class="hint">Nenhum processo.</td></tr>'}</tbody></table></div><div class="tools"><button type="button" data-mpa="add">+ Processo</button></div>`;
+      body.appendChild(pr);
+    });
+  }
+  ligarSecoes($('modSecoes'), () => MOD, marcarMod, desenharMod);
+  $('modSecoes').addEventListener('input', e => { const t = e.target; if (!MOD || !t.dataset.mp) return; const s = MOD.secoes[+t.closest('[data-si]').dataset.si]; s.processos[+t.closest('[data-pi]').dataset.pi][t.dataset.mp] = t.value; marcarMod(); });
+  $('modSecoes').addEventListener('change', e => { if (!MOD || !e.target.matches('[data-mpai]')) return; const s = MOD.secoes[+e.target.closest('[data-si]').dataset.si]; s.pai = e.target.value; if (s.pai) MOD.secoes.forEach(x => { if (x.pai === s.id) x.pai = ''; }); marcarMod(); desenharMod(); });
+  $('modSecoes').addEventListener('click', e => {
+    const b = e.target.closest('[data-mpa]'); if (!b || !MOD) return; const s = MOD.secoes[+b.closest('[data-si]').dataset.si], a = b.dataset.mpa;
+    if (a === 'add') s.processos.push({ id: 'p' + Date.now().toString(36), t: 'Novo processo', resp: '', prazo: '' });
+    else { const i = +b.closest('[data-pi]').dataset.pi, L = s.processos; if (a === 'del') L.splice(i, 1); else { const j = a === 'up' ? i - 1 : i + 1; if (j < 0 || j >= L.length) return; [L[i], L[j]] = [L[j], L[i]]; } }
+    marcarMod(); desenharMod();
+  });
+  $('btnModNovo').addEventListener('click', () => { if (!MOD) return; MOD.secoes.push({ id: 'm' + Date.now().toString(36), titulo: 'Novo módulo', pai: '', campos: [], processos: [{ id: 'p' + Date.now().toString(36), t: 'Novo processo', resp: '', prazo: '' }] }); marcarMod(); desenharMod(); });
+  let modResetT = 0;
+  $('btnModPadrao').addEventListener('click', () => {
+    if (Date.now() - modResetT > 4000) { modResetT = Date.now(); modStatus('Clique de novo para confirmar: os módulos voltam ao padrão (só vale depois de publicar).'); return; }
+    modResetT = 0; MOD = copia(window.MODULOS_PADRAO); marcarMod(); desenharMod();
+  });
+  $('btnModSalvar').addEventListener('click', async () => {
+    if (!MOD || !fb.admin) return;
+    if (MOD.secoes.some(s => !String(s.titulo || '').trim()) || MOD.secoes.some(s => (s.processos || []).some(x => !String(x.t || '').trim())) || MOD.secoes.flatMap(s => s.campos).some(c => !String(c.label || '').trim())) { modStatus('Todo módulo, campo e processo precisa de um nome.'); return; }
+    const btn = $('btnModSalvar'); btn.disabled = true; modStatus('Publicando…');
+    try { const em = new Date().toISOString(); await F.setDoc(MODDOC, { json: JSON.stringify(MOD), em, por: perfil.nome || perfil.email }); modSujo = false; modStatus('Módulos publicados em ' + fmtQuando(em) + '. Valem para todos os cards do TASK.'); }
+    catch (err) { modStatus('Não foi possível publicar (' + (err.code || err.message) + ').'); }
+    finally { btn.disabled = false; }
+  });
   ligarSecoes($('e4Secoes'), () => E4, marcarE4, desenharE4);
   $('btnE4Secao').addEventListener('click', () => { if (!E4) return; E4.secoes.push({ id: 's' + Date.now().toString(36), titulo: 'Nova seção', campos: [{ k: 'c' + Date.now().toString(36), label: 'Novo campo', tipo: 'texto', req: false, show: true, custom: true }] }); marcarE4(); desenharE4(); });
   let e4ResetT = 0;
