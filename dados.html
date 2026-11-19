@@ -32,6 +32,7 @@ main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
 .sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
 .body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .full{grid-column:1/-1}
+.cfclink{font-size:12.5px;color:var(--purple,#7030a0);font-weight:600;margin-top:4px;text-decoration:none}.cfclink:hover{text-decoration:underline}.cfchint{font-size:11.5px;color:var(--muted)}
 .nsug{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.nsug small{color:var(--muted);font-size:12px}.nsug button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}
 @media (min-width:700px){.body>label:has(.busca){grid-column:span 2}}
 .linha{grid-column:1/-1;display:grid;grid-template-columns:minmax(160px,1fr) 3fr;gap:12px;align-items:start}
@@ -303,6 +304,13 @@ async function buscarCnpj(el,forcar){
   finally{ if(bt) bt.disabled=false }
 }
 function ligarAuto(){
+  // CRC: link para a consulta oficial do CFC (não há busca automática); copia o nome do contador para facilitar
+  f.querySelectorAll('#secoes label').forEach(l=>{
+    const t=(l.querySelector('span')?.textContent||'').trim(); if(!/^crc\b/i.test(t)||l.querySelector('.cfclink')) return;
+    const a=document.createElement('a'); a.className='cfclink'; a.href='https://www3.cfc.org.br/spw/ConsultaNacionalCFC/'; a.target='_blank'; a.rel='noopener'; a.textContent='Consultar no CFC ↗';
+    a.addEventListener('click',()=>{ const sec=l.closest('.sec'); const nome=[...sec.querySelectorAll('label')].find(x=>/nome/i.test(x.textContent)&&/contador|respons/i.test(x.textContent))?.querySelector('input')?.value; if(nome&&navigator.clipboard) navigator.clipboard.writeText(nome).catch(()=>{}); });
+    const h=document.createElement('small'); h.className='cfchint'; h.textContent='Busque pelo nome do contador (já copiado) e cole o número aqui.'; l.append(a,h);
+  });
   f.querySelectorAll('[data-v=cnpj]').forEach(el=>{ el.addEventListener('input',()=>buscarCnpj(el)); el.addEventListener('blur',()=>buscarCnpj(el)); el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); buscarCnpj(el,true) } }); if(el.value && el.name==='cnpj') buscarCnpj(el) });
   // Campos que só aparecem quando o Sim/Não de cima é Sim
   f.querySelectorAll('[data-abre]').forEach(lab=>{
