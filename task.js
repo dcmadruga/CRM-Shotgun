@@ -86,7 +86,7 @@ function cartao(t) {
     ${t.logo ? `<div class="tklogobox"><img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}"></div>` : ''}
     ${t.central ? '' : `<h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}`}
-    ${t.central ? `<div class="tkcentral"><small>Central</small>${t.central.nome ? `<b>${esc(t.central.nome)}</b>` : ''}${(t.central.filiais || []).map(f => `<div class="tkfil">${esc([f.cod, f.tipo, f.cnpj].filter(Boolean).join(' - '))}${f.razao ? `<span>${esc(f.razao)}</span>` : ''}</div>`).join('')}</div>` : ''}
+    ${t.central ? `<div class="tkcentral"><small>Central</small>${t.central.nome ? `<b>${esc(t.central.nome)}</b>` : ''}${(t.central.filiais || []).map(f => `<div class="tkfil">${esc([f.cod, f.tipo, f.cnpj].filter(Boolean).join(' - '))}</div>`).join('')}${(t.central.filiais || []).length ? '<button type="button" class="tkver" data-tk="filiais">Dados das filiais</button>' : ''}</div>` : ''}
     ${etapas(t)}
     <div class="tkprog" title="${pr.feitos} de ${pr.total} itens concluídos"><span style="width:${pct}%"></span></div>
     <div class="tkprogtxt">${pr.total ? `${pr.feitos} de ${pr.total} itens concluídos (${pct}%)` : 'Nenhum checklist ainda'}</div>
@@ -226,7 +226,7 @@ async function datasE4(pid) {
     // Central: nome da central e filiais (F1 - Posto - CNPJ), quando a Etapa 4 tiver filiais
     const val = r.data().valores || {}, filiais = [].concat(...Object.keys(val).filter(k => /__fil$/.test(k) && Array.isArray(val[k])).map(k => val[k]));
     const nc = c.find(([k, v]) => /nome.*central|central.*nome/i.test(k) && v && !/\n/.test(v)) || c.find(([k, v]) => /central/i.test(k) && !/filia/i.test(k) && v && !/\n/.test(v) && !/^\s*central\s*$/i.test(v));
-    const central = filiais.length || nc ? { nome: nc ? String(nc[1]).trim() : '', filiais: filiais.map(f => ({ cod: f.cod || '', tipo: f.tipo || '', cnpj: f.cnpj || '', razao: f.razao || '' })) } : null;
+    const central = filiais.length || nc ? { nome: nc ? String(nc[1]).trim() : '', filiais: filiais.map(f => ({ cod: f.cod || '', tipo: f.tipo || '', cnpj: f.cnpj || '', razao: f.razao || '', info: f.info || null })) } : null;
     return { dataBase: achar(/da[dt]a.*base|base.*da[dt]a/i, /base/i), start: achar(/start|in[ií]cio da implanta/i), central };
   } catch (e) { return null; }
 }
@@ -254,12 +254,21 @@ async function logoDe(pid) {
 }
 // Razão social das filiais que vieram sem ela: aproveita a do card ou consulta pelo CNPJ
 async function razoesFiliais(c, antigo) {
-  const ja = {}; ((antigo && antigo.filiais) || []).forEach(f => { if (f.razao) ja[dig(f.cnpj)] = f.razao; });
-  const js = u => fetch(u).then(x => { if (!x.ok) throw 0; return x.json(); });
+  const ja = {}; ((antigo && antigo.filiais) || []).forEach(f => { if (f.info) ja[dig(f.cnpj)] = f.info; });
   for (const f of c.filiais || []) {
-    const d = dig(f.cnpj); if (f.razao || d.length !== 14) continue;
-    f.razao = ja[d] || await Promise.any([js('https://brasilapi.com.br/api/cnpj/v1/' + d), js('https://publica.cnpj.ws/cnpj/' + d), js('https://minhareceita.org/' + d)].map(pr => pr.then(j => j.razao_social || Promise.reject(0)))).catch(() => '');
+    const d = dig(f.cnpj); if (f.info || d.length !== 14) continue;
+    f.info = ja[d] || (window.cnpjInfo ? await window.cnpjInfo(d) : null);
+    if (!f.razao && f.info) f.razao = f.info.razao || '';
   }
+}
+// Dados das filiais da Central, vindos da consulta de CNPJ feita na Etapa 4
+function verFiliais(t) {
+  const c = (t && t.central) || {}, fd = v => { const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : v || ''; };
+  const tel = v => { v = dig(v); return v.length >= 10 ? v.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : v; };
+  const linha = (l, v) => v ? `<div><small>${l}</small>${esc(v)}</div>` : '';
+  abrirDlg('filiais', 'Filiais' + (c.nome ? ' - ' + c.nome : ''), (c.filiais || []).map(f => { const i = f.info || {}; return `<div class="tkfilinfo"><h4>${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}<span>${esc(f.cnpj)}</span></h4>
+    ${linha('Razão social', f.razao || i.razao)}${linha('Nome fantasia', i.fantasia)}${linha('Situação', i.situacao)}${linha('Abertura', fd(i.abertura))}${linha('Atividade principal', i.atividade)}${linha('Endereço', [i.endereco, [i.municipio, i.uf].filter(Boolean).join(' / '), i.cep ? 'CEP ' + String(i.cep).replace(/^(\d{5})(\d{3})$/, '$1-$2') : ''].filter(Boolean).join(' - '))}${linha('Telefone', tel(i.telefone))}${linha('E-mail', i.email)}
+    ${f.info ? '' : '<p class="hint">Consulta do CNPJ ainda não disponível. Abra o TASK de novo em alguns instantes.</p>'}</div>`; }).join('') || '<p class="hint">Nenhuma filial informada.</p>');
 }
 const completando = new Set();
 function completarDatas() {
@@ -268,7 +277,7 @@ function completarDatas() {
     completando.add(t.id);
     (async () => {
       const up = {};
-      { const d = await datasE4(t.propostaId); if (d && d.central) await razoesFiliais(d.central, t.central); const sig = c => c ? [c.nome, ...(c.filiais || []).map(f => [f.cod, f.tipo, f.cnpj, f.razao || ''].join('|'))].join('\n') : ''; if (d && sig(d.central) !== sig(t.central)) up.central = d.central || null; }
+      { const d = await datasE4(t.propostaId); if (d && d.central) await razoesFiliais(d.central, t.central); const sig = c => c ? [c.nome, ...(c.filiais || []).map(f => [f.cod, f.tipo, f.cnpj, f.razao || '', f.info ? 1 : 0].join('|'))].join('\n') : ''; if (d && sig(d.central) !== sig(t.central)) up.central = d.central || null; }
       if (!t.dataBase) { const d = await datasE4(t.propostaId); if (d && d.dataBase) up.dataBase = d.dataBase; else if (t.dataBase === undefined) up.dataBase = ''; if (!t.start && d && d.start) up.start = d.start; }
       if (t.logoV !== 2) { up.logo = await logoDe(t.propostaId); up.logoV = 2; }
       if (Object.keys(up).length) await F.updateDoc(F.doc(db, 'tasks', t.id), up);
@@ -413,6 +422,7 @@ function ligar() {
     if (b.dataset.tk === 'e2') return verDados(b.dataset.pid);
     if (b.dataset.tk === 'ct') return verContrato(b.dataset.pid, b);
     if (b.dataset.tk === 'e4') return verRef(b.dataset.pid);
+    if (b.dataset.tk === 'filiais') return verFiliais(tasks.find(t => t.id === id));
     if (b.dataset.tk === 'dados') formDados(tasks.find(t => t.id === id)); else formCheck(id);
   });
   $('tkDlgFechar').addEventListener('click', () => dlg().close());

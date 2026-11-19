@@ -1,3 +1,14 @@
+// Consulta de CNPJ (BrasilAPI, CNPJ.ws ou minhareceita, o que responder primeiro), com os dados principais
+window.cnpjInfo = async d => {
+  d = String(d || '').replace(/\D/g, ''); if (d.length !== 14) return null;
+  const js = u => fetch(u).then(x => { if (!x.ok) throw 0; return x.json(); });
+  const tel = (...v) => v.filter(Boolean).map(x => String(x).replace(/\D/g, '')).filter(x => x.length >= 8)[0] || '';
+  const rf = j => j.razao_social ? { razao: j.razao_social, fantasia: j.nome_fantasia || '', situacao: j.descricao_situacao_cadastral || '', abertura: j.data_inicio_atividade || '', atividade: j.cnae_fiscal_descricao || '', endereco: [[j.descricao_tipo_de_logradouro, j.logradouro].filter(Boolean).join(' '), j.numero, j.complemento, j.bairro].filter(Boolean).join(', '), municipio: j.municipio || '', uf: j.uf || '', cep: j.cep || '', telefone: tel(j.ddd_telefone_1, j.ddd_telefone_2), email: (j.email || '').toLowerCase() } : Promise.reject(0);
+  const ws = j => { const e = j.estabelecimento || {}; return j.razao_social ? { razao: j.razao_social, fantasia: e.nome_fantasia || '', situacao: e.situacao_cadastral || '', abertura: e.data_inicio_atividade || '', atividade: (e.atividade_principal || {}).descricao || '', endereco: [[e.tipo_logradouro, e.logradouro].filter(Boolean).join(' '), e.numero, e.complemento, e.bairro].filter(Boolean).join(', '), municipio: (e.cidade || {}).nome || '', uf: (e.estado || {}).sigla || '', cep: e.cep || '', telefone: tel((e.ddd1 || '') + (e.telefone1 || '')), email: (e.email || '').toLowerCase() } : Promise.reject(0); };
+  const r = await Promise.any([js('https://brasilapi.com.br/api/cnpj/v1/' + d).then(rf), js('https://publica.cnpj.ws/cnpj/' + d).then(ws), js('https://minhareceita.org/' + d).then(rf)]).catch(() => null);
+  if (r) { r.cnpj = d; Object.keys(r).forEach(k => { if (typeof r[k] === 'string') r[k] = r[k].replace(/\s+/g, ' ').trim(); }); }
+  return r;
+};
 // Login, perfis e tela de usuários (Firebase). Só roda quando firebase-config.js tem apiKey.
 const C = window.FIREBASE_CONFIG || {};
 if (C.apiKey) iniciar().catch(e => { console.error(e); erroLogin('Não foi possível carregar o login. Verifique a internet e recarregue.'); });
@@ -480,19 +491,19 @@ async function iniciar() {
     // Texto longo que abre depois de escolher uma opção (descrição configurada nos Parâmetros)
     const syncDet = () => box.querySelectorAll('[data-det]').forEach(l => { const sel = box.querySelector(`select[data-k="${CSS.escape(l.dataset.det)}"]`); const on = !!sel && !sel.disabled && !!sel.value; l.hidden = !on; l.querySelector('textarea').disabled = !on; });
     // Filiais: ao escolher a opção configurada (ex.: Central), pede a quantidade e abre uma linha por filial
-    const filLinha = (k, i, f) => `<div class="e4filrow"><input data-filn aria-label="Número da filial ${i + 1}" value="${esc(f.cod || 'F' + (i + 1))}"><select data-filt aria-label="F${i + 1} tipo"><option value="">Posto ou Loja</option>${['Posto', 'Loja'].map(o => `<option${f.tipo === o ? ' selected' : ''}>${o}</option>`).join('')}</select><input data-filc inputmode="numeric" placeholder="CNPJ" aria-label="F${i + 1} CNPJ" value="${esc(f.cnpj || '')}"><input data-filr placeholder="Razão social" aria-label="F${i + 1} razão social" value="${esc(f.razao || '')}"></div>`;
-    // Razão social da filial pelo CNPJ (BrasilAPI, CNPJ.ws ou minhareceita, o que responder primeiro)
+    const filLinha = (k, i, f) => `<div class="e4filrow"${f.info ? ` data-info="${esc(JSON.stringify(f.info))}"` : ''}><input data-filn aria-label="Número da filial ${i + 1}" value="${esc(f.cod || 'F' + (i + 1))}"><select data-filt aria-label="F${i + 1} tipo"><option value="">Posto ou Loja</option>${['Posto', 'Loja'].map(o => `<option${f.tipo === o ? ' selected' : ''}>${o}</option>`).join('')}</select><input data-filc inputmode="numeric" placeholder="CNPJ" aria-label="F${i + 1} CNPJ" value="${esc(f.cnpj || '')}"><input data-filr placeholder="Razão social" aria-label="F${i + 1} razão social" value="${esc(f.razao || '')}"></div>`;
+    // Razão social da filial pelo CNPJ; os demais dados da consulta ficam guardados para o card do TASK
     const razaoFil = async (inp, d) => {
-      const r = inp.parentElement.querySelector('[data-filr]'); if (!r || (r.value.trim() && r.dataset.auto !== '1')) return;
-      if (inp.dataset.busca === d) return; inp.dataset.busca = d; r.placeholder = 'Buscando…';
-      const js = u => fetch(u).then(x => { if (!x.ok) throw 0; return x.json(); });
-      const nome = await Promise.any([js('https://brasilapi.com.br/api/cnpj/v1/' + d), js('https://publica.cnpj.ws/cnpj/' + d), js('https://minhareceita.org/' + d)].map(pr => pr.then(j => j.razao_social || Promise.reject(0)))).catch(() => '');
+      const row = inp.parentElement, r = row.querySelector('[data-filr]'); if (!r) return;
+      if (inp.dataset.busca === d) return; inp.dataset.busca = d; const ph = r.placeholder; r.placeholder = 'Buscando…';
+      const info = await window.cnpjInfo(d);
       if (inp.value.replace(/\D/g, '') !== d) return;
-      r.placeholder = nome ? 'Razão social' : 'Razão social (não encontrada, digite)';
-      if (nome && (!r.value.trim() || r.dataset.auto === '1')) { r.value = nome; r.dataset.auto = '1'; r.style.borderColor = ''; }
+      row.dataset.info = info ? JSON.stringify(info) : '';
+      r.placeholder = info ? 'Razão social' : (r.value.trim() ? ph : 'Razão social (não encontrada, digite)');
+      if (info && info.razao && (!r.value.trim() || r.dataset.auto === '1')) { r.value = info.razao; r.dataset.auto = '1'; r.style.borderColor = ''; }
     };
-    const desenharFil = (bl, lista) => { const k = bl.dataset.fil, n = Math.min(50, Math.max(0, parseInt(bl.querySelector('[data-filq]').value, 10) || 0)), rows = bl.querySelector('.e4filrows'); const atual = lista || [...rows.children].map(r => ({ cod: r.querySelector('[data-filn]').value, tipo: r.querySelector('[data-filt]').value, cnpj: r.querySelector('[data-filc]').value, razao: r.querySelector('[data-filr]').value })); rows.innerHTML = Array.from({ length: n }, (_, i) => filLinha(k, i, atual[i] || {})).join(''); };
-    box.querySelectorAll('[data-fil]').forEach(bl => { desenharFil(bl, v[bl.dataset.fil + '__fil'] || []); bl.querySelectorAll('.e4filrow').forEach(r => { const c = r.querySelector('[data-filc]'), d = c.value.replace(/\D/g, ''); if (d.length === 14 && !r.querySelector('[data-filr]').value.trim()) razaoFil(c, d); }); bl.querySelector('[data-filq]').addEventListener('input', () => desenharFil(bl)); });
+    const desenharFil = (bl, lista) => { const k = bl.dataset.fil, n = Math.min(50, Math.max(0, parseInt(bl.querySelector('[data-filq]').value, 10) || 0)), rows = bl.querySelector('.e4filrows'); const atual = lista || [...rows.children].map(r => ({ cod: r.querySelector('[data-filn]').value, tipo: r.querySelector('[data-filt]').value, cnpj: r.querySelector('[data-filc]').value, razao: r.querySelector('[data-filr]').value, info: r.dataset.info ? JSON.parse(r.dataset.info) : null })); rows.innerHTML = Array.from({ length: n }, (_, i) => filLinha(k, i, atual[i] || {})).join(''); };
+    box.querySelectorAll('[data-fil]').forEach(bl => { desenharFil(bl, v[bl.dataset.fil + '__fil'] || []); bl.querySelectorAll('.e4filrow').forEach(r => { const c = r.querySelector('[data-filc]'), d = c.value.replace(/\D/g, ''); if (d.length === 14 && (!r.querySelector('[data-filr]').value.trim() || !r.dataset.info)) razaoFil(c, d); }); bl.querySelector('[data-filq]').addEventListener('input', () => desenharFil(bl)); });
     box.addEventListener('input', ev => { if (ev.target.matches('[data-filc]')) { const d = ev.target.value.replace(/\D/g, '').slice(0, 14); ev.target.value = d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : d; ev.target.style.borderColor = ''; if (d.length === 14) razaoFil(ev.target, d); } if (ev.target.matches('[data-filr]')) delete ev.target.dataset.auto; if (ev.target.matches('[data-filt],[data-filq],[data-filn]')) ev.target.style.borderColor = ''; });
     // Multi condicional: cada opção mostra os seus campos adicionais
     const syncCond = () => box.querySelectorAll('[data-cond]').forEach(bl => { const sel = box.querySelector(`select[data-k="${CSS.escape(bl.dataset.cond)}"]`); const on = !!sel && !sel.disabled && sel.value === bl.dataset.op; bl.hidden = !on; bl.querySelectorAll('input,select,textarea').forEach(x => x.disabled = !on); });
@@ -506,7 +517,7 @@ async function iniciar() {
       const bl = box.querySelector(`[data-fil="${CSS.escape(k)}"]`); if (!bl || bl.hidden) return;
       const q = bl.querySelector('[data-filq]'), rows = [...bl.querySelectorAll('.e4filrow')];
       if (!rows.length) { falta = falta || q; q.style.borderColor = 'var(--danger)'; }
-      const fil = rows.map((r, i) => { const t = r.querySelector('[data-filt]'), cn = r.querySelector('[data-filc]'), nn = r.querySelector('[data-filn]'), rz = r.querySelector('[data-filr]'); if (!nn.value.trim()) { falta = falta || nn; nn.style.borderColor = 'var(--danger)'; } if (!t.value) { falta = falta || t; t.style.borderColor = 'var(--danger)'; } if (cn.value.replace(/\D/g, '').length !== 14) { falta = falta || cn; cn.style.borderColor = 'var(--danger)'; } return { cod: nn.value.trim(), tipo: t.value, cnpj: cn.value, razao: rz.value.trim() }; });
+      const fil = rows.map((r, i) => { const t = r.querySelector('[data-filt]'), cn = r.querySelector('[data-filc]'), nn = r.querySelector('[data-filn]'), rz = r.querySelector('[data-filr]'); if (!nn.value.trim()) { falta = falta || nn; nn.style.borderColor = 'var(--danger)'; } if (!t.value) { falta = falta || t; t.style.borderColor = 'var(--danger)'; } if (cn.value.replace(/\D/g, '').length !== 14) { falta = falta || cn; cn.style.borderColor = 'var(--danger)'; } let info = null; try { info = r.dataset.info ? JSON.parse(r.dataset.info) : null; } catch (e) {} if (info && String(info.cnpj || '').replace(/\D/g, '') !== cn.value.replace(/\D/g, '')) info = null; return { cod: nn.value.trim(), tipo: t.value, cnpj: cn.value, razao: rz.value.trim(), info }; });
       if (fil.length) { valores[k + '__fil'] = fil; campos[rotulo(sc, label)] = fil.map(f => [f.cod, f.tipo, f.cnpj, f.razao].filter(Boolean).join(' - ')).join('\n'); }
     };
     const pega = (sc, c) => {
