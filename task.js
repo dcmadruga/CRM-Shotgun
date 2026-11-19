@@ -217,13 +217,15 @@ async function formImportar() {
   } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar as propostas (${esc(e.code || 'erro')}).</p>`; }
 }
 // Datas da Etapa 4 (pelo nome do campo): "Data da base" e a data do start
-const isoDe = v => { const m = String(v || '').match(/(\d{2})\/(\d{2})\/(\d{4})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : (/^\d{4}-\d{2}-\d{2}$/.test(v) ? v : ''); };
+const isoDe = v => { v = String(v || ''); let m = v.match(/(\d{4})-(\d{2})-(\d{2})/); if (m) return `${m[1]}-${m[2]}-${m[3]}`; m = v.match(/(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/); if (!m) return ''; const y = m[3].length === 2 ? '20' + m[3] : m[3]; return `${y}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`; };
 async function datasE4(pid) {
   try {
     const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados')); if (!r.exists()) return null;
     const c = Object.entries(r.data().campos || {});
-    const achar = re => { const e = c.find(([k, v]) => re.test(k) && isoDe(v)); return e ? isoDe(e[1]) : ''; };
-    return { dataBase: achar(/data.*\bbase\b|\bbase\b.*data/i), start: achar(/start|in[ií]cio da implanta/i) };
+    // Só aceita valores que são uma data inteira (evita pegar números de links, por exemplo)
+    const ehData = v => /^\s*(\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4}|\d{4}-\d{2}-\d{2})\s*$/.test(String(v || ''));
+    const achar = (...res) => { for (const re of res) { const e = c.find(([k, v]) => re.test(k) && ehData(v)); if (e) return isoDe(e[1]); } return ''; };
+    return { dataBase: achar(/da[dt]a.*base|base.*da[dt]a/i, /base/i), start: achar(/start|in[ií]cio da implanta/i) };
   } catch (e) { return null; }
 }
 // Logo do posto ou rede: anexo da Etapa 2 com "logo" no nome do campo, reduzido para uma miniatura
@@ -250,13 +252,13 @@ async function logoDe(pid) {
 }
 const completando = new Set();
 function completarDatas() {
-  tasks.filter(t => t.propostaId && (t.dataBase === undefined || t.logoV !== 2) && !completando.has(t.id)).forEach(t => {
+  tasks.filter(t => t.propostaId && (!t.dataBase || t.logoV !== 2) && !completando.has(t.id)).forEach(t => {
     completando.add(t.id);
     (async () => {
       const up = {};
-      if (t.dataBase === undefined) { const d = await datasE4(t.propostaId); up.dataBase = (d && d.dataBase) || ''; if (!t.start && d && d.start) up.start = d.start; }
+      if (!t.dataBase) { const d = await datasE4(t.propostaId); if (d && d.dataBase) up.dataBase = d.dataBase; else if (t.dataBase === undefined) up.dataBase = ''; if (!t.start && d && d.start) up.start = d.start; }
       if (t.logoV !== 2) { up.logo = await logoDe(t.propostaId); up.logoV = 2; }
-      await F.updateDoc(F.doc(db, 'tasks', t.id), up);
+      if (Object.keys(up).length) await F.updateDoc(F.doc(db, 'tasks', t.id), up);
     })().catch(() => {});
   });
 }
