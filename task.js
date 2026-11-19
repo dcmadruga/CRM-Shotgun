@@ -116,7 +116,7 @@ const ICONES = {
   monitor: '<rect x="2.5" y="4" width="19" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>', clipe: '<path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.3 3.3 0 0 1 4.7 4.7L10.2 17.7a1.7 1.7 0 0 1-2.4-2.4L15.5 7.6"/>',
   agenda: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>', lista: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>'
 };
-const iconeDe = t => { t = String(t || '').toLowerCase(); const k = /status/.test(t) ? 'status' : /posto|empresa|base/.test(t) ? 'posto' : /respons|contato|financ|s[oó]cio/.test(t) ? 'pessoas' : /legado|convers/.test(t) ? 'banco' : /argo|sistema/.test(t) ? 'globo' : /tef|pix|pos|cart|pagamento/.test(t) ? 'cartao' : /automa/.test(t) ? 'chip' : /computa|equipa|hardware|m[aá]quina/.test(t) ? 'monitor' : /anexo|arquivo/.test(t) ? 'clipe' : /data|agenda|prazo/.test(t) ? 'agenda' : /extra|opera|outro/.test(t) ? 'ajustes' : 'lista'; return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[k]}</svg>`; };
+const iconeDe = t => { t = String(t || '').toLowerCase(); const k = /status/.test(t) ? 'status' : /posto|empresa|base|central|rede/.test(t) ? 'posto' : /respons|contato|financ|s[oó]cio/.test(t) ? 'pessoas' : /legado|convers/.test(t) ? 'banco' : /argo|sistema/.test(t) ? 'globo' : /tef|pix|pos|cart|pagamento/.test(t) ? 'cartao' : /automa/.test(t) ? 'chip' : /computa|equipa|hardware|m[aá]quina/.test(t) ? 'monitor' : /anexo|arquivo/.test(t) ? 'clipe' : /data|agenda|prazo/.test(t) ? 'agenda' : /extra|opera|outro/.test(t) ? 'ajustes' : 'lista'; return `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONES[k]}</svg>`; };
 const marcaDe = (feitos, total) => !total || !feitos ? '<span class="dgm vazio"></span>' : feitos >= total ? '<span class="dgm ok" title="Completo">✓</span>' : '<span class="dgm parcial" title="Incompleto"></span>';
 function formDados(t) {
   t = t || { respCadastro: { uid: perfil.uid, nome: perfil.nome || perfil.email } };
@@ -131,13 +131,13 @@ function formDados(t) {
       <label>Responsável pelo start${sel('tkRS', t.respStart)}</label>
       <label class="full">Observações<textarea id="tkObs" rows="3">${esc(t.obs || '')}</textarea></label>
       ${t.propostaId ? `<p class="hint full">Importado da proposta nº ${esc(t.propostaNumero || '')}.</p>` : ''}` },
-    { id: 'posto', titulo: 'Posto', marca: marcaDe(cheios(t.apelido, t.cnpj, t.razao, t.cidade, t.uf), 5), html: `
+    { id: 'posto', titulo: t.central && t.central.tipo !== 'simples' ? 'Central' : 'Posto', marca: marcaDe(cheios(t.apelido, t.cnpj, t.razao, t.cidade, t.uf), 5), html: `
       <label class="full">Nome do cadastro (como aparece no cartão)<input id="tkApelido" value="${esc(t.apelido || '')}" placeholder="Ex.: Rede - Filial 1 - POSTO CONTINENTAL" required></label>
       <label>CNPJ<span class="tkrow"><input id="tkCnpj" value="${esc(fmtCnpj(t.cnpj))}" inputmode="numeric" placeholder="00.000.000/0000-00"><button type="button" id="tkBuscaCnpj">Pesquisar</button></span></label>
       <label>Razão social<input id="tkRazao" value="${esc(t.razao || '')}"></label>
       <label>Cidade<input id="tkCidade" value="${esc(t.cidade || '')}"></label>
       <label>UF<input id="tkUf" value="${esc(t.uf || '')}" maxlength="2" style="text-transform:uppercase"></label>
-      ${t.central && t.central.tipo !== 'simples' ? `<div class="full dgcentral"><small>Central</small><b>${esc(t.central.nome || '')}</b>${(t.central.filiais || []).map(f => `<div>${esc([f.cod, f.tipo, f.cnpj, f.razao].filter(Boolean).join(' - '))}</div>`).join('')}</div>` : ''}` },
+      ${t.central && t.central.tipo !== 'simples' ? `<div class="full dgcentral"><small>Central</small><b>${esc(t.central.nome || '')}</b><span class="hint">${(t.central.filiais || []).length} filiais</span></div><div class="full dgfiliais">${filiaisHtml(t)}</div>` : ''}` },
     { id: 'resp', titulo: 'Responsáveis', marca: marcaDe(cheios(t.contato, t.email, t.fone), 3), html: `
       <label>Contato no posto<input id="tkContato" value="${esc(t.contato || '')}"></label>
       <label>E-mail<input id="tkEmail" type="email" value="${esc(t.email || '')}"></label>
@@ -155,6 +155,7 @@ function formDados(t) {
   mostrarDg(t.id ? 'status' : 'posto');
   if (!t.id) setTimeout(() => $('tkApelido').focus(), 30);
   if (t.propostaId) carregarDg(t, navItem, painel);
+  if (t.central && t.central.tipo !== 'simples') anexosFiliais(t);
 }
 function mostrarDg(id) {
   document.querySelectorAll('#tkForm .dgnav').forEach(b => b.setAttribute('aria-selected', b.dataset.dg === id));
@@ -343,11 +344,21 @@ function verFiliais(t) {
   const c = (t && t.central) || {}, fd = v => { const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : v || ''; };
   const tel = v => { v = dig(v); return v.length >= 10 ? v.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : v; };
   const linha = (l, v) => v ? `<div><small>${l}</small>${esc(v)}</div>` : '';
-  abrirDlg('filiais', c.tipo === 'simples' ? 'Posto - ' + (t.apelido || t.razao || '') : 'Filiais' + (c.nome ? ' - ' + c.nome : ''), (c.filiais || []).map(f => { const i = f.info || {}; return `<div class="tkfilinfo"><h4>${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}<span>${esc(f.cnpj)}</span></h4>
+  abrirDlg('filiais', c.tipo === 'simples' ? 'Posto - ' + (t.apelido || t.razao || '') : 'Filiais' + (c.nome ? ' - ' + c.nome : ''), filiaisHtml(t));
+  anexosFiliais(t);
+}
+function filiaisHtml(t) {
+  const c = (t && t.central) || {}, fd = v => { const m = String(v || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : v || ''; };
+  const tel = v => { v = dig(v); return v.length >= 10 ? v.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : v; };
+  const linha = (l, v) => v ? `<div><small>${l}</small>${esc(v)}</div>` : '';
+  return (c.filiais || []).map(f => { const i = f.info || {}; return `<div class="tkfilinfo"><h4>${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}<span>${esc(f.cnpj)}</span></h4>
     ${linha('Razão social', f.razao || i.razao)}${linha('Nome fantasia', i.fantasia)}${linha('Situação', i.situacao)}${linha('Abertura', fd(i.abertura))}${linha('Atividade principal', i.atividade)}${linha('Endereço', [i.endereco, [i.municipio, i.uf].filter(Boolean).join(' / '), i.cep ? 'CEP ' + String(i.cep).replace(/^(\d{5})(\d{3})$/, '$1-$2') : ''].filter(Boolean).join(' - '))}${linha('Telefone', tel(i.telefone))}${linha('E-mail', i.email)}
     ${Object.keys(f.dados || {}).length ? `<div class="tkfildados"><small>Dados da implantação</small><table>${Object.entries(f.dados).map(([k, x]) => `<tr><td>${esc(k)}</td><td>${valorOuLink(x)}</td></tr>`).join('')}</table></div>` : ''}
     <div class="tkfilanx" data-cod="${esc(f.cod)}"></div>
-    ${f.info ? '' : '<p class="hint">Consulta do CNPJ ainda não disponível. Abra o TASK de novo em alguns instantes.</p>'}</div>`; }).join('') || '<p class="hint">Nenhuma filial informada.</p>');
+    ${f.info ? '' : '<p class="hint">Consulta do CNPJ ainda não disponível. Abra o TASK de novo em alguns instantes.</p>'}</div>`; }).join('') || '<p class="hint">Nenhuma filial informada.</p>';
+}
+function anexosFiliais(t) {
+  const c = (t && t.central) || {};
   // Anexos da Etapa 4 de cada filial (campo começa com o código da filial)
   if (t && t.propostaId && c.tipo !== 'simples') anexosE4(t.propostaId).then(arqs => document.querySelectorAll('#tkDlgBody .tkfilanx').forEach(el => { const pre = el.dataset.cod + ' - '; el.innerHTML = botoesAnexos(t.propostaId, arqs.filter(a => String(a.campo || '').startsWith(pre)), pre); }));
   else if (t && t.propostaId) anexosE4(t.propostaId).then(arqs => { const el = document.querySelector('#tkDlgBody .tkfilanx'); if (el) el.innerHTML = botoesAnexos(t.propostaId, arqs); });
