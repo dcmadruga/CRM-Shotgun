@@ -457,6 +457,7 @@ async function iniciar() {
         const blocos = ops.map(op => { const xs = (c.cond || {})[op] || []; if (!xs.length) return ''; return `<div class="full e4cond" data-cond="${esc(c.k)}" data-op="${esc(op)}" hidden><div class="grid e4grid">${xs.map(x => x.tipo === 'filiais' ? filBloco(x.k, '', x.label) : campo(x)).join('')}</div></div>`; }).join('');
         return `<label>${lab}<select data-k="${esc(c.k)}"${c.req ? ' required' : ''}><option value="">Escolha</option>${ops.map(o => `<option${o === val ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select></label>${blocos}`;
       }
+      if (c.tipo === 'anexo') return `<div class="full e4anexo" data-anx="${esc(c.k)}"><span class="e4anxlab">${esc(c.label)}${c.req ? ' <b style="color:var(--danger)">*</b>' : ''}</span><label class="e4anxbt">📎 Escolher arquivos<input type="file" multiple data-anxin="${esc(c.k)}" hidden></label><div class="e4anxlista"></div><label class="e4pfx" hidden><span>Senha do certificado (.pfx)</span><input data-pfx="${esc(c.k)}" value="${esc(v[c.k + '__senha'] || '')}" autocomplete="off"></label></div>`;
       const req = c.req ? ' required' : '', lab = `<span>${esc(c.label)}${c.req ? ' <b style="color:var(--danger)">*</b>' : ''}</span>`, val = v[c.k] || '', ph = c.ph ? ` placeholder="${esc(c.ph)}"` : '';
       const full = c.tipo === 'textolongo' || c.full ? ' class="full"' : '';
       if (c.tipo === 'textolongo') return `<label class="full">${lab}<textarea data-k="${esc(c.k)}" rows="3"${req}${ph}>${esc(val)}</textarea></label>`;
@@ -488,6 +489,21 @@ async function iniciar() {
     const secs = e4Visiveis(), globais = secs.filter(e4TemFil), porFil = globais.length ? secs.filter(sc => !e4TemFil(sc)) : secs;
     box.innerHTML = globais.map(secHtml).join('') + '<div class="e4area"></div>' + `<div class="acts" style="margin-top:8px"><button type="button" class="primary" data-a="e4salvar">Salvar dados</button><button type="button" data-a="e4cancelar">Cancelar</button><span class="hint e4msg"></span></div>`;
     const area = box.querySelector('.e4area'); let ativa = 0;
+    // Anexos: os já salvos ficam em v[k] (lista) e os novos em box._pend[k] até salvar
+    box._v = v; box._pend = {};
+    const kb = n => (n / 1024).toFixed(0) + ' KB';
+    const ehPfx = n => /\.(pfx|p12)$/i.test(n || '');
+    function desenharAnx(el) {
+      const k = el.dataset.anx, salvos = Array.isArray(v[k]) ? v[k] : [], novos = box._pend[k] || [];
+      el.querySelector('.e4anxlista').innerHTML = salvos.map((a, i) => `<span class="e4anxit">📄 ${esc(a.nome)} <small>${kb(a.tamanho || 0)}</small><button type="button" data-anxrm="s${i}" aria-label="Remover ${esc(a.nome)}">×</button></span>`).join('') + novos.map((f, i) => `<span class="e4anxit novo">📄 ${esc(f.name)} <small>${kb(f.size)} · novo</small><button type="button" data-anxrm="n${i}" aria-label="Remover ${esc(f.name)}">×</button></span>`).join('') || '<span class="hint">Nenhum arquivo.</span>';
+      const pfx = salvos.some(a => ehPfx(a.nome)) || novos.some(f => ehPfx(f.name)), l = el.querySelector('.e4pfx'); l.hidden = !pfx; l.querySelector('input').disabled = !pfx;
+    }
+    box._desAnx = desenharAnx;
+    if (!box._anxLigado) {
+      box._anxLigado = true; // o quadro é reaproveitado: liga só uma vez e usa o estado atual guardado no box
+      box.addEventListener('change', ev => { const inp = ev.target.closest('[data-anxin]'); if (!inp) return; const k = inp.dataset.anxin, fs = [...inp.files], ok = fs.filter(f => f.size <= 10485760); box._pend[k] = (box._pend[k] || []).concat(ok); const m = box.querySelector('.e4msg'); if (m) m.textContent = ok.length < fs.length ? 'Arquivos acima de 10 MB não são aceitos: ' + fs.filter(f => f.size > 10485760).map(f => f.name).join(', ') : ''; inp.value = ''; const el = inp.closest('[data-anx]'); el.style.outline = ''; box._desAnx(el); });
+      box.addEventListener('click', ev => { const b = ev.target.closest('[data-anxrm]'); if (!b) return; const el = b.closest('[data-anx]'), k = el.dataset.anx, i = +b.dataset.anxrm.slice(1); if (b.dataset.anxrm[0] === 's') box._v[k] = (box._v[k] || []).filter((_, j) => j !== i); else box._pend[k].splice(i, 1); box._desAnx(el); });
+    }
     const ligar = root => {
       // Sim/Não que abre os campos seguintes da seção
       root.querySelectorAll('[data-abre]').forEach(lab => {
@@ -495,12 +511,14 @@ async function iniciar() {
         const sync = () => { const sim = lab.querySelector('input:checked')?.value === 'Sim'; deps.forEach(x => { x.hidden = !sim; x.querySelectorAll('[data-k],[data-outro]').forEach(i => i.disabled = !sim); }); };
         lab.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener('change', sync)); sync();
       });
+      root.querySelectorAll('[data-anx]').forEach(desenharAnx);
       root.querySelectorAll('select[data-k]').forEach(sel => { const o = root.querySelector(`[data-outro="${CSS.escape(sel.dataset.k)}"]`); if (o) sel.addEventListener('change', () => { o.hidden = !ehOutro4(sel.value); if (!o.hidden) o.focus(); }); });
     };
     // Guarda o que já foi digitado na área antes de redesenhar
     const colher = () => {
       area.querySelectorAll('[data-k]').forEach(x => { const k = x.dataset.k; if (x.type === 'radio') { if (x.checked) v[k] = x.value; else if (!area.querySelector(`[data-k="${CSS.escape(k)}"]:checked`)) v[k] = ''; return; } const o = area.querySelector(`[data-outro="${CSS.escape(k)}"]`); v[k] = x.value + (o && !o.hidden && o.value.trim() ? ': ' + o.value.trim() : ''); });
       area.querySelectorAll('textarea[data-detk]').forEach(x => { v[x.dataset.detk + '__det'] = x.value; });
+      area.querySelectorAll('[data-pfx]').forEach(x => { v[x.dataset.pfx + '__senha'] = x.value; });
     };
     const filiaisAtivas = () => { const bl = [...box.querySelectorAll('[data-fil]')].find(b => !b.hidden); return bl ? [...bl.querySelectorAll('.e4filrow')].map((r, i) => ({ cod: r.querySelector('[data-filn]').value.trim() || 'F' + (i + 1), tipo: r.querySelector('[data-filt]').value })) : []; };
     let assinatura = null;
@@ -555,7 +573,19 @@ async function iniciar() {
       const fil = rows.map((r, i) => { const t = r.querySelector('[data-filt]'), cn = r.querySelector('[data-filc]'), nn = r.querySelector('[data-filn]'), rz = r.querySelector('[data-filr]'); if (!nn.value.trim()) { falta = falta || nn; nn.style.borderColor = 'var(--danger)'; } if (!t.value) { falta = falta || t; t.style.borderColor = 'var(--danger)'; } if (cn.value.replace(/\D/g, '').length !== 14) { falta = falta || cn; cn.style.borderColor = 'var(--danger)'; } let info = null; try { info = r.dataset.info ? JSON.parse(r.dataset.info) : null; } catch (e) {} if (info && String(info.cnpj || '').replace(/\D/g, '') !== cn.value.replace(/\D/g, '')) info = null; return { cod: nn.value.trim(), tipo: t.value, cnpj: cn.value, razao: rz.value.trim(), info }; });
       if (fil.length) { valores[k + '__fil'] = fil; campos[rotulo(sc, label)] = fil.map(f => [f.cod, f.tipo, f.cnpj, f.razao].filter(Boolean).join(' - ')).join('\n'); }
     };
+    const subir = []; // anexos novos para enviar depois da validação
     const pega = (sc, c) => {
+      if (c.tipo === 'anexo') {
+        const el = box.querySelector(`[data-anx="${CSS.escape(c.k)}"]`); if (!el) return '';
+        for (let x = el; x && x !== box; x = x.parentElement) if (x.hidden && !x.classList.contains('e4pf')) return '';
+        const salvos = Array.isArray(box._v[c.k]) ? box._v[c.k] : [], novos = (box._pend || {})[c.k] || [];
+        if (c.req && !salvos.length && !novos.length) { falta = falta || el.querySelector('.e4anxbt'); el.style.outline = '2px solid var(--danger)'; return ''; }
+        if (!salvos.length && !novos.length) return '';
+        const lista = salvos.slice(); valores[c.k] = lista; novos.forEach(f => subir.push({ f, lista, campo: c.label }));
+        const nomes = salvos.map(a => a.nome).concat(novos.map(f => f.name)).join('\n'); campos[rotulo(sc, c.label)] = nomes;
+        const sn = el.querySelector('[data-pfx]'); if (sn && !sn.disabled && sn.value.trim()) { valores[c.k + '__senha'] = sn.value.trim(); campos[rotulo(sc, c.label + ' - Senha do certificado')] = sn.value.trim(); }
+        return nomes;
+      }
       const els = [...box.querySelectorAll(`[data-k="${CSS.escape(c.k)}"]`)].filter(x => !x.disabled); if (!els.length) return '';
       let val = els[0].type === 'radio' ? (els.find(x => x.checked)?.value || '') : els[0].value.trim();
       const o = box.querySelector(`[data-outro="${CSS.escape(c.k)}"]`); if (o && !o.hidden && val && o.value.trim()) val += ': ' + o.value.trim();
@@ -589,6 +619,17 @@ async function iniciar() {
     bt.disabled = true; box.querySelector('.e4msg').textContent = 'Salvando…';
     try {
       const por = perfil.nome || perfil.email;
+      // Envia os anexos novos em partes (mesmo formato dos anexos da Etapa 2)
+      let n = 0;
+      for (const u of subir) {
+        n++; box.querySelector('.e4msg').textContent = `Enviando anexo ${n} de ${subir.length}…`;
+        const b64 = await new Promise((ok, err) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = err; r.readAsDataURL(u.f); });
+        const ref = F.doc(F.collection(db, 'propostas', p.id, 'anexos')), PART = 700000, partes = Math.max(1, Math.ceil(b64.length / PART));
+        for (let i = 0; i < partes; i++) await F.setDoc(F.doc(db, 'propostas', p.id, 'anexos', ref.id, 'partes', String(i).padStart(3, '0')), { d: b64.slice(i * PART, (i + 1) * PART) });
+        const meta = { nome: u.f.name, tipo: u.f.type || 'application/octet-stream', tamanho: u.f.size, campo: u.campo, partes, etapa: 4, em: F.serverTimestamp() };
+        await F.setDoc(ref, meta); u.lista.push({ id: ref.id, nome: u.f.name, tipo: meta.tipo, tamanho: u.f.size });
+      }
+      box._pend = {};
       await F.setDoc(F.doc(db, 'propostas', p.id, 'etapa4', 'dados'), { valores, campos, em: F.serverTimestamp(), por });
       await F.updateDoc(F.doc(db, 'propostas', p.id), { e4Em: F.serverTimestamp(), e4Por: por });
       box.hidden = true; pMsg(`Dados de referência da proposta nº ${p.numero} salvos.`);
@@ -904,7 +945,7 @@ async function iniciar() {
 
   /* ---------- Parâmetros da Etapa 4 - Referência Implantação (ADM) ---------- */
   const E4DOC = F.doc(db, 'config', 'etapa4');
-  const TIPOS4 = { ...Object.fromEntries(Object.entries(TIPOS).filter(([k]) => k !== 'arquivo')), multicond: 'Multi condicional' };
+  const TIPOS4 = { ...Object.fromEntries(Object.entries(TIPOS).filter(([k]) => k !== 'arquivo')), multicond: 'Multi condicional', anexo: 'Anexo' };
   let E4 = null, e4Sujo = false;
   const e4Status = t => { $('e4Status').textContent = t; };
   const cfgE4 = () => E4 || copia(window.ETAPA4_PADRAO);

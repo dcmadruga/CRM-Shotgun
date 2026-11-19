@@ -272,7 +272,11 @@ function verFiliais(t) {
   abrirDlg('filiais', c.tipo === 'simples' ? 'Posto - ' + (t.apelido || t.razao || '') : 'Filiais' + (c.nome ? ' - ' + c.nome : ''), (c.filiais || []).map(f => { const i = f.info || {}; return `<div class="tkfilinfo"><h4>${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}<span>${esc(f.cnpj)}</span></h4>
     ${linha('Razão social', f.razao || i.razao)}${linha('Nome fantasia', i.fantasia)}${linha('Situação', i.situacao)}${linha('Abertura', fd(i.abertura))}${linha('Atividade principal', i.atividade)}${linha('Endereço', [i.endereco, [i.municipio, i.uf].filter(Boolean).join(' / '), i.cep ? 'CEP ' + String(i.cep).replace(/^(\d{5})(\d{3})$/, '$1-$2') : ''].filter(Boolean).join(' - '))}${linha('Telefone', tel(i.telefone))}${linha('E-mail', i.email)}
     ${Object.keys(f.dados || {}).length ? `<div class="tkfildados"><small>Dados da implantação</small><table>${Object.entries(f.dados).map(([k, x]) => `<tr><td>${esc(k)}</td><td>${valorOuLink(x)}</td></tr>`).join('')}</table></div>` : ''}
+    <div class="tkfilanx" data-cod="${esc(f.cod)}"></div>
     ${f.info ? '' : '<p class="hint">Consulta do CNPJ ainda não disponível. Abra o TASK de novo em alguns instantes.</p>'}</div>`; }).join('') || '<p class="hint">Nenhuma filial informada.</p>');
+  // Anexos da Etapa 4 de cada filial (campo começa com o código da filial)
+  if (t && t.propostaId && c.tipo !== 'simples') anexosE4(t.propostaId).then(arqs => document.querySelectorAll('#tkDlgBody .tkfilanx').forEach(el => { const pre = el.dataset.cod + ' - '; el.innerHTML = botoesAnexos(t.propostaId, arqs.filter(a => String(a.campo || '').startsWith(pre)), pre); }));
+  else if (t && t.propostaId) anexosE4(t.propostaId).then(arqs => { const el = document.querySelector('#tkDlgBody .tkfilanx'); if (el) el.innerHTML = botoesAnexos(t.propostaId, arqs); });
 }
 const completando = new Set();
 function completarDatas() {
@@ -360,7 +364,7 @@ async function verDados(pid) {
   try {
     const [r, an] = await Promise.all([F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')), F.getDocs(F.collection(db, 'propostas', pid, 'anexos'))]);
     const d = r.exists() ? r.data() : { campos: {} };
-    const arqs = an.docs.map(x => ({ id: x.id, ...x.data() }));
+    const arqs = an.docs.map(x => ({ id: x.id, ...x.data() })).filter(x => !x.etapa);
     $('tkDlgBody').innerHTML = `<div id="tkE2" data-pid="${esc(pid)}">
       ${d.em ? `<p class="hint">Enviado pelo cliente em ${esc(fmtTs(d.em))}.</p>` : ''}
       <table class="tkdados"><tbody>${Object.entries(d.campos || {}).map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('') || '<tr><td>Sem respostas salvas.</td></tr>'}</tbody></table>
@@ -386,13 +390,15 @@ async function verContrato(pid, bt) {
 }
 // Valor que é um link: mostra só um botão para copiar
 const valorOuLink = v => { const t = String(v == null ? '' : v).trim(); return /^https?:\/\/\S+$/i.test(t) ? `<button type="button" class="tkcopia" data-link="${esc(t)}">Copiar link</button>` : esc(v); };
+const botoesAnexos = (pid, arqs, tira) => arqs.length ? `<h4 class="tkh4">Anexos</h4><div class="tkanexos">${arqs.map(x => `<button type="button" data-anexo="${esc(x.id)}" data-pid="${esc(pid)}">⬇ ${esc(x.nome)} <small>${esc(tira ? String(x.campo || '').replace(tira, '') : x.campo || '')} · ${(Number(x.tamanho || 0) / 1024).toFixed(0)} KB</small></button>`).join('')}</div>` : '';
+const anexosE4 = async pid => { try { return (await F.getDocs(F.collection(db, 'propostas', pid, 'anexos'))).docs.map(x => ({ id: x.id, ...x.data() })).filter(x => x.etapa === 4); } catch (e) { return []; } };
 async function verRef(pid) {
   const p = (aprovadas || []).find(x => x.id === pid) || {};
   abrirDlg('e4', 'Dados referência implantação · ' + (p.cliente || ''), '<p class="hint">Carregando…</p>');
   try {
-    const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados')); const d = r.exists() ? r.data() : { campos: {} };
+    const [r, arqs] = await Promise.all([F.getDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados')), anexosE4(pid)]); const d = r.exists() ? r.data() : { campos: {} };
     $('tkDlgBody').innerHTML = `${d.por ? `<p class="hint">Preenchido por ${esc(d.por)}${d.em ? ' em ' + esc(fmtTs(d.em)) : ''}.</p>` : ''}
-      <table class="tkdados"><tbody>${Object.entries(d.campos || {}).map(([k, v]) => `<tr><th>${esc(k)}</th><td style="white-space:pre-wrap">${valorOuLink(v)}</td></tr>`).join('') || '<tr><td>Nada preenchido.</td></tr>'}</tbody></table>`;
+      <table class="tkdados"><tbody>${Object.entries(d.campos || {}).map(([k, v]) => `<tr><th>${esc(k)}</th><td style="white-space:pre-wrap">${valorOuLink(v)}</td></tr>`).join('') || '<tr><td>Nada preenchido.</td></tr>'}</tbody></table>${botoesAnexos(pid, arqs)}`;
   } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar (${esc(e.code || e.message)}).</p>`; }
 }
 async function baixarAnexo(pid, aid, bt) {
@@ -446,7 +452,7 @@ function ligar() {
     if (cl) { try { await navigator.clipboard.writeText(cl.dataset.link); } catch (er) { const ta = document.createElement('textarea'); ta.value = cl.dataset.link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } cl.textContent = 'Link copiado ✓'; setTimeout(() => { cl.textContent = 'Copiar link'; }, 1800); return; }
     const b = e.target.closest('button'); if (!b) return;
     if (b.id === 'tkBuscaCnpj') return buscarCnpj();
-    if (b.dataset.anexo) return baixarAnexo($('tkE2').dataset.pid, b.dataset.anexo, b);
+    if (b.dataset.anexo) return baixarAnexo(b.dataset.pid || $('tkE2').dataset.pid, b.dataset.anexo, b);
     if (b.id === 'tkE2Copiar') { try { await navigator.clipboard.writeText($('tkE2').dataset.texto || ''); dmsg('Dados copiados.'); } catch (_) { dmsg('Não foi possível copiar.'); } return; }
     if (b.id === 'tkExcluir') { const id = $('tkForm').dataset.id; if (!confirmar(b, 'task' + id, 'Confirmar exclusão')) return; try { await removerTask(id); dlg().close(); msg('Cadastro excluído.'); } catch (er) { dmsg('Não foi possível excluir (' + (er.code || 'erro') + ').'); } return; }
     if (b.dataset.imp) return importar(b.dataset.imp, b);
