@@ -87,7 +87,6 @@ function cartao(t) {
     <h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}
     ${etapas(t)}
-    <div class="tkbox"><div><small>CNPJ</small>${esc(fmtCnpj(t.cnpj) || '-')}</div><div><small>Cidade / UF</small>${esc([t.cidade, t.uf].filter(Boolean).join(' / ') || '-')}</div></div>
     <div class="tkprog" title="${pr.feitos} de ${pr.total} itens concluídos"><span style="width:${pct}%"></span></div>
     <div class="tkprogtxt">${pr.total ? `${pr.feitos} de ${pr.total} itens concluídos (${pct}%)` : 'Nenhum checklist ainda'}</div>
     <div class="tkacts"><button type="button" data-tk="dados">Dados gerais</button><button type="button" class="primary" data-tk="check">Checklists</button></div>
