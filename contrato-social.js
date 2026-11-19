@@ -245,7 +245,8 @@
       const pg = await pdf.getPage(i), v1 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: larg / v1.width });
       const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
       await pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
-      if (cadaUma(c.toDataURL('image/jpeg', 0.85), i, pdf.numPages) === false) break;
+      let texto = null; try { texto = await pg.getTextContent(); } catch (_) {}
+      if (cadaUma(c.toDataURL('image/jpeg', 0.85), i, pdf.numPages, { texto, vp1: v1, lib: window.pdfjsLib }) === false) break;
     }
     pdf.destroy && pdf.destroy(); return pdf.numPages;
   }
