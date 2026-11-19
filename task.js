@@ -86,7 +86,7 @@ function cartao(t) {
     ${t.logo ? `<div class="tklogobox"><img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}"></div>` : ''}
     <h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}
-    ${t.central ? `<div class="tkcentral"><small>Central</small>${t.central.nome ? `<b>${esc(t.central.nome)}</b>` : ''}${(t.central.filiais || []).map(f => `<div class="tkfil">${esc([f.cod, f.tipo, f.cnpj].filter(Boolean).join(' - '))}</div>`).join('')}</div>` : ''}
+    ${t.central ? `<div class="tkcentral"><small>Central</small>${t.central.nome ? `<b>${esc(t.central.nome)}</b>` : ''}${(t.central.filiais || []).map(f => `<div class="tkfil">${esc([f.cod, f.tipo, f.cnpj].filter(Boolean).join(' - '))}${f.razao ? `<span>${esc(f.razao)}</span>` : ''}</div>`).join('')}</div>` : ''}
     ${etapas(t)}
     <div class="tkprog" title="${pr.feitos} de ${pr.total} itens concluídos"><span style="width:${pct}%"></span></div>
     <div class="tkprogtxt">${pr.total ? `${pr.feitos} de ${pr.total} itens concluídos (${pct}%)` : 'Nenhum checklist ainda'}</div>
@@ -226,7 +226,7 @@ async function datasE4(pid) {
     // Central: nome da central e filiais (F1 - Posto - CNPJ), quando a Etapa 4 tiver filiais
     const val = r.data().valores || {}, filiais = [].concat(...Object.keys(val).filter(k => /__fil$/.test(k) && Array.isArray(val[k])).map(k => val[k]));
     const nc = c.find(([k, v]) => /nome.*central|central.*nome/i.test(k) && v && !/\n/.test(v)) || c.find(([k, v]) => /central/i.test(k) && !/filia/i.test(k) && v && !/\n/.test(v) && !/^\s*central\s*$/i.test(v));
-    const central = filiais.length || nc ? { nome: nc ? String(nc[1]).trim() : '', filiais: filiais.map(f => ({ cod: f.cod || '', tipo: f.tipo || '', cnpj: f.cnpj || '' })) } : null;
+    const central = filiais.length || nc ? { nome: nc ? String(nc[1]).trim() : '', filiais: filiais.map(f => ({ cod: f.cod || '', tipo: f.tipo || '', cnpj: f.cnpj || '', razao: f.razao || '' })) } : null;
     return { dataBase: achar(/da[dt]a.*base|base.*da[dt]a/i, /base/i), start: achar(/start|in[ií]cio da implanta/i), central };
   } catch (e) { return null; }
 }
@@ -254,11 +254,12 @@ async function logoDe(pid) {
 }
 const completando = new Set();
 function completarDatas() {
-  tasks.filter(t => t.propostaId && (!t.dataBase || t.logoV !== 2 || t.centralV !== 1) && !completando.has(t.id)).forEach(t => {
+  // A Central é conferida uma vez por sessão, para refletir alterações feitas depois na Etapa 4
+  tasks.filter(t => t.propostaId && !completando.has(t.id)).forEach(t => {
     completando.add(t.id);
     (async () => {
       const up = {};
-      if (t.centralV !== 1) { const d = await datasE4(t.propostaId); if (d) { up.central = d.central || null; up.centralV = 1; } }
+      { const d = await datasE4(t.propostaId); const sig = c => c ? [c.nome, ...(c.filiais || []).map(f => [f.cod, f.tipo, f.cnpj, f.razao || ''].join('|'))].join('\n') : ''; if (d && sig(d.central) !== sig(t.central)) up.central = d.central || null; }
       if (!t.dataBase) { const d = await datasE4(t.propostaId); if (d && d.dataBase) up.dataBase = d.dataBase; else if (t.dataBase === undefined) up.dataBase = ''; if (!t.start && d && d.start) up.start = d.start; }
       if (t.logoV !== 2) { up.logo = await logoDe(t.propostaId); up.logoV = 2; }
       if (Object.keys(up).length) await F.updateDoc(F.doc(db, 'tasks', t.id), up);
@@ -275,7 +276,7 @@ async function criarDaProposta(pid, auto) {
   let v = {}; try { const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')); if (r.exists()) v = r.data().valores || {}; } catch (e) {}
   const sc = window.splitCidade ? window.splitCidade(p.cidade) : { cidade: p.cidade || '', uf: '' };
   const d4 = (await datasE4(pid)) || {};
-  const novo = { dataBase: d4.dataBase || '', central: d4.central || null, centralV: 1, logo: await logoDe(pid), logoV: 2,
+  const novo = { dataBase: d4.dataBase || '', central: d4.central || null, logo: await logoDe(pid), logoV: 2,
     apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
     respCadastro: auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: d4.start || v.dataImpl || '', obs: v.obs || '',
