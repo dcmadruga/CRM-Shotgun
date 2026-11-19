@@ -367,7 +367,7 @@ async function iniciar() {
     if (!p.e2Em) return { t: 'Enviar o formulário de dados complementares', d: `Aprovada em ${fmtTs(p.aprovadoEm)}. Envie o link ao cliente ou preencha por ele.`, passo: 1, b: 'Enviar dados' };
     if (!p.ctEm) return { t: 'Gerar e enviar o contrato', d: `Dados recebidos em ${fmtTs(p.e2Em)}.`, passo: 2, b: 'Gerar contrato' };
     if (!p.ctAceitoEm) return { t: 'Aguardando o aceite do contrato', d: `Contrato gerado em ${fmtTs(p.ctEm)}. Se demorar, reenvie o link.`, passo: 2, b: 'Ver contrato', cli: true };
-    if (!p.e4Em) return { t: 'Preencher a referência de implantação', d: `Contrato aceito em ${fmtTs(p.ctAceitoEm)}. Ao salvar, o card vai para o TASK.`, passo: 3, b: 'Preencher agora' };
+    if (!p.e4Em) return { t: 'Preencher o Pré TASK', d: `Contrato aceito em ${fmtTs(p.ctAceitoEm)}. Ao salvar, o card vai para o TASK.`, passo: 3, b: 'Preencher agora' };
     return null;
   }
   async function verDuvidas(p, card) {
@@ -435,7 +435,7 @@ async function iniciar() {
               : p.ctAceitoEm ? '<button type="button" class="primary" data-a="ctpdf">Ver contrato aceito (PDF)</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>'
               : `<button type="button" class="primary" data-a="ctenviar">${p.ctEm ? 'Gerar de novo e enviar pelo WhatsApp' : 'Gerar e enviar pelo WhatsApp'}</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>${p.ctEm ? '<button type="button" data-a="ctpdf">Ver contrato (PDF)</button>' : ''}`}
           </div></div>
-        <div class="etapa${p.ctAceitoEm ? '' : ' bloq'}" data-passo="3"${oc(3)}><div class="etit">Passo 4 · Referência de implantação ${p.e4Em ? `<span class="pill ok">PREENCHIDO</span> <span class="meta">em ${esc(fmtTs(p.e4Em))}${p.e4Por ? ' por ' + esc(p.e4Por) : ''}</span>` : ''}</div>
+        <div class="etapa${p.ctAceitoEm ? '' : ' bloq'}" data-passo="3"${oc(3)}><div class="etit">Passo 4 · Pré TASK ${p.e4Em ? `<span class="pill ok">PREENCHIDO</span> <span class="meta">em ${esc(fmtTs(p.e4Em))}${p.e4Por ? ' por ' + esc(p.e4Por) : ''}</span>` : ''}</div>
           <div class="acts">
             ${!p.ctAceitoEm ? '<button type="button" disabled>Preencher dados</button><span class="hint">Libera quando o cliente aceitar o contrato. Responsabilidade do vendedor.</span>'
               : p.e4Em ? '<button type="button" data-a="e4ver">Ver dados</button><button type="button" data-a="e4">Editar dados</button>'
