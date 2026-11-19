@@ -81,7 +81,8 @@ function etapas(t) {
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
-    <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${t.dataBase ? `<span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
+    <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
+    ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}</div>` : ''}
     <h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}
     <div class="tkmeta">${t.email ? `<span class="tkmail">${esc(t.email)}</span>` : ''}${t.criado ? `<span>Criado em ${esc(fmtTs(t.criado))}</span>` : ''}</div>
