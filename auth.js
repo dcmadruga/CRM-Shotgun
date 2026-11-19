@@ -328,7 +328,7 @@ async function iniciar() {
         <div class="etapa${ok ? '' : ' bloq'}"><div class="etit">Etapa 2 - Dados Complementares ${p.e2Em ? `<span class="pill ok">DADOS RECEBIDOS</span> <span class="meta">em ${esc(fmtTs(p.e2Em))}${p.e2Anexos ? ' · ' + p.e2Anexos + ' anexo' + (p.e2Anexos > 1 ? 's' : '') : ''}</span>` : ''}</div>
           <div class="acts">
             ${p.e2Em ? '<button type="button" class="primary" data-a="e2ver">Ver dados e anexos</button>' : ''}
-            ${ok ? `<button type="button"${p.e2Em ? '' : ' class="primary"'} data-a="etapa2">Enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link da Etapa 2</button>`
+            ${ok ? `<button type="button"${p.e2Em ? '' : ' class="primary"'} data-a="etapa2">Enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link da Etapa 2</button><button type="button" data-a="etapa2vend">Preencher pelo vendedor</button>`
                  : '<button type="button" disabled>Enviar pelo WhatsApp</button><button type="button" disabled>Copiar link da Etapa 2</button><span class="hint">Libera quando o cliente aprovar a proposta.</span>'}
           </div>
           <div class="e2dados" hidden></div></div>
@@ -547,6 +547,7 @@ async function iniciar() {
       finally { b.disabled = false; }
       return;
     }
+    if (a === 'etapa2vend') { window.open(linkEtapa2(p) + '&vend=1', '_blank'); pMsg('Formulário da Etapa 2 aberto em outra aba para você preencher.'); return; }
     if (a === 'etapa2' || a === 'etapa2copy') {
       const link = linkEtapa2(p);
       if (a === 'etapa2copy') {
