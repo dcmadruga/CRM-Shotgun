@@ -357,7 +357,10 @@ async function iniciar() {
     setTimeout(() => { const c = $('pList').querySelector(`.pcard[data-id="${CSS.escape(id)}"]`); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 0);
   }
   /* Hoje: o próximo passo de cada proposta */
+  // Dúvida enviada pelo cliente na página da proposta e ainda não lida
+  const duvNova = p => !!p.duvidaEm && (!p.duvidaLidaEm || (p.duvidaLidaEm.seconds || 0) < (p.duvidaEm.seconds || 0));
   function pendencia(p) {
+    if (duvNova(p)) return { t: 'Cliente enviou uma dúvida', d: `Recebida em ${fmtTs(p.duvidaEm)}. Leia e responda o cliente.`, passo: 0, b: 'Ver dúvida' };
     const ven = p.validade && p.validade < hojeIso();
     if (p.status !== 'aprovada') return ven ? { t: 'Proposta vencida', d: `Válida até ${fmtD(p.validade)}. Revise e reenvie ao cliente.`, passo: 0, b: 'Abrir proposta' }
       : { t: 'Aguardando o cliente aprovar', d: `Enviada em ${fmtTs(p.criado) || fmtD(p.data)}. Se demorar, reenvie o link.`, passo: 0, b: 'Ver proposta', cli: true };
@@ -366,6 +369,16 @@ async function iniciar() {
     if (!p.ctAceitoEm) return { t: 'Aguardando o aceite do contrato', d: `Contrato gerado em ${fmtTs(p.ctEm)}. Se demorar, reenvie o link.`, passo: 2, b: 'Ver contrato', cli: true };
     if (!p.e4Em) return { t: 'Preencher a referência de implantação', d: `Contrato aceito em ${fmtTs(p.ctAceitoEm)}. Ao salvar, o card vai para o TASK.`, passo: 3, b: 'Preencher agora' };
     return null;
+  }
+  async function verDuvidas(p, card) {
+    const box = card.querySelector('.duvbox'); if (!box.hidden) { box.hidden = true; return; }
+    box.hidden = false; box.innerHTML = '<p class="hint">Carregando…</p>';
+    try {
+      const qs = await F.getDocs(F.collection(db, 'propostas', p.id, 'duvidas'));
+      const ds = qs.docs.map(d => d.data()).sort((a, b) => (b.em?.seconds || 0) - (a.em?.seconds || 0));
+      box.innerHTML = ds.length ? ds.map(d => `<div class="duvitem"><div class="duvtop"><b>${esc(d.nome || 'Cliente')}</b><span class="meta">${esc(fmtTs(d.em))}</span></div><p>${esc(d.texto)}</p><button type="button" data-a="duvresp" data-nome="${esc(d.nome || '')}">Responder pelo WhatsApp</button></div>`).join('') : '<p class="hint">Nenhuma dúvida registrada.</p>';
+      if (duvNova(p)) await F.updateDoc(F.doc(db, 'propostas', p.id), { duvidaLidaEm: F.serverTimestamp() });
+    } catch (err) { box.innerHTML = `<p class="hint">Não foi possível carregar as dúvidas (${esc(err.code || err.message)}).</p>`; }
   }
   function desenharHoje() {
     if (!$('hList')) return;
@@ -405,8 +418,9 @@ async function iniciar() {
             <button type="button" data-a="abrir">Abrir no formulário</button>
             ${ok ? '' : '<button type="button" data-a="reenviar">Reenviar pelo WhatsApp</button>'}
             <button type="button" data-a="copiar">Copiar link da proposta</button>
+            ${p.duvidaEm ? `<button type="button" data-a="duvidas"${duvNova(p) ? ' class="primary"' : ''}>Dúvidas do cliente${p.duvidaN ? ' (' + p.duvidaN + ')' : ''}${duvNova(p) ? ' · nova' : ''}</button>` : ''}
             <span class="pill ${st.cls}">${st.txt}</span>
-          </div></div>
+          </div><div class="duvbox" hidden></div></div>
         <div class="etapa${ok ? '' : ' bloq'}" data-passo="1"${oc(1)}><div class="etit">Passo 2 · Dados complementares ${p.e2Em ? `<span class="pill ok">DADOS RECEBIDOS</span> <span class="meta">em ${esc(fmtTs(p.e2Em))}${p.e2Anexos ? ' · ' + p.e2Anexos + ' anexo' + (p.e2Anexos > 1 ? 's' : '') : ''}</span>` : ''}</div>
           <div class="acts">
             ${p.e2Em ? '<button type="button" class="primary" data-a="e2ver">Ver dados e anexos</button>' : ''}
@@ -693,6 +707,8 @@ async function iniciar() {
     const bt = e.target.closest('[data-a]'), a = bt && bt.dataset.a, card = e.target.closest('.pcard'); if (!a || !card) return;
     const p = props.find(x => x.id === card.dataset.id); if (!p) return;
     if (a === 'passo') return mostrarPasso(card, +bt.dataset.i);
+    if (a === 'duvidas') return verDuvidas(p, card);
+    if (a === 'duvresp') { abrirWa(p.waCli, `Olá ${bt.dataset.nome || p.contato || ''}! Sobre a sua dúvida na proposta nº ${p.numero}:\n`); return; }
     if (a === 'irtask') return abrirAba('tabTask');
     if (a === 'excluirp') return excluirProposta(p, bt);
     if (a === 'e4' || a === 'e4ver') return etapa4(p, card, a === 'e4');

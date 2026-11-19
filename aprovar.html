@@ -20,6 +20,14 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
 [hidden]{display:none!important}
+#dlgDuvida{border:1px solid var(--line);border-radius:14px;padding:20px;width:min(520px,calc(100vw - 32px));background:var(--surface);color:var(--fg)}
+#dlgDuvida::backdrop{background:rgba(0,0,0,.5)}
+#dlgDuvida h2{font-family:var(--display);font-size:18px;margin:0 0 4px}
+#dlgDuvida .dsub{margin:0 0 14px;color:var(--muted);font-size:14px}
+#dlgDuvida label{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px;color:var(--muted);font-weight:600}
+#dlgDuvida input,#dlgDuvida textarea{font:inherit;font-size:15px;font-weight:400;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical}
+#dlgDuvida .bad{border-color:var(--danger)}
+#dlgDuvida .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
 .wrap{max-width:760px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 header{background:var(--ink);color:var(--ink-fg)}
 header .wrap{display:flex;align-items:center;gap:14px;padding-block:16px;padding-top:max(16px,env(safe-area-inset-top,0px))}
@@ -97,6 +105,21 @@ button.sec2{background:var(--surface);color:var(--purple)}
   </div>
 </main></div>
 
+<dialog id="dlgDuvida" aria-labelledby="dTit">
+  <form id="dForm" novalidate>
+    <h2 id="dTit">Tenho dúvidas</h2>
+    <p class="dsub">Escreva sua dúvida sobre a proposta. Ela chega direto para o seu consultor Argo.</p>
+    <label><span>Seu nome <b>*</b></span><input id="dNome" autocomplete="name" maxlength="120"></label>
+    <label><span>Sua dúvida <b>*</b></span><textarea id="dTexto" rows="5" maxlength="2000" placeholder="Ex.: A mensalidade inclui o suporte aos sábados?"></textarea></label>
+    <p class="err" id="dMsg" role="status"></p>
+    <div class="row"><button type="submit" id="dEnviar">Enviar dúvida</button><button type="button" class="sec2" id="dCancelar">Cancelar</button></div>
+  </form>
+  <div id="dOk" hidden>
+    <h2>Dúvida enviada</h2>
+    <p class="dsub">Seu consultor recebeu a sua dúvida e vai responder em breve. Se preferir, avise também pelo WhatsApp.</p>
+    <div class="row"><button type="button" id="dWa">Avisar pelo WhatsApp</button><button type="button" class="sec2" id="dFechar">Fechar</button></div>
+  </div>
+</dialog>
 <script src="firebase-config.js"></script>
 <script type="module">
 const $=id=>document.getElementById(id);
@@ -126,6 +149,8 @@ const vendNum=()=>{ const d=String(P.vendedorFone||'').replace(/\D/g,''); return
     $('vLic').textContent=brl(P.totLic); $('vMen').textContent=brl(P.totMen); $('vDes').textContent=brl(P.totDes);
     $('validade').textContent=`Proposta emitida em ${fmtD(P.data)}`+(P.validade?`, condição válida até ${fmtD(P.validade)}.`:'.');
     $('carregando').hidden=true; $('conteudo').hidden=false;
+    // Sugestão: o contato informado na proposta (o cliente pode trocar)
+    if(P.contato && !$('aNome').value) $('aNome').value=String(P.contato).trim();
 
     const aprovada=()=>{ $('fAprov').hidden=true; $('jaAprovada').hidden=false;
       $('jaAprovada').innerHTML=`<b>Proposta aprovada.</b> Obrigado${P.aprovadoNome?', '+P.aprovadoNome.replace(/[<>&]/g,''):''}! Seu consultor já foi avisado e vai enviar os próximos passos.` };
@@ -145,7 +170,25 @@ const vendNum=()=>{ const d=String(P.vendedorFone||'').replace(/\D/g,''); return
       finally{ b.disabled=false; b.textContent='Ver proposta completa (PDF)' }
     });
 
-    $('btnDuvida').addEventListener('click',()=>abrirWa(vendNum(), `Olá ${P.vendedor}! Tenho uma dúvida sobre a proposta nº ${P.numero} (${P.cliente}):\n`));
+    // Dúvida: o cliente escreve aqui; fica registrada para o consultor e pode seguir também pelo WhatsApp
+    const dlg=$('dlgDuvida');
+    $('btnDuvida').addEventListener('click',()=>{ $('dNome').value=$('dNome').value||$('aNome').value.trim()||String(P.contato||'').trim(); $('dMsg').textContent=''; $('dForm').hidden=false; $('dOk').hidden=true; dlg.showModal(); setTimeout(()=>($('dNome').value?$('dTexto'):$('dNome')).focus(),30) });
+    $('dCancelar').addEventListener('click',()=>dlg.close());
+    $('dFechar').addEventListener('click',()=>dlg.close());
+    $('dWa').addEventListener('click',()=>abrirWa(vendNum(), `Olá ${P.vendedor}! Tenho uma dúvida sobre a proposta nº ${P.numero} (${P.cliente}):\n${$('dTexto').value.trim()}\n\n${$('dNome').value.trim()}`));
+    $('dForm').addEventListener('submit', async e=>{
+      e.preventDefault();
+      const nome=$('dNome').value.trim(), texto=$('dTexto').value.trim();
+      $('dNome').classList.toggle('bad',!nome); $('dTexto').classList.toggle('bad',!texto);
+      if(!nome||!texto){ $('dMsg').textContent='Informe seu nome e escreva a dúvida.'; return }
+      const b=$('dEnviar'); b.disabled=true; $('dMsg').textContent='Enviando…';
+      try{
+        await F.addDoc(F.collection(db,'propostas',id,'duvidas'),{nome:nome.slice(0,120), texto:texto.slice(0,2000), em:F.serverTimestamp()});
+        await F.updateDoc(ref,{duvidaEm:F.serverTimestamp(), duvidaN:F.increment(1)});
+        $('dForm').hidden=true; $('dOk').hidden=false;
+      }catch(err){ $('dMsg').textContent='Não foi possível enviar ('+(err.code||'erro')+'). Tente de novo ou use o WhatsApp.' }
+      finally{ b.disabled=false }
+    });
 
     $('fAprov').addEventListener('submit', async e=>{
       e.preventDefault();
