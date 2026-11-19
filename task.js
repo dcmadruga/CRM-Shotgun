@@ -252,6 +252,15 @@ async function logoDe(pid) {
     return c.toDataURL('image/png');
   } catch (e) { return ''; }
 }
+// Razão social das filiais que vieram sem ela: aproveita a do card ou consulta pelo CNPJ
+async function razoesFiliais(c, antigo) {
+  const ja = {}; ((antigo && antigo.filiais) || []).forEach(f => { if (f.razao) ja[dig(f.cnpj)] = f.razao; });
+  const js = u => fetch(u).then(x => { if (!x.ok) throw 0; return x.json(); });
+  for (const f of c.filiais || []) {
+    const d = dig(f.cnpj); if (f.razao || d.length !== 14) continue;
+    f.razao = ja[d] || await Promise.any([js('https://brasilapi.com.br/api/cnpj/v1/' + d), js('https://publica.cnpj.ws/cnpj/' + d), js('https://minhareceita.org/' + d)].map(pr => pr.then(j => j.razao_social || Promise.reject(0)))).catch(() => '');
+  }
+}
 const completando = new Set();
 function completarDatas() {
   // A Central é conferida uma vez por sessão, para refletir alterações feitas depois na Etapa 4
@@ -259,7 +268,7 @@ function completarDatas() {
     completando.add(t.id);
     (async () => {
       const up = {};
-      { const d = await datasE4(t.propostaId); const sig = c => c ? [c.nome, ...(c.filiais || []).map(f => [f.cod, f.tipo, f.cnpj, f.razao || ''].join('|'))].join('\n') : ''; if (d && sig(d.central) !== sig(t.central)) up.central = d.central || null; }
+      { const d = await datasE4(t.propostaId); if (d && d.central) await razoesFiliais(d.central, t.central); const sig = c => c ? [c.nome, ...(c.filiais || []).map(f => [f.cod, f.tipo, f.cnpj, f.razao || ''].join('|'))].join('\n') : ''; if (d && sig(d.central) !== sig(t.central)) up.central = d.central || null; }
       if (!t.dataBase) { const d = await datasE4(t.propostaId); if (d && d.dataBase) up.dataBase = d.dataBase; else if (t.dataBase === undefined) up.dataBase = ''; if (!t.start && d && d.start) up.start = d.start; }
       if (t.logoV !== 2) { up.logo = await logoDe(t.propostaId); up.logoV = 2; }
       if (Object.keys(up).length) await F.updateDoc(F.doc(db, 'tasks', t.id), up);
@@ -275,7 +284,7 @@ async function criarDaProposta(pid, auto) {
   const p = (await F.getDoc(F.doc(db, 'propostas', pid))).data();
   let v = {}; try { const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')); if (r.exists()) v = r.data().valores || {}; } catch (e) {}
   const sc = window.splitCidade ? window.splitCidade(p.cidade) : { cidade: p.cidade || '', uf: '' };
-  const d4 = (await datasE4(pid)) || {};
+  const d4 = (await datasE4(pid)) || {}; if (d4.central) await razoesFiliais(d4.central);
   const novo = { dataBase: d4.dataBase || '', central: d4.central || null, logo: await logoDe(pid), logoV: 2,
     apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
