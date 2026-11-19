@@ -531,6 +531,8 @@ async function salvarNoSistema(o, texto){
   for(const {c,file} of arquivos){
     n++; $('#msg').textContent=`Enviando anexo ${n} de ${arquivos.length}…`;
     const z=await comprimir(file); const b64=await lerB64(z.blob);
+    // Logo: nome padrão CNPJ_RAZÃO_Logo (mesma regra dos anexos da implantação)
+    if(/logo/i.test(c.label||'')){ const ext=(String(z.nome).match(/\.[^.]+$/)||[''])[0]; const lp=x=>String(x||'').replace(/[\\/:*?"<>|]+/g,'-').trim(); z.nome=[String(o.cnpj||'').replace(/\D/g,''), o.razao].map(lp).filter(Boolean).concat('Logo').join('_')+ext; }
     const ref=F.doc(F.collection(db,...pref,'anexos')); const PART=700000, partes=Math.ceil(b64.length/PART);
     for(let i=0;i<partes;i++) await F.setDoc(F.doc(db,...pref,'anexos',ref.id,'partes',String(i).padStart(3,'0')),{d:b64.slice(i*PART,(i+1)*PART)});
     await F.setDoc(ref,{nome:z.nome, tipo:z.tipo||'application/octet-stream', tamanho:z.blob.size, campo:c.label, partes, em:F.serverTimestamp()});

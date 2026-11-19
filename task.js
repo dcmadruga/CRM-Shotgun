@@ -368,7 +368,7 @@ async function verDados(pid) {
     $('tkDlgBody').innerHTML = `<div id="tkE2" data-pid="${esc(pid)}">
       ${d.em ? `<p class="hint">Enviado pelo cliente em ${esc(fmtTs(d.em))}.</p>` : ''}
       <table class="tkdados"><tbody>${Object.entries(d.campos || {}).map(([k, v]) => `<tr><th>${esc(k)}</th><td>${esc(v)}</td></tr>`).join('') || '<tr><td>Sem respostas salvas.</td></tr>'}</tbody></table>
-      ${arqs.length ? `<h4 class="tkh4">Anexos</h4><div class="tkanexos">${arqs.map(x => `<button type="button" data-anexo="${esc(x.id)}">⬇ ${esc(x.nome)} <small>${esc(x.campo || '')} · ${(Number(x.tamanho || 0) / 1048576).toFixed(1)} MB</small></button>`).join('')}</div>` : ''}
+      ${arqs.length ? `<h4 class="tkh4">Anexos</h4><div class="tkanexos">${arqs.map(x => { if (/logo/i.test(x.campo || '')) { const v = d.valores || {}, ext = (String(x.nome || '').match(/\.[^.]+$/) || [''])[0]; x.nome = [dig(v.cnpj), v.razao].map(y => String(y || '').replace(/[\\/:*?"<>|]+/g, '-').trim()).filter(Boolean).concat('Logo').join('_') + ext; } return x; }).map(x => `<button type="button" data-anexo="${esc(x.id)}" data-nome="${esc(x.nome)}">⬇ ${esc(x.nome)} <small>${esc(x.campo || '')} · ${(Number(x.tamanho || 0) / 1048576).toFixed(1)} MB</small></button>`).join('')}</div>` : ''}
       <div class="tkacts" style="margin-top:12px"><button type="button" id="tkE2Copiar">Copiar dados</button></div></div>`;
     $('tkE2').dataset.texto = d.texto || Object.entries(d.campos || {}).map(([k, v]) => k + ': ' + v).join('\n');
   } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar (${esc(e.code || e.message)}).</p>`; }
