@@ -32,6 +32,7 @@ main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
 .sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
 .body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .full{grid-column:1/-1}
+.nsug{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.nsug small{color:var(--muted);font-size:12px}.nsug button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}
 @media (min-width:700px){.body>label:has(.busca){grid-column:span 2}}
 .linha{grid-column:1/-1;display:grid;grid-template-columns:minmax(160px,1fr) 3fr;gap:12px;align-items:start}
 .linha .deps{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
@@ -221,6 +222,15 @@ function valida(el){
 
 /* Preenchimento automático pelo CNPJ e CEP */
 const buscados={};
+// Sugestões de nome (sócios do CNPJ) abaixo de um campo; um clique preenche e o campo continua livre
+const nomeBonito=n=>String(n||'').toLowerCase().replace(/(^|\s)(\S)/g,(m,a,b)=>a+b.toUpperCase()).replace(/\s(D[aeo]s?|E)\s/g,m=>m.toLowerCase());
+function sugerirNomes(lab, inp, nomes){
+  let box=lab.querySelector('.nsug'); if(box) box.remove(); if(!nomes.length) return;
+  box=document.createElement('span'); box.className='nsug';
+  box.innerHTML='<small>Sócios:</small>'+nomes.slice(0,6).map(n=>`<button type="button">${esc(nomeBonito(n))}</button>`).join('');
+  box.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.preventDefault(); inp.value=b.textContent; inp.dispatchEvent(new Event('input',{bubbles:true})); if(inp.classList.contains('bad')) valida(inp); inp.focus() });
+  lab.appendChild(box);
+}
 // Consulta o CNPJ em mais de uma base (se uma estiver fora do ar, usa a outra). A inscrição estadual vem do CNPJ.ws.
 const tempo=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
 const pegaJson=u=>tempo(fetch(u),9000).then(r=>{ if(r.status===404||r.status===400) return {naoAchou:true}; if(!r.ok) throw new Error('HTTP '+r.status); return r.json() });
@@ -231,8 +241,9 @@ async function consultarCnpj(d){
   if(!base && W){ const e=W.estabelecimento||{}; base={razao_social:W.razao_social, nome_fantasia:e.nome_fantasia, cep:e.cep, descricao_tipo_de_logradouro:e.tipo_logradouro, logradouro:e.logradouro, numero:e.numero, complemento:e.complemento, bairro:e.bairro, municipio:e.cidade&&e.cidade.nome, uf:e.estado&&e.estado.sigla, ddd_telefone_1:(e.ddd1||'')+(e.telefone1||''), email:e.email, opcao_pelo_simples:W.simples&&W.simples.simples==='Sim', opcao_pelo_mei:W.simples&&W.simples.mei==='Sim'} }
   if(!base){ try{ const m=await pegaJson('https://minhareceita.org/'+d); if(!m.naoAchou) base=m }catch(_){} }
   if(!base) return (ba.value&&ba.value.naoAchou)||(ws.value&&ws.value.naoAchou)?{naoAchou:true}:null;
-  const j={...base, simples:!!base.opcao_pelo_simples, mei:!!base.opcao_pelo_mei, regime:((base.regime_tributario||[]).slice(-1)[0]||{}).forma_de_tributacao||''};
-  if(W){ const ies=(W.estabelecimento&&W.estabelecimento.inscricoes_estaduais)||[], uf=j.uf; const ie=ies.find(x=>x.ativo&&x.estado&&x.estado.sigla===uf)||ies.find(x=>x.ativo)||ies.find(x=>x.estado&&x.estado.sigla===uf); if(ie) j.ie=ie.inscricao_estadual; if(!B&&W.simples){ j.simples=W.simples.simples==='Sim'; j.mei=W.simples.mei==='Sim' } }
+  const socios=[...((B&&B.qsa)||base.qsa||[]).map(x=>x.nome_socio||x.nome), ...((W&&W.socios)||[]).map(x=>x.nome)].filter(Boolean).map(n=>String(n).trim()).filter((n,i,a)=>a.findIndex(x=>x.toUpperCase()===n.toUpperCase())===i);
+  const j={...base, socios, simples:!!base.opcao_pelo_simples, mei:!!base.opcao_pelo_mei, regime:((base.regime_tributario||[]).slice(-1)[0]||{}).forma_de_tributacao||''};
+  if(W&&!j.email&&W.estabelecimento) j.email=W.estabelecimento.email; if(W){ const ies=(W.estabelecimento&&W.estabelecimento.inscricoes_estaduais)||[], uf=j.uf; const ie=ies.find(x=>x.ativo&&x.estado&&x.estado.sigla===uf)||ies.find(x=>x.ativo)||ies.find(x=>x.estado&&x.estado.sigla===uf); if(ie) j.ie=ie.inscricao_estadual; if(!B&&W.simples){ j.simples=W.simples.simples==='Sim'; j.mei=W.simples.mei==='Sim' } }
   return j;
 }
 async function buscarCnpj(el,forcar){
@@ -268,6 +279,7 @@ async function buscarCnpj(el,forcar){
       sec.querySelectorAll('label').forEach(l=>{
         const inp=l.querySelector('input:not([type=radio]):not([type=file]),select,textarea'); if(!inp||inp===el) return;
         const t=(l.querySelector('span')?.textContent||'').toLowerCase(), tipo=inp.dataset.v;
+        if(/nome/.test(t) && /contador|respons/.test(t) && !/cpf|crc/.test(t)){ sugerirNomes(l, inp, j.socios||[]); return }
         if(/contador|cpf|crc|respons/.test(t)) return;
         let v='';
         if(/fantasia/.test(t)) v=j.nome_fantasia;
