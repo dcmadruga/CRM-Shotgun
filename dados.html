@@ -32,6 +32,7 @@ main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
 .sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
 .body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .full{grid-column:1/-1}
+@media (min-width:700px){.body>label:has(.busca){grid-column:span 2}}
 .linha{grid-column:1/-1;display:grid;grid-template-columns:minmax(160px,1fr) 3fr;gap:12px;align-items:start}
 .linha .deps{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
 .linha .deps:not(:has(> :not([hidden]))){display:none}
@@ -220,6 +221,20 @@ function valida(el){
 
 /* Preenchimento automático pelo CNPJ e CEP */
 const buscados={};
+// Consulta o CNPJ em mais de uma base (se uma estiver fora do ar, usa a outra). A inscrição estadual vem do CNPJ.ws.
+const tempo=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
+const pegaJson=u=>tempo(fetch(u),9000).then(r=>{ if(r.status===404||r.status===400) return {naoAchou:true}; if(!r.ok) throw new Error('HTTP '+r.status); return r.json() });
+async function consultarCnpj(d){
+  const [ba,ws]=await Promise.allSettled([pegaJson('https://brasilapi.com.br/api/cnpj/v1/'+d), pegaJson('https://publica.cnpj.ws/cnpj/'+d)]);
+  const B=ba.status==='fulfilled'&&!ba.value.naoAchou?ba.value:null, W=ws.status==='fulfilled'&&!ws.value.naoAchou?ws.value:null;
+  let base=B;
+  if(!base && W){ const e=W.estabelecimento||{}; base={razao_social:W.razao_social, nome_fantasia:e.nome_fantasia, cep:e.cep, descricao_tipo_de_logradouro:e.tipo_logradouro, logradouro:e.logradouro, numero:e.numero, complemento:e.complemento, bairro:e.bairro, municipio:e.cidade&&e.cidade.nome, uf:e.estado&&e.estado.sigla, ddd_telefone_1:(e.ddd1||'')+(e.telefone1||''), email:e.email, opcao_pelo_simples:W.simples&&W.simples.simples==='Sim', opcao_pelo_mei:W.simples&&W.simples.mei==='Sim'} }
+  if(!base){ try{ const m=await pegaJson('https://minhareceita.org/'+d); if(!m.naoAchou) base=m }catch(_){} }
+  if(!base) return (ba.value&&ba.value.naoAchou)||(ws.value&&ws.value.naoAchou)?{naoAchou:true}:null;
+  const j={...base, simples:!!base.opcao_pelo_simples, mei:!!base.opcao_pelo_mei, regime:((base.regime_tributario||[]).slice(-1)[0]||{}).forma_de_tributacao||''};
+  if(W){ const ies=(W.estabelecimento&&W.estabelecimento.inscricoes_estaduais)||[], uf=j.uf; const ie=ies.find(x=>x.ativo&&x.estado&&x.estado.sigla===uf)||ies.find(x=>x.ativo)||ies.find(x=>x.estado&&x.estado.sigla===uf); if(ie) j.ie=ie.inscricao_estadual; if(!B&&W.simples){ j.simples=W.simples.simples==='Sim'; j.mei=W.simples.mei==='Sim' } }
+  return j;
+}
 async function buscarCnpj(el,forcar){
   const d=dig(el.value), lab=el.closest('label'), msg=lab&&lab.querySelector('.cnpjmsg'), bt=lab&&lab.querySelector('.busca');
   const aviso=t=>{ if(msg){ msg.hidden=!t; msg.textContent=t||'' } };
@@ -227,7 +242,7 @@ async function buscarCnpj(el,forcar){
   if(buscados[el.name]===d && !forcar) return; buscados[el.name]=d; el.value=fmtCnpj(d);
   if(bt) bt.disabled=true; aviso('Pesquisando…');
   try{
-    const r=await fetch('https://brasilapi.com.br/api/cnpj/v1/'+d); if(!r.ok){ aviso(r.status===404?'CNPJ não encontrado na Receita.':'Não foi possível pesquisar agora. Preencha à mão.'); return } const j=await r.json();
+    const j=await consultarCnpj(d); if(!j){ aviso('Não foi possível pesquisar agora. Preencha à mão.'); return } if(j.naoAchou){ aviso('CNPJ não encontrado na Receita.'); return }
     const cep=j.cep&&String(j.cep).padStart(8,'0').replace(/^(\d{5})(\d{3})$/,'$1-$2'), rua=[j.descricao_tipo_de_logradouro,j.logradouro].filter(Boolean).join(' ');
     const fone=String(j.ddd_telefone_1||'').replace(/\D/g,'');
     if(el.name==='cnpj'){
@@ -235,7 +250,18 @@ async function buscarCnpj(el,forcar){
       const set=(k,v)=>{ if(v && tem(k) && (forcar||!f.elements[k].value)) f.elements[k].value=v };
       set('razao',j.razao_social); set('fantasia',j.nome_fantasia); set('cep',cep);
       set('logradouro',rua); set('numero',j.numero); set('complemento',j.complemento);
-      set('bairro',j.bairro); set('cidade',j.municipio); set('uf',j.uf);
+      set('bairro',j.bairro); set('cidade',j.municipio); set('uf',j.uf); set('ie',j.ie);
+      // Campos criados nos Parâmetros da seção da empresa: telefone e regime tributário pelo nome
+      const sec=el.closest('.sec');
+      sec && sec.querySelectorAll('label').forEach(l=>{
+        const inp=l.querySelector('input:not([type=radio]):not([type=file]),select'); if(!inp||inp===el||(inp.value&&!forcar)) return;
+        const t=(l.querySelector('span')?.textContent||'').toLowerCase();
+        if(/inscri[cç][aã]o estadual|^ie\b/.test(t) && j.ie) inp.value=j.ie;
+        else if((inp.dataset.v==='telefone'||/telefone|fone/.test(t)) && fone.length>=10) inp.value=fone.replace(/^(\d{2})(\d{4,5})(\d{4})$/,'($1) $2-$3');
+        else if(/regime/.test(t) && inp.tagName==='SELECT'){ const re=j.mei?/\bmei\b|microempreendedor/i:j.simples?/simples/i:/presumido/i.test(j.regime)?/presumido/i:/real/i.test(j.regime)?/\breal\b/i:null; const o=re&&[...inp.options].find(o=>re.test(o.text)); if(o) inp.value=o.value }
+        else return;
+        if(inp.classList.contains('bad')) valida(inp);
+      });
     } else {
       // Outro CNPJ (contabilidade, etc.): preenche só os campos da mesma seção
       const sec=el.closest('.sec'); let n=0;
