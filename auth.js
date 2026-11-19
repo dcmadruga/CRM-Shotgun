@@ -320,7 +320,7 @@ async function iniciar() {
     return { cls: 'wait', txt: 'Aguardando aprovação' };
   }
   /* Jornada: 5 passos da proposta até o TASK */
-  const PASSOS = ['Proposta', 'Dados Primários', 'Contrato', 'Implantação', 'TASK'];
+  const PASSOS = ['Proposta', 'Dados Primários', 'Contrato', 'Pré TASK', 'TASK'];
   const feitosDe = p => [p.status === 'aprovada', !!p.e2Em, !!p.ctAceitoEm, !!p.e4Em, !!p.e4Em];
   const passoAtual = p => { const i = feitosDe(p).indexOf(false); return i < 0 ? 4 : i; };
   const passoSel = {};
@@ -336,7 +336,7 @@ async function iniciar() {
   /* Quadro por etapa */
   let modoQuadro = true, foco = null;
   try { modoQuadro = localStorage.getItem('argo-pmodo') !== 'lista'; } catch (_) {}
-  const COLS = ['Proposta', 'Dados Primários', 'Contrato', 'Implantação', 'No TASK'];
+  const COLS = ['Proposta', 'Dados Primários', 'Contrato', 'Pré TASK', 'No TASK'];
   function miniStatus(p) {
     const c = passoAtual(p), ven = p.status !== 'aprovada' && p.validade && p.validade < hojeIso();
     return [ven ? ['exp', 'vencida'] : ['wait', 'aguardando aprovação'], ['wait', 'aguardando dados'], p.ctEm ? ['wait', 'aguardando aceite'] : ['', 'gerar contrato'], ['', 'com o vendedor'], ['ok', 'no TASK']][c];
