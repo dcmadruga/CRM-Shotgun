@@ -271,7 +271,7 @@ function verFiliais(t) {
   const linha = (l, v) => v ? `<div><small>${l}</small>${esc(v)}</div>` : '';
   abrirDlg('filiais', c.tipo === 'simples' ? 'Posto - ' + (t.apelido || t.razao || '') : 'Filiais' + (c.nome ? ' - ' + c.nome : ''), (c.filiais || []).map(f => { const i = f.info || {}; return `<div class="tkfilinfo"><h4>${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}<span>${esc(f.cnpj)}</span></h4>
     ${linha('Razão social', f.razao || i.razao)}${linha('Nome fantasia', i.fantasia)}${linha('Situação', i.situacao)}${linha('Abertura', fd(i.abertura))}${linha('Atividade principal', i.atividade)}${linha('Endereço', [i.endereco, [i.municipio, i.uf].filter(Boolean).join(' / '), i.cep ? 'CEP ' + String(i.cep).replace(/^(\d{5})(\d{3})$/, '$1-$2') : ''].filter(Boolean).join(' - '))}${linha('Telefone', tel(i.telefone))}${linha('E-mail', i.email)}
-    ${Object.keys(f.dados || {}).length ? `<div class="tkfildados"><small>Dados da implantação</small><table>${Object.entries(f.dados).map(([k, x]) => `<tr><td>${esc(k)}</td><td>${esc(x)}</td></tr>`).join('')}</table></div>` : ''}
+    ${Object.keys(f.dados || {}).length ? `<div class="tkfildados"><small>Dados da implantação</small><table>${Object.entries(f.dados).map(([k, x]) => `<tr><td>${esc(k)}</td><td>${valorOuLink(x)}</td></tr>`).join('')}</table></div>` : ''}
     ${f.info ? '' : '<p class="hint">Consulta do CNPJ ainda não disponível. Abra o TASK de novo em alguns instantes.</p>'}</div>`; }).join('') || '<p class="hint">Nenhuma filial informada.</p>');
 }
 const completando = new Set();
@@ -384,13 +384,15 @@ async function verContrato(pid, bt) {
   } catch (e) { if (janela) janela.close(); msg('Não foi possível abrir o contrato (' + (e.code || e.message) + ').'); }
   finally { bt.disabled = false; bt.textContent = txt; }
 }
+// Valor que é um link: mostra só um botão para copiar
+const valorOuLink = v => { const t = String(v == null ? '' : v).trim(); return /^https?:\/\/\S+$/i.test(t) ? `<button type="button" class="tkcopia" data-link="${esc(t)}">Copiar link</button>` : esc(v); };
 async function verRef(pid) {
   const p = (aprovadas || []).find(x => x.id === pid) || {};
   abrirDlg('e4', 'Dados referência implantação · ' + (p.cliente || ''), '<p class="hint">Carregando…</p>');
   try {
     const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados')); const d = r.exists() ? r.data() : { campos: {} };
     $('tkDlgBody').innerHTML = `${d.por ? `<p class="hint">Preenchido por ${esc(d.por)}${d.em ? ' em ' + esc(fmtTs(d.em)) : ''}.</p>` : ''}
-      <table class="tkdados"><tbody>${Object.entries(d.campos || {}).map(([k, v]) => `<tr><th>${esc(k)}</th><td style="white-space:pre-wrap">${esc(v)}</td></tr>`).join('') || '<tr><td>Nada preenchido.</td></tr>'}</tbody></table>`;
+      <table class="tkdados"><tbody>${Object.entries(d.campos || {}).map(([k, v]) => `<tr><th>${esc(k)}</th><td style="white-space:pre-wrap">${valorOuLink(v)}</td></tr>`).join('') || '<tr><td>Nada preenchido.</td></tr>'}</tbody></table>`;
   } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar (${esc(e.code || e.message)}).</p>`; }
 }
 async function baixarAnexo(pid, aid, bt) {
@@ -440,6 +442,8 @@ function ligar() {
   });
   $('tkDlgBody').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('[data-novo]')) { e.preventDefault(); e.target.closest('.tkck').querySelector('[data-ck=additem]').click(); } });
   $('tkDlgBody').addEventListener('click', async e => {
+    const cl = e.target.closest('[data-link]');
+    if (cl) { try { await navigator.clipboard.writeText(cl.dataset.link); } catch (er) { const ta = document.createElement('textarea'); ta.value = cl.dataset.link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } cl.textContent = 'Link copiado ✓'; setTimeout(() => { cl.textContent = 'Copiar link'; }, 1800); return; }
     const b = e.target.closest('button'); if (!b) return;
     if (b.id === 'tkBuscaCnpj') return buscarCnpj();
     if (b.dataset.anexo) return baixarAnexo($('tkE2').dataset.pid, b.dataset.anexo, b);
