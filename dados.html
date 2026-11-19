@@ -236,6 +236,15 @@ function sugerirNomes(lab, inp, nomes){
 // Consulta o CNPJ em mais de uma base (se uma estiver fora do ar, usa a outra). A inscrição estadual vem do CNPJ.ws.
 const tempo=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
 const pegaJson=u=>tempo(fetch(u),9000).then(r=>{ if(r.status===404||r.status===400) return {naoAchou:true}; if(!r.ok) throw new Error('HTTP '+r.status); return r.json() });
+// Inscrição estadual (só o CNPJ.ws traz). A base pública limita a 3 consultas por minuto e às vezes dá erro 500: tenta de novo em segundo plano.
+function ieDe(W,uf){ const ies=(W&&W.estabelecimento&&W.estabelecimento.inscricoes_estaduais)||[]; const ie=ies.find(x=>x.ativo&&x.estado&&x.estado.sigla===uf)||ies.find(x=>x.ativo)||ies.find(x=>x.estado&&x.estado.sigla===uf); return ie?ie.inscricao_estadual:'' }
+async function pegaIe(d,uf,vivo){
+  for(const espera of [4000,15000,30000,60000]){
+    await new Promise(r=>setTimeout(r,espera)); if(!vivo()) return null;
+    try{ const r=await tempo(fetch('https://publica.cnpj.ws/cnpj/'+d),12000); if(r.status===404) return ''; if(!r.ok) continue; return ieDe(await r.json(),uf) }catch(_){}
+  }
+  return null;
+}
 async function consultarCnpj(d){
   const [ba,ws]=await Promise.allSettled([pegaJson('https://brasilapi.com.br/api/cnpj/v1/'+d), pegaJson('https://publica.cnpj.ws/cnpj/'+d)]);
   const B=ba.status==='fulfilled'&&!ba.value.naoAchou?ba.value:null, W=ws.status==='fulfilled'&&!ws.value.naoAchou?ws.value:null;
@@ -245,7 +254,7 @@ async function consultarCnpj(d){
   if(!base) return (ba.value&&ba.value.naoAchou)||(ws.value&&ws.value.naoAchou)?{naoAchou:true}:null;
   const socios=[...((B&&B.qsa)||base.qsa||[]).map(x=>x.nome_socio||x.nome), ...((W&&W.socios)||[]).map(x=>x.nome)].filter(Boolean).map(n=>String(n).trim()).filter((n,i,a)=>a.findIndex(x=>x.toUpperCase()===n.toUpperCase())===i);
   const j={...base, socios, simples:!!base.opcao_pelo_simples, mei:!!base.opcao_pelo_mei, regime:((base.regime_tributario||[]).slice(-1)[0]||{}).forma_de_tributacao||''};
-  if(W&&!j.email&&W.estabelecimento) j.email=W.estabelecimento.email; if(W){ const ies=(W.estabelecimento&&W.estabelecimento.inscricoes_estaduais)||[], uf=j.uf; const ie=ies.find(x=>x.ativo&&x.estado&&x.estado.sigla===uf)||ies.find(x=>x.ativo)||ies.find(x=>x.estado&&x.estado.sigla===uf); if(ie) j.ie=ie.inscricao_estadual; if(!B&&W.simples){ j.simples=W.simples.simples==='Sim'; j.mei=W.simples.mei==='Sim' } }
+  if(W&&!j.email&&W.estabelecimento) j.email=W.estabelecimento.email; if(W){ j.ie=ieDe(W,j.uf); if(!B&&W.simples){ j.simples=W.simples.simples==='Sim'; j.mei=W.simples.mei==='Sim' } }
   return j;
 }
 async function buscarCnpj(el,forcar){
@@ -275,6 +284,17 @@ async function buscarCnpj(el,forcar){
         else return;
         if(inp.classList.contains('bad')) valida(inp);
       });
+      if(!j.ie){
+        // Inscrição estadual não veio: tenta de novo sem travar o formulário
+        const ieInp=(tem('ie')&&f.elements.ie)||[...(sec?sec.querySelectorAll('label'):[])].find(l=>/inscri[cç][aã]o estadual|^ie\b/i.test((l.querySelector('span')?.textContent||'').trim()))?.querySelector('input');
+        if(ieInp && !ieInp.value){
+          const ph=ieInp.placeholder; ieInp.placeholder='Buscando na Receita…';
+          pegaIe(d,j.uf,()=>buscados[el.name]===d).then(ie=>{
+            ieInp.placeholder=ph;
+            if(ie && buscados[el.name]===d && !ieInp.value){ ieInp.value=ie; if(ieInp.classList.contains('bad')) valida(ieInp); f.dispatchEvent(new Event('input')) }
+          });
+        }
+      }
     } else {
       // Outro CNPJ (contabilidade, etc.): preenche só os campos da mesma seção
       const sec=el.closest('.sec'); let n=0;
