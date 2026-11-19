@@ -390,8 +390,15 @@ async function verContrato(pid, bt) {
 }
 // Valor que é um link: mostra só um botão para copiar
 const valorOuLink = v => { const t = String(v == null ? '' : v).trim(); return /^https?:\/\/\S+$/i.test(t) ? `<button type="button" class="tkcopia" data-link="${esc(t)}">Copiar link</button>` : esc(v); };
-const botoesAnexos = (pid, arqs, tira) => arqs.length ? `<h4 class="tkh4">Anexos</h4><div class="tkanexos">${arqs.map(x => `<button type="button" data-anexo="${esc(x.id)}" data-pid="${esc(pid)}">⬇ ${esc(x.nome)} <small>${esc(tira ? String(x.campo || '').replace(tira, '') : x.campo || '')} · ${(Number(x.tamanho || 0) / 1024).toFixed(0)} KB</small></button>`).join('')}</div>` : '';
-const anexosE4 = async pid => { try { return (await F.getDocs(F.collection(db, 'propostas', pid, 'anexos'))).docs.map(x => ({ id: x.id, ...x.data() })).filter(x => x.etapa === 4); } catch (e) { return []; } };
+const botoesAnexos = (pid, arqs, tira) => arqs.length ? `<h4 class="tkh4">Anexos</h4><div class="tkanexos">${arqs.map(x => `<button type="button" data-anexo="${esc(x.id)}" data-pid="${esc(pid)}" data-nome="${esc(x.nome)}">⬇ ${esc(x.nome)} <small>${esc(tira ? String(x.campo || '').replace(tira, '') : x.campo || '')} · ${(Number(x.tamanho || 0) / 1024).toFixed(0)} KB</small></button>`).join('')}</div>` : '';
+// Anexos da Etapa 4, com o nome padrão (F1_CNPJ_Senha) guardado nas respostas
+const anexosE4 = async pid => {
+  try {
+    const [an, r] = await Promise.all([F.getDocs(F.collection(db, 'propostas', pid, 'anexos')), F.getDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados')).catch(() => null)]);
+    const nomes = {}; Object.values((r && r.exists() && r.data().valores) || {}).forEach(l => { if (Array.isArray(l)) l.forEach(a => { if (a && a.id && a.nome) nomes[a.id] = a.nome; }); });
+    return an.docs.map(x => ({ id: x.id, ...x.data() })).filter(x => x.etapa === 4).map(x => ({ ...x, nome: nomes[x.id] || x.nome }));
+  } catch (e) { return []; }
+};
 async function verRef(pid) {
   const p = (aprovadas || []).find(x => x.id === pid) || {};
   abrirDlg('e4', 'Dados referência implantação · ' + (p.cliente || ''), '<p class="hint">Carregando…</p>');
@@ -409,7 +416,7 @@ async function baixarAnexo(pid, aid, bt) {
     const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join('');
     const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
     const url = URL.createObjectURL(new Blob([u8], { type: meta.tipo || 'application/octet-stream' }));
-    const l = document.createElement('a'); l.href = url; l.download = meta.nome || 'anexo'; document.body.appendChild(l); l.click(); l.remove();
+    const l = document.createElement('a'); l.href = url; l.download = bt.dataset.nome || meta.nome || 'anexo'; document.body.appendChild(l); l.click(); l.remove();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   } catch (e) { dmsg('Não foi possível baixar o anexo (' + (e.code || e.message) + ').'); }
   finally { bt.disabled = false; }

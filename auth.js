@@ -536,7 +536,7 @@ async function iniciar() {
     };
     area.addEventListener('click', ev => {
       const tb = ev.target.closest('[data-fi][role=tab]'); if (tb) { ativa = +tb.dataset.fi; area.querySelectorAll('[role=tab]').forEach(b => b.setAttribute('aria-selected', b === tb)); area.querySelectorAll('.e4pf').forEach(pf => pf.hidden = pf.dataset.fi !== tb.dataset.fi); return; }
-      const cp = ev.target.closest('[data-copiar]'); if (cp) { colher(); const i = cp.dataset.copiar; Object.keys(v).filter(k => k.startsWith('f0__')).forEach(k => { v['f' + i + '__' + k.slice(4)] = v[k]; }); area.innerHTML = ''; assinatura = null; desenharArea(); }
+      const cp = ev.target.closest('[data-copiar]'); if (cp) { colher(); const i = cp.dataset.copiar; Object.keys(v).filter(k => k.startsWith('f0__') && !Array.isArray(v[k]) && !/__senha$/.test(k)).forEach(k => { v['f' + i + '__' + k.slice(4)] = v[k]; }); area.innerHTML = ''; assinatura = null; desenharArea(); }
     });
     box.addEventListener('input', ev => { if (ev.target.dataset && ev.target.dataset.k) ev.target.style.borderColor = ''; });
     // Texto longo que abre depois de escolher uma opção (descrição configurada nos Parâmetros)
@@ -574,6 +574,10 @@ async function iniciar() {
       if (fil.length) { valores[k + '__fil'] = fil; campos[rotulo(sc, label)] = fil.map(f => [f.cod, f.tipo, f.cnpj, f.razao].filter(Boolean).join(' - ')).join('\n'); }
     };
     const subir = []; // anexos novos para enviar depois da validação
+    // Nome padrão dos anexos: F1_CNPJ_Senha.pfx (certificado) ou F1_CNPJ_nome-original (demais)
+    let filAtual = null; const cnpjProp = String(p.cnpj || '').replace(/\D/g, '');
+    const limpa = x => String(x || '').replace(/[\\/:*?"<>|]+/g, '-').trim();
+    const nomePad = (orig, senha) => { const m = String(orig).match(/^(.*?)(\.[^.]+)?$/), ext = m[2] || '', pfx = /^\.(pfx|p12)$/i.test(ext), ctx = filAtual || { cod: '', cnpj: cnpjProp }; return [ctx.cod, String(ctx.cnpj || '').replace(/\D/g, ''), pfx ? senha : m[1]].map(limpa).filter(Boolean).join('_') + ext; };
     const pega = (sc, c) => {
       if (c.tipo === 'anexo') {
         const el = box.querySelector(`[data-anx="${CSS.escape(c.k)}"]`); if (!el) return '';
@@ -581,9 +585,11 @@ async function iniciar() {
         const salvos = Array.isArray(box._v[c.k]) ? box._v[c.k] : [], novos = (box._pend || {})[c.k] || [];
         if (c.req && !salvos.length && !novos.length) { falta = falta || el.querySelector('.e4anxbt'); el.style.outline = '2px solid var(--danger)'; return ''; }
         if (!salvos.length && !novos.length) return '';
-        const lista = salvos.slice(); valores[c.k] = lista; novos.forEach(f => subir.push({ f, lista, campo: c.label }));
-        const nomes = salvos.map(a => a.nome).concat(novos.map(f => f.name)).join('\n'); campos[rotulo(sc, c.label)] = nomes;
-        const sn = el.querySelector('[data-pfx]'); if (sn && !sn.disabled && sn.value.trim()) { valores[c.k + '__senha'] = sn.value.trim(); campos[rotulo(sc, c.label + ' - Senha do certificado')] = sn.value.trim(); }
+        const sn = el.querySelector('[data-pfx]'), senha = sn && !sn.disabled ? sn.value.trim() : '';
+        const lista = salvos.map(a => ({ ...a, orig: a.orig || a.nome, nome: nomePad(a.orig || a.nome, senha) })); valores[c.k] = lista; box._v[c.k] = lista;
+        novos.forEach(f => subir.push({ f, lista, campo: c.label, nome: nomePad(f.name, senha) }));
+        const nomes = lista.map(a => a.nome).concat(subir.filter(u => u.lista === lista).map(u => u.nome)).join('\n'); campos[rotulo(sc, c.label)] = nomes;
+        if (senha) { valores[c.k + '__senha'] = senha; campos[rotulo(sc, c.label + ' - Senha do certificado')] = senha; }
         return nomes;
       }
       const els = [...box.querySelectorAll(`[data-k="${CSS.escape(c.k)}"]`)].filter(x => !x.disabled); if (!els.length) return '';
@@ -608,11 +614,13 @@ async function iniciar() {
       const lista = Object.keys(valores).filter(k => /__fil$/.test(k)).map(k => valores[k])[0] || [];
       area.querySelectorAll('.e4pf').forEach(pf => {
         const i = +pf.dataset.fi, cod = (lista[i] && lista[i].cod) || pf.dataset.cod, pref = 'f' + i + '__', antes = new Set(Object.keys(campos)), dados = {};
+        filAtual = { cod, cnpj: (lista[i] && lista[i].cnpj) || '' };
         const lab = c => ({ ...c, label: cod + ' - ' + c.label, cond: c.cond ? Object.fromEntries(Object.entries(c.cond).map(([o, l]) => [o, (l || []).map(x => ({ ...x, label: cod + ' - ' + x.label }))])) : c.cond });
         secs.filter(sc => !e4TemFil(sc)).forEach(sc => sc.campos.map(e4Pref(pref)).map(lab).forEach(proc(sc)));
         Object.keys(campos).filter(k => !antes.has(k)).forEach(k => { dados[k.replace(cod + ' - ', '')] = campos[k]; });
         if (lista[i]) lista[i].dados = dados;
       });
+      filAtual = null;
     } else secs.forEach(sc => sc.campos.forEach(proc(sc)));
     if (falta) { const pf = falta.closest('.e4pf'); if (pf && pf.hidden) box.querySelector(`.e4tabs [data-fi="${pf.dataset.fi}"]`)?.click(); }
     if (falta) { box.querySelector('.e4msg').textContent = 'Preencha os campos obrigatórios (CNPJ das filiais com 14 dígitos).'; falta.focus(); return; }
@@ -626,8 +634,8 @@ async function iniciar() {
         const b64 = await new Promise((ok, err) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = err; r.readAsDataURL(u.f); });
         const ref = F.doc(F.collection(db, 'propostas', p.id, 'anexos')), PART = 700000, partes = Math.max(1, Math.ceil(b64.length / PART));
         for (let i = 0; i < partes; i++) await F.setDoc(F.doc(db, 'propostas', p.id, 'anexos', ref.id, 'partes', String(i).padStart(3, '0')), { d: b64.slice(i * PART, (i + 1) * PART) });
-        const meta = { nome: u.f.name, tipo: u.f.type || 'application/octet-stream', tamanho: u.f.size, campo: u.campo, partes, etapa: 4, em: F.serverTimestamp() };
-        await F.setDoc(ref, meta); u.lista.push({ id: ref.id, nome: u.f.name, tipo: meta.tipo, tamanho: u.f.size });
+        const meta = { nome: u.nome, orig: u.f.name, tipo: u.f.type || 'application/octet-stream', tamanho: u.f.size, campo: u.campo, partes, etapa: 4, em: F.serverTimestamp() };
+        await F.setDoc(ref, meta); u.lista.push({ id: ref.id, nome: u.nome, orig: u.f.name, tipo: meta.tipo, tamanho: u.f.size });
       }
       box._pend = {};
       await F.setDoc(F.doc(db, 'propostas', p.id, 'etapa4', 'dados'), { valores, campos, em: F.serverTimestamp(), por });
