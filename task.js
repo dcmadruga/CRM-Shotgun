@@ -84,8 +84,8 @@ function cartao(t) {
     <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
     ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}</div>` : ''}
     ${t.logo ? `<div class="tklogobox"><img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}"></div>` : ''}
-    <h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
-    ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}
+    ${t.central ? '' : `<h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
+    ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}`}
     ${t.central ? `<div class="tkcentral"><small>Central</small>${t.central.nome ? `<b>${esc(t.central.nome)}</b>` : ''}${(t.central.filiais || []).map(f => `<div class="tkfil">${esc([f.cod, f.tipo, f.cnpj].filter(Boolean).join(' - '))}${f.razao ? `<span>${esc(f.razao)}</span>` : ''}</div>`).join('')}</div>` : ''}
     ${etapas(t)}
     <div class="tkprog" title="${pr.feitos} de ${pr.total} itens concluídos"><span style="width:${pct}%"></span></div>
