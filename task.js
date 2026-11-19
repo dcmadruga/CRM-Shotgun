@@ -83,7 +83,7 @@ function cartao(t) {
   return `<article class="tkcard" data-id="${esc(t.id)}">
     <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
     ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}</div>` : ''}
-    <h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
+    <div class="tkhead"><h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>${t.logo ? `<img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}">` : ''}</div>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}
     <div class="tkmeta">${t.email ? `<span class="tkmail">${esc(t.email)}</span>` : ''}${t.criado ? `<span>Criado em ${esc(fmtTs(t.criado))}</span>` : ''}</div>
     <div class="tkmeta"><span>Cad: ${esc(t.respCadastro?.nome || (t.auto ? 'Automático' : '-'))}</span><span class="tkst2">Resp. start: ${esc(t.respStart?.nome || '-')}</span></div>
@@ -225,11 +225,31 @@ async function datasE4(pid) {
     return { dataBase: achar(/data.*\bbase\b|\bbase\b.*data/i), start: achar(/start|in[ií]cio da implanta/i) };
   } catch (e) { return null; }
 }
+// Logo do posto ou rede: anexo da Etapa 2 com "logo" no nome do campo, reduzido para uma miniatura
+async function logoDe(pid) {
+  try {
+    const an = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos'));
+    const a = an.docs.map(d => ({ id: d.id, ...d.data() })).find(x => /logo/i.test(x.campo || '') && /^image\//.test(x.tipo || ''));
+    if (!a) return '';
+    const ps = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos', a.id, 'partes'));
+    const src = `data:${a.tipo};base64,` + ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join('');
+    const img = await new Promise((ok, err) => { const i = new Image(); i.onload = () => ok(i); i.onerror = err; i.src = src; });
+    const k = Math.min(1, 160 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL('image/png');
+  } catch (e) { return ''; }
+}
 const completando = new Set();
 function completarDatas() {
-  tasks.filter(t => t.propostaId && t.dataBase === undefined && !completando.has(t.id)).forEach(t => {
+  tasks.filter(t => t.propostaId && (t.dataBase === undefined || t.logo === undefined) && !completando.has(t.id)).forEach(t => {
     completando.add(t.id);
-    datasE4(t.propostaId).then(d => { if (!d) return; const up = { dataBase: d.dataBase || '' }; if (!t.start && d.start) up.start = d.start; return F.updateDoc(F.doc(db, 'tasks', t.id), up); }).catch(() => {});
+    (async () => {
+      const up = {};
+      if (t.dataBase === undefined) { const d = await datasE4(t.propostaId); up.dataBase = (d && d.dataBase) || ''; if (!t.start && d && d.start) up.start = d.start; }
+      if (t.logo === undefined) up.logo = await logoDe(t.propostaId);
+      await F.updateDoc(F.doc(db, 'tasks', t.id), up);
+    })().catch(() => {});
   });
 }
 // Cria o cadastro a partir da proposta (id do cadastro = id da proposta, para não duplicar)
@@ -242,7 +262,7 @@ async function criarDaProposta(pid, auto) {
   let v = {}; try { const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')); if (r.exists()) v = r.data().valores || {}; } catch (e) {}
   const sc = window.splitCidade ? window.splitCidade(p.cidade) : { cidade: p.cidade || '', uf: '' };
   const d4 = (await datasE4(pid)) || {};
-  const novo = { dataBase: d4.dataBase || '',
+  const novo = { dataBase: d4.dataBase || '', logo: await logoDe(pid),
     apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
     respCadastro: auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: d4.start || v.dataImpl || '', obs: v.obs || '',
