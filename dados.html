@@ -49,6 +49,13 @@ input[readonly]{opacity:.8}
 .bad{border-color:var(--danger)}
 .badf .hint{color:var(--danger)}
 .files{font-weight:500}
+.anxl{display:grid;gap:8px;margin-top:-4px}.anxl:empty{display:none}
+.anxi{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--field);display:grid;gap:6px}
+.anxi .anxn{display:flex;gap:8px;align-items:center;font-size:13px;word-break:break-all}.anxi .anxn span{flex:1}
+.anxi .anxn button{border:0;background:none;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;padding:0 4px}.anxi .anxn button:hover{color:var(--danger)}
+.anxi .anxs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.anxi .anxs input{max-width:220px}
+.anxi .cst{font-size:12.5px;color:var(--muted)}.anxi .cst.ok{color:#2f9e5b}.anxi .cst.bad{color:var(--danger)}
+.anxi.grande{border-color:var(--danger)}
 .outro{margin-top:6px}
 label.mesmo{flex-direction:row;align-items:center;gap:8px;margin-top:6px;font-size:14px;font-weight:500;color:var(--fg);letter-spacing:0;cursor:pointer}
 label.mesmo input{width:auto;margin:0}
@@ -151,6 +158,7 @@ let CFG=null, CAMPOS=[];
 const ehOutro=v=>/^outr[oa]s?(\b|$)/i.test(String(v||'').trim());
 function valoresFinais(o){ const r={...o}; Object.keys(r).filter(k=>k.endsWith('__outro')).forEach(k=>{ const base=k.slice(0,-7); if(ehOutro(r[base]) && r[k]) r[base]=r[base]+': '+r[k]; delete r[k] }); return r }
 const MAXF=10*1024*1024;
+const arqs=el=>!el?[]:(el._lista||[...(el.files||[])]);
 const TIPO_ATTR={
   texto:'', email:'type="email" autocomplete="email"', telefone:'inputmode="tel" autocomplete="tel"', cpf:'inputmode="numeric"', rg:'autocomplete="off" style="text-transform:uppercase"',
   cnpj:'inputmode="numeric" placeholder="00.000.000/0000-00"', cep:'inputmode="numeric"', numero:'type="number" min="0" inputmode="numeric"', data:'type="date"'
@@ -211,7 +219,7 @@ function cpfOk(v){ const d=dig(v); if(d.length!==11||/^(\d)\1+$/.test(d)) return
 function valida(el){
   if(el.type==='radio') return true;
   if(el.hidden){ el.classList.remove('bad'); return true }
-  if(el.type==='file'){ const fs=[...el.files]; const ok=(!el.required||fs.length>0) && fs.every(x=>x.size<=MAXF); el.closest('label').classList.toggle('badf',!ok); el.classList.toggle('bad',!ok); return ok }
+  if(el.type==='file'){ const fs=arqs(el); const ok=(!el.required||fs.length>0) && fs.every(x=>x.size<=MAXF); el.closest('label').classList.toggle('badf',!ok); el.classList.toggle('bad',!ok); return ok }
   const v=el.value.trim(), t=el.dataset.v; let ok=true;
   if(el.required && !v) ok=false;
   else if(v && t==='cnpj') ok=cnpjOk(v);
@@ -325,6 +333,83 @@ async function buscarCnpj(el,forcar){
   }catch(e){ aviso('Não foi possível pesquisar agora. Preencha à mão.') }
   finally{ if(bt) bt.disabled=false }
 }
+/* Anexos: lista acumulada, remoção, prévia e senha de certificado digital (.pfx/.p12) validada aqui no aparelho */
+const ehCert=x=>/\.(pfx|p12)$/i.test(x.name)||/pkcs12/i.test(x.type||'');
+const chaveArq=x=>x.name+'|'+x.size;
+const tamTxt=n=>n<1048576?Math.max(1,Math.round(n/1024))+' KB':(n/1048576).toFixed(1)+' MB';
+function setArquivos(el,lista){
+  el._lista=lista;
+  try{ const dt=new DataTransfer(); lista.forEach(x=>dt.items.add(x)); el.files=dt.files }catch(_){}
+  desenharArquivos(el);
+}
+let forgeP=null;
+function carregarForge(){ return forgeP||(forgeP=new Promise((ok,erro)=>{ if(window.forge) return ok(window.forge); const sc=document.createElement('script'); sc.src='lib/forge.min.js'; sc.onload=()=>ok(window.forge); sc.onerror=()=>{ forgeP=null; erro(new Error('forge')) }; document.head.appendChild(sc) })) }
+// Abre o certificado com a senha: se a senha não confere, o arquivo não abre (a assinatura MAC falha)
+async function validarCert(file,senha){
+  const forge=await carregarForge(); const buf=new Uint8Array(await file.arrayBuffer()); let bin=''; for(let i=0;i<buf.length;i+=8192) bin+=String.fromCharCode.apply(null,buf.subarray(i,i+8192));
+  try{
+    const p12=forge.pkcs12.pkcs12FromAsn1(forge.asn1.fromDer(bin),false,senha);
+    const bags=(p12.getBags({bagType:forge.pki.oids.certBag})[forge.pki.oids.certBag]||[]).map(b=>b.cert).filter(Boolean);
+    const c=bags.find(c=>!c.extensions||!c.extensions.some(e=>e.name==='basicConstraints'&&e.cA))||bags[0];
+    return {ok:true, cn:c&&((c.subject.getField('CN')||{}).value||''), ate:c&&c.validity.notAfter};
+  }catch(e){ return /MAC|password|Invalid/i.test(e.message||'')?{ok:false}:{ok:false, erro:'Arquivo de certificado inválido ou corrompido.'} }
+}
+function desenharArquivos(el){
+  const lab=el.closest('label'), lista=el.name==='contratoSocial'?[...el.files]:(el._lista||[]);
+  const out=lab.querySelector('.files'); if(out) out.textContent=el.name==='contratoSocial'?lista.map(x=>x.name+' ('+tamTxt(x.size)+(x.size>MAXF?' · grande demais':'')+')').join(' · '):(lista.length>1?lista.length+' arquivos escolhidos':'');
+  // Lista com remover e senha do certificado (fora do label, para o clique não abrir a escolha de arquivo)
+  if(el.name!=='contratoSocial'){
+    let box=lab.nextElementSibling; if(!box||!box.classList.contains('anxl')){ box=document.createElement('div'); box.className='anxl full'; lab.after(box) }
+    const senhas=el._senhas||(el._senhas={}), st=el._cst||(el._cst={});
+    box.innerHTML='';
+    lista.forEach((x,i)=>{
+      const d=document.createElement('div'); d.className='anxi'+(x.size>MAXF?' grande':''); const k=chaveArq(x);
+      d.innerHTML=`<div class="anxn"><span>${esc(x.name)} (${tamTxt(x.size)}${x.size>MAXF?' · grande demais, máximo 10 MB':''})</span><button type="button" title="Remover" aria-label="Remover ${esc(x.name)}">×</button></div>`;
+      d.querySelector('button').addEventListener('click',()=>{ delete senhas[k]; delete st[k]; setArquivos(el,lista.filter((_,j)=>j!==i)); valida(el) });
+      if(ehCert(x)){
+        const s=document.createElement('div'); s.className='anxs';
+        s.innerHTML=`<input type="text" autocomplete="off" spellcheck="false" placeholder="Senha do certificado" aria-label="Senha do certificado ${esc(x.name)}"><span class="cst"></span>`;
+        const inp=s.querySelector('input'), cst=s.querySelector('.cst'); inp.value=senhas[k]||'';
+        const mostra=()=>{ const r=st[k]; cst.className='cst'+(r&&r.ok?' ok':r&&r.ok===false?' bad':''); cst.textContent=!inp.value?'Informe a senha deste certificado.':!r?'Conferindo…':r.ok?'✓ Senha confere'+(r.cn?' · '+r.cn:'')+(r.ate?' · válido até '+r.ate.toLocaleDateString('pt-BR')+(r.ate<new Date()?' (VENCIDO)':''):''):r.falha?'Não foi possível conferir agora. A senha será enviada assim mesmo.':(r.erro||'✗ A senha não confere com este certificado.'); inp.classList.toggle('bad',!!(r&&r.ok===false&&!r.falha)) };
+        let t=null;
+        const conferir=()=>{ const v=inp.value; senhas[k]=v; delete st[k]; mostra(); if(!v) return; clearTimeout(t); t=setTimeout(async()=>{ let r; try{ r=await validarCert(x,v) }catch(_){ r={ok:null,falha:true} } if(senhas[k]!==v) return; st[k]=r; mostra(); sincronizarSenhaCert() },350) };
+        inp.addEventListener('input',()=>{ conferir(); sincronizarSenhaCert() });
+        d.appendChild(s); mostra(); if(inp.value&&!st[k]) conferir();
+        if(!inp.value&&i===lista.length-1) setTimeout(()=>inp.focus(),50);
+      }
+      box.appendChild(d);
+    });
+  }
+  // Prévia das imagens escolhidas
+  let pv=lab.querySelector('.prev'); if(pv){ pv.querySelectorAll('img').forEach(i=>{ if(i.src.startsWith('blob:')) URL.revokeObjectURL(i.src) }); pv.remove() }
+  const imgs=lista.filter(x=>(/^image\//.test(x.type)||/pdf$/i.test(x.type)||/\.pdf$/i.test(x.name))&&x.size<=MAXF);
+  if(imgs.length){ pv=document.createElement('span'); pv.className='prev'; lab.appendChild(pv);
+    imgs.slice(0,12).forEach(x=>{
+      const fig=document.createElement('figure'), i=document.createElement('img'); i.alt=x.name; i.title=x.name; fig.appendChild(i); pv.appendChild(fig);
+      if(/^image\//.test(x.type)){ i.src=URL.createObjectURL(x); return }
+      // PDF: miniatura da 1ª página
+      const cap=document.createElement('figcaption'); cap.textContent='PDF · carregando…'; fig.appendChild(cap);
+      if(!window.ContratoSocial||!window.ContratoSocial.miniatura){ i.remove(); cap.textContent='PDF · '+x.name; return }
+      window.ContratoSocial.miniatura(x).then(m=>{ i.src=m.url; cap.textContent='PDF · '+m.paginas+(m.paginas>1?' páginas':' página') }).catch(()=>{ i.remove(); cap.textContent='PDF · '+x.name });
+    });
+  }
+  sincronizarSenhaCert(); valida(el);
+}
+// Campo "Senha do certificado" dos Parâmetros: a senha agora é pedida em cada certificado; o campo fica oculto e recebe as senhas
+function camposSenhaCert(){ return [...f.querySelectorAll('#secoes label')].filter(l=>{ const t=(l.querySelector('span')?.textContent||''); return /senha/i.test(t)&&/certificado|pfx|p12/i.test(t) }).map(l=>({l,inp:l.querySelector('input,textarea')})).filter(x=>x.inp) }
+function certsEscolhidos(){ return [...f.querySelectorAll('[data-v=arquivo]')].filter(el=>!el.disabled).flatMap(el=>(el._lista||[]).filter(ehCert).map(x=>({el,x,senha:(el._senhas||{})[chaveArq(x)]||'',r:(el._cst||{})[chaveArq(x)]}))) }
+function sincronizarSenhaCert(){
+  const cs=certsEscolhidos(), alvo=camposSenhaCert(); if(!alvo.length) return;
+  const val=cs.length===1?cs[0].senha:cs.filter(c=>c.senha).map(c=>c.x.name+': '+c.senha).join(' | ');
+  alvo.forEach(({l,inp})=>{ l.hidden=true; inp.required=false; inp.value=val });
+}
+function problemaCert(){
+  for(const c of certsEscolhidos()){
+    if(!c.senha) return 'Informe a senha do certificado '+c.x.name+'.';
+    if(c.r&&c.r.ok===false&&!c.r.falha) return 'A senha do certificado '+c.x.name+' não confere.';
+  }
+  return '';
+}
 function ligarAuto(){
   // CRC: link para a consulta oficial do CFC (não há busca automática); copia o nome do contador para facilitar
   f.querySelectorAll('#secoes label').forEach(l=>{
@@ -365,24 +450,15 @@ function ligarAuto(){
       set('logradouro',j.street); set('bairro',j.neighborhood); set('cidade',j.city); set('uf',j.state); }catch(e){}
   }));
   f.querySelectorAll('[data-v=arquivo]').forEach(el=>el.addEventListener('change',()=>{
-    const out=el.closest('label').querySelector('.files'); const fs=[...el.files];
-    const tam=n=>n<1048576?Math.max(1,Math.round(n/1024))+' KB':(n/1048576).toFixed(1)+' MB';
-    out.textContent=fs.map(x=>x.name+' ('+tam(x.size)+(x.size>MAXF?' · grande demais':'')+')').join(' · ');
-    // Prévia das imagens escolhidas
-    const lab=el.closest('label'); let pv=lab.querySelector('.prev'); if(pv){ pv.querySelectorAll('img').forEach(i=>URL.revokeObjectURL(i.src)); pv.remove() }
-    const imgs=fs.filter(x=>(/^image\//.test(x.type)||/pdf$/i.test(x.type)||/\.pdf$/i.test(x.name))&&x.size<=MAXF);
-    if(imgs.length){ pv=document.createElement('span'); pv.className='prev'; lab.appendChild(pv);
-      imgs.slice(0,8).forEach(x=>{
-        const fig=document.createElement('figure'), i=document.createElement('img'); i.alt=x.name; i.title=x.name; fig.appendChild(i); pv.appendChild(fig);
-        if(/^image\//.test(x.type)){ i.src=URL.createObjectURL(x); return }
-        // PDF: miniatura da 1ª página
-        const cap=document.createElement('figcaption'); cap.textContent='PDF · carregando…'; fig.appendChild(cap);
-        if(!window.ContratoSocial||!window.ContratoSocial.miniatura){ i.remove(); cap.textContent='PDF · '+x.name; return }
-        window.ContratoSocial.miniatura(x).then(m=>{ i.src=m.url; cap.textContent='PDF · '+m.paginas+(m.paginas>1?' páginas':' página') }).catch(()=>{ i.remove(); cap.textContent='PDF · '+x.name });
-      });
+    // Cada nova escolha soma aos arquivos já escolhidos (o contrato social continua substituindo, porque é lido na hora)
+    if(el.name!=='contratoSocial'){
+      const novos=[...el.files], lista=(el._lista||[]).slice();
+      novos.forEach(x=>{ if(!lista.some(y=>y.name===x.name&&y.size===x.size)) lista.push(x) });
+      setArquivos(el,lista); return;
     }
-    valida(el);
+    desenharArquivos(el);
   }));
+
   f.querySelectorAll('select').forEach(sel=>{
     const out=f.elements[sel.name+'__outro']; if(!out) return;
     const sync=()=>{ const on=ehOutro(sel.value); out.hidden=!on; out.required=on; if(on && document.activeElement===sel) setTimeout(()=>out.focus(),0); if(!on) out.classList.remove('bad') };
@@ -520,7 +596,7 @@ function montarTexto(o){
   let sec=null;
   CAMPOS.forEach(c=>{
     let v=o[c.k];
-    if(c.tipo==='arquivo'){ const el=f.elements[c.k]; const fs=el&&!el.disabled?[...el.files]:[]; if(!fs.length) return; v=fs.map(x=>x.name).join(', ')+(L.p?' (anexado no sistema)':'') }
+    if(c.tipo==='arquivo'){ const el=f.elements[c.k]; const fs=el&&!el.disabled?arqs(el):[]; if(!fs.length) return; v=fs.map(x=>x.name).join(', ')+(L.p?' (anexado no sistema)':'') }
     if(!v) return;
     if(c.tipo==='data') v=fmtData(v);
     if(c.k==='uf') v=v.toUpperCase();
@@ -538,7 +614,7 @@ function montarTexto(o){
   if(draft.cnpj && L.c && dig(draft.cnpj)!==dig(L.c)) draft={};
   preencher(draft);
   preencher({cnpj:L.c, razao:L.r, cidade:L.cid, uf:L.uf});
-  ligarAuto();
+  ligarAuto(); sincronizarSenhaCert();
   $('#carregando').hidden=true; f.hidden=false;
 })();
 f.addEventListener('input',()=>{ try{ localStorage.setItem(DRAFT,JSON.stringify(lerForm())) }catch(e){} });
@@ -567,7 +643,7 @@ async function salvarNoSistema(o, texto){
   const {F,db}=await firestore();
   const pref=['propostas',L.p];
   const anexos=[];
-  const arquivos=CAMPOS.filter(c=>c.tipo==='arquivo'&&!f.elements[c.k]?.disabled).flatMap(c=>[...(f.elements[c.k]?.files||[])].map(file=>({c,file})));
+  const arquivos=CAMPOS.filter(c=>c.tipo==='arquivo'&&!f.elements[c.k]?.disabled).flatMap(c=>arqs(f.elements[c.k]).map(file=>({c,file})));
   let n=0;
   for(const {c,file} of arquivos){
     n++; $('#msg').textContent=`Enviando anexo ${n} de ${arquivos.length}…`;
@@ -594,12 +670,13 @@ f.addEventListener('submit',async e=>{
   const radiosFaltando=CAMPOS.filter(c=>c.tipo==='simnao'&&c.req&&!f.querySelector(`input[name="${CSS.escape(c.k)}"]:disabled`)&&!f.querySelector(`input[name="${CSS.escape(c.k)}"]:checked`));
   if(ruins.length || radiosFaltando.length){
     const prim=ruins[0]||f.querySelector(`input[name="${CSS.escape(radiosFaltando[0].k)}"]`);
-    const grandes=ruins.filter(el=>el.type==='file'&&[...el.files].some(x=>x.size>MAXF));
+    const grandes=ruins.filter(el=>el.type==='file'&&arqs(el).some(x=>x.size>MAXF));
     const especificos=ruins.filter(el=>el.type!=='file'&&el.value.trim()).map(el=>{ const o=el.name.endsWith('__outro'); const c=CAMPOS.find(x=>x.k===el.name.replace(/__outro$/,'')); return c?c.label+(o?' (qual)':''):el.name });
     $('#msg').textContent = grandes.length ? 'Há arquivo com mais de 10 MB. Escolha um arquivo menor.' : especificos.length ? 'Confira: '+especificos.join(', ')+'.' : 'Preencha os campos obrigatórios destacados.';
     prim.focus(); prim.scrollIntoView({block:'center'}); return;
   }
-  const temArquivos=CAMPOS.some(c=>c.tipo==='arquivo'&&f.elements[c.k]&&!f.elements[c.k].disabled&&f.elements[c.k].files.length);
+  const pc=problemaCert(); if(pc){ $('#msg').textContent=pc; const c=[...f.querySelectorAll('.anxs input')].find(i=>!i.value||i.classList.contains('bad')); if(c){ c.focus(); c.scrollIntoView({block:'center'}) } return }
+  const temArquivos=CAMPOS.some(c=>c.tipo==='arquivo'&&f.elements[c.k]&&!f.elements[c.k].disabled&&arqs(f.elements[c.k]).length);
   if(temArquivos && !L.p){ $('#msg').textContent='Este link não aceita anexos. Peça ao seu consultor um link novo da Etapa 2.'; return }
   const o=valoresFinais(lerForm()), texto=montarTexto(o);
   if(VEND){
