@@ -801,7 +801,7 @@ async function iniciar() {
   }
   const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
   function itensTexto(rows) {
-    const ls = (rows || []).filter(r => !r.oculto && String(r.desc || '').trim()).map(r => {
+    const ls = (rows || []).filter(r => !r.oculto && !r.semContrato && String(r.desc || '').trim()).map(r => {
       const q = qtyNum(r.qty), pr = num(r.price), temp = isentoTemp(r);
       let v = r.isento && !temp ? 'isento' : q === null ? brl(pr) + ' por unidade' : (q === 1 ? brl(pr) : q + ' x ' + brl(pr) + ' = ' + brl(q * pr));
       if (temp) v += ` (isento por ${Math.round(num(r.diasIsento))} dias a contar da emissão do primeiro cupom ou nota pelo sistema; depois, valor integral)`;
@@ -848,7 +848,8 @@ async function iniciar() {
       rg_responsavel: rgC ? (V[rgC.k] || '') : '', endereco_responsavel: endResp,
       data: fmtD(hojeIso()), data_extenso: `${t.getDate()} de ${MESES[t.getMonth()]} de ${t.getFullYear()}`,
       data_proposta: fmtD(p.data), aprovado_por: p.aprovadoNome || '', aprovado_cargo: p.aprovadoCargo || '',
-      total_licencas: brl(p.totLic), total_mensalidade: brl(p.totMen), total_deslocamento: brl(p.totDes),
+      // Itens marcados "Não constar em contrato" ficam fora da lista e do total do contrato
+      total_licencas: brl((dd.lic || []).some(r => r.semContrato) ? sumRows(dd.lic.filter(r => !r.semContrato)) : p.totLic), total_mensalidade: brl((dd.men || []).some(r => r.semContrato) ? sumRows(dd.men.filter(r => !r.semContrato)) : p.totMen), total_deslocamento: brl(p.totDes),
       itens_licencas: itensTexto(dd.lic), itens_mensalidades: itensTexto(dd.men),
       argo_razao: ar.razao || '', argo_cnpj: ar.cnpj || '', argo_endereco: ar.endereco || '', argo_representante: ar.representante || '', argo_foro: ar.foro || ''
     };

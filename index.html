@@ -822,6 +822,7 @@ function renderItems(key){
       <div class="acts">
         <label class="chk"><input type="checkbox" data-f="isento" id="${key}-i-${i}" ${r.isento?'checked':''}>Isento</label>
         <label class="chk" title="Não aparece no PDF e não entra no total"><input type="checkbox" data-f="oculto" id="${key}-o-${i}" ${r.oculto?'checked':''}>Ocultar</label>
+        <label class="chk" title="Aparece na proposta, mas não entra no contrato (nem na lista de itens nem no total)"><input type="checkbox" data-f="semContrato" id="${key}-c-${i}" ${r.semContrato?'checked':''}>Não constar em contrato</label>
         ${(key==='men'||key==='catMen')?`<label class="chk diaswrap" ${r.isento?'':'hidden'} title="Dias de isenção a contar da emissão do primeiro cupom ou nota pelo sistema"><input type="number" min="0" step="1" data-f="diasIsento" id="${key}-di-${i}" value="${esc(r.diasIsento??'')}" placeholder="0" style="width:64px;text-align:right">dias</label>`:''}
         ${L.cfg?`<label class="chk"><input type="checkbox" data-f="padrao" id="${key}-x-${i}" ${r.padrao?'checked':''}>Padrão</label>`:''}
         <button type="button" class="del" data-del="${i}" aria-label="Remover item">×</button>
@@ -835,7 +836,7 @@ Object.keys(LISTS).forEach(key=>{
   box.addEventListener('input',e=>{
     const f=e.target.dataset.f; if(!f) return;
     const i=+e.target.closest('.item').dataset.i;
-    L.get()[i][f] = (f==='isento'||f==='padrao'||f==='oculto') ? e.target.checked : e.target.value;
+    L.get()[i][f] = (f==='isento'||f==='padrao'||f==='oculto'||f==='semContrato') ? e.target.checked : e.target.value;
     if(f==='isento'){ const w=e.target.closest('.item').querySelector('.diaswrap'); if(w){ w.hidden=!e.target.checked; if(e.target.checked) w.querySelector('input').focus() } }
     L.persist(); totals();
   });
@@ -893,7 +894,8 @@ function totals(){
     const el=$(`${key}-t-${i}`); if(!el) return;
     const q=qtyNum(r.qty);
     el.closest('.item').classList.toggle('hid',!!r.oculto);
-    el.textContent = r.oculto ? 'Oculto: não aparece no PDF e não soma' : isentoTemp(r) ? `Isento por ${Math.round(num(r.diasIsento))} dias, depois cobra: ${brl(rowTotal(r))} no total` : r.isento ? 'Isento (não soma)' : q===null ? `${brl(r.price)} por unidade (não soma)` : `Subtotal: ${brl(rowTotal(r))}`;
+    el.textContent = (r.oculto ? 'Oculto: não aparece no PDF e não soma' : isentoTemp(r) ? `Isento por ${Math.round(num(r.diasIsento))} dias, depois cobra: ${brl(rowTotal(r))} no total` : r.isento ? 'Isento (não soma)' : q===null ? `${brl(r.price)} por unidade (não soma)` : `Subtotal: ${brl(rowTotal(r))}`) + (r.semContrato && !r.oculto ? ' · Não consta no contrato' : '');
+    el.closest('.item').classList.toggle('semct',!!r.semContrato);
   }));
   const tl=sumRows(S.lic), tm=sumRows(S.men), d=deslocamento();
   $('totLic').textContent=$('sLic').textContent=brl(tl);
