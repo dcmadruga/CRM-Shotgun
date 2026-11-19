@@ -228,7 +228,7 @@ async function datasE4(pid) {
     const nc = c.find(([k, v]) => /nome.*central|central.*nome/i.test(k) && v && !/\n/.test(v)) || c.find(([k, v]) => /central/i.test(k) && !/filia/i.test(k) && v && !/\n/.test(v) && !/^\s*central\s*$/i.test(v));
     const central = filiais.length || nc ? { nome: nc ? String(nc[1]).trim() : '', filiais: filiais.map(f => ({ cod: f.cod || '', tipo: f.tipo || '', cnpj: f.cnpj || '', razao: f.razao || '', info: f.info || null, dados: f.dados || null })) } : null;
     const simples = !central && c.some(([k, v]) => /^\s*(posto\s+)?simples\s*$/i.test(String(v || '')));
-    return { dataBase: achar(/da[dt]a.*base|base.*da[dt]a/i, /base/i), start: achar(/start|in[ií]cio da implanta/i), central, simples };
+    return { dataBase: achar(/da[dt]a.*base|base.*da[dt]a/i, /base/i), start: achar(/start|in[ií]cio da implanta/i), central, simples, campos: Object.fromEntries(c) };
   } catch (e) { return null; }
 }
 // Logo do posto ou rede: anexo da Etapa 2 com "logo" no nome do campo, reduzido para uma miniatura
@@ -265,7 +265,7 @@ async function logoDe(pid) {
 }
 // Razão social das filiais que vieram sem ela: aproveita a do card ou consulta pelo CNPJ
 // Posto simples: mesmo quadro da Central, com o CNPJ do próprio posto
-const baseSimples = (d, cnpj) => { if (d && !d.central && d.simples && dig(cnpj).length === 14) d.central = { tipo: 'simples', nome: '', filiais: [{ cod: '', tipo: 'Posto', cnpj: fmtCnpj(cnpj), razao: '', info: null }] }; };
+const baseSimples = (d, cnpj) => { if (d && !d.central && d.simples && dig(cnpj).length === 14) d.central = { tipo: 'simples', nome: '', filiais: [{ cod: '', tipo: 'Posto', cnpj: fmtCnpj(cnpj), razao: '', info: null, dados: Object.fromEntries(Object.entries(d.campos || {}).filter(([k, v]) => !/^\s*(posto\s+)?simples\s*$/i.test(String(v || '')))) }] }; };
 async function razoesFiliais(c, antigo) {
   const ja = {}; ((antigo && antigo.filiais) || []).forEach(f => { if (f.info) ja[dig(f.cnpj)] = f.info; });
   for (const f of c.filiais || []) {
