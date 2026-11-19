@@ -432,6 +432,10 @@ async function iniciar() {
   /* ---------- Etapa 4: dados de referência para a implantação (vendedor) ---------- */
   const e4Visiveis = () => (cfgE4().secoes || []).map(sc => ({ ...sc, campos: (sc.campos || []).filter(c => c.show !== false && c.tipo !== 'arquivo') })).filter(sc => sc.campos.length);
   const ehOutro4 = v => /^outr[oa]s?(\b|$)/i.test(String(v || '').trim());
+  // Seção que tem o bloco de filiais (fica fora das abas por filial)
+  const e4TemFil = sc => sc.campos.some(c => String(c.filiaisOp || '').trim() || (c.tipo === 'multicond' && Object.values(c.cond || {}).some(l => (l || []).some(x => x.tipo === 'filiais'))));
+  // Campo com a chave prefixada (f0__, f1__…) para valer só para uma filial
+  const e4Pref = pref => c => ({ ...c, k: pref + c.k, cond: c.cond ? Object.fromEntries(Object.entries(c.cond).map(([o, l]) => [o, (l || []).map(x => ({ ...x, k: pref + x.k }))])) : c.cond });
   async function etapa4(p, card, editar) {
     const box = card.querySelector('.e4box');
     if (!box.hidden && box.dataset.modo === (editar ? 'e' : 'v')) { box.hidden = true; return; }
@@ -467,7 +471,7 @@ async function iniciar() {
       const t = { data: 'type="date"', numero: 'type="number" min="0"', email: 'type="email"', telefone: 'inputmode="tel"', cpf: 'inputmode="numeric"', cnpj: 'inputmode="numeric"', cep: 'inputmode="numeric"' }[c.tipo] || '';
       return `<label${full}>${lab}<input data-k="${esc(c.k)}" ${t} value="${esc(val)}"${req}${ph}></label>`;
     };
-    box.innerHTML = e4Visiveis().map(sc => `<div class="etit" style="margin:4px 0">${esc(sc.titulo)}</div><div class="grid e4grid">${(() => {
+    const secHtml = sc => `<div class="etit" style="margin:4px 0">${esc(sc.titulo)}</div><div class="grid e4grid">${(() => {
       // Cada Sim/Não que abre vira uma linha: a pergunta à esquerda e os campos dela ao lado
       const out = []; let g = null, deps = [];
       const fecha = () => { if (g) { out.push(`<div class="linha">${g}<div class="deps">${deps.join('')}</div></div>`); g = null; deps = []; } };
@@ -479,14 +483,43 @@ async function iniciar() {
         (g ? deps : out).push(h);
       });
       fecha(); return out.join('');
-    })()}</div>`).join('') + `<div class="acts" style="margin-top:8px"><button type="button" class="primary" data-a="e4salvar">Salvar dados</button><button type="button" data-a="e4cancelar">Cancelar</button><span class="hint e4msg"></span></div>`;
-    // Sim/Não que abre os campos seguintes da seção
-    box.querySelectorAll('[data-abre]').forEach(lab => {
-      const deps = [...(lab.parentElement.querySelector(':scope > .deps')?.children || [])];
-      const sync = () => { const sim = lab.querySelector('input:checked')?.value === 'Sim'; deps.forEach(x => { x.hidden = !sim; x.querySelectorAll('[data-k],[data-outro]').forEach(i => i.disabled = !sim); }); };
-      lab.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener('change', sync)); sync();
+    })()}</div>`;
+    // Central com filiais: as seções seguintes são preenchidas filial por filial (uma aba para cada)
+    const secs = e4Visiveis(), globais = secs.filter(e4TemFil), porFil = globais.length ? secs.filter(sc => !e4TemFil(sc)) : secs;
+    box.innerHTML = globais.map(secHtml).join('') + '<div class="e4area"></div>' + `<div class="acts" style="margin-top:8px"><button type="button" class="primary" data-a="e4salvar">Salvar dados</button><button type="button" data-a="e4cancelar">Cancelar</button><span class="hint e4msg"></span></div>`;
+    const area = box.querySelector('.e4area'); let ativa = 0;
+    const ligar = root => {
+      // Sim/Não que abre os campos seguintes da seção
+      root.querySelectorAll('[data-abre]').forEach(lab => {
+        const deps = [...(lab.parentElement.querySelector(':scope > .deps')?.children || [])];
+        const sync = () => { const sim = lab.querySelector('input:checked')?.value === 'Sim'; deps.forEach(x => { x.hidden = !sim; x.querySelectorAll('[data-k],[data-outro]').forEach(i => i.disabled = !sim); }); };
+        lab.querySelectorAll('input[type=radio]').forEach(r => r.addEventListener('change', sync)); sync();
+      });
+      root.querySelectorAll('select[data-k]').forEach(sel => { const o = root.querySelector(`[data-outro="${CSS.escape(sel.dataset.k)}"]`); if (o) sel.addEventListener('change', () => { o.hidden = !ehOutro4(sel.value); if (!o.hidden) o.focus(); }); });
+    };
+    // Guarda o que já foi digitado na área antes de redesenhar
+    const colher = () => {
+      area.querySelectorAll('[data-k]').forEach(x => { const k = x.dataset.k; if (x.type === 'radio') { if (x.checked) v[k] = x.value; else if (!area.querySelector(`[data-k="${CSS.escape(k)}"]:checked`)) v[k] = ''; return; } const o = area.querySelector(`[data-outro="${CSS.escape(k)}"]`); v[k] = x.value + (o && !o.hidden && o.value.trim() ? ': ' + o.value.trim() : ''); });
+      area.querySelectorAll('textarea[data-detk]').forEach(x => { v[x.dataset.detk + '__det'] = x.value; });
+    };
+    const filiaisAtivas = () => { const bl = [...box.querySelectorAll('[data-fil]')].find(b => !b.hidden); return bl ? [...bl.querySelectorAll('.e4filrow')].map((r, i) => ({ cod: r.querySelector('[data-filn]').value.trim() || 'F' + (i + 1), tipo: r.querySelector('[data-filt]').value })) : []; };
+    let assinatura = null;
+    const desenharArea = () => {
+      const fils = globais.length ? filiaisAtivas() : [], sig = JSON.stringify(fils);
+      if (sig === assinatura) return; // só redesenha quando a lista de filiais muda
+      assinatura = sig; colher();
+      if (!fils.length) { area.dataset.modo = ''; area.innerHTML = porFil.map(secHtml).join(''); ligar(area); syncDet(); syncCond(); syncFil(); return; }
+      if (ativa >= fils.length) ativa = 0;
+      const ks = []; porFil.forEach(sc => sc.campos.forEach(c => { ks.push(c.k, c.k + '__det'); Object.values(c.cond || {}).forEach(l => (l || []).forEach(x => ks.push(x.k))); }));
+      area.dataset.modo = 'fil';
+      area.innerHTML = `<div class="etit e4pfh">Dados por filial</div><p class="hint">Preencha as informações de cada filial. Use as abas para trocar de filial.</p><div class="e4tabs" role="tablist">${fils.map((f, i) => `<button type="button" role="tab" data-fi="${i}" aria-selected="${i === ativa}">${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}</button>`).join('')}</div>` +
+        fils.map((f, i) => { const pref = 'f' + i + '__'; ks.forEach(k => { if (v[pref + k] === undefined && v[k] !== undefined) v[pref + k] = v[k]; }); return `<div class="e4pf" data-fi="${i}" data-cod="${esc(f.cod)}"${i === ativa ? '' : ' hidden'}>${i ? `<button type="button" class="e4copiar" data-copiar="${i}">Copiar dados da ${esc(fils[0].cod)}</button>` : ''}${porFil.map(sc => secHtml({ ...sc, campos: sc.campos.map(e4Pref(pref)) })).join('')}</div>`; }).join('');
+      ligar(area); syncDet(); syncCond(); syncFil();
+    };
+    area.addEventListener('click', ev => {
+      const tb = ev.target.closest('[data-fi][role=tab]'); if (tb) { ativa = +tb.dataset.fi; area.querySelectorAll('[role=tab]').forEach(b => b.setAttribute('aria-selected', b === tb)); area.querySelectorAll('.e4pf').forEach(pf => pf.hidden = pf.dataset.fi !== tb.dataset.fi); return; }
+      const cp = ev.target.closest('[data-copiar]'); if (cp) { colher(); const i = cp.dataset.copiar; Object.keys(v).filter(k => k.startsWith('f0__')).forEach(k => { v['f' + i + '__' + k.slice(4)] = v[k]; }); area.innerHTML = ''; assinatura = null; desenharArea(); }
     });
-    box.querySelectorAll('select[data-k]').forEach(sel => { const o = box.querySelector(`[data-outro="${CSS.escape(sel.dataset.k)}"]`); if (o) sel.addEventListener('change', () => { o.hidden = !ehOutro4(sel.value); if (!o.hidden) o.focus(); }); });
     box.addEventListener('input', ev => { if (ev.target.dataset && ev.target.dataset.k) ev.target.style.borderColor = ''; });
     // Texto longo que abre depois de escolher uma opção (descrição configurada nos Parâmetros)
     const syncDet = () => box.querySelectorAll('[data-det]').forEach(l => { const sel = box.querySelector(`select[data-k="${CSS.escape(l.dataset.det)}"]`); const on = !!sel && !sel.disabled && !!sel.value; l.hidden = !on; l.querySelector('textarea').disabled = !on; });
@@ -508,7 +541,9 @@ async function iniciar() {
     // Multi condicional: cada opção mostra os seus campos adicionais
     const syncCond = () => box.querySelectorAll('[data-cond]').forEach(bl => { const sel = box.querySelector(`select[data-k="${CSS.escape(bl.dataset.cond)}"]`); const on = !!sel && !sel.disabled && sel.value === bl.dataset.op; bl.hidden = !on; bl.querySelectorAll('input,select,textarea').forEach(x => x.disabled = !on); });
     const syncFil = () => box.querySelectorAll('[data-fil]').forEach(bl => { let on; if (bl.dataset.op) { const sel = box.querySelector(`select[data-k="${CSS.escape(bl.dataset.fil)}"]`); on = !!sel && !sel.disabled && sel.value.toLowerCase() === bl.dataset.op.toLowerCase(); } else on = !bl.parentElement.closest('[hidden]'); bl.hidden = !on; bl.querySelectorAll('input,select').forEach(x => x.disabled = !on); });
-    box.addEventListener('change', () => { syncDet(); syncCond(); syncFil(); }); syncDet(); syncCond(); syncFil();
+    box.addEventListener('change', ev => { syncDet(); syncCond(); syncFil(); if (!area.contains(ev.target)) desenharArea(); });
+    box.addEventListener('input', ev => { if (ev.target.matches('[data-filq]')) desenharArea(); });
+    ligar(box); syncDet(); syncCond(); syncFil(); desenharArea();
   }
   async function salvarE4(p, card, bt) {
     const box = card.querySelector('.e4box'), valores = {}, campos = {}; let falta = null;
@@ -529,13 +564,27 @@ async function iniciar() {
       if (val) { valores[c.k] = val; campos[rotulo(sc, c.label)] = c.tipo === 'data' ? fmtD(val) : val; }
       return val;
     };
-    e4Visiveis().forEach(sc => sc.campos.forEach(c => {
+    const proc = sc => c => {
       const val = pega(sc, c);
       if (val && c.tipo === 'multicond') ((c.cond || {})[val] || []).forEach(x => x.tipo === 'filiais' ? pegaFil(sc, x.k, x.label) : pega(sc, x));
       if (val && c.filiaisOp) pegaFil(sc, c.k, c.label + ' - Filiais');
       const dt = box.querySelector(`textarea[data-detk="${CSS.escape(c.k)}"]`);
       if (val && dt && !dt.disabled && dt.value.trim()) { valores[c.k + '__det'] = dt.value.trim(); campos[rotulo(sc, c.label + ' - ' + c.detalhe)] = dt.value.trim(); }
-    }));
+    };
+    const secs = e4Visiveis(), globais = secs.filter(e4TemFil), area = box.querySelector('.e4area');
+    if (area && area.dataset.modo === 'fil') {
+      // Central: primeiro as seções gerais, depois cada filial com as suas respostas
+      globais.forEach(sc => sc.campos.forEach(proc(sc)));
+      const lista = Object.keys(valores).filter(k => /__fil$/.test(k)).map(k => valores[k])[0] || [];
+      area.querySelectorAll('.e4pf').forEach(pf => {
+        const i = +pf.dataset.fi, cod = (lista[i] && lista[i].cod) || pf.dataset.cod, pref = 'f' + i + '__', antes = new Set(Object.keys(campos)), dados = {};
+        const lab = c => ({ ...c, label: cod + ' - ' + c.label, cond: c.cond ? Object.fromEntries(Object.entries(c.cond).map(([o, l]) => [o, (l || []).map(x => ({ ...x, label: cod + ' - ' + x.label }))])) : c.cond });
+        secs.filter(sc => !e4TemFil(sc)).forEach(sc => sc.campos.map(e4Pref(pref)).map(lab).forEach(proc(sc)));
+        Object.keys(campos).filter(k => !antes.has(k)).forEach(k => { dados[k.replace(cod + ' - ', '')] = campos[k]; });
+        if (lista[i]) lista[i].dados = dados;
+      });
+    } else secs.forEach(sc => sc.campos.forEach(proc(sc)));
+    if (falta) { const pf = falta.closest('.e4pf'); if (pf && pf.hidden) box.querySelector(`.e4tabs [data-fi="${pf.dataset.fi}"]`)?.click(); }
     if (falta) { box.querySelector('.e4msg').textContent = 'Preencha os campos obrigatórios (CNPJ das filiais com 14 dígitos).'; falta.focus(); return; }
     bt.disabled = true; box.querySelector('.e4msg').textContent = 'Salvando…';
     try {
