@@ -83,7 +83,8 @@ function cartao(t) {
   return `<article class="tkcard" data-id="${esc(t.id)}">
     <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
     ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}</div>` : ''}
-    <div class="tkhead"><h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>${t.logo ? `<img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}">` : ''}</div>
+    ${t.logo ? `<div class="tklogobox"><img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}"></div>` : ''}
+    <h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}
     <div class="tkmeta">${t.email ? `<span class="tkmail">${esc(t.email)}</span>` : ''}${t.criado ? `<span>Criado em ${esc(fmtTs(t.criado))}</span>` : ''}</div>
     <div class="tkmeta"><span>Cad: ${esc(t.respCadastro?.nome || (t.auto ? 'Automático' : '-'))}</span><span class="tkst2">Resp. start: ${esc(t.respStart?.nome || '-')}</span></div>
@@ -234,20 +235,27 @@ async function logoDe(pid) {
     const ps = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos', a.id, 'partes'));
     const src = `data:${a.tipo};base64,` + ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join('');
     const img = await new Promise((ok, err) => { const i = new Image(); i.onload = () => ok(i); i.onerror = err; i.src = src; });
-    const k = Math.min(1, 160 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
-    c.width = Math.max(1, Math.round(img.naturalWidth * k)); c.height = Math.max(1, Math.round(img.naturalHeight * k));
-    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    // Corta as bordas brancas ou transparentes, para o logo ocupar o espaço todo
+    const W = img.naturalWidth, H = img.naturalHeight, s0 = Math.min(1, 800 / Math.max(W, H)), w0 = Math.max(1, Math.round(W * s0)), h0 = Math.max(1, Math.round(H * s0));
+    const t = document.createElement('canvas'); t.width = w0; t.height = h0; const g = t.getContext('2d'); g.drawImage(img, 0, 0, w0, h0);
+    const px = g.getImageData(0, 0, w0, h0).data; let x0 = w0, y0 = h0, x1 = -1, y1 = -1;
+    for (let y = 0; y < h0; y++) for (let x = 0; x < w0; x++) { const i = (y * w0 + x) * 4; if (px[i + 3] > 16 && (px[i] < 235 || px[i + 1] < 235 || px[i + 2] < 235)) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
+    if (x1 < 0) { x0 = 0; y0 = 0; x1 = w0 - 1; y1 = h0 - 1; }
+    const m = 4; x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m); x1 = Math.min(w0 - 1, x1 + m); y1 = Math.min(h0 - 1, y1 + m);
+    const cw = x1 - x0 + 1, ch = y1 - y0 + 1, k = Math.min(1, 360 / Math.max(cw, ch)), c = document.createElement('canvas');
+    c.width = Math.max(1, Math.round(cw * k)); c.height = Math.max(1, Math.round(ch * k));
+    c.getContext('2d').drawImage(t, x0, y0, cw, ch, 0, 0, c.width, c.height);
     return c.toDataURL('image/png');
   } catch (e) { return ''; }
 }
 const completando = new Set();
 function completarDatas() {
-  tasks.filter(t => t.propostaId && (t.dataBase === undefined || t.logo === undefined) && !completando.has(t.id)).forEach(t => {
+  tasks.filter(t => t.propostaId && (t.dataBase === undefined || t.logoV !== 2) && !completando.has(t.id)).forEach(t => {
     completando.add(t.id);
     (async () => {
       const up = {};
       if (t.dataBase === undefined) { const d = await datasE4(t.propostaId); up.dataBase = (d && d.dataBase) || ''; if (!t.start && d && d.start) up.start = d.start; }
-      if (t.logo === undefined) up.logo = await logoDe(t.propostaId);
+      if (t.logoV !== 2) { up.logo = await logoDe(t.propostaId); up.logoV = 2; }
       await F.updateDoc(F.doc(db, 'tasks', t.id), up);
     })().catch(() => {});
   });
@@ -262,7 +270,7 @@ async function criarDaProposta(pid, auto) {
   let v = {}; try { const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')); if (r.exists()) v = r.data().valores || {}; } catch (e) {}
   const sc = window.splitCidade ? window.splitCidade(p.cidade) : { cidade: p.cidade || '', uf: '' };
   const d4 = (await datasE4(pid)) || {};
-  const novo = { dataBase: d4.dataBase || '', logo: await logoDe(pid),
+  const novo = { dataBase: d4.dataBase || '', logo: await logoDe(pid), logoV: 2,
     apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
     respCadastro: auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: d4.start || v.dataImpl || '', obs: v.obs || '',
