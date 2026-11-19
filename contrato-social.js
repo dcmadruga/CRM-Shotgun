@@ -230,5 +230,13 @@
     return socios;
   }
 
-  window.ContratoSocial = { ler, extrair, cpfOk };
+  // Miniatura da primeira página de um PDF (para mostrar na tela)
+  async function miniatura(file, larg = 220) {
+    const pdf = await pdfDoc(file), pg = await pdf.getPage(1), v1 = pg.getViewport({ scale: 1 });
+    const vp = pg.getViewport({ scale: larg / v1.width }), c = document.createElement('canvas');
+    c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+    await pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    const url = c.toDataURL('image/jpeg', 0.8); pdf.destroy && pdf.destroy(); return { url, paginas: pdf.numPages };
+  }
+  window.ContratoSocial = { ler, extrair, cpfOk, miniatura };
 })();

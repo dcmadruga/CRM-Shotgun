@@ -32,7 +32,7 @@ main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
 .sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
 .body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .full{grid-column:1/-1}
-.prev{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.prev img{max-height:140px;max-width:220px;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff;padding:4px}
+.prev{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.prev figure{margin:0;display:grid;gap:3px;justify-items:start}.prev figcaption{font-size:11.5px;color:var(--muted)}.prev img{max-height:140px;max-width:220px;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff;padding:4px}
 .cfclink{font-size:12.5px;color:var(--purple,#7030a0);font-weight:600;margin-top:4px;text-decoration:none}.cfclink:hover{text-decoration:underline}.cfchint{font-size:11.5px;color:var(--muted)}
 .nsug{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.nsug small{color:var(--muted);font-size:12px}.nsug button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}
 @media (min-width:700px){.body>label:has(.busca){grid-column:span 2}}
@@ -349,8 +349,17 @@ function ligarAuto(){
     out.textContent=fs.map(x=>x.name+' ('+tam(x.size)+(x.size>MAXF?' · grande demais':'')+')').join(' · ');
     // Prévia das imagens escolhidas
     const lab=el.closest('label'); let pv=lab.querySelector('.prev'); if(pv){ pv.querySelectorAll('img').forEach(i=>URL.revokeObjectURL(i.src)); pv.remove() }
-    const imgs=fs.filter(x=>/^image\//.test(x.type)&&x.size<=MAXF);
-    if(imgs.length){ pv=document.createElement('span'); pv.className='prev'; imgs.slice(0,8).forEach(x=>{ const i=document.createElement('img'); i.src=URL.createObjectURL(x); i.alt=x.name; i.title=x.name; pv.appendChild(i) }); lab.appendChild(pv) }
+    const imgs=fs.filter(x=>(/^image\//.test(x.type)||/pdf$/i.test(x.type)||/\.pdf$/i.test(x.name))&&x.size<=MAXF);
+    if(imgs.length){ pv=document.createElement('span'); pv.className='prev'; lab.appendChild(pv);
+      imgs.slice(0,8).forEach(x=>{
+        const fig=document.createElement('figure'), i=document.createElement('img'); i.alt=x.name; i.title=x.name; fig.appendChild(i); pv.appendChild(fig);
+        if(/^image\//.test(x.type)){ i.src=URL.createObjectURL(x); return }
+        // PDF: miniatura da 1ª página
+        const cap=document.createElement('figcaption'); cap.textContent='PDF · carregando…'; fig.appendChild(cap);
+        if(!window.ContratoSocial||!window.ContratoSocial.miniatura){ i.remove(); cap.textContent='PDF · '+x.name; return }
+        window.ContratoSocial.miniatura(x).then(m=>{ i.src=m.url; cap.textContent='PDF · '+m.paginas+(m.paginas>1?' páginas':' página') }).catch(()=>{ i.remove(); cap.textContent='PDF · '+x.name });
+      });
+    }
     valida(el);
   }));
   f.querySelectorAll('select').forEach(sel=>{
