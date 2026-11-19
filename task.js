@@ -235,10 +235,20 @@ async function datasE4(pid) {
 async function logoDe(pid) {
   try {
     const an = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos'));
-    const a = an.docs.map(d => ({ id: d.id, ...d.data() })).find(x => /logo/i.test(x.campo || '') && /^image\//.test(x.tipo || ''));
+    // Aceita imagem pelo tipo ou pela extensão, e PDF (usa a primeira página)
+    const ehImg = x => /^image\//.test(x.tipo || '') || /\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(x.nome || ''), ehPdf = x => /pdf/i.test(x.tipo || '') || /\.pdf$/i.test(x.nome || '');
+    const lista = an.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => /logo|marca/i.test(x.campo || '') || /logo|marca/i.test(x.nome || ''));
+    const a = lista.find(ehImg) || lista.find(ehPdf);
     if (!a) return '';
     const ps = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos', a.id, 'partes'));
-    const src = `data:${a.tipo};base64,` + ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join('');
+    const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join('');
+    let src;
+    if (ehImg(a)) { const ext = (String(a.nome || '').match(/\.(\w+)$/) || [])[1] || 'png'; const tipo = /^image\//.test(a.tipo || '') ? a.tipo : 'image/' + (/svg/i.test(ext) ? 'svg+xml' : /jpe?g/i.test(ext) ? 'jpeg' : ext.toLowerCase()); src = `data:${tipo};base64,` + b64; }
+    else {
+      if (!window.ContratoSocial) await new Promise((ok, err) => { const sc = document.createElement('script'); sc.src = 'contrato-social.js'; sc.onload = ok; sc.onerror = err; document.head.appendChild(sc); });
+      const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      src = (await window.ContratoSocial.miniatura(new File([u8], a.nome || 'logo.pdf', { type: 'application/pdf' }), 800)).url;
+    }
     const img = await new Promise((ok, err) => { const i = new Image(); i.onload = () => ok(i); i.onerror = err; i.src = src; });
     // Corta as bordas brancas ou transparentes, para o logo ocupar o espaço todo
     const W = img.naturalWidth, H = img.naturalHeight, s0 = Math.min(1, 800 / Math.max(W, H)), w0 = Math.max(1, Math.round(W * s0)), h0 = Math.max(1, Math.round(H * s0));
@@ -287,7 +297,8 @@ function completarDatas() {
       const up = {};
       { const d = await datasE4(t.propostaId); baseSimples(d, t.cnpj); if (d && d.central) await razoesFiliais(d.central, t.central); const sig = c => c ? [c.tipo || '', c.nome, ...(c.filiais || []).map(f => [f.cod, f.tipo, f.cnpj, f.razao || '', f.info ? 1 : 0, JSON.stringify(Object.entries(f.dados || {}).sort())].join('|'))].join('\n') : ''; if (d && sig(d.central) !== sig(t.central)) up.central = d.central || null; }
       if (!t.dataBase) { const d = await datasE4(t.propostaId); if (d && d.dataBase) up.dataBase = d.dataBase; else if (t.dataBase === undefined) up.dataBase = ''; if (!t.start && d && d.start) up.start = d.start; }
-      if (t.logoV !== 2) { up.logo = await logoDe(t.propostaId); up.logoV = 2; }
+      // Logo: refaz se é de versão antiga ou se ainda não tinha (o anexo pode ter chegado depois)
+      if (t.logoV !== 3 || !t.logo) { const lg = await logoDe(t.propostaId); if (lg !== (t.logo || '') || t.logoV !== 3) { up.logo = lg; up.logoV = 3; } }
       if (Object.keys(up).length) await F.updateDoc(F.doc(db, 'tasks', t.id), up);
     })().catch(() => {});
   });
@@ -302,7 +313,7 @@ async function criarDaProposta(pid, auto) {
   let v = {}; try { const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')); if (r.exists()) v = r.data().valores || {}; } catch (e) {}
   const sc = window.splitCidade ? window.splitCidade(p.cidade) : { cidade: p.cidade || '', uf: '' };
   const d4 = (await datasE4(pid)) || {}; baseSimples(d4, v.cnpj || p.cnpj); if (d4.central) await razoesFiliais(d4.central);
-  const novo = { dataBase: d4.dataBase || '', central: d4.central || null, logo: await logoDe(pid), logoV: 2,
+  const novo = { dataBase: d4.dataBase || '', central: d4.central || null, logo: await logoDe(pid), logoV: 3,
     apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
     respCadastro: auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }, respStart: null, start: d4.start || v.dataImpl || '', obs: v.obs || '',
