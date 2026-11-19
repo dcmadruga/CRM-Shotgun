@@ -108,6 +108,7 @@ button.del{border:none;background:none;color:var(--danger);padding:6px;font-size
 label.btn.up{display:inline-flex;align-items:center;padding:8px 14px;border-radius:4px;background:var(--purple);color:#fff;font-weight:600;font-size:13.5px;cursor:pointer;letter-spacing:0}
 .diaswrap{gap:4px}
 .item.hid .desc,.item.hid label:not(.chk){opacity:.45}
+.sugs{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px;align-items:center}.sugs .sug{padding:4px 10px;border-radius:99px;font-size:13px}
 .cnpjrow{display:flex;gap:8px;align-items:stretch}
 @media (min-width:641px){.cnpjlbl{grid-column:span 2}}
 .cnpjrow input{flex:1}
@@ -320,6 +321,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
       <label class="cnpjlbl">CNPJ<span class="cnpjrow"><input id="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" autocomplete="off"><a id="btnCnpj" class="btn" href="https://receitaws.com.br/" target="_blank" rel="noopener" aria-disabled="true">Buscar</a></span></label>
       <label>Cliente (razão social)<input id="cliente"></label>
       <label>A/C (contato)<input id="contato"></label>
+      <div class="sugs full" id="contatoSug" hidden></div>
       <label>Data da proposta<input id="data" type="date"></label>
       <label>Condição válida até<input id="validade" type="date"></label>
     </div>
@@ -910,9 +912,9 @@ $('cnpj').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(
 /* Busca automática: funciona quando a página pode acessar a internet (arquivo no computador).
    No claude.ai as consultas externas são bloqueadas, então cai no copiar e colar. */
 const APIS = [
-  d => fetch(`https://brasilapi.com.br/api/cnpj/v1/${d}`).then(okJson).then(j=>({nome:j.razao_social, fantasia:j.nome_fantasia, municipio:j.municipio, uf:j.uf, situacao:j.descricao_situacao_cadastral})),
-  d => fetch(`https://publica.cnpj.ws/cnpj/${d}`).then(okJson).then(j=>({nome:j.razao_social, fantasia:j.estabelecimento&&j.estabelecimento.nome_fantasia, municipio:j.estabelecimento&&j.estabelecimento.cidade&&j.estabelecimento.cidade.nome, uf:j.estabelecimento&&j.estabelecimento.estado&&j.estabelecimento.estado.sigla, situacao:j.estabelecimento&&j.estabelecimento.situacao_cadastral})),
-  d => fetch(`https://minhareceita.org/${d}`).then(okJson).then(j=>({nome:j.razao_social, fantasia:j.nome_fantasia, municipio:j.municipio, uf:j.uf, situacao:j.descricao_situacao_cadastral})),
+  d => fetch(`https://brasilapi.com.br/api/cnpj/v1/${d}`).then(okJson).then(j=>({nome:j.razao_social, fantasia:j.nome_fantasia, municipio:j.municipio, uf:j.uf, situacao:j.descricao_situacao_cadastral, socios:(j.qsa||[]).map(x=>({nome:x.nome_socio, qual:x.qualificacao_socio}))})),
+  d => fetch(`https://publica.cnpj.ws/cnpj/${d}`).then(okJson).then(j=>({nome:j.razao_social, fantasia:j.estabelecimento&&j.estabelecimento.nome_fantasia, municipio:j.estabelecimento&&j.estabelecimento.cidade&&j.estabelecimento.cidade.nome, uf:j.estabelecimento&&j.estabelecimento.estado&&j.estabelecimento.estado.sigla, situacao:j.estabelecimento&&j.estabelecimento.situacao_cadastral, socios:(j.socios||[]).map(x=>({nome:x.nome, qual:x.qualificacao_socio&&x.qualificacao_socio.descricao}))})),
+  d => fetch(`https://minhareceita.org/${d}`).then(okJson).then(j=>({nome:j.razao_social, fantasia:j.nome_fantasia, municipio:j.municipio, uf:j.uf, situacao:j.descricao_situacao_cadastral, socios:(j.qsa||[]).map(x=>({nome:x.nome_socio, qual:x.qualificacao_socio}))})),
 ];
 function okJson(r){ if(r.status===404) throw {notFound:true}; if(!r.ok) throw new Error('HTTP '+r.status); return r.json() }
 let autoBlocked=false, busy=false;
@@ -953,9 +955,19 @@ function parseJsonIn(t){
   const nome=g('nome'), status=g('status');
   return (nome||status) ? {nome, fantasia:g('fantasia'), municipio:g('municipio'), uf:g('uf'), situacao:g('situacao'), status, message:g('message')} : null;
 }
+// Sugestão de contato: sócios da Receita. Um clique preenche o A/C; o vendedor também pode digitar outro nome.
+const tituloNome = n => String(n||'').toLowerCase().replace(/(^|\s)(\S)/g,(m,a,b)=>a+b.toUpperCase()).replace(/\s(D[aeo]s?|E)\s/g,m=>m.toLowerCase());
+function mostrarSocios(lista){
+  const el=$('contatoSug'); const ss=(lista||[]).filter(x=>x&&x.nome).slice(0,8);
+  if(!ss.length){ el.hidden=true; el.innerHTML=''; return }
+  el.innerHTML='<span class="hint">Sócios:</span> '+ss.map(x=>`<button type="button" class="sug" data-nome="${esc(tituloNome(x.nome))}" title="${esc(x.qual||'')}">${esc(tituloNome(x.nome))}</button>`).join('')+'<span class="hint">ou digite outro nome.</span>';
+  el.hidden=false;
+}
+$('contatoSug').addEventListener('click',e=>{ const b=e.target.closest('[data-nome]'); if(!b) return; S.contato=b.dataset.nome; $('contato').value=S.contato; save(); $('contato').focus() });
 function aplicarConsulta(j){
   if(j.status==='ERROR' || !j.nome){ cnpjMsg('A Receita não retornou dados para este CNPJ'+(j.message?': '+esc(j.message):'.')); return false }
   S.cliente=j.nome; $('cliente').value=j.nome;
+  mostrarSocios(j.socios || (j.qsa||[]).map(x=>({nome:x.nome||x.nome_socio, qual:x.qual||x.qualificacao_socio})));
   if(j.municipio){ S.cidade=`${j.municipio}${j.uf?' - '+j.uf:''}`; $('cidade').value=S.cidade; setTimeout(()=>calcularKm(),0) }
   save();
   const extra=[j.fantasia?'Fantasia: '+j.fantasia:'', j.municipio?`${j.municipio} - ${j.uf}`:'', j.situacao?'Situação: '+j.situacao:''].filter(Boolean).join(' · ');
