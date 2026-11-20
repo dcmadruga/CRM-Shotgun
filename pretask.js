@@ -270,8 +270,15 @@
   const secoesParam = cfg => ((cfg && cfg.secoes) || []).filter(s => !ehSecBase(s)).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c)) })).filter(s => s.campos.length);
   const BANDS = [[/ipiranga/i, '#0a3d91', '#ffd400', '#ffd400', 'Ipiranga'], [/shell|ra[ií]zen/i, '#ffd500', '#dd1d21', '#dd1d21', 'Shell'], [/petrobras|^br\b|vibra/i, '#00843d', '#fdc82f', '#fff', 'Petrobras'], [/\bale\b|alesat/i, '#0b4ea2', '#e30613', '#fff', 'ALE'], [/total/i, '#ed0000', '#2a5caa', '#fff', 'TotalEnergies'], [/atem/i, '#004b8d', '#f7a600', '#fff', 'Atem'], [/rodoil/i, '#e30613', '#1d1d1b', '#fff', 'Rodoil'], [/larco/i, '#003f7d', '#e4002b', '#fff', 'Larco'], [/charrua/i, '#00539b', '#f6a800', '#fff', 'Charrua'], [/petronas/i, '#00a19c', '#d8e021', '#fff', 'Petronas'], [/idaza/i, '#1b3f8b', '#f39200', '#fff', 'Idaza'], [/branca|sem bandeira|livre/i, '#ffffff', '#c9c9d1', '#33333b', 'Bandeira branca']];
   // Logo oficial (arquivos em icons/bandeiras, do Wikimedia Commons) quando houver; senão o selo com as cores
-  const LOGOS = { Petrobras: 'petrobras.svg', Ipiranga: 'ipiranga.svg', ALE: 'ale.svg' };
-  function logoBand(nome) { const b = BANDS.find(x => x[0].test(nome)), arq = b && LOGOS[b[4]]; return arq ? `<span class="ptlogoband"><img src="icons/bandeiras/${arq}" alt="${esc(b[4])}"></span>` : ''; }
+  // A lista vem do cadastro "Logos das Bandeiras" (Parâmetros Pré TASK); sem cadastro publicado, usa a padrão
+  const LOGOS_PADRAO = [{ nome: 'Petrobras', img: 'icons/bandeiras/petrobras.svg' }, { nome: 'Ipiranga', img: 'icons/bandeiras/ipiranga.svg' }, { nome: 'ALE', img: 'icons/bandeiras/ale.svg' }];
+  let BAND_LOGOS = null;
+  function logoBand(nome) {
+    const n = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bandeira\s+/, '').trim();
+    const b = BANDS.find(x => x[0].test(nome)), canon = b ? b[4] : '';
+    const it = (BAND_LOGOS || LOGOS_PADRAO).find(x => x.img && (n(x.nome) === n(nome) || (canon && n(x.nome) === n(canon))));
+    return it ? `<span class="ptlogoband"><img src="${esc(it.img)}" alt="${esc(it.nome)}"></span>` : '';
+  }
   function seloBand(nome) { const b = BANDS.find(x => x[0].test(nome)) || [null, '#4b4b57', '#8a8a99', '#fff', nome]; return `<span class="ptselo" style="background:${b[1]};color:${b[3]};--b2:${b[2]};${b[1] === '#ffffff' ? 'border:1px solid #d6d6de;' : ''}"><small>Posto</small>${esc(b[4] || nome)}</span>`; }
   // Posto simples: a bandeira informada pelo cliente nos Dados Primários já entra no bloco Bandeira (só se ainda estiver vazio)
   function bandeiraDoE2() {
@@ -352,8 +359,9 @@
     const { F, db, pid } = ctx;
     const ler = async (...c) => { try { const r = await F.getDoc(F.doc(db, ...c)); return r.exists() ? r.data() : null; } catch (e) { return null; } };
     const json = x => { try { return x && x.json ? JSON.parse(x.json) : null; } catch (e) { return null; } };
-    const [p, e4, e2, cfg4, pub2] = await Promise.all([ler('propostas', pid), ler('propostas', pid, 'etapa4', 'dados'), ler('propostas', pid, 'etapa2', 'resposta'), ler('config', 'etapa4'), ler('publico', 'etapa2')]);
+    const [p, e4, e2, cfg4, pub2, band] = await Promise.all([ler('propostas', pid), ler('propostas', pid, 'etapa4', 'dados'), ler('propostas', pid, 'etapa2', 'resposta'), ler('config', 'etapa4'), ler('publico', 'etapa2'), ler('publico', 'bandeiras')]);
     if (!C || C.pid !== pid) return;
+    BAND_LOGOS = json(band);
     if (!p) { d.querySelector('#ptBody').innerHTML = '<p class="hint">Proposta não encontrada.</p>'; return; }
     let an = []; try { an = (await F.getDocs(F.collection(db, 'propostas', pid, 'anexos'))).docs.map(x => ({ id: x.id, ...x.data() })); } catch (e) {}
     let dono = null; if (p.owner) dono = await ler('usuarios', p.owner);

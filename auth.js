@@ -167,7 +167,7 @@ async function iniciar() {
     aplicarModo();
     await carregar(false);
     if (fb.admin) { ouvirUsuarios(); carregarE2(); carregarE3(); }
-    carregarE4(); if (fb.admin) carregarMod();
+    carregarE4(); if (fb.admin) { carregarMod(); carregarBand(); }
     ouvirPropostas();
     abrirAba('tabHoje');
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa2')).then(s => { if (s.exists() && s.data().json) E2PUB = JSON.parse(s.data().json); }).catch(() => {});
@@ -1016,6 +1016,45 @@ async function iniciar() {
     $('e4Secoes').querySelectorAll('.sec[data-si]').forEach(sec => { const s = E4.secoes[+sec.dataset.si]; const d = document.createElement('label'); d.className = 'chk secfil'; d.innerHTML = `<input type="checkbox" data-porfil${s.porFilial === false ? '' : ' checked'}> Em Central, preencher esta seção filial por filial`; sec.querySelector('.body').prepend(d); });
   }
   $('e4Secoes').addEventListener('change', e => { if (!e.target.matches('[data-porfil]') || !E4) return; E4.secoes[+e.target.closest('[data-si]').dataset.si].porFilial = e.target.checked; marcarE4(); });
+
+  /* ---------- Logos das Bandeiras (ADM): publico/bandeiras, lido pelo Pré TASK e pelos Dados Primários ---------- */
+  const BANDDOC = F.doc(db, 'publico', 'bandeiras');
+  const BAND_PADRAO = [{ nome: 'Petrobras', img: 'icons/bandeiras/petrobras.svg' }, { nome: 'Ipiranga', img: 'icons/bandeiras/ipiranga.svg' }, { nome: 'ALE', img: 'icons/bandeiras/ale.svg' }, { nome: 'Shell', img: '' }, { nome: 'Bandeira Branca', img: '' }];
+  let BAND = null;
+  const bandStatus = t => { $('bandStatus').textContent = t; };
+  async function carregarBand() {
+    try { const snap = await F.getDoc(BANDDOC); BAND = snap.exists() && snap.data().json ? JSON.parse(snap.data().json) : copia(BAND_PADRAO); bandStatus(snap.exists() ? (snap.data().por ? 'Publicado por ' + snap.data().por + (snap.data().em ? ' em ' + fmtQuando(snap.data().em) : '') + '.' : '') : 'Usando a lista padrão. Ajuste e publique.'); }
+    catch (e) { BAND = copia(BAND_PADRAO); }
+    desenharBand();
+  }
+  function desenharBand() {
+    if (!BAND || !fb.admin) return;
+    $('bandLista').innerHTML = BAND.map((b, i) => `<div class="bandrow" data-bi="${i}"><span class="bimg">${b.img ? `<img src="${esc(b.img)}" alt="">` : 'sem imagem'}</span><input data-bn value="${esc(b.nome)}" placeholder="Nome da bandeira" aria-label="Nome da bandeira"><label class="btn">${b.img ? 'Trocar imagem' : 'Escolher imagem'}<input type="file" accept="image/*,.svg" hidden data-bf></label>${b.img ? '<button type="button" data-bx>Tirar imagem</button>' : ''}<button type="button" data-bdel aria-label="Excluir bandeira">✕</button></div>`).join('') || '<p class="hint">Nenhuma bandeira cadastrada.</p>';
+  }
+  const marcarBand = () => bandStatus('Alterações ainda não publicadas.');
+  // Imagem reduzida (até 400x160) para caber no cadastro; SVG pequeno entra como está
+  function lerImagem(f) {
+    return new Promise((ok, err) => {
+      const rd = new FileReader(); rd.onerror = () => err(new Error('leitura'));
+      rd.onload = () => { const url = rd.result; if (/svg/i.test(f.type || f.name) && url.length < 150000) return ok(url);
+        const im = new Image(); im.onerror = () => err(new Error('imagem')); im.onload = () => { const k = Math.min(1, 400 / im.width, 160 / im.height), c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k)); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/png')); }; im.src = url; };
+      rd.readAsDataURL(f);
+    });
+  }
+  $('bandLista').addEventListener('input', e => { const r = e.target.closest('[data-bi]'); if (!r || !e.target.matches('[data-bn]')) return; BAND[+r.dataset.bi].nome = e.target.value; marcarBand(); });
+  $('bandLista').addEventListener('change', async e => { const r = e.target.closest('[data-bi]'); if (!r || !e.target.matches('[data-bf]') || !e.target.files[0]) return; try { BAND[+r.dataset.bi].img = await lerImagem(e.target.files[0]); marcarBand(); desenharBand(); } catch (err) { bandStatus('Não foi possível ler esta imagem.'); } });
+  $('bandLista').addEventListener('click', e => { const r = e.target.closest('[data-bi]'); if (!r) return; const i = +r.dataset.bi; if (e.target.closest('[data-bx]')) { BAND[i].img = ''; marcarBand(); desenharBand(); } else if (e.target.closest('[data-bdel]')) { BAND.splice(i, 1); marcarBand(); desenharBand(); } });
+  $('btnBandNova').addEventListener('click', () => { if (!BAND) return; BAND.push({ nome: '', img: '' }); desenharBand(); $('bandLista').querySelector('.bandrow:last-child [data-bn]')?.focus(); });
+  $('btnBandSalvar').addEventListener('click', async () => {
+    if (!BAND || !fb.admin) return;
+    const lista = BAND.map(b => ({ nome: String(b.nome || '').trim(), img: b.img || '' })).filter(b => b.nome || b.img);
+    if (lista.some(b => !b.nome)) { bandStatus('Informe o nome de cada bandeira.'); return; }
+    const json = JSON.stringify(lista); if (json.length > 900000) { bandStatus('As imagens ficaram grandes demais. Use imagens menores.'); return; }
+    const btn = $('btnBandSalvar'); btn.disabled = true; bandStatus('Publicando…');
+    try { const em = new Date().toISOString(); await F.setDoc(BANDDOC, { json, em, por: perfil.nome || perfil.email }); BAND = lista; desenharBand(); bandStatus('Logos publicados em ' + fmtQuando(em) + '.'); }
+    catch (err) { bandStatus('Não foi possível publicar (' + (err.code || err.message) + ').'); }
+    finally { btn.disabled = false; }
+  });
 
   /* ---------- Módulos do TASK (ADM) ---------- */
   const MODDOC = F.doc(db, 'config', 'modulos');

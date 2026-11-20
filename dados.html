@@ -207,8 +207,10 @@ const BANDEIRAS=[
   [/charrua/i,'#00539b','#f6a800','#fff','Charrua'],
   [/sim\b|rede sim/i,'#e2001a','#004f9f','#fff','SIM'],
   [/branca|sem bandeira|livre/i,'#ffffff','#c9c9d1','#33333b','Bandeira branca']];
-// Logos oficiais disponíveis (arquivos do Wikimedia Commons em icons/bandeiras)
-const LOGOS_BAND={Petrobras:'petrobras.svg',Ipiranga:'ipiranga.svg',ALE:'ale.svg'};
+// Logos das bandeiras: cadastro publicado pelo administrador (publico/bandeiras); sem ele, a lista padrão
+let LOGOS_BAND=[{nome:'Petrobras',img:'icons/bandeiras/petrobras.svg'},{nome:'Ipiranga',img:'icons/bandeiras/ipiranga.svg'},{nome:'ALE',img:'icons/bandeiras/ale.svg'}];
+const logoDaBandeira=v=>{ const n=x=>nz(x).toLowerCase().replace(/^bandeira\s+/,'').trim(), b=BANDEIRAS.find(x=>x[0].test(nz(v))), canon=b?b[4]:''; return LOGOS_BAND.find(x=>x.img&&(n(x.nome)===n(v)||(canon&&n(x.nome)===n(canon)))) };
+(async()=>{ const C=window.FIREBASE_CONFIG||{}; if(!C.apiKey||!C.projectId) return; try{ const r=await fetch(`https://firestore.googleapis.com/v1/projects/${C.projectId}/databases/(default)/documents/publico/bandeiras?key=${C.apiKey}`); if(!r.ok) return; const j=await r.json(), t=j.fields&&j.fields.json&&j.fields.json.stringValue; if(t){ LOGOS_BAND=JSON.parse(t); document.querySelectorAll('select').forEach(sel=>{ if(sel._desenhaBand) sel._desenhaBand() }) } }catch(e){} })();
 const slug=t=>nz(t).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 function seloBandeira(nome){
   const b=BANDEIRAS.find(x=>x[0].test(nz(nome)))||[null,'#4b4b57','#8a8a99','#fff',nome];
@@ -219,10 +221,10 @@ function ligarBandeira(){
     const lab=sel.closest('label'); if(!lab||!/bandeira/i.test(lab.querySelector('span')?.textContent||'')) return;
     let box=lab.querySelector('.band'); if(!box){ box=document.createElement('span'); box.className='band'; box.setAttribute('aria-hidden','true'); sel.after(box) }
     const desenha=()=>{ const v=sel.value; if(!v||ehOutro(v)){ box.innerHTML=''; return }
-      const b=BANDEIRAS.find(x=>x[0].test(nz(v))), arq=b&&LOGOS_BAND[b[4]];
-      if(arq){ box.innerHTML=`<span class="blogo"><img src="icons/bandeiras/${arq}" alt="${esc(b[4])}"></span>`; return }
+      const lg=logoDaBandeira(v);
+      if(lg){ box.innerHTML=`<span class="blogo"><img src="${esc(lg.img)}" alt="${esc(lg.nome)}"></span>`; return }
       box.innerHTML=seloBandeira(v); const i=new Image(); i.alt=v; i.onload=()=>{ if(sel.value===v){ box.innerHTML=''; box.appendChild(i) } }; i.src='icons/bandeiras/'+slug(v)+'.png' };
-    sel.addEventListener('change',desenha); desenha();
+    sel._desenhaBand=desenha; sel.addEventListener('change',desenha); desenha();
   });
 }
 // Rótulo que não cabe numa coluna: o campo ocupa duas

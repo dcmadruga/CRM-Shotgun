@@ -199,6 +199,7 @@ body:not(.is-admin):not(.is-task):not(.tem-task) .tasktab{display:none!important
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .tkst.and{background:#3a2a10;color:#f3b45c}:root:not([data-theme="light"]) .tkst.fut{background:#1b2740;color:#8fb0f0}:root:not([data-theme="light"]) .tkst.fin{background:#163323;color:#7ed3a0}:root:not([data-theme="light"]) .tkstart{background:#2c1f3a}:root:not([data-theme="light"]) .tkst2{color:#f3b45c}}
 :root[data-theme="dark"] .tkst.and{background:#3a2a10;color:#f3b45c}:root[data-theme="dark"] .tkst.fut{background:#1b2740;color:#8fb0f0}:root[data-theme="dark"] .tkst.fin{background:#163323;color:#7ed3a0}:root[data-theme="dark"] .tkstart{background:#2c1f3a}:root[data-theme="dark"] .tkst2{color:#f3b45c}
 .tkdlg{border:1px solid var(--line);border-radius:12px;padding:0;width:min(640px,calc(100vw - 24px));max-height:calc(100vh - 32px);background:var(--surface);color:var(--fg)}
+.bandlista{display:flex;flex-direction:column;gap:8px;margin-top:8px}.bandrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}.bandrow .bimg{display:inline-flex;align-items:center;justify-content:center;width:150px;height:52px;background:#fff;border:1px solid #d6d6de;border-radius:8px;font-size:12px;color:#8a8a99;flex:none}.bandrow .bimg img{max-width:136px;max-height:40px;object-fit:contain}.bandrow input[data-bn]{flex:1;min-width:160px}.bandrow label.btn{cursor:pointer;display:inline-flex;align-items:center;font-size:14px;font-weight:600;color:var(--purple);background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:8px 14px}
 .modtit{font-family:var(--display);font-size:19px;margin:28px 0 4px}
 .modproc{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}.modproc h3{font-size:14px;margin:0 0 6px}.modproc .e2tab input{width:100%}.modpai{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;font-size:13px}.modpai select{max-width:260px}.secfil{display:flex;gap:6px;align-items:center;font-size:13px;margin:0 0 10px}
 .tkmods{display:grid;gap:5px;margin:4px 0}
@@ -620,6 +621,15 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <p class="hint">Cada módulo aparece no card do TASK com os seus campos (dados) e a lista de processos. Cada processo recebe um status: Não iniciado, Iniciado, Em andamento, Parado ou Finalizado. Um módulo pode ser etapa de outro (ex.: Homologação de Boletos dentro de Implantação).</p>
   <div id="modSecoes" style="display:flex;flex-direction:column;gap:18px"></div>
   <div class="tools"><button type="button" id="btnModNovo">+ Novo módulo</button></div>
+
+  <h2 class="modtit">Logos das Bandeiras</h2>
+  <div class="savebar">
+    <button type="button" class="primary" id="btnBandSalvar">Salvar e publicar logos</button>
+    <span id="bandStatus" class="hint"></span>
+  </div>
+  <p class="hint">Vincule o nome de cada bandeira a uma imagem. Quando a bandeira é escolhida (Pré TASK e Dados Primários), aparece esta imagem. Sem imagem, aparece o selo colorido. Use o nome como ele aparece na lista de opções (ex.: Petrobras, Shell, Ipiranga).</p>
+  <div id="bandLista" class="bandlista"></div>
+  <div class="tools"><button type="button" id="btnBandNova">+ Nova bandeira</button></div>
 </main>
 
 <main id="viewE3" hidden>
