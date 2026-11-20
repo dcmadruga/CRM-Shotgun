@@ -54,7 +54,11 @@ body.visorAberto>*:not(#visor){user-select:none;-webkit-user-select:none}#visor 
 @media (max-width:640px){.linha{grid-template-columns:1fr}}
 label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;min-width:0}
 label b{color:var(--danger);font-weight:600}
-.body label>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.body label.full>span:first-child,.body label.socio>span:first-child,.radios label>span:first-child{white-space:normal}
+.body label>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.body label.larga{grid-column:span 2}@media (max-width:440px){.body label.larga{grid-column:1/-1}}
+.band{display:flex;align-items:center;gap:10px;margin-top:4px;min-height:52px}.band:empty{display:none}
+.band img{max-height:52px;max-width:150px;object-fit:contain}
+.bsel{display:inline-flex;flex-direction:column;justify-content:center;min-width:120px;height:52px;padding:0 14px;border-radius:8px;font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.04em;text-transform:uppercase;line-height:1.05;box-shadow:inset 0 -6px 0 var(--b2);white-space:nowrap}
+.bsel small{font-size:9.5px;font-weight:500;letter-spacing:.08em;opacity:.85}.body label.full>span:first-child,.body label.socio>span:first-child,.radios label>span:first-child{white-space:normal}
 input,select,textarea{font:inherit;font-size:16px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:9px 10px;width:100%;min-width:0}
 textarea{min-height:80px;resize:vertical}
 input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
@@ -189,6 +193,39 @@ function campoHtml(c){
   if(c.tipo==='cnpj') return `<label${full}>${lab}<span class="cnpjrow"><input name="${esc(c.k)}" data-v="cnpj" ${TIPO_ATTR.cnpj}${req}><button type="button" class="busca" data-busca="${esc(c.k)}">Pesquisar</button></span><span class="hint cnpjmsg" hidden></span></label>`;
   return `<label${full}>${lab}<input name="${esc(c.k)}" data-v="${esc(c.tipo)}" ${TIPO_ATTR[c.tipo]||''}${req}${c.ph?` placeholder="${esc(c.ph)}"`:''}${extra}></label>`;
 }
+// Bandeira (distribuidora): imagem ilustrativa. Se existir icons/bandeiras/<nome>.png, usa o logo; senão, um selo com as cores da distribuidora
+const BANDEIRAS=[
+  [/ipiranga/i,'#0a3d91','#ffd400','#ffd400','Ipiranga'],
+  [/shell|ra[ií]zen/i,'#ffd500','#dd1d21','#dd1d21','Shell'],
+  [/petrobras|^br\b|vibra/i,'#00843d','#fdc82f','#fff','Petrobras'],
+  [/\bale\b|alesat/i,'#0b4ea2','#e30613','#fff','ALE'],
+  [/total/i,'#ed0000','#2a5caa','#fff','TotalEnergies'],
+  [/atem/i,'#004b8d','#f7a600','#fff','Atem'],
+  [/rodoil/i,'#e30613','#1d1d1b','#fff','Rodoil'],
+  [/larco/i,'#003f7d','#e4002b','#fff','Larco'],
+  [/charrua/i,'#00539b','#f6a800','#fff','Charrua'],
+  [/sim\b|rede sim/i,'#e2001a','#004f9f','#fff','SIM'],
+  [/branca|sem bandeira|livre/i,'#ffffff','#c9c9d1','#33333b','Bandeira branca']];
+const slug=t=>nz(t).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+function seloBandeira(nome){
+  const b=BANDEIRAS.find(x=>x[0].test(nz(nome)))||[null,'#4b4b57','#8a8a99','#fff',nome];
+  return `<span class="bsel" style="background:${b[1]};color:${b[3]};--b2:${b[2]};${b[1]==='#ffffff'?'border:1px solid #d6d6de;':''}"><small>Posto</small>${esc(b[4]||nome)}</span>`;
+}
+function ligarBandeira(){
+  f.querySelectorAll('select').forEach(sel=>{
+    const lab=sel.closest('label'); if(!lab||!/bandeira/i.test(lab.querySelector('span')?.textContent||'')) return;
+    let box=lab.querySelector('.band'); if(!box){ box=document.createElement('span'); box.className='band'; box.setAttribute('aria-hidden','true'); sel.after(box) }
+    const desenha=()=>{ const v=sel.value; if(!v||ehOutro(v)){ box.innerHTML=''; return }
+      box.innerHTML=seloBandeira(v); const i=new Image(); i.alt=v; i.onload=()=>{ if(sel.value===v){ box.innerHTML=''; box.appendChild(i) } }; i.src='icons/bandeiras/'+slug(v)+'.png' };
+    sel.addEventListener('change',desenha); desenha();
+  });
+}
+// Rótulo que não cabe numa coluna: o campo ocupa duas
+function ajustarRotulos(){
+  f.querySelectorAll('.body label.larga').forEach(l=>l.classList.remove('larga'));
+  f.querySelectorAll('.body label:not(.full):not(.socio)>span:first-child').forEach(sp=>{ if(sp.offsetParent&&sp.scrollWidth>sp.clientWidth+1) sp.parentElement.classList.add('larga') });
+}
+let _rot=null; const reajustar=()=>{ clearTimeout(_rot); _rot=setTimeout(ajustarRotulos,120) }; window.addEventListener('resize',reajustar); document.addEventListener('change',reajustar);
 function montar(){
   $('#titulo').textContent=CFG.titulo||'Dados complementares obrigatórios';
   document.title=(CFG.titulo||'Dados complementares')+' Argo';
@@ -661,8 +698,8 @@ function montarTexto(o){
   if(draft.cnpj && L.c && dig(draft.cnpj)!==dig(L.c)) draft={};
   preencher(draft);
   preencher({cnpj:L.c, razao:L.r, cidade:L.cid, uf:L.uf});
-  ligarAuto(); sincronizarSenhaCert();
-  $('#carregando').hidden=true; f.hidden=false;
+  ligarAuto(); sincronizarSenhaCert(); ligarBandeira();
+  $('#carregando').hidden=true; f.hidden=false; ajustarRotulos();
 })();
 f.addEventListener('input',()=>{ try{ localStorage.setItem(DRAFT,JSON.stringify(lerForm())) }catch(e){} });
 
