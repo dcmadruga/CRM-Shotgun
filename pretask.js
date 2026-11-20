@@ -59,7 +59,7 @@
 .ptanx .it.comimg{border-radius:10px;padding:4px 4px 4px 4px}.ptanx .it img.mini{width:56px;height:56px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;cursor:zoom-in;flex:none}
 .ptanx .it button{border:0;background:none;padding:0 6px;font-size:15px;color:var(--muted);min-height:0}
 .ptanx .bt{align-self:flex-start;cursor:pointer;border:1px dashed var(--line);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--purple)}
-.ptanx .cst{font-size:12.5px;font-weight:500}.ptanx .cst.ok{color:#2f8f57}.ptanx .cst.bad{color:var(--danger)}.ptanx .cst:empty{display:none}.ptanx .ccnpj{display:block;margin-top:2px}.ptanx .cst.venc{display:block;background:#fff3c4;color:#6b4e00;border-left:4px solid #e0a800;border-radius:4px;padding:6px 10px;margin-top:4px}
+.ptanx .cst{font-size:12.5px;font-weight:500}.ptanx .cst.ok{color:#2f8f57}.ptanx .cst.bad{color:var(--danger)}.ptanx .cst:empty{display:none}.ptanx .ccnpj{display:block;margin-top:4px}.ptanx .ccnpj.alerta{background:#fde2e1;color:#9b1c1c;border-left:4px solid #d93025;border-radius:4px;padding:6px 10px;font-weight:600}.ptanx .cst.venc{display:block;background:#fff3c4;color:#6b4e00;border-left:4px solid #e0a800;border-radius:4px;padding:6px 10px;margin-top:4px}
 .ptbtns{display:flex;gap:8px;flex-wrap:wrap}
 .pthist{font-size:12px;color:var(--muted);font-weight:400}
 .dgm.ok,.dgm.parcial,.dgm.vazio{flex:none}
@@ -170,8 +170,8 @@
     const m = String(k).match(/^f(\d+)__/), fil = m ? C.pre.filiais[+m[1]] : C.pre.filiais[0], cf = dig((fil && fil.cnpj) || C.p.cnpj || ''), cod = (fil && fil.cod) || 'cliente';
     if (cf.length !== 14) { ccn.className = 'cst ccnpj venc'; ccn.textContent = '⚠ Informe o CNPJ da ' + cod + ' para conferir com o certificado (' + fmtCnpj(cc) + ').'; return; }
     if (cc === cf) { st.cnpjRes = 'ok'; ccn.className = 'cst ccnpj ok'; ccn.textContent = '✓ CNPJ do certificado confere com a ' + cod + ' (' + fmtCnpj(cc) + ')'; return; }
-    if (cc.slice(0, 8) === cf.slice(0, 8)) { st.cnpjRes = 'base'; ccn.className = 'cst ccnpj venc'; ccn.textContent = '⚠ O certificado é de outra unidade da mesma empresa (' + fmtCnpj(cc) + '); o CNPJ da ' + cod + ' é ' + fmtCnpj(cf) + '.'; return; }
-    st.cnpjRes = 'dif'; ccn.className = 'cst ccnpj bad'; ccn.textContent = '✗ O CNPJ do certificado (' + fmtCnpj(cc) + ') não corresponde ao CNPJ da ' + cod + ' (' + fmtCnpj(cf) + ').';
+    if (cc.slice(0, 8) === cf.slice(0, 8)) { st.cnpjRes = 'base'; ccn.className = 'cst ccnpj alerta'; ccn.textContent = '✗ O CNPJ do certificado (' + fmtCnpj(cc) + ') não é o da ' + cod + ' (' + fmtCnpj(cf) + '). É de outra unidade da mesma empresa.'; return; }
+    st.cnpjRes = 'dif'; ccn.className = 'cst ccnpj alerta'; ccn.textContent = '✗ O CNPJ do certificado (' + fmtCnpj(cc) + ') não corresponde ao CNPJ da ' + cod + ' (' + fmtCnpj(cf) + ').';
   }
   const MINIS = new Map();
   function miniSalva(id) {
