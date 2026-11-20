@@ -54,6 +54,7 @@
 .pttabs button{border-radius:999px;padding:6px 12px;font-size:13px}
 .pttabs button[aria-selected=true]{background:var(--purple);border-color:var(--purple);color:#fff}
 .ptanx{display:flex;flex-direction:column;gap:6px}
+.ptclona{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}.ptclona select{width:auto;max-width:280px}
 .ptanx .lista{display:flex;flex-wrap:wrap;gap:6px}
 .ptanx .it{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;font-size:12.5px;font-weight:500;color:var(--fg);background:var(--field);word-break:break-all}
 .ptanx .it.comimg{border-radius:10px;padding:4px 4px 4px 4px}.ptanx .it img.mini{width:56px;height:56px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;cursor:zoom-in;flex:none}
@@ -398,7 +399,7 @@
     if (!porFilial(s)) return painel('p' + i, s.titulo, 'Parâmetros Pré TASK', `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid">${camposHtml(s.campos, '', C.v, C.anx)}</div></div>`);
     const at = Math.min(C.filAtiva, fils.length - 1);
     return painel('p' + i, s.titulo, 'preenchido filial por filial', `<div class="pttabs" role="tablist">${fils.map((f, j) => `<button type="button" role="tab" data-ptfi="${j}" aria-selected="${j === at}">${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}</button>`).join('')}</div>` +
-      fils.map((f, j) => `<div class="ptsec" data-ptfp="${j}"${j === at ? '' : ' hidden'}><h5>${esc(s.titulo)}<small>${esc([f.cod, f.razao].filter(Boolean).join(' · '))}</small></h5><div class="ptgrid">${j ? `<div class="ptbtns full"><button type="button" data-ptcopia="${j}" data-sec="${i}">Copiar dados da ${esc(fils[0].cod)}</button></div>` : ''}${camposHtml(s.campos, 'f' + j + '__', C.v, C.anx)}</div></div>`).join(''));
+      fils.map((f, j) => `<div class="ptsec" data-ptfp="${j}"${j === at ? '' : ' hidden'}><h5>${esc(s.titulo)}<small>${esc([f.cod, f.razao].filter(Boolean).join(' · '))}</small></h5><div class="ptgrid">${fils.length > 1 ? `<div class="ptbtns full ptclona"><span>Clonar dados de</span><select data-ptde="${j}" aria-label="Filial de onde clonar">${fils.map((o, x) => x === j ? '' : `<option value="${x}">${esc([o.cod, o.razao].filter(Boolean).join(' · '))}</option>`).join('')}</select><button type="button" data-ptcopia="${j}" data-sec="${i}">Clonar</button></div>` : ''}${camposHtml(s.campos, 'f' + j + '__', C.v, C.anx)}</div></div>`).join(''));
   }
   function painelAnexos() {
     const an = C.an;
@@ -450,7 +451,7 @@
     });
     corpo.addEventListener('click', ev => {
       const t = ev.target.closest('[data-ptfi]'); if (t) { C.filAtiva = +t.dataset.ptfi; const p = t.closest('[data-ptp]'); p.querySelectorAll('[data-ptfi]').forEach(b => b.setAttribute('aria-selected', String(b === t))); p.querySelectorAll('[data-ptfp]').forEach(x => { x.hidden = x.dataset.ptfp !== t.dataset.ptfi; }); return; }
-      const cp = ev.target.closest('[data-ptcopia]'); if (cp) { colherCampos(); const j = cp.dataset.ptcopia, s = secoesParam(C.cfg4)[+cp.dataset.sec]; const ks = []; s.campos.forEach(c => { ks.push(c.k, c.k + '__det'); Object.values(c.cond || {}).forEach(l => (l || []).forEach(x => ks.push(x.k))); }); ks.forEach(k => { if (C.v['f0__' + k] !== undefined && !Array.isArray(C.v['f0__' + k])) C.v['f' + j + '__' + k] = C.v['f0__' + k]; }); colherCabecalho(); desenhar(); mostrar(C.aba); msg('Dados copiados. Confira e salve.'); return; }
+      const cp = ev.target.closest('[data-ptcopia]'); if (cp) { colherCampos(); const j = cp.dataset.ptcopia, s = secoesParam(C.cfg4)[+cp.dataset.sec], de = +(cp.parentElement.querySelector('[data-ptde]')?.value || 0); const ks = []; s.campos.forEach(c => { ks.push(c.k, c.k + '__det'); Object.values(c.cond || {}).forEach(l => (l || []).forEach(x => ks.push(x.k))); }); ks.forEach(k => { const v = C.v['f' + de + '__' + k]; if (Array.isArray(v)) return; if (v !== undefined && v !== '') C.v['f' + j + '__' + k] = v; else delete C.v['f' + j + '__' + k]; }); C.filAtiva = +j; colherCabecalho(); desenhar(); mostrar(C.aba); msg('Dados de ' + (C.pre.filiais[de] || {}).cod + ' clonados para ' + (C.pre.filiais[j] || {}).cod + ' (os anexos não são clonados). Confira e salve.'); return; }
       const a = ev.target.closest('[data-pta]'); if (a) { if (a.dataset.pta === 'pdf') return verPdf(a); if (a.dataset.pta === 'contrato' && C.verContrato) return C.verContrato(C.pid, a); }
       const ax = ev.target.closest('[data-ptanexo]'); if (ax) return baixar(ax);
     });
