@@ -30,7 +30,7 @@ main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
 .intro{margin:0}
 .sec{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
-.body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
 .full{grid-column:1/-1}
 .prev{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.prev figure{margin:0;display:grid;gap:3px;justify-items:start}.prev figcaption{font-size:11.5px;color:var(--muted)}.prev img{max-height:140px;max-width:220px;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff;padding:4px;cursor:zoom-in}.prev figure{cursor:zoom-in}
 #visor{position:fixed;inset:0;z-index:1000;background:rgba(10,10,14,.92);display:flex;flex-direction:column}
@@ -49,11 +49,12 @@ body.visorAberto>*:not(#visor){user-select:none;-webkit-user-select:none}#visor 
 .nsug{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.nsug small{color:var(--muted);font-size:12px}.nsug button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}
 @media (min-width:700px){.body>label:has(.busca){grid-column:span 2}}
 .linha{grid-column:1/-1;display:grid;grid-template-columns:minmax(160px,1fr) 3fr;gap:12px;align-items:start}
-.linha .deps{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.linha .deps{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
 .linha .deps:not(:has(> :not([hidden]))){display:none}
 @media (max-width:640px){.linha{grid-template-columns:1fr}}
 label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;min-width:0}
 label b{color:var(--danger);font-weight:600}
+.body label>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.body label.full>span:first-child,.body label.socio>span:first-child,.radios label>span:first-child{white-space:normal}
 input,select,textarea{font:inherit;font-size:16px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:9px 10px;width:100%;min-width:0}
 textarea{min-height:80px;resize:vertical}
 input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
@@ -214,6 +215,8 @@ function montar(){
     fecha();
     return `<section class="sec"><h2>${esc(s.titulo)}</h2><div class="body">${html.join('')}</div></section>`;
   }).join('');
+  // Rótulo numa linha só: o texto completo aparece ao passar o mouse
+  f.querySelectorAll('.body label>span:first-child').forEach(sp=>{ if(!sp.title) sp.title=sp.textContent.replace(/\s*\*\s*$/,'') });
 }
 const tem=k=>!!f.elements[k];
 
