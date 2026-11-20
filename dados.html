@@ -71,7 +71,7 @@ input[readonly]{opacity:.8}
 .anxi .anxn{display:flex;gap:8px;align-items:center;font-size:13px;word-break:break-all}.anxi .anxn span{flex:1}
 .anxi .anxn button{border:0;background:none;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;padding:0 4px}.anxi .anxn button:hover{color:var(--danger)}
 .anxi .anxs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.anxi .anxs input{max-width:220px}
-.anxi .cst{font-size:12.5px;color:var(--muted)}.anxi .cst.ok{color:#2f9e5b}.anxi .cst.bad{color:var(--danger)}
+.anxi .cst{font-size:12.5px;color:var(--muted)}.anxi .cst.ok{color:#2f9e5b}.anxi .cst.bad{color:var(--danger)}.anxi .cst.venc{display:block;flex-basis:100%;background:#fff3c4;color:#6b4e00;border-left:4px solid #e0a800;border-radius:4px;padding:6px 10px}
 .anxi.grande{border-color:var(--danger)}
 .outro{margin-top:6px}
 label.mesmo{flex-direction:row;align-items:center;gap:8px;margin-top:6px;font-size:14px;font-weight:500;color:var(--fg);letter-spacing:0;cursor:pointer}
@@ -422,7 +422,7 @@ function desenharArquivos(el){
         const s=document.createElement('div'); s.className='anxs';
         s.innerHTML=`<input type="text" autocomplete="off" spellcheck="false" placeholder="Senha do certificado" aria-label="Senha do certificado ${esc(x.name)}"><span class="cst"></span>`;
         const inp=s.querySelector('input'), cst=s.querySelector('.cst'); inp.value=senhas[k]||'';
-        const mostra=()=>{ const r=st[k]; cst.className='cst'+(r&&r.ok?' ok':r&&r.ok===false?' bad':''); cst.textContent=!inp.value?'Informe a senha deste certificado.':!r?'Conferindo…':r.ok?'✓ Senha confere'+(r.cn?' · '+r.cn:'')+(r.ate?' · válido até '+r.ate.toLocaleDateString('pt-BR')+(r.ate<new Date()?' (VENCIDO)':''):''):r.falha?'Não foi possível conferir agora. A senha será enviada assim mesmo.':(r.erro||'✗ A senha não confere com este certificado.'); inp.classList.toggle('bad',!!(r&&r.ok===false&&!r.falha)) };
+        const mostra=()=>{ const r=st[k], venc=!!(inp.value&&r&&r.ok&&r.ate&&r.ate<new Date()); cst.className='cst'+(venc?' venc':r&&r.ok?' ok':r&&r.ok===false?' bad':''); cst.textContent=!inp.value?'Informe a senha deste certificado.':!r?'Conferindo…':r.ok?(venc?'⚠ Senha confere, mas o certificado está VENCIDO desde '+r.ate.toLocaleDateString('pt-BR')+(r.cn?' · '+r.cn:''):'✓ Senha confere'+(r.cn?' · '+r.cn:'')+(r.ate?' · válido até '+r.ate.toLocaleDateString('pt-BR'):'')):r.falha?'Não foi possível conferir agora. A senha será enviada assim mesmo.':(r.erro||'✗ A senha não confere com este certificado.'); inp.classList.toggle('bad',!!(r&&r.ok===false&&!r.falha)) };
         let t=null;
         const conferir=()=>{ const v=inp.value; senhas[k]=v; delete st[k]; mostra(); if(!v) return; clearTimeout(t); t=setTimeout(async()=>{ let r; try{ r=await validarCert(x,v) }catch(_){ r={ok:null,falha:true} } if(senhas[k]!==v) return; st[k]=r; mostra(); sincronizarSenhaCert() },350) };
         inp.addEventListener('input',()=>{ conferir(); sincronizarSenhaCert() });
