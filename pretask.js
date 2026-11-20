@@ -262,6 +262,8 @@
     return b; };
   // Seção de anexos (Certificado Digital, Logo da Filial) aparece dentro da aba Base e posto, por posto ou por filial
   const ehSecAnx = s => /anexo/i.test(s.titulo || '') || (s.campos || []).some(c => c.tipo === 'anexo' && /certificad|pfx|logo/i.test(c.label || ''));
+  // Seções que ficam no grupo Validação do menu, logo abaixo de Implantação
+  const ehSecVal = s => /\btef\b|\bpix\b/i.test(s.titulo || '');
   const camposBase = () => blocosBase().flatMap(x => x.campos);
   const secoesParam = cfg => ((cfg && cfg.secoes) || []).filter(s => !ehSecBase(s)).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)) })).filter(s => s.campos.length);
   const BANDS = [[/ipiranga/i, '#0a3d91', '#ffd400', '#ffd400', 'Ipiranga'], [/shell|ra[ií]zen/i, '#ffd500', '#dd1d21', '#dd1d21', 'Shell'], [/petrobras|^br\b|vibra/i, '#00843d', '#fdc82f', '#fff', 'Petrobras'], [/\bale\b|alesat/i, '#0b4ea2', '#e30613', '#fff', 'ALE'], [/total/i, '#ed0000', '#2a5caa', '#fff', 'TotalEnergies'], [/atem/i, '#004b8d', '#f7a600', '#fff', 'Atem'], [/rodoil/i, '#e30613', '#1d1d1b', '#fff', 'Rodoil'], [/larco/i, '#003f7d', '#e4002b', '#fff', 'Larco'], [/charrua/i, '#00539b', '#f6a800', '#fff', 'Charrua'], [/petronas/i, '#00a19c', '#d8e021', '#fff', 'Petronas'], [/idaza/i, '#1b3f8b', '#f39200', '#fff', 'Idaza'], [/branca|sem bandeira|livre/i, '#ffffff', '#c9c9d1', '#33333b', 'Bandeira branca']];
@@ -403,9 +405,9 @@
     const nav = (id, t, ic) => `<button type="button" class="dgnav" data-pt="${id}" aria-selected="false">${ICO(ic || t)}<span>${esc(t)}</span>${M[id] || ''}</button>`;
     const g = t => `<span class="ptnote" style="padding:10px 14px 2px;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;font-weight:600">${t}</span>`;
     body.innerHTML = `<div class="dgwrap" id="ptWrap">
-      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}
+      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${ps.map((s, i) => !ehSecAnx(s) && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
         ${g('Dos passos anteriores')}${nav('proposta', 'Proposta', 'lista')}${nav('e2', 'Dados Primários', 'pessoas')}${nav('contrato', 'Contrato', 'lista')}
-        ${ps.length ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => ehSecAnx(s) ? '' : nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
+        ${ps.some(s => !ehSecAnx(s) && !ehSecVal(s)) ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => ehSecAnx(s) || ehSecVal(s) ? '' : nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
       <div class="dgcorpo" id="ptCorpo">
         ${painelStatus()}${painelBase(ps.map((s, i) => ehSecAnx(s) ? painelParam(s, i, true) : '').join(''))}${painelProposta()}${painelE2()}${painelContrato()}${ps.map((s, i) => ehSecAnx(s) ? '' : painelParam(s, i)).join('')}
       </div></div>`;
