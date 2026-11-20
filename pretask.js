@@ -59,7 +59,7 @@
 .ptanx .it.comimg{border-radius:10px;padding:4px 4px 4px 4px}.ptanx .it img.mini{width:56px;height:56px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;cursor:zoom-in;flex:none}
 .ptanx .it button{border:0;background:none;padding:0 6px;font-size:15px;color:var(--muted);min-height:0}
 .ptanx .bt{align-self:flex-start;cursor:pointer;border:1px dashed var(--line);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--purple)}
-.ptanx .cst{font-size:12.5px;font-weight:500}.ptanx .cst.ok{color:#2f8f57}.ptanx .cst.bad{color:var(--danger)}.ptanx .cst.venc{display:block;background:#fff3c4;color:#6b4e00;border-left:4px solid #e0a800;border-radius:4px;padding:6px 10px;margin-top:4px}
+.ptanx .cst{font-size:12.5px;font-weight:500}.ptanx .cst.ok{color:#2f8f57}.ptanx .cst.bad{color:var(--danger)}.ptanx .cst:empty{display:none}.ptanx .ccnpj{display:block;margin-top:2px}.ptanx .cst.venc{display:block;background:#fff3c4;color:#6b4e00;border-left:4px solid #e0a800;border-radius:4px;padding:6px 10px;margin-top:4px}
 .ptbtns{display:flex;gap:8px;flex-wrap:wrap}
 .pthist{font-size:12px;color:var(--muted);font-weight:400}
 .dgm.ok,.dgm.parcial,.dgm.vazio{flex:none}
@@ -77,7 +77,7 @@
     const full = c.tipo === 'textolongo' || c.full ? ' full' : '';
     if (c.tipo === 'anexo' || c.tipo === 'arquivo') {
       const st = anx[key] = anx[key] || { salvos: Array.isArray(val) ? val.slice() : [], novos: [], senha: v[key + '__senha'] || '', label: c.label };
-      return `<div class="ptf full ptanx" data-anx="${esc(key)}">${lab}<div class="lista"></div><label class="bt">📎 Escolher arquivos<input type="file" multiple hidden data-anxin="${esc(key)}"></label><label class="ptf ptpfx" hidden><span>Senha do certificado (.pfx)</span><input data-pfx="${esc(key)}" value="${esc(st.senha)}" autocomplete="off" style="max-width:260px"><span class="cst"></span></label></div>`;
+      return `<div class="ptf full ptanx" data-anx="${esc(key)}">${lab}<div class="lista"></div><label class="bt">📎 Escolher arquivos<input type="file" multiple hidden data-anxin="${esc(key)}"></label><label class="ptf ptpfx" hidden><span>Senha do certificado (.pfx)</span><input data-pfx="${esc(key)}" value="${esc(st.senha)}" autocomplete="off" style="max-width:260px"><span class="cst"></span><span class="cst ccnpj"></span></label></div>`;
     }
     if (c.tipo === 'textolongo') return `<label class="ptf full">${lab}<textarea data-pk="${esc(key)}" rows="3"${c.ph ? ` placeholder="${esc(c.ph)}"` : ''}>${esc(val)}</textarea></label>`;
     if (c.tipo === 'simnao') return `<div class="ptf${full}">${lab}<div class="ptseg" data-pk="${esc(key)}" data-seg="1">${['Sim', 'Não'].map(o => `<button type="button" data-v="${o}" aria-pressed="${val === o}">${o}</button>`).join('')}</div></div>`;
@@ -162,6 +162,17 @@
     catch (e) { return { ok: false }; }
   }
   const ehPfx = n => /\.(pfx|p12)$/i.test(n || '');
+  // CNPJ do certificado x CNPJ da filial: igual = ok; mesma empresa (raiz de 8 dígitos) = aviso; outra empresa = erro (bloqueia o salvar final)
+  function cnpjCert(k, r, st, ccn) {
+    st.cnpjRes = null; if (!ccn) return; ccn.textContent = ''; ccn.className = 'cst ccnpj';
+    if (!r || !r.ok || !C || !C.pre) return;
+    const cc = (String(r.cn || '').match(/(\d{14})/) || [])[1]; if (!cc) return;
+    const m = String(k).match(/^f(\d+)__/), fil = m ? C.pre.filiais[+m[1]] : C.pre.filiais[0], cf = dig((fil && fil.cnpj) || C.p.cnpj || ''), cod = (fil && fil.cod) || 'cliente';
+    if (cf.length !== 14) { ccn.className = 'cst ccnpj venc'; ccn.textContent = '⚠ Informe o CNPJ da ' + cod + ' para conferir com o certificado (' + fmtCnpj(cc) + ').'; return; }
+    if (cc === cf) { st.cnpjRes = 'ok'; ccn.className = 'cst ccnpj ok'; ccn.textContent = '✓ CNPJ do certificado confere com a ' + cod + ' (' + fmtCnpj(cc) + ')'; return; }
+    if (cc.slice(0, 8) === cf.slice(0, 8)) { st.cnpjRes = 'base'; ccn.className = 'cst ccnpj venc'; ccn.textContent = '⚠ O certificado é de outra unidade da mesma empresa (' + fmtCnpj(cc) + '); o CNPJ da ' + cod + ' é ' + fmtCnpj(cf) + '.'; return; }
+    st.cnpjRes = 'dif'; ccn.className = 'cst ccnpj bad'; ccn.textContent = '✗ O CNPJ do certificado (' + fmtCnpj(cc) + ') não corresponde ao CNPJ da ' + cod + ' (' + fmtCnpj(cf) + ').';
+  }
   const MINIS = new Map();
   function miniSalva(id) {
     if (MINIS.has(id)) return MINIS.get(id);
@@ -180,8 +191,8 @@
     box.querySelectorAll('img[data-mininovo]').forEach(im => { const f = st.novos[+im.dataset.mininovo]; if (!f) return; const u = URL.createObjectURL(f); im.src = u; im.onclick = () => window.open(u, '_blank'); });
     box.querySelectorAll('img[data-miniid]').forEach(im => { const id = im.dataset.miniid; if (!id) { im.replaceWith('📄'); return; } miniSalva(id).then(u => { if (u) { im.src = u; im.onclick = () => window.open(u, '_blank'); } else im.replaceWith('📄'); }); });
     const temPfx = st.salvos.some(a => ehPfx(a.nome)) || st.novos.some(f => ehPfx(f.name)), l = box.querySelector('.ptpfx'); l.hidden = !temPfx;
-    const novoPfx = st.novos.find(f => ehPfx(f.name)), inp = l.querySelector('input'), cst = l.querySelector('.cst');
-    const conf = async () => { if (!novoPfx || !inp.value) { cst.textContent = novoPfx && !inp.value ? 'Informe a senha deste certificado.' : ''; cst.className = 'cst'; st.pfxOk = null; return; } cst.textContent = 'Conferindo…'; cst.className = 'cst'; const v = inp.value; let r; try { r = await conferirPfx(novoPfx, v); } catch (e) { r = { ok: null }; } if (inp.value !== v) return; st.pfxOk = r.ok; const venc = r.ok && r.ate && r.ate < new Date(); cst.className = 'cst' + (venc ? ' venc' : r.ok ? ' ok' : r.ok === false ? ' bad' : ''); cst.textContent = r.ok ? (venc ? '⚠ Senha confere, mas o certificado está VENCIDO desde ' + r.ate.toLocaleDateString('pt-BR') + (r.cn ? ' · ' + r.cn : '') : '✓ Senha confere' + (r.cn ? ' · ' + r.cn : '') + (r.ate ? ' · válido até ' + r.ate.toLocaleDateString('pt-BR') : '')) : r.ok === false ? '✗ A senha não confere com este certificado.' : 'Não foi possível conferir agora.'; };
+    const novoPfx = st.novos.find(f => ehPfx(f.name)), inp = l.querySelector('input'), cst = l.querySelector('.cst:not(.ccnpj)'), ccn = l.querySelector('.ccnpj');
+    const conf = async () => { if (!novoPfx || !inp.value) { cst.textContent = novoPfx && !inp.value ? 'Informe a senha deste certificado.' : ''; cst.className = 'cst'; st.pfxOk = null; st.cnpjRes = null; if (ccn) { ccn.textContent = ''; ccn.className = 'cst ccnpj'; } return; } cst.textContent = 'Conferindo…'; cst.className = 'cst'; const v = inp.value; let r; try { r = await conferirPfx(novoPfx, v); } catch (e) { r = { ok: null }; } if (inp.value !== v) return; st.pfxOk = r.ok; cnpjCert(k, r, st, ccn); const venc = r.ok && r.ate && r.ate < new Date(); cst.className = 'cst' + (venc ? ' venc' : r.ok ? ' ok' : r.ok === false ? ' bad' : ''); cst.textContent = r.ok ? (venc ? '⚠ Senha confere, mas o certificado está VENCIDO desde ' + r.ate.toLocaleDateString('pt-BR') + (r.cn ? ' · ' + r.cn : '') : '✓ Senha confere' + (r.cn ? ' · ' + r.cn : '') + (r.ate ? ' · válido até ' + r.ate.toLocaleDateString('pt-BR') : '')) : r.ok === false ? '✗ A senha não confere com este certificado.' : 'Não foi possível conferir agora.'; };
     inp.oninput = () => { st.senha = inp.value; clearTimeout(inp._t); inp._t = setTimeout(conf, 350); };
     conf();
   }
@@ -523,7 +534,7 @@
         Object.assign(valores, r.valores); Object.assign(campos, r.legiveis);
         if (j != null) Object.entries(r.legiveis).forEach(([k, x]) => { dadosFil[j][k.replace(cod + ' - ', '')] = x; });
         // anexos novos com o nome padrão
-        s.campos.forEach(c => { if (c.tipo !== 'anexo') return; const key = pref + c.k, st = C.anx[key]; if (!st) return; const senha = String(st.senha || '').trim(); st.salvos = st.salvos.map(a => ({ ...a, orig: a.orig || a.nome, nome: nomePadrao(a.orig || a.nome, senha, filCtx(j)) })); valores[key] = st.salvos; st.novos.forEach(f => fila.push({ f, lista: st.salvos, campo: (cod ? cod + ' - ' : '') + c.label, nome: nomePadrao(f.name, senha, filCtx(j)) })); if (st.novos.some(f => ehPfx(f.name)) && st.pfxOk === false) faltas.push(['p' + i, 'senha do certificado não confere']); });
+        s.campos.forEach(c => { if (c.tipo !== 'anexo') return; const key = pref + c.k, st = C.anx[key]; if (!st) return; const senha = String(st.senha || '').trim(); st.salvos = st.salvos.map(a => ({ ...a, orig: a.orig || a.nome, nome: nomePadrao(a.orig || a.nome, senha, filCtx(j)) })); valores[key] = st.salvos; st.novos.forEach(f => fila.push({ f, lista: st.salvos, campo: (cod ? cod + ' - ' : '') + c.label, nome: nomePadrao(f.name, senha, filCtx(j)) })); if (st.novos.some(f => ehPfx(f.name)) && st.pfxOk === false) faltas.push(['p' + i, 'senha do certificado não confere']); if (st.novos.some(f => ehPfx(f.name)) && st.cnpjRes === 'dif') faltas.push(['p' + i, 'CNPJ do certificado diferente da ' + (cod || 'filial')]); });
       });
     });
     if (faltaP) faltas.push([abaP.aba, 'campos obrigatórios em ' + ps[+abaP.aba.slice(1)].titulo]);
