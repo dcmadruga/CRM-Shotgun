@@ -54,6 +54,7 @@
 .pttabs button{border-radius:999px;padding:6px 12px;font-size:13px}
 .pttabs button[aria-selected=true]{background:var(--purple);border-color:var(--purple);color:#fff}
 .ptanx{display:flex;flex-direction:column;gap:6px}
+.ptbsel{display:block;margin-top:6px}.ptbsel:empty{display:none}.ptselo{display:inline-flex;flex-direction:column;justify-content:center;min-width:120px;height:50px;padding:0 14px;border-radius:8px;font-weight:700;font-size:15px;letter-spacing:.04em;text-transform:uppercase;line-height:1.05;box-shadow:inset 0 -6px 0 var(--b2);white-space:nowrap}.ptselo small{font-size:9.5px;font-weight:500;letter-spacing:.08em;opacity:.85}
 .ptanx .lista{display:flex;flex-wrap:wrap;gap:6px}
 .ptanx .it{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;font-size:12.5px;font-weight:500;color:var(--fg);background:var(--field);word-break:break-all}
 .ptanx .it.comimg{border-radius:10px;padding:4px 4px 4px 4px}.ptanx .it img.mini{width:56px;height:56px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;cursor:zoom-in;flex:none}
@@ -238,7 +239,19 @@
   // Campos que o cabeçalho fixo já cobre (tipo de start/base, datas, filiais) ficam fora das seções configuráveis
   const DUP = /tipo de start|modalidade|^\s*base\s*$|tipo de base|da[dt]a\s*(d[aoe]\s*)?(base|start)|in[ií]cio da implanta|nome do posto|nome da central|quantidade de filiais|^\s*inclus[aã]o|potencial/i;
   const ehDup = c => DUP.test(c.label || '') || !!String(c.filiaisOp || '').trim() || c.tipo === 'filiais' || (c.tipo === 'multicond' && Object.values(c.cond || {}).some(l => (l || []).some(x => x.tipo === 'filiais')));
-  const secoesParam = cfg => ((cfg && cfg.secoes) || []).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c)) })).filter(s => s.campos.length);
+  // Campos da bandeira (Posto é bandeirado, Qual bandeira, dados de integração) ficam na aba Base e posto
+  const ehBand = c => /bandeir/i.test(c.label || '');
+  const camposBand = () => ((C && C.cfg4 && C.cfg4.secoes) || []).flatMap(s => (s.campos || []).filter(c => c.show !== false && ehBand(c)));
+  const secoesParam = cfg => ((cfg && cfg.secoes) || []).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)) })).filter(s => s.campos.length);
+  const BANDS = [[/ipiranga/i, '#0a3d91', '#ffd400', '#ffd400', 'Ipiranga'], [/shell|ra[ií]zen/i, '#ffd500', '#dd1d21', '#dd1d21', 'Shell'], [/petrobras|^br\b|vibra/i, '#00843d', '#fdc82f', '#fff', 'Petrobras'], [/\bale\b|alesat/i, '#0b4ea2', '#e30613', '#fff', 'ALE'], [/total/i, '#ed0000', '#2a5caa', '#fff', 'TotalEnergies'], [/atem/i, '#004b8d', '#f7a600', '#fff', 'Atem'], [/rodoil/i, '#e30613', '#1d1d1b', '#fff', 'Rodoil'], [/larco/i, '#003f7d', '#e4002b', '#fff', 'Larco'], [/charrua/i, '#00539b', '#f6a800', '#fff', 'Charrua'], [/petronas/i, '#00a19c', '#d8e021', '#fff', 'Petronas'], [/idaza/i, '#1b3f8b', '#f39200', '#fff', 'Idaza'], [/branca|sem bandeira|livre/i, '#ffffff', '#c9c9d1', '#33333b', 'Bandeira branca']];
+  function seloBand(nome) { const b = BANDS.find(x => x[0].test(nome)) || [null, '#4b4b57', '#8a8a99', '#fff', nome]; return `<span class="ptselo" style="background:${b[1]};color:${b[3]};--b2:${b[2]};${b[1] === '#ffffff' ? 'border:1px solid #d6d6de;' : ''}"><small>Posto</small>${esc(b[4] || nome)}</span>`; }
+  function ligarSelo(root) {
+    root.querySelectorAll('[data-ptband] select[data-pk]').forEach(sel => {
+      const lab = sel.closest('label') || sel.parentElement; if (!/bandeira/i.test(lab.textContent || '')) return;
+      let box = lab.querySelector('.ptbsel'); if (!box) { box = document.createElement('span'); box.className = 'ptbsel'; sel.after(box); }
+      const d = () => { const v = sel.value; box.innerHTML = v && !ehOutro(v) ? seloBand(v) : ''; }; sel.addEventListener('change', d); d();
+    });
+  }
 
   // Monta o cabeçalho a partir dos dados antigos (antes do novo Pré TASK)
   function migrar(e4, task, p, v2) {
@@ -299,6 +312,7 @@
     Object.assign(C, { p, e4: e4 || {}, e2, cfg4: cfg4 && cfg4.json ? json(cfg4) : copia(window.ETAPA4_PADRAO || { secoes: [] }), cfg2: json(pub2) || window.ETAPA2_PADRAO || { secoes: [] }, an, dono, centrais, pre, v: copia((e4 && e4.valores) || {}), v2: copia(v2) });
     d.querySelector('#ptTit').textContent = 'Pré TASK · ' + (p.cliente || '');
     trazerAnexosE2();
+    camposBand().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v[k] === undefined && C.v['f0__' + k] !== undefined) C.v[k] = C.v['f0__' + k]; }));
     desenhar();
     if (e4 && e4.parcial) msg('Salvo parcial' + (e4.por ? ' por ' + e4.por : '') + (e4.em && e4.em.toDate ? ' em ' + e4.em.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '') + '. Complete os obrigatórios para o salvar final.');
   }
@@ -345,7 +359,7 @@
         ${painelStatus()}${painelBase()}${painelProposta()}${painelE2()}${painelContrato()}${ps.map((s, i) => painelParam(s, i)).join('')}
       </div></div>`;
     const corpo = document.getElementById('ptCorpo');
-    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg);
+    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo);
     corpo.addEventListener('pt-mudou', ev => { cabecalhoMudou(ev); conferirFinal(); });
     corpo.addEventListener('input', () => conferirFinal()); corpo.addEventListener('change', () => conferirFinal());
     conferirFinal(true);
@@ -400,7 +414,8 @@
       ${central ? `<label class="ptf"><span>Quantidade de Filiais <b>*</b></span><input type="number" min="1" max="60" data-hk="qtd" value="${P.filiais.length || ''}"></label>` : ''}
       <div class="ptf full"><span>${central ? 'Filiais' : 'Unidade'}</span>${tabela}
         <p class="ptnote">${central ? 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas. Marque qual filial é a F100: ela aparece no topo e no card do TASK.' : 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas.'}</p></div>
-    </div></div>` : '<p class="ptnote">Escolha o Tipo de Base para informar o posto ou as filiais.</p>'}`);
+    </div></div>` : '<p class="ptnote">Escolha o Tipo de Base para informar o posto ou as filiais.</p>'}
+    ${camposBand().length ? `<div class="ptsec" data-ptband><h5>Bandeira</h5><div class="ptgrid">${camposHtml(camposBand(), '', C.v, C.anx)}</div></div>` : ''}`);
   }
   function painelProposta() {
     const p = C.p, l = (t, v) => v ? `<div class="ptf"><span>${t}</span><div class="ptro">${v}</div></div>` : '';
@@ -557,6 +572,7 @@
       });
     });
     if (faltaP) faltas.push([abaP.aba, 'campos obrigatórios em ' + ps[+abaP.aba.slice(1)].titulo]);
+    const rb = lerCampos(corpo, camposBand(), '', C.anx); Object.assign(valores, rb.valores); Object.assign(campos, rb.legiveis); if (rb.falta) faltas.push(['base', 'dados da Bandeira']);
     return { P, central, faltas, e2Lido, valores, campos, fila, ps, dadosFil, abaP };
     } finally { SILENCIO = false; }
   }
@@ -596,7 +612,7 @@
       Object.keys(cab).forEach(k => { if (!cab[k]) delete cab[k]; });
       valores.base__fil = filiais;
       const secoes = [{ titulo: 'Status', labels: ['Status', 'Data da Base', 'Data do Start', 'Modalidade'] }, { titulo: central ? 'Central' : 'Base', labels: ['Tipo de Base', 'Inclusão', 'Central que recebe a filial', 'Cliente Potencial + de 5 Unidades', 'Nome da Central', 'Nome do Posto', 'Quantidade de Filiais', 'F100', 'Filiais', 'Unidade'] }]
-        .concat(ps.map(s => ({ titulo: s.titulo, labels: s.campos.flatMap(c => [c.label, ...Object.values(c.cond || {}).flatMap(l => (l || []).map(x => x.label))]) })));
+        .concat(camposBand().length ? [{ titulo: 'Bandeira', labels: camposBand().flatMap(c => [c.label, c.label + ' - ' + (c.detalhe || '')]) }] : []).concat(ps.map(s => ({ titulo: s.titulo, labels: s.campos.flatMap(c => [c.label, ...Object.values(c.cond || {}).flatMap(l => (l || []).map(x => x.label))]) })));
       const doc = { pre, parcial: !!parcial, valores, campos: { ...cab, ...campos }, secoes, em: F.serverTimestamp(), por, porUid: perfil.uid, porEmail: perfil.email || '' };
       await F.setDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados'), doc);
       // Dados primários alterados: corrige o original e registra quem alterou
