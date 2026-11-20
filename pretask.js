@@ -298,8 +298,25 @@
     if (pre.tipoBase === 'Central' && !pre.nome) { const f = (v2.fantasia || p.cliente || '').trim(); if (f) pre.nome = /^central\b/i.test(f) ? f : 'Central ' + f; }
     Object.assign(C, { p, e4: e4 || {}, e2, cfg4: cfg4 && cfg4.json ? json(cfg4) : copia(window.ETAPA4_PADRAO || { secoes: [] }), cfg2: json(pub2) || window.ETAPA2_PADRAO || { secoes: [] }, an, dono, centrais, pre, v: copia((e4 && e4.valores) || {}), v2: copia(v2) });
     d.querySelector('#ptTit').textContent = 'Pré TASK · ' + (p.cliente || '');
+    trazerAnexosE2();
     desenhar();
     if (e4 && e4.parcial) msg('Salvo parcial' + (e4.por ? ' por ' + e4.por : '') + (e4.em && e4.em.toDate ? ' em ' + e4.em.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '') + '. Complete os obrigatórios para o salvar final.');
+  }
+
+  // Certificado e logo já enviados nos Dados Primários: entram como arquivos já salvos no campo do Pré TASK
+  // (Simples: no campo do posto; Central: na F1), só quando o campo ainda não foi preenchido
+  function trazerAnexosE2() {
+    const doE2 = (C.an || []).filter(a => !a.etapa || a.etapa === 2);
+    if (!doE2.length) return;
+    const tipoDe = t => /certificad|pfx|\be-?cnpj/i.test(t || '') ? 'cert' : /logo|marca/i.test(t || '') ? 'logo' : '';
+    let senhaE2 = ''; (C.cfg2.secoes || []).forEach(sc => (sc.campos || []).forEach(c => { if (/senha/i.test(c.label || '') && /certificad|pfx/i.test(c.label || '') && C.v2[c.k]) senhaE2 = String(C.v2[c.k]); }));
+    secoesParam(C.cfg4).forEach(sc => sc.campos.forEach(c => {
+      if (c.tipo !== 'anexo') return; const t = tipoDe(c.label); if (!t) return;
+      const key = (porFilial(sc) ? 'f0__' : '') + c.k; if (C.v[key] !== undefined) return;
+      const lista = doE2.filter(a => tipoDe(a.campo) === t || (t === 'cert' && ehPfx(a.nome))).map(a => ({ id: a.id, nome: a.nome, orig: a.nome, tipo: a.tipo || '', tamanho: a.tamanho || 0, doE2: true }));
+      if (!lista.length) return; C.v[key] = lista;
+      if (t === 'cert' && senhaE2 && C.v[key + '__senha'] === undefined) C.v[key + '__senha'] = senhaE2;
+    }));
   }
 
   /* ---------- Tela ---------- */
