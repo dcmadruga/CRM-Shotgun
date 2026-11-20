@@ -340,9 +340,9 @@
     body.innerHTML = `<div class="dgwrap" id="ptWrap">
       <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', C.pre.tipoBase === 'Central' ? 'Central e filiais' : 'Base e posto', 'posto')}
         ${g('Dos passos anteriores')}${nav('proposta', 'Proposta', 'lista')}${nav('e2', 'Dados Primários', 'pessoas')}${nav('contrato', 'Contrato', 'lista')}
-        ${ps.length ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => nav('p' + i, s.titulo, s.titulo)).join('')}${nav('anexos', 'Anexos', 'anexo')}</nav>
+        ${ps.length ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
       <div class="dgcorpo" id="ptCorpo">
-        ${painelStatus()}${painelBase()}${painelProposta()}${painelE2()}${painelContrato()}${ps.map((s, i) => painelParam(s, i)).join('')}${painelAnexos()}
+        ${painelStatus()}${painelBase()}${painelProposta()}${painelE2()}${painelContrato()}${ps.map((s, i) => painelParam(s, i)).join('')}
       </div></div>`;
     const corpo = document.getElementById('ptCorpo');
     ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg);
