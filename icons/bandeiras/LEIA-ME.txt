@@ -1,2 +1,4 @@
 Coloque aqui o logo de cada bandeira em PNG, com o nome da opção em minúsculas e hífens (ex.: ipiranga.png, bandeira-branca.png).
 Quando o arquivo existe, a tela de Dados Primários mostra o logo no lugar do selo colorido.
+
+Logos oficiais já incluídos (SVG, domínio público, do Wikimedia Commons): petrobras.svg, ipiranga.svg, ale.svg.

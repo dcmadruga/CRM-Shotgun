@@ -57,6 +57,7 @@ label b{color:var(--danger);font-weight:600}
 .body label>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.body label.larga{grid-column:span 2}@media (max-width:440px){.body label.larga{grid-column:1/-1}}
 .band{display:flex;align-items:center;gap:10px;margin-top:4px;min-height:52px}.band:empty{display:none}
 .band img{max-height:52px;max-width:150px;object-fit:contain}
+.blogo{display:inline-flex;align-items:center;height:52px;padding:6px 12px;background:#fff;border:1px solid #d6d6de;border-radius:8px;box-sizing:border-box}.blogo img{height:36px;max-width:180px;object-fit:contain}
 .bsel{display:inline-flex;flex-direction:column;justify-content:center;min-width:120px;height:52px;padding:0 14px;border-radius:8px;font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.04em;text-transform:uppercase;line-height:1.05;box-shadow:inset 0 -6px 0 var(--b2);white-space:nowrap}
 .bsel small{font-size:9.5px;font-weight:500;letter-spacing:.08em;opacity:.85}.body label.full>span:first-child,.body label.socio>span:first-child,.radios label>span:first-child{white-space:normal}
 input,select,textarea{font:inherit;font-size:16px;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:9px 10px;width:100%;min-width:0}
@@ -206,6 +207,8 @@ const BANDEIRAS=[
   [/charrua/i,'#00539b','#f6a800','#fff','Charrua'],
   [/sim\b|rede sim/i,'#e2001a','#004f9f','#fff','SIM'],
   [/branca|sem bandeira|livre/i,'#ffffff','#c9c9d1','#33333b','Bandeira branca']];
+// Logos oficiais disponíveis (arquivos do Wikimedia Commons em icons/bandeiras)
+const LOGOS_BAND={Petrobras:'petrobras.svg',Ipiranga:'ipiranga.svg',ALE:'ale.svg'};
 const slug=t=>nz(t).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 function seloBandeira(nome){
   const b=BANDEIRAS.find(x=>x[0].test(nz(nome)))||[null,'#4b4b57','#8a8a99','#fff',nome];
@@ -216,6 +219,8 @@ function ligarBandeira(){
     const lab=sel.closest('label'); if(!lab||!/bandeira/i.test(lab.querySelector('span')?.textContent||'')) return;
     let box=lab.querySelector('.band'); if(!box){ box=document.createElement('span'); box.className='band'; box.setAttribute('aria-hidden','true'); sel.after(box) }
     const desenha=()=>{ const v=sel.value; if(!v||ehOutro(v)){ box.innerHTML=''; return }
+      const b=BANDEIRAS.find(x=>x[0].test(nz(v))), arq=b&&LOGOS_BAND[b[4]];
+      if(arq){ box.innerHTML=`<span class="blogo"><img src="icons/bandeiras/${arq}" alt="${esc(b[4])}"></span>`; return }
       box.innerHTML=seloBandeira(v); const i=new Image(); i.alt=v; i.onload=()=>{ if(sel.value===v){ box.innerHTML=''; box.appendChild(i) } }; i.src='icons/bandeiras/'+slug(v)+'.png' };
     sel.addEventListener('change',desenha); desenha();
   });

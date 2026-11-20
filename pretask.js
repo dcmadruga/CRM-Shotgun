@@ -55,7 +55,7 @@
 .pttabs button{border-radius:999px;padding:6px 12px;font-size:13px}
 .pttabs button[aria-selected=true]{background:var(--purple);border-color:var(--purple);color:#fff}
 .ptanx{display:flex;flex-direction:column;gap:6px}
-.ptbsel{display:block;margin-top:6px}.ptbsel:empty{display:none}.ptselo{display:inline-flex;flex-direction:column;justify-content:center;min-width:120px;height:50px;padding:0 14px;border-radius:8px;font-weight:700;font-size:15px;letter-spacing:.04em;text-transform:uppercase;line-height:1.05;box-shadow:inset 0 -6px 0 var(--b2);white-space:nowrap}.ptselo small{font-size:9.5px;font-weight:500;letter-spacing:.08em;opacity:.85}
+.ptbsel{display:block;margin-top:6px}.ptlogoband{display:inline-flex;align-items:center;height:50px;padding:6px 12px;background:#fff;border:1px solid #d6d6de;border-radius:8px;box-sizing:border-box}.ptlogoband img{height:34px;max-width:180px;object-fit:contain}.ptbsel:empty{display:none}.ptselo{display:inline-flex;flex-direction:column;justify-content:center;min-width:120px;height:50px;padding:0 14px;border-radius:8px;font-weight:700;font-size:15px;letter-spacing:.04em;text-transform:uppercase;line-height:1.05;box-shadow:inset 0 -6px 0 var(--b2);white-space:nowrap}.ptselo small{font-size:9.5px;font-weight:500;letter-spacing:.08em;opacity:.85}
 .ptanx .lista{display:flex;flex-wrap:wrap;gap:6px}
 .ptanx .it{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;font-size:12.5px;font-weight:500;color:var(--fg);background:var(--field);word-break:break-all}
 .ptanx .it.comimg{border-radius:10px;padding:4px 4px 4px 4px}.ptanx .it img.mini{width:56px;height:56px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;cursor:zoom-in;flex:none}
@@ -269,6 +269,9 @@
   const camposBase = () => blocosBase().flatMap(x => x.campos);
   const secoesParam = cfg => ((cfg && cfg.secoes) || []).filter(s => !ehSecBase(s)).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c)) })).filter(s => s.campos.length);
   const BANDS = [[/ipiranga/i, '#0a3d91', '#ffd400', '#ffd400', 'Ipiranga'], [/shell|ra[ií]zen/i, '#ffd500', '#dd1d21', '#dd1d21', 'Shell'], [/petrobras|^br\b|vibra/i, '#00843d', '#fdc82f', '#fff', 'Petrobras'], [/\bale\b|alesat/i, '#0b4ea2', '#e30613', '#fff', 'ALE'], [/total/i, '#ed0000', '#2a5caa', '#fff', 'TotalEnergies'], [/atem/i, '#004b8d', '#f7a600', '#fff', 'Atem'], [/rodoil/i, '#e30613', '#1d1d1b', '#fff', 'Rodoil'], [/larco/i, '#003f7d', '#e4002b', '#fff', 'Larco'], [/charrua/i, '#00539b', '#f6a800', '#fff', 'Charrua'], [/petronas/i, '#00a19c', '#d8e021', '#fff', 'Petronas'], [/idaza/i, '#1b3f8b', '#f39200', '#fff', 'Idaza'], [/branca|sem bandeira|livre/i, '#ffffff', '#c9c9d1', '#33333b', 'Bandeira branca']];
+  // Logo oficial (arquivos em icons/bandeiras, do Wikimedia Commons) quando houver; senão o selo com as cores
+  const LOGOS = { Petrobras: 'petrobras.svg', Ipiranga: 'ipiranga.svg', ALE: 'ale.svg' };
+  function logoBand(nome) { const b = BANDS.find(x => x[0].test(nome)), arq = b && LOGOS[b[4]]; return arq ? `<span class="ptlogoband"><img src="icons/bandeiras/${arq}" alt="${esc(b[4])}"></span>` : ''; }
   function seloBand(nome) { const b = BANDS.find(x => x[0].test(nome)) || [null, '#4b4b57', '#8a8a99', '#fff', nome]; return `<span class="ptselo" style="background:${b[1]};color:${b[3]};--b2:${b[2]};${b[1] === '#ffffff' ? 'border:1px solid #d6d6de;' : ''}"><small>Posto</small>${esc(b[4] || nome)}</span>`; }
   // Posto simples: a bandeira informada pelo cliente nos Dados Primários já entra no bloco Bandeira (só se ainda estiver vazio)
   function bandeiraDoE2() {
@@ -301,7 +304,7 @@
     root.querySelectorAll('select[data-pk]').forEach(sel => {
       const lab = sel.closest('label') || sel.parentElement; if (!/bandeira/i.test(lab.textContent || '')) return;
       let box = lab.querySelector('.ptbsel'); if (!box) { box = document.createElement('span'); box.className = 'ptbsel'; sel.after(box); }
-      const d = () => { const v = sel.value; box.innerHTML = v && !ehOutro(v) ? seloBand(v) : ''; }; sel.addEventListener('change', d); d();
+      const d = () => { const v = sel.value; box.innerHTML = v && !ehOutro(v) ? (logoBand(v) || seloBand(v)) : ''; }; sel.addEventListener('change', d); d();
     });
   }
 
