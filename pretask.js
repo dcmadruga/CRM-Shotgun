@@ -268,6 +268,7 @@
     const v2 = (e2 && e2.valores) || {};
     const pre = e4 && e4.pre ? copia(e4.pre) : migrar(e4, task, p, v2);
     if (task && task.status) pre.status = task.status; // o status do card é o que vale
+    if (pre.tipoBase === 'Central' && !pre.nome) { const f = (v2.fantasia || p.cliente || '').trim(); if (f) pre.nome = /^central\b/i.test(f) ? f : 'Central ' + f; }
     Object.assign(C, { p, e4: e4 || {}, e2, cfg4: cfg4 && cfg4.json ? json(cfg4) : copia(window.ETAPA4_PADRAO || { secoes: [] }), cfg2: json(pub2) || window.ETAPA2_PADRAO || { secoes: [] }, an, dono, centrais, pre, v: copia((e4 && e4.valores) || {}), v2: copia(v2) });
     d.querySelector('#ptTit').textContent = 'Pré TASK · ' + (p.cliente || '');
     desenhar();
@@ -407,12 +408,15 @@
     const corpo = document.getElementById('ptCorpo'); if (!corpo) return;
     corpo.querySelectorAll('[data-pk]').forEach(el => { const k = el.dataset.pk; const alvo = k.startsWith('e2:') ? C.v2 : C.v, kk = k.startsWith('e2:') ? k.slice(3) : k; let v = el.dataset.seg ? (el.querySelector('[aria-pressed=true]')?.dataset.v || '') : el.value; const o = corpo.querySelector(`[data-outro="${CSS.escape(k)}"]`); if (o && !o.hidden && o.value.trim()) v += ': ' + o.value.trim(); alvo[kk] = v; });
   }
+  function nomeSugerido(tipo) { const f = ((C.v2 && C.v2.fantasia) || C.p.cliente || '').trim(); return !f || !tipo ? '' : tipo === 'Central' ? (/^central\b/i.test(f) ? f : 'Central ' + f) : f; }
   function redesenhar() { setTimeout(() => { if (!C) return; colherCabecalho(); colherCampos(); desenhar(); }, 0); }
   function cabecalhoMudou(ev) {
     const g = ev.target.closest('[data-hk]'); if (!g) return;
     const k = g.dataset.hk, antes = C.pre[k]; colherCabecalho();
     if (k === 'tipoBase' && C.pre.tipoBase !== antes) {
-      if (C.pre.tipoBase === 'Simples') { C.pre.filiais = C.pre.filiais.slice(0, 1); C.pre.f100 = ''; if (!C.pre.nome) C.pre.nome = C.v2.fantasia || C.p.cliente || ''; if (!C.pre.filiais.length) C.pre.filiais.push({ cod: 'F1', tipo: 'Posto', cnpj: fmtCnpj(C.v2.cnpj || C.p.cnpj), razao: C.v2.razao || '', cidade: C.v2.cidade || '', uf: C.v2.uf || '' }); }
+      // Nome sugerido: Simples = nome fantasia; Central = "Central " + nome fantasia (troca só se ainda for a sugestão do outro tipo)
+      const sugAntes = nomeSugerido(antes); if (!C.pre.nome || C.pre.nome === sugAntes) { C.pre.nome = nomeSugerido(C.pre.tipoBase); const ni = document.querySelector('#ptCorpo [data-hk="nome"]'); if (ni) ni.value = C.pre.nome; }
+      if (C.pre.tipoBase === 'Simples') { C.pre.filiais = C.pre.filiais.slice(0, 1); C.pre.f100 = ''; if (!C.pre.filiais.length) C.pre.filiais.push({ cod: 'F1', tipo: 'Posto', cnpj: fmtCnpj(C.v2.cnpj || C.p.cnpj), razao: C.v2.razao || '', cidade: C.v2.cidade || '', uf: C.v2.uf || '' }); }
       if (C.pre.tipoBase === 'Central' && !C.pre.filiais.length) C.pre.filiais.push({ cod: 'F1', tipo: 'Posto', cnpj: '', razao: '', cidade: '', uf: '' });
       redesenhar(); return;
     }
