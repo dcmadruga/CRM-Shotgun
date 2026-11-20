@@ -101,9 +101,11 @@
     let dep = null;
     return campos.map((c, i) => {
       let h = campoHtml(c, pref + c.k, v, anx);
-      if (c.solto) dep = null;
+      // Cada Sim/Não que abre começa um grupo próprio: não fica dentro do grupo anterior (TEF Fixo x PDV Móvel x Cartões Frota são independentes)
+      const abre = c.tipo === 'simnao' && (c.abre != null ? c.abre : i === 0) && i < campos.length - 1;
+      if (c.solto || abre) dep = null;
       if (dep) h = `<div class="ptdw" data-dep="${esc(dep)}">${h}</div>`;
-      if (c.tipo === 'simnao' && (c.abre != null ? c.abre : i === 0) && i < campos.length - 1) dep = pref + c.k;
+      if (abre) dep = pref + c.k;
       return h;
     }).join('');
   }
