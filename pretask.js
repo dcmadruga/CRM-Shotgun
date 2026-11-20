@@ -207,7 +207,7 @@
 
   /* ---------- Campos do cabeçalho que substituem os antigos dos Parâmetros ---------- */
   // Campos que o cabeçalho fixo já cobre (tipo de start/base, datas, filiais) ficam fora das seções configuráveis
-  const DUP = /tipo de start|modalidade|^\s*base\s*$|tipo de base|data da base|data do start|in[ií]cio da implanta|nome do posto|nome da central|quantidade de filiais/i;
+  const DUP = /tipo de start|modalidade|^\s*base\s*$|tipo de base|da[dt]a\s*(d[aoe]\s*)?(base|start)|in[ií]cio da implanta|nome do posto|nome da central|quantidade de filiais|^\s*inclus[aã]o|potencial/i;
   const ehDup = c => DUP.test(c.label || '') || !!String(c.filiaisOp || '').trim() || c.tipo === 'filiais' || (c.tipo === 'multicond' && Object.values(c.cond || {}).some(l => (l || []).some(x => x.tipo === 'filiais')));
   const secoesParam = cfg => ((cfg && cfg.secoes) || []).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c)) })).filter(s => s.campos.length);
 

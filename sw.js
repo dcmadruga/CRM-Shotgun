@@ -1,5 +1,5 @@
 // Funciona sem internet: guarda o app no aparelho. Parâmetros sempre tentam a rede primeiro.
-const VERSAO = 'argo-v104';
+const VERSAO = 'argo-v105';
 const ARQUIVOS = ['./', 'index.html', 'dados.html', 'auth.js', 'task.js', 'firebase-config.js', 'etapa2-padrao.js', 'aprovar.html', 'contrato.html', 'etapa3-padrao.js', 'etapa4-padrao.js', 'contrato-pdf.js', 'contrato-social.js', 'pretask.js', 'modulos-padrao.js', 'lib/municipios.js', 'lib/forge.min.js', 'lib/pdf.min.js', 'lib/pdf.worker.min.js', 'jspdf.umd.min.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSAO).then(c => c.addAll(ARQUIVOS)).then(() => self.skipWaiting())) });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSAO).map(k => caches.delete(k)))).then(() => self.clients.claim())) });
