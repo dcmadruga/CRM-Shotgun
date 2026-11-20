@@ -56,6 +56,7 @@
 .ptanx{display:flex;flex-direction:column;gap:6px}
 .ptanx .lista{display:flex;flex-wrap:wrap;gap:6px}
 .ptanx .it{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;font-size:12.5px;font-weight:500;color:var(--fg);background:var(--field);word-break:break-all}
+.ptanx .it.comimg{border-radius:10px;padding:4px 4px 4px 4px}.ptanx .it img.mini{width:56px;height:56px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;cursor:zoom-in;flex:none}
 .ptanx .it button{border:0;background:none;padding:0 6px;font-size:15px;color:var(--muted);min-height:0}
 .ptanx .bt{align-self:flex-start;cursor:pointer;border:1px dashed var(--line);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--purple)}
 .ptanx .cst{font-size:12.5px;font-weight:500}.ptanx .cst.ok{color:#2f8f57}.ptanx .cst.bad{color:var(--danger)}.ptanx .cst.venc{display:block;background:#fff3c4;color:#6b4e00;border-left:4px solid #e0a800;border-radius:4px;padding:6px 10px;margin-top:4px}
@@ -161,10 +162,23 @@
     catch (e) { return { ok: false }; }
   }
   const ehPfx = n => /\.(pfx|p12)$/i.test(n || '');
+  const MINIS = new Map();
+  function miniSalva(id) {
+    if (MINIS.has(id)) return MINIS.get(id);
+    const pr = (async () => { try { if (!C || !C.F) return ''; const { F, db, pid } = C; const meta = (await F.getDoc(F.doc(db, 'propostas', pid, 'anexos', id))).data() || {}; if ((meta.tamanho || 0) > 4 * 1024 * 1024) return '';
+      const ps = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos', id, 'partes')); const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join(''); if (!b64) return '';
+      const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return URL.createObjectURL(new Blob([u8], { type: meta.tipo || 'image/png' })); } catch (e) { return ''; } })();
+    MINIS.set(id, pr); return pr;
+  }
   function desenharAnexo(box, anx) {
     const k = box.dataset.anx, st = anx[k]; if (!st) return;
     const kb = n => Math.max(1, Math.round((n || 0) / 1024)) + ' KB';
-    box.querySelector('.lista').innerHTML = st.salvos.map((a, i) => `<span class="it">📄 ${esc(a.nome)} <small>${kb(a.tamanho)}</small><button type="button" data-anxrm="s${i}" aria-label="Remover ${esc(a.nome)}">×</button></span>`).join('') + st.novos.map((f, i) => `<span class="it">📄 ${esc(f.name)} <small>${kb(f.size)} · novo</small><button type="button" data-anxrm="n${i}" aria-label="Remover ${esc(f.name)}">×</button></span>`).join('') || '<span class="ptnote">Nenhum arquivo.</span>';
+    const ehImg = (tipo, nome) => /^image\//.test(tipo || '') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(nome || '');
+    const mini = (ehI, attr) => ehI ? `<img class="mini" alt="" ${attr}>` : '📄';
+    box.querySelector('.lista').innerHTML = st.salvos.map((a, i) => `<span class="it${ehImg(a.tipo, a.orig || a.nome) ? ' comimg' : ''}">${mini(ehImg(a.tipo, a.orig || a.nome), `data-miniid="${esc(a.id || '')}"`)} ${esc(a.nome)} <small>${kb(a.tamanho)}</small><button type="button" data-anxrm="s${i}" aria-label="Remover ${esc(a.nome)}">×</button></span>`).join('') + st.novos.map((f, i) => `<span class="it${ehImg(f.type, f.name) ? ' comimg' : ''}">${mini(ehImg(f.type, f.name), `data-mininovo="${i}"`)} ${esc(f.name)} <small>${kb(f.size)} · novo</small><button type="button" data-anxrm="n${i}" aria-label="Remover ${esc(f.name)}">×</button></span>`).join('') || '<span class="ptnote">Nenhum arquivo.</span>';
+    // Miniatura das imagens: as novas vêm do aparelho; as já salvas são lidas do banco (uma vez)
+    box.querySelectorAll('img[data-mininovo]').forEach(im => { const f = st.novos[+im.dataset.mininovo]; if (!f) return; const u = URL.createObjectURL(f); im.src = u; im.onclick = () => window.open(u, '_blank'); });
+    box.querySelectorAll('img[data-miniid]').forEach(im => { const id = im.dataset.miniid; if (!id) { im.replaceWith('📄'); return; } miniSalva(id).then(u => { if (u) { im.src = u; im.onclick = () => window.open(u, '_blank'); } else im.replaceWith('📄'); }); });
     const temPfx = st.salvos.some(a => ehPfx(a.nome)) || st.novos.some(f => ehPfx(f.name)), l = box.querySelector('.ptpfx'); l.hidden = !temPfx;
     const novoPfx = st.novos.find(f => ehPfx(f.name)), inp = l.querySelector('input'), cst = l.querySelector('.cst');
     const conf = async () => { if (!novoPfx || !inp.value) { cst.textContent = novoPfx && !inp.value ? 'Informe a senha deste certificado.' : ''; cst.className = 'cst'; st.pfxOk = null; return; } cst.textContent = 'Conferindo…'; cst.className = 'cst'; const v = inp.value; let r; try { r = await conferirPfx(novoPfx, v); } catch (e) { r = { ok: null }; } if (inp.value !== v) return; st.pfxOk = r.ok; const venc = r.ok && r.ate && r.ate < new Date(); cst.className = 'cst' + (venc ? ' venc' : r.ok ? ' ok' : r.ok === false ? ' bad' : ''); cst.textContent = r.ok ? (venc ? '⚠ Senha confere, mas o certificado está VENCIDO desde ' + r.ate.toLocaleDateString('pt-BR') + (r.cn ? ' · ' + r.cn : '') : '✓ Senha confere' + (r.cn ? ' · ' + r.cn : '') + (r.ate ? ' · válido até ' + r.ate.toLocaleDateString('pt-BR') : '')) : r.ok === false ? '✗ A senha não confere com este certificado.' : 'Não foi possível conferir agora.'; };
