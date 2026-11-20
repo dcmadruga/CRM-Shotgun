@@ -78,8 +78,8 @@
     const star = c.req ? ' <b>*</b>' : '', lab = `<span>${esc(c.label)}${star}</span>`, val = v[key] == null ? '' : v[key];
     const full = c.tipo === 'textolongo' || c.full ? ' full' : '';
     if (c.tipo === 'anexo' || c.tipo === 'arquivo') {
-      const st = anx[key] = anx[key] || { salvos: Array.isArray(val) ? val.slice() : [], novos: [], senha: v[key + '__senha'] || '', label: c.label };
-      return `<div class="ptf full ptanx" data-anx="${esc(key)}">${lab}<div class="lista"></div><label class="bt">📎 Escolher arquivos<input type="file" multiple hidden data-anxin="${esc(key)}"></label><label class="ptf ptpfx" hidden><span>Senha do certificado (.pfx)</span><input data-pfx="${esc(key)}" value="${esc(st.senha)}" autocomplete="off" style="max-width:260px"><span class="cst"></span><span class="cst ccnpj"></span></label></div>`;
+      const st = anx[key] = anx[key] || { salvos: Array.isArray(val) ? val.slice() : [], novos: [], senha: v[key + '__senha'] || '', label: c.label }; st.accept = c.accept || '';
+      return `<div class="ptf full ptanx" data-anx="${esc(key)}">${lab}<div class="lista"></div><label class="bt">📎 Escolher arquivos<input type="file" multiple hidden data-anxin="${esc(key)}"${c.accept ? ` accept="${esc(c.accept)}"` : ''}></label><label class="ptf ptpfx" hidden><span>Senha do certificado (.pfx)</span><input data-pfx="${esc(key)}" value="${esc(st.senha)}" autocomplete="off" style="max-width:260px"><span class="cst"></span><span class="cst ccnpj"></span></label></div>`;
     }
     if (c.tipo === 'textolongo') return `<label class="ptf full">${lab}<textarea data-pk="${esc(key)}" rows="3"${c.ph ? ` placeholder="${esc(c.ph)}"` : ''}>${esc(val)}</textarea></label>`;
     if (c.tipo === 'simnao') return `<div class="ptf${full}">${lab}<div class="ptseg" data-pk="${esc(key)}" data-seg="1">${['Sim', 'Não'].map(o => `<button type="button" data-v="${o}" aria-pressed="${val === o}">${o}</button>`).join('')}</div></div>`;
@@ -103,6 +103,7 @@
     let dep = null;
     return campos.map((c, i) => {
       let h = campoHtml(c, pref + c.k, v, anx);
+      if (c.seOpcao) h = `<div class="ptdw" data-cond="${esc(pref + c.seOpcao[0])}" data-op="${esc(c.seOpcao[1])}">${h}</div>`;
       // Cada Sim/Não que abre começa um grupo próprio: não fica dentro do grupo anterior (TEF Fixo x PDV Móvel x Cartões Frota são independentes)
       const abre = c.tipo === 'simnao' && (c.abre != null ? c.abre : i === 0) && i < campos.length - 1;
       if (c.solto || abre) dep = null;
@@ -216,7 +217,8 @@
     root.addEventListener('change', ev => {
       const inp = ev.target.closest('[data-anxin]'); if (!inp) return; const k = inp.dataset.anxin, st = anx[k]; let fs = [...inp.files]; inp.value = '';
       const grandes = fs.filter(f => f.size > 10485760); fs = fs.filter(f => f.size <= 10485760);
-      const certs = fs.filter(f => ehPfx(f.name)); const msgs = grandes.length ? ['Arquivos acima de 10 MB não são aceitos: ' + grandes.map(f => f.name).join(', ') + '.'] : [];
+      const exts = String(st.accept || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean), recus = exts.length ? fs.filter(f => !exts.some(e => f.name.toLowerCase().endsWith(e))) : []; fs = fs.filter(f => !recus.includes(f));
+      const certs = fs.filter(f => ehPfx(f.name)); const msgs = grandes.length ? ['Arquivos acima de 10 MB não são aceitos: ' + grandes.map(f => f.name).join(', ') + '.'] : []; if (recus.length) msgs.push('Aqui só entram arquivos ' + exts.join(', ') + ': ' + recus.map(f => f.name).join(', ') + ' ficou de fora.');
       if (certs.length) { const novo = certs[certs.length - 1]; const tinha = st.salvos.some(a => ehPfx(a.nome)) || st.novos.some(f => ehPfx(f.name)); fs = fs.filter(f => !ehPfx(f.name) || f === novo); st.salvos = st.salvos.filter(a => !ehPfx(a.nome)); st.novos = st.novos.filter(f => !ehPfx(f.name)); if (tinha || certs.length > 1) msgs.push('Só um certificado digital por CNPJ: ficou o ' + novo.name + '.'); }
       st.novos = st.novos.concat(fs); if (aviso) aviso(msgs.join(' ')); desenharAnexo(inp.closest('[data-anx]'), anx);
     });
@@ -257,13 +259,14 @@
   const ehSecBase = s => /convers[aã]o/i.test(s.titulo || '');
   // Blocos da aba Base e posto vindos dos Parâmetros: Bandeira (pelos campos) e as seções acima
   const blocosBase = () => { const cfg = (C && C.cfg4 && C.cfg4.secoes) || [], b = [];
-    cfg.filter(ehSecBase).forEach(s => { const cs = (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)); if (cs.length) b.push({ titulo: String(s.titulo || '').replace(/:\s*$/, ''), campos: cs }); });
+    cfg.filter(ehSecBase).forEach(s => { const cs = (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)).flatMap(c => { const ou = c.tipo === 'opcoes' && /legado/i.test(c.label || '') && opsDe(c).find(ehOutro); return ou ? [c, { k: c.k + '__arq', label: 'Arquivos da base para conversão (.csv, .txt, Excel)', tipo: 'anexo', accept: ARQ_CONV, seOpcao: [c.k, ou], arqConv: true }] : [c]; }); if (cs.length) b.push({ titulo: String(s.titulo || '').replace(/:\s*$/, ''), campos: cs }); });
     const cb = camposBand(); if (cb.length) b.push({ titulo: 'Bandeira', campos: cb, band: true });
     return b; };
   // Seção de anexos (Certificado Digital, Logo da Filial) aparece dentro da aba Base e posto, por posto ou por filial
   const ehSecAnx = s => /anexo/i.test(s.titulo || '') || (s.campos || []).some(c => c.tipo === 'anexo' && /certificad|pfx|logo/i.test(c.label || ''));
   // Seções dos Parâmetros que ficam no grupo Validação do menu, logo abaixo de Implantação (hoje todas: TEF / PIX, Integração…)
   const ehSecVal = s => true;
+  const ARQ_CONV = '.csv,.txt,.xls,.xlsx,.xlsm,.xlsb,.xltx,.ods';
   const camposBase = () => blocosBase().flatMap(x => x.campos);
   const secoesParam = cfg => ((cfg && cfg.secoes) || []).filter(s => !ehSecBase(s)).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)) })).filter(s => s.campos.length);
   const BANDS = [[/ipiranga/i, '#0a3d91', '#ffd400', '#ffd400', 'Ipiranga'], [/shell|ra[ií]zen/i, '#ffd500', '#dd1d21', '#dd1d21', 'Shell'], [/petrobras|^br\b|vibra/i, '#00843d', '#fdc82f', '#fff', 'Petrobras'], [/\bale\b|alesat/i, '#0b4ea2', '#e30613', '#fff', 'ALE'], [/total/i, '#ed0000', '#2a5caa', '#fff', 'TotalEnergies'], [/atem/i, '#004b8d', '#f7a600', '#fff', 'Atem'], [/rodoil/i, '#e30613', '#1d1d1b', '#fff', 'Rodoil'], [/larco/i, '#003f7d', '#e4002b', '#fff', 'Larco'], [/charrua/i, '#00539b', '#f6a800', '#fff', 'Charrua'], [/petronas/i, '#00a19c', '#d8e021', '#fff', 'Petronas'], [/idaza/i, '#1b3f8b', '#f39200', '#fff', 'Idaza'], [/branca|sem bandeira|livre/i, '#ffffff', '#c9c9d1', '#33333b', 'Bandeira branca']];
@@ -631,7 +634,9 @@
       });
     });
     if (faltaP) faltas.push([abaP.aba, 'campos obrigatórios em ' + ps[+abaP.aba.slice(1)].titulo]);
-    blocosBase().forEach(b => { const rb = lerCampos(corpo, b.campos, '', C.anx); Object.assign(valores, rb.valores); Object.assign(campos, rb.legiveis); if (rb.falta) faltas.push(['base', 'campos de ' + b.titulo]); });
+    blocosBase().forEach(b => { const rb = lerCampos(corpo, b.campos, '', C.anx); Object.assign(valores, rb.valores); Object.assign(campos, rb.legiveis); if (rb.falta) faltas.push(['base', 'campos de ' + b.titulo]);
+      // anexos dos blocos da aba (ex.: arquivos da conversão quando o sistema legado é Outros), com o nome original
+      b.campos.forEach(c => { if (c.tipo !== 'anexo' || rb.valores[c.k] === undefined) return; const st = C.anx[c.k]; if (!st) return; valores[c.k] = st.salvos; st.novos.forEach(f => fila.push({ f, lista: st.salvos, campo: c.label, nome: f.name })); }); });
     return { P, central, faltas, e2Lido, valores, campos, fila, ps, dadosFil, abaP };
     } finally { SILENCIO = false; }
   }
