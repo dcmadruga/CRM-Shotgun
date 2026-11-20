@@ -35,7 +35,7 @@ header.top .wrap{display:flex;align-items:center;gap:14px;padding-block:16px;pad
 header.top img{width:44px;height:44px;object-fit:contain}
 header.top h1{font-family:var(--display);font-weight:600;font-size:20px;margin:0;text-wrap:balance}
 header.top p{margin:0;font-size:12.5px;opacity:.75}
-header.top .versao{align-self:flex-start;font-size:11.5px;opacity:.6;white-space:nowrap;font-variant-numeric:tabular-nums}header.top .versao:empty{display:none}header.top .versao.nova{opacity:1;color:#f0b4ff;cursor:pointer}
+header.top .versao{align-self:flex-start;font-size:11.5px;opacity:.6;white-space:nowrap;font-variant-numeric:tabular-nums}header.top .versao:empty{display:none}header.top .versao{cursor:pointer}header.top .versao:hover{opacity:1;text-decoration:underline}header.top .versao.nova{opacity:1;color:#f0b4ff}
 main{display:flex;flex-direction:column;gap:18px;padding-block:20px 130px}
 .sec{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .sec>h2{margin:0;background:var(--accent);color:var(--accent-fg);font-family:var(--display);font-weight:500;font-size:13px;letter-spacing:.03em;padding:8px 14px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
@@ -1450,13 +1450,27 @@ window.addEventListener('appinstalled',()=>{ $('btnInstall').hidden=true });
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
 if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !standalone) $('iosHint').hidden=false;
 if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
-// Versão no cabeçalho: a instalada no aparelho (cache do app) e aviso se já existe uma mais nova no servidor
+// Versão no cabeçalho: a instalada no aparelho (cache do app). Clicar atualiza tudo, como o Ctrl+Shift+R
+async function atualizarApp(el){
+  if(el){ el.textContent='Atualizando…'; el.style.pointerEvents='none' }
+  try{
+    const txt=await (await fetch('sw.js',{cache:'no-store'})).text();
+    const m=txt.match(/ARQUIVOS\s*=\s*\[([^\]]*)\]/), lista=m?[...m[1].matchAll(/'([^']+)'/g)].map(x=>x[1]):[];
+    await Promise.all(lista.map(u=>fetch(u,{cache:'reload'}).catch(()=>{})));   // renova o cache do navegador
+  }catch(_){}
+  try{ for(const k of await caches.keys()) await caches.delete(k) }catch(_){}
+  try{ for(const r of await navigator.serviceWorker.getRegistrations()) await r.unregister() }catch(_){}
+  location.reload();
+}
 (async()=>{ const el=document.getElementById('versaoApp'); if(!el) return;
   const num=t=>{ const m=String(t||'').match(/argo-v(\d+)/); return m?+m[1]:0 };
   let atual=0; try{ atual=Math.max(0,...(await caches.keys()).map(num)) }catch(_){}
   let srv=0; try{ srv=num(await (await fetch('sw.js',{cache:'no-store'})).text()) }catch(_){}
-  const v=atual||srv; if(!v) return; el.textContent='Versão '+v;
-  if(atual&&srv>atual){ el.textContent='Versão '+atual+' · nova '+srv+', toque para atualizar'; el.classList.add('nova'); el.addEventListener('click',()=>location.reload()) }
+  const v=atual||srv; if(!v) return; el.textContent='Versão '+v; el.title='Clique para atualizar o app (como Ctrl+Shift+R)';
+  el.setAttribute('role','button'); el.tabIndex=0;
+  if(atual&&srv>atual){ el.textContent='Versão '+atual+' · nova '+srv+', toque para atualizar'; el.classList.add('nova') }
+  el.addEventListener('click',()=>atualizarApp(el));
+  el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); atualizarApp(el) } });
 })();
 
 aplicarModo();
