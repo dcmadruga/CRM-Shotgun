@@ -338,6 +338,7 @@ const isoDe = v => { v = String(v || ''); let m = v.match(/(\d{4})-(\d{2})-(\d{2
 async function datasE4(pid) {
   try {
     const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados')); if (!r.exists()) return null;
+    if (r.data().parcial) return null; // salvo parcial: o card só recebe o salvar final
     const c = Object.entries(r.data().campos || {}), em = r.data().em, emMs = em && em.toMillis ? em.toMillis() : em && em.seconds ? em.seconds * 1000 : 0;
     // Novo Pré TASK: cabeçalho estruturado (status, datas, modalidade, base e filiais)
     const pre = r.data().pre;

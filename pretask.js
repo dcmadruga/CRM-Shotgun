@@ -18,6 +18,7 @@
 .ptdlg .tkdlghead{flex-wrap:wrap}
 .pthead{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-left:auto}
 .pthead .hint{max-width:420px}
+#ptSalvar.incompleto{opacity:.5;cursor:not-allowed;filter:grayscale(.4)}
 #ptBody{padding:16px}
 .ptgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 14px;align-items:start}
 .ptgrid .full,.ptgrid>.ptfull{grid-column:1/-1}
@@ -122,9 +123,10 @@
     return v;
   }
   // Lê uma lista de campos: devolve valores {chave: valor}, campos {rótulo: valor} e o primeiro obrigatório vazio
+  let SILENCIO = false; // conferência silenciosa (habilitar o salvar final) não marca os campos
   function lerCampos(root, campos, pref, anx, rotulo) {
     const valores = {}, legiveis = {}; let falta = null;
-    const marca = (el, ruim) => { if (el) el.classList.toggle('erro', !!ruim); };
+    const marca = (el, ruim) => { if (el && !SILENCIO) el.classList.toggle('erro', !!ruim); };
     const um = c => {
       const key = pref + c.k, lab = rotulo ? rotulo(c.label) : c.label;
       if (c.tipo === 'anexo' || c.tipo === 'arquivo') {
@@ -235,10 +237,11 @@
     let d = document.getElementById('ptDlg'); if (d) return d;
     estilos();
     d = document.createElement('dialog'); d.id = 'ptDlg'; d.className = 'tkdlg ptdlg'; d.setAttribute('aria-labelledby', 'ptTit');
-    d.innerHTML = `<div class="tkdlghead"><h3 id="ptTit">Pré TASK</h3><div class="pthead"><span class="hint" id="ptMsg" role="status"></span><button type="button" class="primary" id="ptSalvar">Salvar</button><button type="button" id="ptFechar" aria-label="Fechar">✕</button></div></div><div id="ptBody"></div>`;
+    d.innerHTML = `<div class="tkdlghead"><h3 id="ptTit">Pré TASK</h3><div class="pthead"><span class="hint" id="ptMsg" role="status"></span><button type="button" id="ptParcial" title="Guarda o que já foi preenchido, mesmo incompleto">Salvar parcial</button><button type="button" class="primary" id="ptSalvar">Salvar</button><button type="button" id="ptFechar" aria-label="Fechar">✕</button></div></div><div id="ptBody"></div>`;
     document.body.appendChild(d);
     d.querySelector('#ptFechar').addEventListener('click', () => d.close());
-    d.querySelector('#ptSalvar').addEventListener('click', () => salvar());
+    d.querySelector('#ptSalvar').addEventListener('click', () => salvar(false));
+    d.querySelector('#ptParcial').addEventListener('click', () => salvar(true));
     d.addEventListener('close', () => { C = null; });
     return d;
   }
@@ -249,7 +252,7 @@
     const d = dlg(); C = { ...ctx, anx: {}, filAtiva: 0 };
     d.querySelector('#ptTit').textContent = 'Pré TASK';
     d.querySelector('#ptBody').innerHTML = '<p class="hint">Carregando…</p>'; msg('');
-    d.querySelector('#ptSalvar').textContent = ctx.origem === 'proposta' ? 'Salvar e enviar ao TASK' : 'Salvar';
+    d.querySelector('#ptSalvar').textContent = ctx.origem === 'proposta' ? 'Salvar e enviar ao TASK' : 'Salvar final';
     if (!d.open) d.showModal();
     const { F, db, pid } = ctx;
     const ler = async (...c) => { try { const r = await F.getDoc(F.doc(db, ...c)); return r.exists() ? r.data() : null; } catch (e) { return null; } };
@@ -268,6 +271,7 @@
     Object.assign(C, { p, e4: e4 || {}, e2, cfg4: cfg4 && cfg4.json ? json(cfg4) : copia(window.ETAPA4_PADRAO || { secoes: [] }), cfg2: json(pub2) || window.ETAPA2_PADRAO || { secoes: [] }, an, dono, centrais, pre, v: copia((e4 && e4.valores) || {}), v2: copia(v2) });
     d.querySelector('#ptTit').textContent = 'Pré TASK · ' + (p.cliente || '');
     desenhar();
+    if (e4 && e4.parcial) msg('Salvo parcial' + (e4.por ? ' por ' + e4.por : '') + (e4.em && e4.em.toDate ? ' em ' + e4.em.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '') + '. Complete os obrigatórios para o salvar final.');
   }
 
   /* ---------- Tela ---------- */
@@ -297,7 +301,9 @@
       </div></div>`;
     const corpo = document.getElementById('ptCorpo');
     ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg);
-    corpo.addEventListener('pt-mudou', ev => cabecalhoMudou(ev));
+    corpo.addEventListener('pt-mudou', ev => { cabecalhoMudou(ev); conferirFinal(); });
+    corpo.addEventListener('input', () => conferirFinal()); corpo.addEventListener('change', () => conferirFinal());
+    conferirFinal(true);
     body.querySelector('.dgmenu').addEventListener('click', ev => { const b = ev.target.closest('[data-pt]'); if (b) mostrar(b.dataset.pt); });
     mostrar(C.aba || 'status');
     ligarBase();
@@ -463,20 +469,22 @@
   }
 
   /* ---------- Salvar ---------- */
-  async function salvar() {
-    if (!C || !C.p) return;
-    const corpo = document.getElementById('ptCorpo'), bt = document.getElementById('ptSalvar');
+  // Confere tudo o que é obrigatório. marcar=false: só conta (para habilitar o botão do salvar final)
+  function validar(marcar) {
+    const corpo = document.getElementById('ptCorpo');
     colherCabecalho(); colherCampos();
+    SILENCIO = !marcar;
+    try {
     const P = C.pre, central = P.tipoBase === 'Central';
     // 1) Cabeçalho, base e filiais
     const faltas = [];
-    const segErro = k => { const s = corpo.querySelector(`[data-hk="${k}"]`); if (s) s.classList.add('erro'); };
+    const segErro = k => { const s = corpo.querySelector(`[data-hk="${k}"]`); if (s && marcar) s.classList.add('erro'); };
     if (!P.modalidade) { faltas.push(['status', 'Modalidade']); segErro('modalidade'); }
     ['tipoBase', 'inclusao', 'potencial'].forEach(k => { if (!P[k]) { faltas.push(['base', { tipoBase: 'Tipo de Base', inclusao: 'Inclusão', potencial: 'Cliente Potencial' }[k]]); segErro(k); } });
-    if (P.inclusao === 'Filial Nova em Central' && !P.centralExistente) { faltas.push(['base', 'Central que recebe a filial']); corpo.querySelector('[data-hk="centralExistente"]')?.classList.add('erro'); }
+    if (P.inclusao === 'Filial Nova em Central' && !P.centralExistente) { faltas.push(['base', 'Central que recebe a filial']); segErro('centralExistente'); }
     if (P.tipoBase) {
-      if (!P.nome) { faltas.push(['base', central ? 'Nome da Central' : 'Nome do Posto']); corpo.querySelector('[data-hk="nome"]')?.classList.add('erro'); }
-      corpo.querySelectorAll('.ptfil tbody tr').forEach(tr => { const f = P.filiais[+tr.dataset.fi]; if (dig(f.cnpj).length !== 14) { tr.querySelector('[data-ff="cnpj"]').classList.add('erro'); faltas.push(['base', 'CNPJ da ' + f.cod]); } if (!f.tipo) { tr.querySelector('[data-ff="tipo"]').classList.add('erro'); faltas.push(['base', 'Tipo da ' + f.cod]); } });
+      if (!P.nome) { faltas.push(['base', central ? 'Nome da Central' : 'Nome do Posto']); segErro('nome'); }
+      corpo.querySelectorAll('.ptfil tbody tr').forEach(tr => { const f = P.filiais[+tr.dataset.fi]; if (dig(f.cnpj).length !== 14) { if (marcar) tr.querySelector('[data-ff="cnpj"]').classList.add('erro'); faltas.push(['base', 'CNPJ da ' + f.cod]); } if (!f.tipo) { if (marcar) tr.querySelector('[data-ff="tipo"]').classList.add('erro'); faltas.push(['base', 'Tipo da ' + f.cod]); } });
       if (central && !P.f100) faltas.push(['base', 'qual filial é a F100']);
       const cods = P.filiais.map(f => f.cod); if (new Set(cods).size !== cods.length) faltas.push(['base', 'códigos de filial repetidos']);
     }
@@ -501,18 +509,38 @@
       });
     });
     if (faltaP) faltas.push([abaP.aba, 'campos obrigatórios em ' + ps[+abaP.aba.slice(1)].titulo]);
-    if (faltas.length) {
+    return { P, central, faltas, e2Lido, valores, campos, fila, ps, dadosFil, abaP };
+    } finally { SILENCIO = false; }
+  }
+  const faltaTxt = faltas => 'Falta: ' + [...new Set(faltas.map(x => x[1]))].slice(0, 4).join(', ') + (faltas.length > 4 ? '…' : '.');
+  // Botão do salvar final: só fica liberado com todos os obrigatórios preenchidos
+  let _conf = null;
+  function conferirFinal(ja) {
+    clearTimeout(_conf);
+    _conf = setTimeout(() => {
+      const bt = document.getElementById('ptSalvar'); if (!C || !C.p || !bt || !document.getElementById('ptCorpo')) return;
+      let f = []; try { f = validar(false).faltas; } catch (e) { return; }
+      bt.classList.toggle('incompleto', f.length > 0); bt.setAttribute('aria-disabled', String(f.length > 0));
+      bt.title = f.length ? faltaTxt(f) + ' Use "Salvar parcial" para guardar o que já foi preenchido.' : '';
+    }, ja ? 0 : 350);
+  }
+  async function salvar(parcial) {
+    if (!C || !C.p) return;
+    const bt = document.getElementById(parcial ? 'ptParcial' : 'ptSalvar');
+    const { P, central, faltas, e2Lido, valores, campos, fila, ps, dadosFil, abaP } = validar(!parcial);
+    if (!parcial && faltas.length) {
       const [aba] = faltas[0]; mostrar(aba);
       if (abaP && aba === abaP.aba && abaP.fi != null) document.querySelector(`#ptCorpo [data-ptp="${aba}"] [data-ptfi="${abaP.fi}"]`)?.click();
-      msg('Falta: ' + [...new Set(faltas.map(x => x[1]))].slice(0, 4).join(', ') + '.'); return;
+      msg(faltaTxt(faltas) + ' Para guardar assim mesmo, use "Salvar parcial".'); return;
     }
-    bt.disabled = true; msg('Salvando…');
+    if (parcial && faltas.some(x => /senha do certificado/.test(x[1]))) { msg('A senha do certificado não confere. Corrija ou remova o certificado para salvar.'); return; }
+    bt.disabled = true; msg(parcial ? 'Salvando parcial…' : 'Salvando…');
     try {
       const { F, db, pid, perfil } = C;
       await subirAnexos(F, db, pid, fila, msg);
       Object.values(C.anx).forEach(st => { st.novos = []; });
       const por = perfil.nome || perfil.email, filiais = P.filiais.map((f, j) => ({ cod: f.cod, tipo: f.tipo, cnpj: fmtCnpj(f.cnpj), razao: f.razao, cidade: f.cidade, uf: f.uf, info: f.info && dig(f.info.cnpj) === dig(f.cnpj) ? f.info : (f.info && !f.info.cnpj ? f.info : null), dados: Object.keys(dadosFil[j]).length ? dadosFil[j] : (f.dados || null), f100: central && f.cod === P.f100 }));
-      const pre = { status: P.status || 'fut', dataBase: P.dataBase || '', start: P.start || '', modalidade: P.modalidade, tipoBase: P.tipoBase, inclusao: P.inclusao, centralExistente: P.inclusao === 'Filial Nova em Central' ? P.centralExistente : '', potencial: P.potencial, nome: P.nome, f100: central ? P.f100 : '', filiais };
+      const pre = { parcial: !!parcial, status: P.status || 'fut', dataBase: P.dataBase || '', start: P.start || '', modalidade: P.modalidade, tipoBase: P.tipoBase, inclusao: P.inclusao, centralExistente: P.inclusao === 'Filial Nova em Central' ? P.centralExistente : '', potencial: P.potencial, nome: P.nome, f100: central ? P.f100 : '', filiais };
       // Campos legíveis do cabeçalho (o TASK e a mensagem usam este texto)
       const cab = { 'Status': STATUS[pre.status], 'Data da Base': fmtD(pre.dataBase), 'Data do Start': fmtD(pre.start), 'Modalidade': pre.modalidade, 'Tipo de Base': pre.tipoBase, 'Inclusão': pre.inclusao, 'Central que recebe a filial': pre.centralExistente, 'Cliente Potencial + de 5 Unidades': pre.potencial };
       cab[central ? 'Nome da Central' : 'Nome do Posto'] = pre.nome; if (central) { cab['Quantidade de Filiais'] = String(filiais.length); cab['F100'] = pre.f100; }
@@ -521,7 +549,7 @@
       valores.base__fil = filiais;
       const secoes = [{ titulo: 'Status', labels: ['Status', 'Data da Base', 'Data do Start', 'Modalidade'] }, { titulo: central ? 'Central' : 'Base', labels: ['Tipo de Base', 'Inclusão', 'Central que recebe a filial', 'Cliente Potencial + de 5 Unidades', 'Nome da Central', 'Nome do Posto', 'Quantidade de Filiais', 'F100', 'Filiais', 'Unidade'] }]
         .concat(ps.map(s => ({ titulo: s.titulo, labels: s.campos.flatMap(c => [c.label, ...Object.values(c.cond || {}).flatMap(l => (l || []).map(x => x.label))]) })));
-      const doc = { pre, valores, campos: { ...cab, ...campos }, secoes, em: F.serverTimestamp(), por, porUid: perfil.uid, porEmail: perfil.email || '' };
+      const doc = { pre, parcial: !!parcial, valores, campos: { ...cab, ...campos }, secoes, em: F.serverTimestamp(), por, porUid: perfil.uid, porEmail: perfil.email || '' };
       await F.setDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados'), doc);
       // Dados primários alterados: corrige o original e registra quem alterou
       if (C.e2) {
@@ -535,10 +563,11 @@
         }
       }
       // Proposta: marca o passo 4 (o vendedor e o ADM podem; a equipe do TASK não altera a proposta)
-      try { await F.updateDoc(F.doc(db, 'propostas', pid), { e4Em: F.serverTimestamp(), e4Por: por, e4PorUid: perfil.uid }); } catch (e) {}
+      // Salvar parcial não conclui o passo nem mexe no card: fica como rascunho até o salvar final
+      if (!parcial) try { await F.updateDoc(F.doc(db, 'propostas', pid), { e4Em: F.serverTimestamp(), e4Por: por, e4PorUid: perfil.uid }); } catch (e) {}
       // Card do TASK: status, datas, modalidade, central e responsável pelo cadastro
       let taskOk = false;
-      if (C.task || C.podeTask) {
+      if (!parcial && (C.task || C.podeTask)) {
         try {
           const tid = (C.task && C.task.id) || pid, fin = pre.status === 'fin';
           const up = { status: pre.status, finalizado: fin, dataBase: pre.dataBase, start: pre.start, modalidade: pre.modalidade, central: centralDoPre(pre), respCadastro: { uid: perfil.uid, nome: por, email: perfil.email || '' }, preSync: Date.now(), alteradoEm: F.serverTimestamp(), alteradoPor: por };
@@ -548,8 +577,8 @@
         } catch (e) { console.warn('Pré TASK: card do TASK', e); }
       }
       C.e4 = { ...doc, em: { toDate: () => new Date() } };
-      msg('Pré TASK salvo' + (taskOk ? ' e card do TASK atualizado.' : '.'));
-      if (C.aoSalvar) C.aoSalvar(pre);
+      msg(parcial ? 'Salvo parcial. Quando tudo estiver preenchido, use o salvar final.' : 'Pré TASK salvo' + (taskOk ? ' e card do TASK atualizado.' : '.'));
+      if (C.aoSalvar && !parcial) C.aoSalvar(pre);
       colherCampos(); desenhar();
     } catch (err) { msg('Não foi possível salvar (' + (err.code || err.message) + ').'); }
     finally { bt.disabled = false; }
