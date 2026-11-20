@@ -245,6 +245,21 @@
   const secoesParam = cfg => ((cfg && cfg.secoes) || []).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)) })).filter(s => s.campos.length);
   const BANDS = [[/ipiranga/i, '#0a3d91', '#ffd400', '#ffd400', 'Ipiranga'], [/shell|ra[ií]zen/i, '#ffd500', '#dd1d21', '#dd1d21', 'Shell'], [/petrobras|^br\b|vibra/i, '#00843d', '#fdc82f', '#fff', 'Petrobras'], [/\bale\b|alesat/i, '#0b4ea2', '#e30613', '#fff', 'ALE'], [/total/i, '#ed0000', '#2a5caa', '#fff', 'TotalEnergies'], [/atem/i, '#004b8d', '#f7a600', '#fff', 'Atem'], [/rodoil/i, '#e30613', '#1d1d1b', '#fff', 'Rodoil'], [/larco/i, '#003f7d', '#e4002b', '#fff', 'Larco'], [/charrua/i, '#00539b', '#f6a800', '#fff', 'Charrua'], [/petronas/i, '#00a19c', '#d8e021', '#fff', 'Petronas'], [/idaza/i, '#1b3f8b', '#f39200', '#fff', 'Idaza'], [/branca|sem bandeira|livre/i, '#ffffff', '#c9c9d1', '#33333b', 'Bandeira branca']];
   function seloBand(nome) { const b = BANDS.find(x => x[0].test(nome)) || [null, '#4b4b57', '#8a8a99', '#fff', nome]; return `<span class="ptselo" style="background:${b[1]};color:${b[3]};--b2:${b[2]};${b[1] === '#ffffff' ? 'border:1px solid #d6d6de;' : ''}"><small>Posto</small>${esc(b[4] || nome)}</span>`; }
+  // Posto simples: a bandeira informada pelo cliente nos Dados Primários já entra no bloco Bandeira (só se ainda estiver vazio)
+  function bandeiraDoE2() {
+    if (!C || C.pre.tipoBase !== 'Simples') return false;
+    let bE2 = ''; (C.cfg2.secoes || []).forEach(sc => (sc.campos || []).forEach(c => { if (/bandeira/i.test(c.label || '') && !/bandeirad/i.test(c.label || '') && C.v2[c.k]) bE2 = String(C.v2[c.k]).trim(); }));
+    if (!bE2) return false;
+    const cs = camposBand(), sn = cs.find(c => c.tipo === 'simnao'), qual = cs.find(c => c.tipo === 'opcoes' || c.tipo === 'multicond');
+    const branca = /branca|sem bandeira|livre/i.test(bE2); let mudou = false;
+    if (sn && !C.v[sn.k]) { C.v[sn.k] = branca ? 'Não' : 'Sim'; mudou = true; }
+    if (qual && !C.v[qual.k]) {
+      const ops = String(qual.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean), n = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bandeira\s+/, '').replace(/^outr[oa]s?:\s*/, '');
+      const alvo = n(bE2), op = ops.find(o => n(o) === alvo) || ops.find(o => n(o) && (alvo.includes(n(o)) || n(o).includes(alvo))), outra = ops.find(ehOutro);
+      C.v[qual.k] = op || (outra ? outra + ': ' + bE2.replace(/^outr[oa]s?:\s*/i, '') : bE2); mudou = true;
+    }
+    return mudou;
+  }
   function ligarSelo(root) {
     root.querySelectorAll('[data-ptband] select[data-pk]').forEach(sel => {
       const lab = sel.closest('label') || sel.parentElement; if (!/bandeira/i.test(lab.textContent || '')) return;
@@ -313,6 +328,7 @@
     d.querySelector('#ptTit').textContent = 'Pré TASK · ' + (p.cliente || '');
     trazerAnexosE2();
     camposBand().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v[k] === undefined && C.v['f0__' + k] !== undefined) C.v[k] = C.v['f0__' + k]; }));
+    bandeiraDoE2();
     desenhar();
     if (e4 && e4.parcial) msg('Salvo parcial' + (e4.por ? ' por ' + e4.por : '') + (e4.em && e4.em.toDate ? ' em ' + e4.em.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '') + '. Complete os obrigatórios para o salvar final.');
   }
@@ -468,7 +484,7 @@
     corpo.querySelectorAll('[data-pk]').forEach(el => { const k = el.dataset.pk; const alvo = k.startsWith('e2:') ? C.v2 : C.v, kk = k.startsWith('e2:') ? k.slice(3) : k; let v = el.dataset.seg ? (el.querySelector('[aria-pressed=true]')?.dataset.v || '') : el.value; const o = corpo.querySelector(`[data-outro="${CSS.escape(k)}"]`); if (o && !o.hidden && o.value.trim()) v += ': ' + o.value.trim(); alvo[kk] = v; });
   }
   function nomeSugerido(tipo) { const f = ((C.v2 && C.v2.fantasia) || C.p.cliente || '').trim(); return !f || !tipo ? '' : tipo === 'Central' ? (/^central\b/i.test(f) ? f : 'Central ' + f) : f; }
-  function redesenhar() { setTimeout(() => { if (!C) return; colherCabecalho(); colherCampos(); desenhar(); }, 0); }
+  function redesenhar() { setTimeout(() => { if (!C) return; colherCabecalho(); colherCampos(); bandeiraDoE2(); desenhar(); }, 0); }
   function cabecalhoMudou(ev) {
     const g = ev.target.closest('[data-hk]'); if (!g) return;
     const k = g.dataset.hk, antes = C.pre[k]; colherCabecalho();
