@@ -1470,6 +1470,9 @@ async function atualizarApp(el){
   el.setAttribute('role','button'); el.tabIndex=0;
   if(atual&&srv>atual){ el.textContent='Versão '+atual+' · nova '+srv+', toque para atualizar'; el.classList.add('nova') }
   el.addEventListener('click',()=>atualizarApp(el));
+  // Página aberta há tempo: confere a cada 2 min se saiu versão nova e avisa no cabeçalho
+  const base=srv||atual;
+  setInterval(async()=>{ try{ const n=num(await (await fetch('sw.js',{cache:'no-store'})).text()); if(n>base&&!el.classList.contains('nova')){ el.textContent='Versão '+base+' · nova '+n+', toque para atualizar'; el.classList.add('nova') } }catch(_){} },120000);
   el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); atualizarApp(el) } });
 })();
 
