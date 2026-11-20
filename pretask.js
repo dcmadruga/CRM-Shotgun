@@ -242,7 +242,15 @@
   // Campos da bandeira (Posto é bandeirado, Qual bandeira, dados de integração) ficam na aba Base e posto
   const ehBand = c => /bandeir/i.test(c.label || '');
   const camposBand = () => ((C && C.cfg4 && C.cfg4.secoes) || []).flatMap(s => (s.campos || []).filter(c => c.show !== false && ehBand(c)));
-  const secoesParam = cfg => ((cfg && cfg.secoes) || []).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)) })).filter(s => s.campos.length);
+  // Seções que ficam dentro da aba Base e posto (uma vez só, não por filial): Conversão de Dados
+  const ehSecBase = s => /convers[aã]o/i.test(s.titulo || '');
+  // Blocos da aba Base e posto vindos dos Parâmetros: Bandeira (pelos campos) e as seções acima
+  const blocosBase = () => { const cfg = (C && C.cfg4 && C.cfg4.secoes) || [], b = [];
+    cfg.filter(ehSecBase).forEach(s => { const cs = (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)); if (cs.length) b.push({ titulo: String(s.titulo || '').replace(/:\s*$/, ''), campos: cs }); });
+    const cb = camposBand(); if (cb.length) b.push({ titulo: 'Bandeira', campos: cb, band: true });
+    return b; };
+  const camposBase = () => blocosBase().flatMap(x => x.campos);
+  const secoesParam = cfg => ((cfg && cfg.secoes) || []).filter(s => !ehSecBase(s)).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)) })).filter(s => s.campos.length);
   const BANDS = [[/ipiranga/i, '#0a3d91', '#ffd400', '#ffd400', 'Ipiranga'], [/shell|ra[ií]zen/i, '#ffd500', '#dd1d21', '#dd1d21', 'Shell'], [/petrobras|^br\b|vibra/i, '#00843d', '#fdc82f', '#fff', 'Petrobras'], [/\bale\b|alesat/i, '#0b4ea2', '#e30613', '#fff', 'ALE'], [/total/i, '#ed0000', '#2a5caa', '#fff', 'TotalEnergies'], [/atem/i, '#004b8d', '#f7a600', '#fff', 'Atem'], [/rodoil/i, '#e30613', '#1d1d1b', '#fff', 'Rodoil'], [/larco/i, '#003f7d', '#e4002b', '#fff', 'Larco'], [/charrua/i, '#00539b', '#f6a800', '#fff', 'Charrua'], [/petronas/i, '#00a19c', '#d8e021', '#fff', 'Petronas'], [/idaza/i, '#1b3f8b', '#f39200', '#fff', 'Idaza'], [/branca|sem bandeira|livre/i, '#ffffff', '#c9c9d1', '#33333b', 'Bandeira branca']];
   function seloBand(nome) { const b = BANDS.find(x => x[0].test(nome)) || [null, '#4b4b57', '#8a8a99', '#fff', nome]; return `<span class="ptselo" style="background:${b[1]};color:${b[3]};--b2:${b[2]};${b[1] === '#ffffff' ? 'border:1px solid #d6d6de;' : ''}"><small>Posto</small>${esc(b[4] || nome)}</span>`; }
   // Posto simples: a bandeira informada pelo cliente nos Dados Primários já entra no bloco Bandeira (só se ainda estiver vazio)
@@ -259,6 +267,18 @@
       C.v[qual.k] = op || (outra ? outra + ': ' + bE2.replace(/^outr[oa]s?:\s*/i, '') : bE2); mudou = true;
     }
     return mudou;
+  }
+  // Conversão: o "Sistema atual" informado pelo cliente nos Dados Primários entra no Sistema Legado (só se vazio)
+  function legadoDoE2() {
+    let sa = ''; (C.cfg2.secoes || []).forEach(sc => (sc.campos || []).forEach(c => { if (/sistema atual|substitu/i.test(c.label || '') && C.v2[c.k]) sa = String(C.v2[c.k]).trim(); }));
+    if (!sa) return;
+    const sec = ((C.cfg4 && C.cfg4.secoes) || []).find(ehSecBase); if (!sec) return;
+    const cs = sec.campos || [], conv = cs.find(c => c.tipo === 'simnao'), leg = cs.find(c => /legado|sistema/i.test(c.label || '') && c.tipo !== 'simnao');
+    if (!leg || C.v[leg.k]) return;
+    if (conv && !C.v[conv.k]) C.v[conv.k] = 'Sim';
+    const n = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '');
+    const ops = String(leg.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean), op = ops.find(o => n(o) === n(sa)) || ops.find(o => n(o) && !ehOutro(o) && (n(sa).includes(n(o)) || n(o).includes(n(sa)))), outra = ops.find(ehOutro);
+    C.v[leg.k] = leg.tipo === 'opcoes' ? (op || (outra ? outra + ': ' + sa : sa)) : sa;
   }
   function ligarSelo(root) {
     root.querySelectorAll('[data-ptband] select[data-pk]').forEach(sel => {
@@ -327,8 +347,8 @@
     Object.assign(C, { p, e4: e4 || {}, e2, cfg4: cfg4 && cfg4.json ? json(cfg4) : copia(window.ETAPA4_PADRAO || { secoes: [] }), cfg2: json(pub2) || window.ETAPA2_PADRAO || { secoes: [] }, an, dono, centrais, pre, v: copia((e4 && e4.valores) || {}), v2: copia(v2) });
     d.querySelector('#ptTit').textContent = 'Pré TASK · ' + (p.cliente || '');
     trazerAnexosE2();
-    camposBand().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v[k] === undefined && C.v['f0__' + k] !== undefined) C.v[k] = C.v['f0__' + k]; }));
-    bandeiraDoE2();
+    camposBase().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v[k] === undefined && C.v['f0__' + k] !== undefined) C.v[k] = C.v['f0__' + k]; }));
+    bandeiraDoE2(); legadoDoE2();
     desenhar();
     if (e4 && e4.parcial) msg('Salvo parcial' + (e4.por ? ' por ' + e4.por : '') + (e4.em && e4.em.toDate ? ' em ' + e4.em.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '') + '. Complete os obrigatórios para o salvar final.');
   }
@@ -431,7 +451,7 @@
       <div class="ptf full"><span>${central ? 'Filiais' : 'Unidade'}</span>${tabela}
         <p class="ptnote">${central ? 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas. Marque qual filial é a F100: ela aparece no topo e no card do TASK.' : 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas.'}</p></div>
     </div></div>` : '<p class="ptnote">Escolha o Tipo de Base para informar o posto ou as filiais.</p>'}
-    ${camposBand().length ? `<div class="ptsec" data-ptband><h5>Bandeira</h5><div class="ptgrid">${camposHtml(camposBand(), '', C.v, C.anx)}</div></div>` : ''}`);
+    ${blocosBase().map(b => `<div class="ptsec"${b.band ? ' data-ptband' : ''}><h5>${esc(b.titulo)}</h5><div class="ptgrid">${camposHtml(b.campos, '', C.v, C.anx)}</div></div>`).join('')}`);
   }
   function painelProposta() {
     const p = C.p, l = (t, v) => v ? `<div class="ptf"><span>${t}</span><div class="ptro">${v}</div></div>` : '';
@@ -588,7 +608,7 @@
       });
     });
     if (faltaP) faltas.push([abaP.aba, 'campos obrigatórios em ' + ps[+abaP.aba.slice(1)].titulo]);
-    const rb = lerCampos(corpo, camposBand(), '', C.anx); Object.assign(valores, rb.valores); Object.assign(campos, rb.legiveis); if (rb.falta) faltas.push(['base', 'dados da Bandeira']);
+    blocosBase().forEach(b => { const rb = lerCampos(corpo, b.campos, '', C.anx); Object.assign(valores, rb.valores); Object.assign(campos, rb.legiveis); if (rb.falta) faltas.push(['base', 'campos de ' + b.titulo]); });
     return { P, central, faltas, e2Lido, valores, campos, fila, ps, dadosFil, abaP };
     } finally { SILENCIO = false; }
   }
@@ -628,7 +648,7 @@
       Object.keys(cab).forEach(k => { if (!cab[k]) delete cab[k]; });
       valores.base__fil = filiais;
       const secoes = [{ titulo: 'Status', labels: ['Status', 'Data da Base', 'Data do Start', 'Modalidade'] }, { titulo: central ? 'Central' : 'Base', labels: ['Tipo de Base', 'Inclusão', 'Central que recebe a filial', 'Cliente Potencial + de 5 Unidades', 'Nome da Central', 'Nome do Posto', 'Quantidade de Filiais', 'F100', 'Filiais', 'Unidade'] }]
-        .concat(camposBand().length ? [{ titulo: 'Bandeira', labels: camposBand().flatMap(c => [c.label, c.label + ' - ' + (c.detalhe || '')]) }] : []).concat(ps.map(s => ({ titulo: s.titulo, labels: s.campos.flatMap(c => [c.label, ...Object.values(c.cond || {}).flatMap(l => (l || []).map(x => x.label))]) })));
+        .concat(blocosBase().map(b => ({ titulo: b.titulo, labels: b.campos.flatMap(c => [c.label, c.label + ' - ' + (c.detalhe || '')]) }))).concat(ps.map(s => ({ titulo: s.titulo, labels: s.campos.flatMap(c => [c.label, ...Object.values(c.cond || {}).flatMap(l => (l || []).map(x => x.label))]) })));
       const doc = { pre, parcial: !!parcial, valores, campos: { ...cab, ...campos }, secoes, em: F.serverTimestamp(), por, porUid: perfil.uid, porEmail: perfil.email || '' };
       await F.setDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados'), doc);
       // Dados primários alterados: corrige o original e registra quem alterou
