@@ -185,15 +185,25 @@
       const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return URL.createObjectURL(new Blob([u8], { type: meta.tipo || 'image/png' })); } catch (e) { return ''; } })();
     MINIS.set(id, pr); return pr;
   }
+  // Miniatura da 1ª página de PDF (ex.: logo enviado em PDF), com o leitor de PDF carregado só quando precisa
+  let csProm = null;
+  const carregaCS = () => window.ContratoSocial ? Promise.resolve(window.ContratoSocial) : (csProm = csProm || new Promise((ok, err) => { const sc = document.createElement('script'); sc.src = 'contrato-social.js'; sc.onload = () => ok(window.ContratoSocial); sc.onerror = () => { csProm = null; err(new Error('pdf')); }; document.head.appendChild(sc); }));
+  const MINIPDF = new Map();
+  function miniPdf(chave, blob) {
+    if (MINIPDF.has(chave)) return MINIPDF.get(chave);
+    const pr = carregaCS().then(cs => cs.miniatura(blob, 160)).then(r => r.url).catch(() => ''); MINIPDF.set(chave, pr); return pr;
+  }
   function desenharAnexo(box, anx) {
     const k = box.dataset.anx, st = anx[k]; if (!st) return;
     const kb = n => Math.max(1, Math.round((n || 0) / 1024)) + ' KB';
     const ehImg = (tipo, nome) => /^image\//.test(tipo || '') || /\.(png|jpe?g|gif|webp|bmp|svg)$/i.test(nome || '');
+    const ehPdfA = (tipo, nome) => /pdf/i.test(tipo || '') || /\.pdf$/i.test(nome || '');
     const mini = (ehI, attr) => ehI ? `<img class="mini" alt="" ${attr}>` : '📄';
-    box.querySelector('.lista').innerHTML = st.salvos.map((a, i) => `<span class="it${ehImg(a.tipo, a.orig || a.nome) ? ' comimg' : ''}">${mini(ehImg(a.tipo, a.orig || a.nome), `data-miniid="${esc(a.id || '')}"`)} ${esc(a.nome)} <small>${kb(a.tamanho)}</small><button type="button" data-anxrm="s${i}" aria-label="Remover ${esc(a.nome)}">×</button></span>`).join('') + st.novos.map((f, i) => `<span class="it${ehImg(f.type, f.name) ? ' comimg' : ''}">${mini(ehImg(f.type, f.name), `data-mininovo="${i}"`)} ${esc(f.name)} <small>${kb(f.size)} · novo</small><button type="button" data-anxrm="n${i}" aria-label="Remover ${esc(f.name)}">×</button></span>`).join('') || '<span class="ptnote">Nenhum arquivo.</span>';
+    const temMini = (tipo, nome) => ehImg(tipo, nome) || ehPdfA(tipo, nome);
+    box.querySelector('.lista').innerHTML = st.salvos.map((a, i) => `<span class="it${temMini(a.tipo, a.orig || a.nome) ? ' comimg' : ''}">${mini(temMini(a.tipo, a.orig || a.nome), `data-miniid="${esc(a.id || '')}"${ehPdfA(a.tipo, a.orig || a.nome) ? ' data-pdf="1"' : ''}`)} ${esc(a.nome)} <small>${kb(a.tamanho)}</small><button type="button" data-anxrm="s${i}" aria-label="Remover ${esc(a.nome)}">×</button></span>`).join('') + st.novos.map((f, i) => `<span class="it${temMini(f.type, f.name) ? ' comimg' : ''}">${mini(temMini(f.type, f.name), `data-mininovo="${i}"${ehPdfA(f.type, f.name) ? ' data-pdf="1"' : ''}`)} ${esc(f.name)} <small>${kb(f.size)} · novo</small><button type="button" data-anxrm="n${i}" aria-label="Remover ${esc(f.name)}">×</button></span>`).join('') || '<span class="ptnote">Nenhum arquivo.</span>';
     // Miniatura das imagens: as novas vêm do aparelho; as já salvas são lidas do banco (uma vez)
-    box.querySelectorAll('img[data-mininovo]').forEach(im => { const f = st.novos[+im.dataset.mininovo]; if (!f) return; const u = URL.createObjectURL(f); im.src = u; im.onclick = () => window.open(u, '_blank'); });
-    box.querySelectorAll('img[data-miniid]').forEach(im => { const id = im.dataset.miniid; if (!id) { im.replaceWith('📄'); return; } miniSalva(id).then(u => { if (u) { im.src = u; im.onclick = () => window.open(u, '_blank'); } else im.replaceWith('📄'); }); });
+    box.querySelectorAll('img[data-mininovo]').forEach(im => { const f = st.novos[+im.dataset.mininovo]; if (!f) return; const u = URL.createObjectURL(f); im.onclick = () => window.open(u, '_blank'); if (!im.dataset.pdf) { im.src = u; return; } miniPdf(f, f).then(m => { if (m) im.src = m; else im.replaceWith('📄'); }); });
+    box.querySelectorAll('img[data-miniid]').forEach(im => { const id = im.dataset.miniid; if (!id) { im.replaceWith('📄'); return; } miniSalva(id).then(async u => { if (!u) { im.replaceWith('📄'); return; } im.onclick = () => window.open(u, '_blank'); if (!im.dataset.pdf) { im.src = u; return; } const m = await miniPdf(id, await (await fetch(u)).blob()); if (m) im.src = m; else im.replaceWith('📄'); }); });
     const temPfx = st.salvos.some(a => ehPfx(a.nome)) || st.novos.some(f => ehPfx(f.name)), l = box.querySelector('.ptpfx'); l.hidden = !temPfx;
     const novoPfx = st.novos.find(f => ehPfx(f.name)), inp = l.querySelector('input'), cst = l.querySelector('.cst:not(.ccnpj)'), ccn = l.querySelector('.ccnpj');
     const conf = async () => { if (!novoPfx || !inp.value) { cst.textContent = novoPfx && !inp.value ? 'Informe a senha deste certificado.' : ''; cst.className = 'cst'; st.pfxOk = null; st.cnpjRes = null; if (ccn) { ccn.textContent = ''; ccn.className = 'cst ccnpj'; } return; } cst.textContent = 'Conferindo…'; cst.className = 'cst'; const v = inp.value; let r; try { r = await conferirPfx(novoPfx, v); } catch (e) { r = { ok: null }; } if (inp.value !== v) return; st.pfxOk = r.ok; cnpjCert(k, r, st, ccn); const venc = r.ok && r.ate && r.ate < new Date(); cst.className = 'cst' + (venc ? ' venc' : r.ok ? ' ok' : r.ok === false ? ' bad' : ''); cst.textContent = r.ok ? (venc ? '⚠ Senha confere, mas o certificado está VENCIDO desde ' + r.ate.toLocaleDateString('pt-BR') + (r.cn ? ' · ' + r.cn : '') : '✓ Senha confere' + (r.cn ? ' · ' + r.cn : '') + (r.ate ? ' · válido até ' + r.ate.toLocaleDateString('pt-BR') : '')) : r.ok === false ? '✗ A senha não confere com este certificado.' : 'Não foi possível conferir agora.'; };
