@@ -51,6 +51,7 @@
 .ptscroll{overflow-x:auto}
 .ptnote{font-size:12.5px;color:var(--muted);font-weight:400;margin:0}
 .pttabs{display:flex;gap:6px;flex-wrap:wrap}
+.ptemb{display:flex;flex-direction:column;gap:8px;scroll-margin-top:12px}
 .pttabs button{border-radius:999px;padding:6px 12px;font-size:13px}
 .pttabs button[aria-selected=true]{background:var(--purple);border-color:var(--purple);color:#fff}
 .ptanx{display:flex;flex-direction:column;gap:6px}
@@ -249,6 +250,8 @@
     cfg.filter(ehSecBase).forEach(s => { const cs = (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)); if (cs.length) b.push({ titulo: String(s.titulo || '').replace(/:\s*$/, ''), campos: cs }); });
     const cb = camposBand(); if (cb.length) b.push({ titulo: 'Bandeira', campos: cb, band: true });
     return b; };
+  // Seção de anexos (Certificado Digital, Logo da Filial) aparece dentro da aba Base e posto, por posto ou por filial
+  const ehSecAnx = s => /anexo/i.test(s.titulo || '') || (s.campos || []).some(c => c.tipo === 'anexo' && /certificad|pfx|logo/i.test(c.label || ''));
   const camposBase = () => blocosBase().flatMap(x => x.campos);
   const secoesParam = cfg => ((cfg && cfg.secoes) || []).filter(s => !ehSecBase(s)).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c) && !ehBand(c)) })).filter(s => s.campos.length);
   const BANDS = [[/ipiranga/i, '#0a3d91', '#ffd400', '#ffd400', 'Ipiranga'], [/shell|ra[ií]zen/i, '#ffd500', '#dd1d21', '#dd1d21', 'Shell'], [/petrobras|^br\b|vibra/i, '#00843d', '#fdc82f', '#fff', 'Petrobras'], [/\bale\b|alesat/i, '#0b4ea2', '#e30613', '#fff', 'ALE'], [/total/i, '#ed0000', '#2a5caa', '#fff', 'TotalEnergies'], [/atem/i, '#004b8d', '#f7a600', '#fff', 'Atem'], [/rodoil/i, '#e30613', '#1d1d1b', '#fff', 'Rodoil'], [/larco/i, '#003f7d', '#e4002b', '#fff', 'Larco'], [/charrua/i, '#00539b', '#f6a800', '#fff', 'Charrua'], [/petronas/i, '#00a19c', '#d8e021', '#fff', 'Petronas'], [/idaza/i, '#1b3f8b', '#f39200', '#fff', 'Idaza'], [/branca|sem bandeira|livre/i, '#ffffff', '#c9c9d1', '#33333b', 'Bandeira branca']];
@@ -381,6 +384,8 @@
     let ok2 = 0, t2 = 0; secs2().forEach(s => { const r = contar(s.campos, '', C.v2); ok2 += r.ok; t2 += r.tot; }); m.e2 = marca(ok2, t2);
     secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, C.v); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
     m.anexos = marca(1, 1);
+    // a aba Base e posto também mostra pendência das seções de anexos que estão dentro dela
+    secoesParam(C.cfg4).forEach((s, i) => { if (ehSecAnx(s) && !/dgm ok/.test(m['p' + i]) && /dgm ok/.test(m.base)) m.base = marca(0, 1).replace('falta', 'parcial'); });
     return m;
   }
   function desenhar() {
@@ -390,9 +395,9 @@
     body.innerHTML = `<div class="dgwrap" id="ptWrap">
       <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', C.pre.tipoBase === 'Central' ? 'Central e filiais' : 'Base e posto', 'posto')}
         ${g('Dos passos anteriores')}${nav('proposta', 'Proposta', 'lista')}${nav('e2', 'Dados Primários', 'pessoas')}${nav('contrato', 'Contrato', 'lista')}
-        ${ps.length ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
+        ${ps.length ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => ehSecAnx(s) ? '' : nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
       <div class="dgcorpo" id="ptCorpo">
-        ${painelStatus()}${painelBase()}${painelProposta()}${painelE2()}${painelContrato()}${ps.map((s, i) => painelParam(s, i)).join('')}
+        ${painelStatus()}${painelBase(ps.map((s, i) => ehSecAnx(s) ? painelParam(s, i, true) : '').join(''))}${painelProposta()}${painelE2()}${painelContrato()}${ps.map((s, i) => ehSecAnx(s) ? '' : painelParam(s, i)).join('')}
       </div></div>`;
     const corpo = document.getElementById('ptCorpo');
     ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo);
@@ -405,7 +410,10 @@
     destacarFaltas();
   }
   function mostrar(id) {
+    const emb = document.querySelector(`#ptCorpo .ptemb[data-ptp="${id}"]`);
+    if (emb) id = 'base';
     C.aba = id;
+    if (emb) setTimeout(() => emb.scrollIntoView({ block: 'start', behavior: 'smooth' }), 0);
     document.querySelectorAll('#ptWrap .dgnav').forEach(b => b.setAttribute('aria-selected', String(b.dataset.pt === id)));
     document.querySelectorAll('#ptCorpo > [data-ptp]').forEach(p => { p.hidden = p.dataset.ptp !== id; });
   }
@@ -435,7 +443,7 @@
       <td><input data-ff="cidade" placeholder="Cidade - UF" value="${esc([f.cidade, f.uf].filter(Boolean).join(' - '))}" aria-label="Cidade"></td>
       ${central ? `<td class="f1"><input type="radio" name="ptf100" data-ff="f100" ${on ? 'checked' : ''} aria-label="Esta é a F100">${on ? '<span class="tag100">F100</span>' : ''}</td>` : ''}</tr>`;
   }
-  function painelBase() {
+  function painelBase(anexos) {
     const P = C.pre, central = P.tipoBase === 'Central', simples = P.tipoBase === 'Simples';
     const f100 = central && P.f100 ? P.filiais.find(f => f.cod === P.f100) : null;
     const tabela = (P.tipoBase ? `<div class="ptscroll"><table class="ptfil"><thead><tr><th>Filial</th><th>Tipo</th><th>CNPJ</th><th>Razão social</th><th>Cidade</th>${central ? '<th>F100</th>' : ''}</tr></thead><tbody>${P.filiais.map((f, i) => linhaFil(f, i, central)).join('')}</tbody></table></div>` : '');
@@ -451,6 +459,7 @@
       <div class="ptf full"><span>${central ? 'Filiais' : 'Unidade'}</span>${tabela}
         <p class="ptnote">${central ? 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas. Marque qual filial é a F100: ela aparece no topo e no card do TASK.' : 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas.'}</p></div>
     </div></div>` : '<p class="ptnote">Escolha o Tipo de Base para informar o posto ou as filiais.</p>'}
+    ${anexos || ''}
     ${blocosBase().map(b => `<div class="ptsec"${b.band ? ' data-ptband' : ''}><h5>${esc(b.titulo)}</h5><div class="ptgrid">${camposHtml(b.campos, '', C.v, C.anx)}</div></div>`).join('')}`);
   }
   function painelProposta() {
@@ -474,11 +483,13 @@
       ${l('Aceito por', esc(p.ctAceitoNome))}${l('CPF', esc(p.ctAceitoCpf))}${l('Cargo', esc(p.ctAceitoCargo))}${l('Data do aceite', esc(fmtTs(p.ctAceitoEm)))}
       ${C.verContrato && p.ctEm ? '<div class="ptbtns full"><button type="button" data-pta="contrato">Ver contrato (PDF)</button></div>' : ''}</div></div>`);
   }
-  function painelParam(s, i) {
-    const fils = C.pre.filiais;
-    if (!porFilial(s)) return painel('p' + i, s.titulo, 'Parâmetros Pré TASK', `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid">${camposHtml(s.campos, '', C.v, C.anx)}</div></div>`);
+  function painelParam(s, i, emb) {
+    const fils = C.pre.filiais, tit = String(s.titulo || '').replace(/:\s*$/, '');
+    // dentro da aba Base e posto: sem painel próprio, só o bloco
+    const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}</div>` : painel;
+    if (!porFilial(s)) return pn('p' + i, s.titulo, 'Parâmetros Pré TASK', `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid">${camposHtml(s.campos, '', C.v, C.anx)}</div></div>`);
     const at = Math.min(C.filAtiva, fils.length - 1);
-    return painel('p' + i, s.titulo, 'preenchido filial por filial', `<div class="pttabs" role="tablist">${fils.map((f, j) => `<button type="button" role="tab" data-ptfi="${j}" aria-selected="${j === at}">${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}</button>`).join('')}</div>` +
+    return pn('p' + i, s.titulo, 'preenchido filial por filial', `<div class="pttabs" role="tablist">${fils.map((f, j) => `<button type="button" role="tab" data-ptfi="${j}" aria-selected="${j === at}">${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}</button>`).join('')}</div>` +
       fils.map((f, j) => `<div class="ptsec" data-ptfp="${j}"${j === at ? '' : ' hidden'}><h5>${esc(s.titulo)}<small>${esc([f.cod, f.razao].filter(Boolean).join(' · '))}</small></h5><div class="ptgrid">${j ? `<div class="ptbtns full"><button type="button" data-ptcopia="${j}" data-sec="${i}">Copiar dados da ${esc(fils[0].cod)}</button></div>` : ''}${camposHtml(s.campos, 'f' + j + '__', C.v, C.anx)}</div></div>`).join(''));
   }
   function painelAnexos() {
