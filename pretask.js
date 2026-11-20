@@ -403,7 +403,7 @@
     const nav = (id, t, ic) => `<button type="button" class="dgnav" data-pt="${id}" aria-selected="false">${ICO(ic || t)}<span>${esc(t)}</span>${M[id] || ''}</button>`;
     const g = t => `<span class="ptnote" style="padding:10px 14px 2px;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;font-weight:600">${t}</span>`;
     body.innerHTML = `<div class="dgwrap" id="ptWrap">
-      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', C.pre.tipoBase === 'Central' ? 'Central e filiais' : 'Base e posto', 'posto')}
+      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}
         ${g('Dos passos anteriores')}${nav('proposta', 'Proposta', 'lista')}${nav('e2', 'Dados Primários', 'pessoas')}${nav('contrato', 'Contrato', 'lista')}
         ${ps.length ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => ehSecAnx(s) ? '' : nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
       <div class="dgcorpo" id="ptCorpo">
@@ -457,7 +457,7 @@
     const P = C.pre, central = P.tipoBase === 'Central', simples = P.tipoBase === 'Simples';
     const f100 = central && P.f100 ? P.filiais.find(f => f.cod === P.f100) : null;
     const tabela = (P.tipoBase ? `<div class="ptscroll"><table class="ptfil"><thead><tr><th>Filial</th><th>Tipo</th><th>CNPJ</th><th>Razão social</th><th>Cidade</th>${central ? '<th>F100</th>' : ''}</tr></thead><tbody>${P.filiais.map((f, i) => linhaFil(f, i, central)).join('')}</tbody></table></div>` : '');
-    return painel('base', central ? 'Central e filiais' : 'Base e posto', '', `<div class="ptsec"><h5>Base</h5><div class="ptgrid">
+    return painel('base', 'Implantação', '', `<div class="ptsec"><h5>Base</h5><div class="ptgrid">
       <div class="ptf"><span>Tipo de Base <b>*</b></span>${seg('tipoBase', ['Simples', 'Central'], P.tipoBase)}</div>
       <div class="ptf"><span>Inclusão <b>*</b></span>${seg('inclusao', ['Base Nova', 'Filial Nova em Central'], P.inclusao)}</div>
       <div class="ptf"><span>Cliente Potencial + de 5 Unidades <b>*</b></span>${seg('potencial', ['Sim', 'Não'], P.potencial)}</div>
