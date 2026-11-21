@@ -604,6 +604,46 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .marcs .mg{width:100%;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:4px}
 .pcard .ctinfo{font-size:12.5px;color:#1f7a46;font-weight:600}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* Central de notificações (notificacoes.js) */
+header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-width:0}
+.sgnbtn{position:relative;display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,.14);color:var(--ink-fg)}
+.sgnbtn:hover,.sgnbtn[aria-expanded="true"]{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28)}
+.sgnbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sgnqtd{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--sg-disparo);color:var(--sg-ink);font:700 11px/20px var(--body);text-align:center;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--ink)}
+.sgnpainel{position:absolute;right:0;top:calc(100% + 10px);z-index:60;width:min(380px,calc(100vw - 32px));max-height:min(72vh,560px);display:flex;flex-direction:column;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sg-sombra);overflow:hidden;text-align:left}
+.sgntopo{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 4px}
+.sgntopo h3{margin:0;font:700 17px/24px var(--display);letter-spacing:-.01em}
+.sgnlink{background:none;border:0;padding:6px 0;font-size:12.5px;font-weight:600;color:var(--sg-comercial-escuro);cursor:pointer}
+.sgnlink:hover{text-decoration:underline}
+.sgnescopo{margin:0;padding:0 16px 10px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.sgnlista{overflow-y:auto;flex:1}
+.sgnit{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:start;padding:12px 16px;border-bottom:1px solid var(--line);cursor:default}
+.sgnit.link,.sgnit.nova{cursor:pointer}
+.sgnit:hover{background:var(--bg)}
+.sgnit:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.sgnponto{width:8px;height:8px;margin-top:6px;border-radius:50%;background:transparent}
+.sgnit.nova .sgnponto{background:var(--sg-disparo)}
+.sgnit.nova{background:color-mix(in srgb,var(--sg-disparo) 5%,var(--surface))}
+.sgncorpo b{display:block;font-size:13.5px;font-weight:600;line-height:1.35}
+.sgnit:not(.nova) .sgncorpo b{font-weight:500}
+.sgncorpo p{margin:2px 0 0;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere;white-space:pre-line}
+.sgnmeta{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.sgnsetor{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-weight:500;color:var(--fg)}
+.sgndel{display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted)}
+.sgndel:hover{background:var(--bg);color:var(--fg)}
+.sgnvazio{display:flex;flex-direction:column;align-items:center;gap:6px;padding:32px 24px;text-align:center;color:var(--muted);font-size:12.5px}
+.sgnvazio svg{width:30px;height:30px;opacity:.6}
+.sgnvazio b{color:var(--fg);font-size:13.5px;font-weight:600}
+.sgnnova{border-top:1px solid var(--line);padding:10px 16px 12px;background:var(--bg)}
+.sgnnova summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--sg-comercial-escuro)}
+.sgnnova form{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.sgnnova small{font-weight:400}
+.sgnacoes{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.sgnmsg{font-size:12px;color:var(--muted);margin-right:auto}
+.sgnenviar{background:var(--sg-disparo);border-color:var(--sg-disparo);color:var(--sg-ink);border-radius:12px;min-height:40px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .sgnlink,:root:not([data-theme="light"]) .sgnnova summary{color:#8fb0ff}}
+:root[data-theme="dark"] .sgnlink,:root[data-theme="dark"] .sgnnova summary{color:#8fb0ff}
+@media (max-width:560px){.sgnpainel{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 76px);width:auto;max-height:calc(100dvh - 100px)}}
 </style>
 </head><body>
 <header class="top"><div class="wrap">
@@ -1040,6 +1080,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <script type="module" src="crm.js"></script>
 <script src="telemetria.js"></script>
 <script src="telemetria-anp.js"></script>
+<script src="notificacoes.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const LOGO_PADRAO = $('logo').src;

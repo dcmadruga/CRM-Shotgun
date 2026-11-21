@@ -1,0 +1,33 @@
+// Regras da central de notificações (sino no cabeçalho).
+// Cole estes blocos DENTRO do "match /databases/{database}/documents { ... }" das regras atuais do Firestore
+// (console do Firebase > Firestore Database > Regras) e clique em Publicar. Não apague as regras que já existem:
+// estes blocos só ACRESCENTAM permissões (no Firestore, basta uma regra permitir).
+//
+// Regra de setores: cada pessoa lê as notificações gerais (setor 'todos'), as do(s) seu(s) setor(es)
+// (campo "setores" do cadastro, marcado pelo ADM em Usuários) e as enviadas só para ela (para = uid).
+// O ADM lê todas, de todos os setores.
+
+    function ntEu() { return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data; }
+    function ntAtivo() { return request.auth != null && ntEu().ativo == true; }
+    function ntAdm() { return ntAtivo() && (ntEu().get('papel', '') == 'adm' || 'adm' in ntEu().get('papeis', [])); }
+
+    match /notificacoes/{id} {
+      allow read: if ntAdm() || (ntAtivo() && (
+        resource.data.setor == 'todos'
+        || resource.data.para == request.auth.uid
+        || resource.data.setor in ntEu().get('setores', [])));
+      // qualquer pessoa liberada pode gerar uma notificação (os avisos de um setor costumam nascer em outro)
+      allow create: if ntAtivo()
+        && request.resource.data.keys().hasOnly(['titulo', 'texto', 'setor', 'para', 'aba', 'criado', 'por', 'porUid'])
+        && request.resource.data.titulo is string && request.resource.data.titulo.size() > 0 && request.resource.data.titulo.size() <= 120
+        && request.resource.data.texto is string && request.resource.data.texto.size() <= 500
+        && request.resource.data.setor is string
+        && request.resource.data.porUid == request.auth.uid
+        && request.resource.data.criado == request.time;
+      allow delete: if ntAdm();
+    }
+
+    match /notifLidas/{uid} {
+      // cada pessoa guarda só o que já leu
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
