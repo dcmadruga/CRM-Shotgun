@@ -107,7 +107,7 @@ function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
     <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
-    ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}${t.modalidade ? `<span class="tkstart tkmod">${esc(t.modalidade)}</span>` : ''}</div>` : ''}
+    ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkbaserow"><span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>${(() => { const lk = linkBaseDe(t); return `<button type="button" class="tklink${lk ? '' : ' vazio'}" data-tk="linkbase" title="${lk ? 'Copiar link para baixar a base' : 'Link da base ainda não informado (Módulos › Implantação)'}" aria-label="${lk ? 'Copiar link da base' : 'Informar link da base'}"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>`; })()}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}${t.modalidade ? `<span class="tkstart tkmod">${esc(t.modalidade)}</span>` : ''}</div>` : ''}
     ${t.logo ? `<div class="tklogobox"><img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}"></div>` : ''}
     ${t.central ? '' : `<h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}`}
@@ -129,6 +129,13 @@ const topDe = m => (m && m.pai && (MODS.secoes || []).find(x => x.id === m.pai))
 const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
 // Quem não tem setor marcado (e o ADM) altera todos os módulos
 const podeMod = m => admin || !meusSetores().length || meusSetores().includes(topDe(m).id);
+// Link para baixar a base: campo "Link da base" do módulo Implantação (ou de uma etapa dele), preenchido pelo setor de Implantação
+function linkBaseDe(t) {
+  const ms = (MODS.secoes || []).filter(m => m.id === 'impl' || topDe(m).id === 'impl' || /implanta/i.test(topDe(m).titulo || ''));
+  for (const m of ms) { const c = (m.campos || []).find(x => /link/i.test(x.label || '') && /base/i.test(x.label || '')) || (m.campos || []).find(x => x.k === 'linkBase'); const v = c && (((t.mods || {})[m.id] || {}).dados || {})[c.k]; if (v && String(v).trim()) return { url: String(v).trim(), mid: m.id }; }
+  return null;
+}
+const modDoLink = () => { const m = (MODS.secoes || []).find(m => (m.campos || []).some(x => /link/i.test(x.label || '') && /base/i.test(x.label || '')) && /implanta/i.test(topDe(m).titulo || '')); return m ? m.id : 'impl'; };
 const prazoDe = (t, p) => { if (p.prazo === '' || p.prazo == null || !t.dataBase) return ''; const dt = new Date(t.dataBase + 'T12:00:00'); dt.setDate(dt.getDate() + (+p.prazo || 0)); return dt.toISOString().slice(0, 10); };
 function modsCard(t) {
   const top = (MODS.secoes || []).filter(m => !m.pai); if (!top.length) return '';
@@ -623,6 +630,10 @@ function ligar() {
     if (b.dataset.tk === 'e4') return verRef(b.dataset.pid);
     if (b.dataset.tk === 'filiais') return verFiliais(tasks.find(t => t.id === id));
     if (b.dataset.tk === 'mods') return formMods(id);
+    if (b.dataset.tk === 'linkbase') { const lk = linkBaseDe(tasks.find(t => t.id === id) || {}); if (!lk) return formMods(id, modDoLink());
+      const ok = () => { b.classList.add('ok'); b.title = 'Link copiado'; msg('Link da base copiado: ' + lk.url); setTimeout(() => { b.classList.remove('ok'); b.title = 'Copiar link para baixar a base'; }, 1800); };
+      const reserva = () => { const ta = document.createElement('textarea'); ta.value = lk.url; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); ok(); } catch (e) { msg('Copie o link: ' + lk.url); } ta.remove(); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(lk.url).then(ok, reserva); else reserva(); return; }
     if (b.dataset.tk === 'dados') formDados(tasks.find(t => t.id === id)); else formCheck(id);
   });
   $('tkDlgFechar').addEventListener('click', () => dlg().close());
