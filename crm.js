@@ -142,16 +142,18 @@ const dlg = () => $('crmDlg');
 function abrirDlg(tit, html) { $('crmDlgTit').textContent = tit; $('crmDlgBody').innerHTML = html; $('crmDlgMsg').textContent = ''; if (!dlg().open) dlg().showModal(); }
 const dmsg = t => { $('crmDlgMsg').textContent = t || ''; };
 
-function notasHtml(notas) {
+function notasHtml(notas, contatos) {
   const ns = (notas || []).slice().reverse();
+  const nomes = [...new Set((contatos || []).map(c => String(c || '').trim()).filter(Boolean))];
   return `<div class="crmhist"><h4>Histórico</h4>
     <div class="crmnova"><select id="crmNTipo" aria-label="Tipo">${TIPOS_NOTA.map(t => `<option>${t}</option>`).join('')}</select>
+      <select id="crmNCont" aria-label="Com quem"${nomes.length ? '' : ' hidden'}><option value="">Com quem?</option>${nomes.map(n => `<option>${esc(n)}</option>`).join('')}</select>
       <input id="crmNTexto" placeholder="O que aconteceu? Ex.: liguei, pediu retorno na sexta" maxlength="1000">
       <button type="button" id="crmNAdd">Anotar</button></div>
-    ${ns.length ? `<ul>${ns.map(n => `<li><span class="pill">${esc(n.tipo)}</span> <small>${fmtTs(n.em)}${n.por ? ' · ' + esc(n.por) : ''}</small><p>${esc(n.texto)}</p></li>`).join('')}</ul>` : '<p class="hint">Nenhuma anotação ainda.</p>'}
+    ${ns.length ? `<ul>${ns.map(n => `<li><span class="pill">${esc(n.tipo)}</span> ${n.contato ? `<b class="crmncont">com ${esc(n.contato)}</b> ` : ''}<small>${fmtTs(n.em)}${n.por ? ' · ' + esc(n.por) : ''}</small><p>${esc(n.texto)}</p></li>`).join('')}</ul>` : '<p class="hint">Nenhuma anotação ainda.</p>'}
   </div>`;
 }
-const novaNota = () => { const texto = $('crmNTexto').value.trim(); return texto ? { tipo: $('crmNTipo').value, texto, em: new Date().toISOString(), por: quem() } : null; };
+const novaNota = () => { const texto = $('crmNTexto').value.trim(); const ct = $('crmNCont') ? $('crmNCont').value : ''; return texto ? { tipo: $('crmNTipo').value, texto, ...(ct ? { contato: ct } : {}), em: new Date().toISOString(), por: quem() } : null; };
 
 // Sócios da Receita (QSA): tocar num nome preenche o Contato do lead
 const nomeProprio = n => String(n || '').toLowerCase().replace(/(^|\s)(\S)/g, (m, a, c) => a + c.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E)\s/g, m => m.toLowerCase());
@@ -163,6 +165,13 @@ const ctLinha = (c = {}) => `<div class="crmct" data-cargo="${esc(c.cargo || '')
   <label>E-mail<input data-c="email" type="email" value="${esc(c.email || '')}"></label>
   <button type="button" class="crmctx" data-a="ctdel" aria-label="Tirar este contato" title="Tirar este contato">✕</button>
 </div>`;
+// No lead, o seletor "Com quem?" do histórico acompanha os contatos que estão no formulário
+function atualizarNCont() {
+  const sel = $('crmNCont'); if (!sel || !$('crmCts')) return;
+  const atual = sel.value, nomes = [...new Set(lerContatos().map(c => c.nome).filter(Boolean))];
+  sel.innerHTML = `<option value="">Com quem?</option>${nomes.map(n => `<option${n === atual ? ' selected' : ''}>${esc(n)}</option>`).join('')}`;
+  sel.hidden = !nomes.length;
+}
 function lerContatos() {
   return [...document.querySelectorAll('#crmCts .crmct')].map(r => ({ nome: r.querySelector('[data-c=nome]').value.trim(), fone: r.querySelector('[data-c=fone]').value.trim(), email: r.querySelector('[data-c=email]').value.trim(), cargo: r.dataset.cargo || '' })).filter(c => c.nome || c.fone || c.email);
 }
@@ -195,7 +204,7 @@ function formLead(l) {
       ${p ? '' : '<button type="button" data-a="gerar">Gerar proposta</button>'}
       ${l.id ? '<button type="button" class="danger" data-a="excluir">Excluir lead</button>' : ''}
     </div>
-    ${l.id ? notasHtml(l.notas) : ''}`);
+    ${l.id ? notasHtml(l.notas, contatosDe(l).map(c => c.nome)) : ''}`);
   dlg().dataset.modo = 'lead';
   anpAtual = null; anpLead(l.cnpj, false);
 }
@@ -310,7 +319,7 @@ async function fichaCliente(k) {
     <div class="crmsec"><h4>Propostas e contratos</h4><ul class="crmul">${c.props.map(p => `<li><button type="button" class="linkbtn" data-a="verprop" data-id="${esc(p.id)}">Nº ${esc(p.numero)}</button> · ${fmtD(p.data)} · ${esc(ETAPAS.find(e => e.id === etapaProp(p)).nome)} · ${brl(p.totLic)} + ${brl(p.totMen)}/mês</li>`).join('')}</ul></div>
     <div id="crmAnpCli" hidden></div>
     <div class="crmsec" id="crmTask"></div>
-    ${notasHtml(c.doc?.notas)}`);
+    ${notasHtml(c.doc?.notas, [...contatos.values()].map(x => x.nome))}`);
   dlg().dataset.modo = 'cli'; dlg().dataset.k = k;
   if (dig(c.cnpj).length === 14 && window.anpPosto) window.anpPosto(c.cnpj).then(p => { const b = $('crmAnpCli'); if (p && b && dlg().dataset.k === k) { b.innerHTML = window.anpHtml(p); b.hidden = false; } }).catch(() => {});
   // Implantação (TASK): só quem tem acesso ao TASK enxerga
@@ -418,6 +427,7 @@ function ligar() {
   $('crmDlgFechar').addEventListener('click', () => dlg().close());
   dlg().addEventListener('input', e => { if (e.target.dataset.f === 'cnpj' && dig(e.target.value).length === 14) anpLead(e.target.value, true); });
   dlg().addEventListener('change', e => { if (e.target.dataset.f === 'etapa') { const m = dlg().querySelector('.crmmot'); if (m) m.hidden = e.target.value !== 'perdido'; } });
+  dlg().addEventListener('input', e => { if (e.target.closest('#crmCts')) atualizarNCont(); });
   dlg().addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'crmNTexto') { e.preventDefault(); anotar(); } });
   dlg().addEventListener('click', async e => {
     if (e.target.id === 'crmNAdd') { anotar(); return; }
@@ -459,12 +469,14 @@ function ligar() {
       const novo = row.nextElementSibling; row.remove(); row = novo;
       b.setAttribute('aria-pressed', 'true');
       row.querySelector('[data-c=fone]').focus();
+      atualizarNCont();
       dmsg(nome + (x.qual ? ' (' + x.qual + ')' : '') + ' entrou nos contatos. Complete o telefone e salve.');
     }
     else if (a === 'ctadd') { const lista = $('crmCtLista'); lista.insertAdjacentHTML('beforeend', ctLinha({})); lista.lastElementChild.querySelector('input').focus(); }
     else if (a === 'ctdel') {
       const lista = $('crmCtLista'), row = b.closest('.crmct');
       if (lista.children.length > 1) row.remove(); else row.querySelectorAll('input').forEach(i => { i.value = ''; });
+      atualizarNCont();
       const nomes = lerContatos().map(c => c.nome); $('crmSoc').querySelectorAll('.crmsocb').forEach(bt => { const x = JSON.parse($('crmSoc').dataset.socios || '[]')[+bt.dataset.i]; bt.setAttribute('aria-pressed', String(!!x && nomes.some(n => norm(n) === norm(nomeProprio(x.nome))))); });
     }
     else if (a === 'clictadd') { addContatoCli(); }
