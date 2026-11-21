@@ -217,6 +217,8 @@ async function iniciar() {
     Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
     document.body.classList.toggle('semBarra', !!EXTRA[tab]);
     if (EXTRA[tab]) { $('viewProp').hidden = true; $('viewCfg').hidden = true; $('tabProp').setAttribute('aria-selected', 'false'); $('tabCfg').setAttribute('aria-selected', 'false'); }
+    // Nova proposta fica dentro do CRM: enquanto ela estiver aberta, a aba CRM continua marcada
+    if (tab === 'tabProp') $('tabCrm').setAttribute('aria-selected', 'true');
   }
   Object.keys(EXTRA).forEach(t => $(t).addEventListener('click', () => abrirAba(t)));
   ['tabProp', 'tabCfg'].forEach(t => $(t).addEventListener('click', () => abrirAba(t)));

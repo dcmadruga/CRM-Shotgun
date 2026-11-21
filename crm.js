@@ -322,6 +322,7 @@ function ligar() {
   $('crmBusca').addEventListener('input', desenhar);
   $('crmMinhas').addEventListener('change', e => { soMinhas = e.target.checked; desenhar(); });
   $('crmNovo').addEventListener('click', () => formLead());
+  $('crmProp').addEventListener('click', () => { $('tabProp').click(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
   $('btnNova').addEventListener('click', () => { window.crmLeadId = ''; });
   $('viewCrm').addEventListener('click', e => {
     const b = e.target.closest('[data-tipo][data-id]'); if (!b || b.closest('dialog')) return;
