@@ -4,10 +4,20 @@ const UA = { 'user-agent': 'shotgun-radar/1.0' };
 export const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const chaveMun = s => semAcento(s).replace(/[’'`´]/g, '').replace(/\bd\s?oeste\b/g, 'doeste').replace(/[^a-z0-9]+/g, ' ').trim();
 
-export async function municipiosMT() {
-  const lista = await (await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados/51/municipios', { headers: UA })).json();
+export async function municipiosMT(listaPronta) {
+  let lista = listaPronta;
+  if (!lista) {
+    try { lista = await (await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados/51/municipios', { headers: UA, signal: AbortSignal.timeout(30000) })).json(); }
+    catch (e) { // sem o IBGE: usa os nomes do próprio app (sem código IBGE nem centro)
+      console.warn('IBGE indisponível, usando lib/municipios.js:', e.message);
+      const { readFileSync } = await import('node:fs'); const w = {};
+      new Function('window', readFileSync(new URL('../../lib/municipios.js', import.meta.url), 'utf8'))(w);
+      lista = w.MUNICIPIOS.MT.split('|').map(nome => ({ id: 'x-' + chaveMun(nome).replace(/ /g, '-'), nome }));
+      listaPronta = lista;
+    }
+  }
   const centro = {};
-  try {
+  if (!listaPronta) try {
     const geo = await (await fetch('https://servicodados.ibge.gov.br/api/v3/malhas/estados/51?intrarregiao=municipio&formato=application/vnd.geo%2Bjson&qualidade=minima', { headers: UA })).json();
     for (const f of geo.features || []) {
       const pts = []; const junta = c => typeof c[0] === 'number' ? pts.push(c) : c.forEach(junta); junta(f.geometry.coordinates);

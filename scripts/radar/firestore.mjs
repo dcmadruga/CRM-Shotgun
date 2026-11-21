@@ -18,7 +18,7 @@ const dec = v => {
   if ('integerValue' in v) return Number(v.integerValue);
   if ('doubleValue' in v) return v.doubleValue;
   if ('booleanValue' in v) return v.booleanValue;
-  if ('timestampValue' in v) return v.timestampValue;
+  if ('timestampValue' in v) return new Date(v.timestampValue);
   if ('nullValue' in v) return null;
   if ('arrayValue' in v) return (v.arrayValue.values || []).map(dec);
   if ('mapValue' in v) return decFields(v.mapValue.fields || {});
