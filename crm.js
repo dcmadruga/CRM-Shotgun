@@ -187,8 +187,9 @@ function formLead(l) {
   const p = l.id ? propDoLead(l) : null;
   abrirDlg(l.id ? l.empresa || 'Lead' : 'Novo lead', `
     ${p ? `<p class="crmaviso">Este lead já virou a proposta nº ${esc(p.numero)} (${esc(ETAPAS.find(e => e.id === etapaProp(p)).nome)}). <button type="button" class="linkbtn" data-a="verprop" data-id="${esc(p.id)}">Ver proposta</button></p>` : ''}
+    <div id="crmAnpBusca" hidden></div>
     <div class="tkform" id="crmForm" data-id="${esc(l.id || '')}">
-      <label>CNPJ<span class="tkrow"><input data-f="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" value="${esc(fmtCnpj(l.cnpj))}"><button type="button" data-a="cnpj">Buscar</button></span></label>
+      <label>CNPJ<span class="tkrow"><input data-f="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" value="${esc(fmtCnpj(l.cnpj))}"><button type="button" data-a="cnpj">Buscar</button></span><span class="anpacao"><button type="button" data-a="anpbusca"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/></svg>Pesquisar na ANP</button><small>quando não souber o CNPJ</small></span></label>
       <label>Empresa *<input data-f="empresa" value="${esc(l.empresa || '')}" required></label>
       <div class="crmcts full" id="crmCts"><span class="crmctt">Contatos</span>
         ${cargosList()}<div id="crmCtLista">${(contatosDe(l).length ? contatosDe(l) : [{}]).map(ctLinha).join('')}</div>
@@ -441,6 +442,11 @@ function ligar() {
     else if (a === 'excluir') {
       if (b.dataset.confirma !== '1') { b.dataset.confirma = '1'; b.textContent = 'Confirmar exclusão'; dmsg('Clique de novo para excluir o lead e o histórico dele.'); return; }
       try { await F.deleteDoc(F.doc(db, 'crm', $('crmForm').dataset.id)); dlg().close(); msg('Lead excluído.'); } catch (er) { dmsg('Não foi possível excluir (' + (er.code || er.message) + ').'); }
+    }
+    else if (a === 'anpbusca') {
+      // Estado inicial: o da cidade do lead, se houver. Ao escolher, faz o mesmo que o Buscar
+      const uf = (($('crmForm').querySelector('[data-f=cidade]') || {}).value || '').match(/\b([A-Za-z]{2})\s*$/);
+      window.anpPesquisa && window.anpPesquisa($('crmAnpBusca'), uf && uf[1], cnpj => { const inp = $('crmForm').querySelector('[data-f=cnpj]'); inp.value = fmtCnpj(cnpj); $('crmForm').querySelector('[data-a=cnpj]').click(); });
     }
     else if (a === 'cnpj') {
       const inp = $('crmForm').querySelector('[data-f=cnpj]'), d = dig(inp.value);
