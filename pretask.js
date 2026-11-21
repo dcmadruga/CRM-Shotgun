@@ -507,7 +507,7 @@
     const p = C.p, l = (t, v) => v ? `<div class="ptf"><span>${t}</span><div class="ptro">${v}</div></div>` : '';
     return painel('proposta', 'Proposta', 'valores da proposta só para leitura', `<div class="ptsec"><h5>Proposta nº ${esc(p.numero || '')}</h5><div class="ptgrid">
       ${l('Cliente', esc(p.cliente))}${l('CNPJ', esc(fmtCnpj(p.cnpj)))}${l('Cidade', esc(p.cidade))}${l('Contato', esc(p.contato))}${l('Telefone', esc(p.fone))}${l('Vendedor', esc(p.vendedor))}
-      ${l('Licenças', brl(p.totLic))}${l('Mensalidade', brl(p.totMen))}${p.implantacao === 'Remota' ? l('Implantação', 'Remota (sem custo)') : l('Deslocamento', brl(p.totDes))}
+      ${l('Licenças', brl(p.totLic))}${l('Mensalidade', brl(p.totMen))}${p.implantacao === 'Remota' ? l('Implantação', 'Remota (sem custo)') : p.implantacao === 'Combustível' ? l('Deslocamento', 'Só combustível' + (p.dados && p.dados.km ? ' · ' + Number(p.dados.km).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' km' : '')) : l('Deslocamento', brl(p.totDes))}
       ${l('Aprovada por', p.aprovadoNome ? esc(p.aprovadoNome) + (p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : '') + `<small>${esc(fmtTs(p.aprovadoEm))}</small>` : '')}
       <div class="ptbtns full"><button type="button" data-pta="pdf">Ver proposta (PDF)</button></div></div></div>`);
   }

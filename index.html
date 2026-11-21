@@ -96,6 +96,7 @@ button.del{border:none;background:none;color:var(--danger);padding:6px;font-size
 .impseg button+button{border-left:1px solid var(--line)}
 .impseg button[aria-pressed=true]{background:var(--purple);color:#fff;font-weight:600}
 .imprem{border-left:3px solid #2f8f57;padding-left:8px}
+.impcomb{border-left:3px solid var(--sg-disparo,#FF6B1A);padding-left:8px}
 </style>
 <style>
 .tabs{background:var(--ink)}
@@ -767,8 +768,9 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   </div></section>
 
   <section class="sec"><h2>Implantação <span>valor aproximado</span></h2><div class="body">
-    <div class="impmod"><span>Modalidade da implantação</span><div class="impseg" role="group" aria-label="Modalidade da implantação"><button type="button" data-imp="Presencial" aria-pressed="true">Presencial</button><button type="button" data-imp="Remota" aria-pressed="false">Remota</button></div></div>
+    <div class="impmod"><span>Modalidade da implantação</span><div class="impseg" role="group" aria-label="Modalidade da implantação"><button type="button" data-imp="Presencial" aria-pressed="true">Presencial</button><button type="button" data-imp="Remota" aria-pressed="false">Remota</button><button type="button" data-imp="Combustível" aria-pressed="false">Só combustível</button></div></div>
     <p class="hint imprem" id="impRemMsg" hidden><b>Implantação remota:</b> sem custo de deslocamento para o cliente. A proposta mostra a implantação como "Sem custo".</p>
+    <p class="hint impcomb" id="impCombMsg" hidden><b>Só combustível:</b> o cliente paga apenas o combustível. A proposta mostra só a quilometragem (ida e volta), sem calcular valores.</p>
     <div id="impPres">
     <div class="grid">
       <label class="cnpjlbl">Cidade do cliente<span class="cnpjrow"><input id="cidade" placeholder="Ex.: Acorizal - MT"><button type="button" id="btnKm">Calcular km</button></span></label>
@@ -776,7 +778,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
       <label>Km rodados (ida e volta)<input id="km" type="number" step="0.1" min="0"></label>
     </div>
     <p class="hint" id="kmMsg">A cidade vem do CNPJ e o km é calculado pela rota de carro, ida e volta, a partir da base mais próxima.</p>
-    <p class="hint">Deslocamento: <span class="calc" id="desl">R$ 0,00</span> <span class="param" id="kmInfo"></span></p>
+    <p class="hint" id="deslLinha">Deslocamento: <span class="calc" id="desl">R$ 0,00</span> <span class="param" id="kmInfo"></span></p>
     </div>
     <p class="hint">Observações, equipamentos, suporte e referências vêm da aba Parâmetros.</p>
   </div></section>
@@ -1230,7 +1232,8 @@ const isentoTemp = r => r.isento && num(r.diasIsento)>0;
 const rowTotal = r => (r.oculto || (r.isento && !isentoTemp(r))) ? 0 : (qtyNum(r.qty)===null ? 0 : qtyNum(r.qty)*num(r.price));
 const sumRows = rows => rows.reduce((a,r)=>a+rowTotal(r),0);
 const impRemota = () => S.implantacao==='Remota';
-const deslocamento = () => impRemota() ? 0 : num(S.km)*num(CFG.vkm);
+const impComb = () => S.implantacao==='Combustível'; // só combustível: informa os km, sem calcular valor
+const deslocamento = () => (impRemota()||impComb()) ? 0 : num(S.km)*num(CFG.vkm);
 const fmtDate = iso => { if(!iso) return ''; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}` };
 const basesList = () => String(CFG.bases||'').split('\n').map(s=>s.trim()).filter(Boolean);
 const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1344,7 +1347,7 @@ function totals(){
   const tl=sumRows(S.lic), tm=sumRows(S.men), d=deslocamento();
   $('totLic').textContent=$('sLic').textContent=brl(tl);
   $('totMen').textContent=$('sMen').textContent=brl(tm);
-  $('desl').textContent=brl(d); $('sDes').textContent=impRemota()?'Remota · sem custo':brl(d);
+  $('desl').textContent=brl(d); $('sDes').textContent=impRemota()?'Remota · sem custo':impComb()?`Só combustível · ${km1(S.km)} km`:brl(d);
   $('kmInfo').textContent=`(R$ ${dec(CFG.vkm)} por km, definido em Parâmetros)`;
 }
 const REF_F=['nome','postos','regiao','contato','fone'];
@@ -1363,7 +1366,7 @@ function parseRefs(v){
     return {nome:(m?m[1]:t.split(/ - |\./)[0]).trim(), postos:m?m[2]:'', regiao:'', contato:c?c[1].trim():'', fone:f?f[1]:''};
   });
 }
-function renderImp(){ const r=impRemota(); document.querySelectorAll('[data-imp]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.imp===(r?'Remota':'Presencial')))); $('impPres').hidden=r; $('impRemMsg').hidden=!r }
+function renderImp(){ const r=impRemota(), c=impComb(), m=r?'Remota':c?'Combustível':'Presencial'; document.querySelectorAll('[data-imp]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.imp===m))); $('impPres').hidden=r; $('impRemMsg').hidden=!r; $('impCombMsg').hidden=!c; $('deslLinha').hidden=c }
 document.querySelectorAll('[data-imp]').forEach(b=>b.addEventListener('click',()=>{ S.implantacao=b.dataset.imp; save(); renderImp(); totals() }));
 function renderProp(){ PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderImp(); renderBases(); renderItems('lic'); renderItems('men'); setTimeout(()=>anpProposta(),0) }
 function aplicarLogo(){ $('logo').src=logoAtual(); $('logoPrev').src=logoAtual();
@@ -1717,6 +1720,8 @@ function buildPdf(){
   const cidadeCli = pdfSafe(titulo(splitCidade(S.cidade).cidade)) || 'Cliente';
   const linhas = impRemota() ? [
     ['Implantação remota', 'Implantação realizada de forma remota, sem deslocamento de técnico.\nSem custo para o cliente.', 'Sem custo'],
+  ] : impComb() ? [
+    ['Deslocamento', `${baseNome} - ${cidadeCli} - ${baseNome} (ida e volta)\nCobrado apenas o valor do combustível.`, `${km1(S.km)} km`],
   ] : [
     ['Deslocamento', `${baseNome} - ${cidadeCli} - ${baseNome}\n${km1(S.km)} km x R$ ${dec(CFG.vkm)} por km`, brl(deslocamento())],
   ];
@@ -1733,7 +1738,7 @@ function buildPdf(){
   y+=3;
 
   font('normal',7.5); color(C.text);
-  (impRemota() ? [] : [ (String(CFG.detImp||'').trim()==='Detalhamento de custos de implantação (por dia 1 técnico). Valores normais de referência. A Hospedagem a escolha do contratante.' ? cfgModelo().detImp : CFG.detImp), ...obsParagrafos()]).filter(t=>String(t||'').trim()).forEach(p=>{
+  (impRemota() ? [] : impComb() ? obsParagrafos() : [ (String(CFG.detImp||'').trim()==='Detalhamento de custos de implantação (por dia 1 técnico). Valores normais de referência. A Hospedagem a escolha do contratante.' ? cfgModelo().detImp : CFG.detImp), ...obsParagrafos()]).filter(t=>String(t||'').trim()).forEach(p=>{
     const l=doc.splitTextToSize(pdfSafe(p), W-2*M); ensure(l.length*3.3+2);
     doc.text(l,M,y+3); y+=l.length*3.3+1.6;
   });
