@@ -1,5 +1,5 @@
 // Funciona sem internet: guarda o app no aparelho. Parâmetros sempre tentam a rede primeiro.
-const VERSAO = 'shotgun-v138';
+const VERSAO = 'shotgun-v140';
 const ARQUIVOS = ['./', 'index.html', 'dados.html', 'auth.js', 'task.js', 'firebase-config.js', 'etapa2-padrao.js', 'aprovar.html', 'contrato.html', 'etapa3-padrao.js', 'etapa4-padrao.js', 'contrato-pdf.js', 'contrato-social.js', 'pretask.js', 'modulos-padrao.js', 'lib/municipios.js', 'lib/forge.min.js', 'lib/pdf.min.js', 'lib/pdf.worker.min.js', 'jspdf.umd.min.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/bandeiras/petrobras.svg', 'icons/bandeiras/ipiranga.svg', 'icons/bandeiras/ale.svg'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSAO).then(c => c.addAll(ARQUIVOS.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting())) });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSAO).map(k => caches.delete(k)))).then(() => self.clients.claim())) });
