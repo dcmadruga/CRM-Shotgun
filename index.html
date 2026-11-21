@@ -310,6 +310,7 @@ body.fb .nofb{display:none!important}
 #loginBox,#senhaBox,#fotoBox{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
 .loginCard{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sg-sombra);padding:24px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px}
 .loginCard h2{font-family:var(--display);margin:0;font-size:20px}
+.loginCard .slogan{font-family:var(--display);font-weight:500;font-size:15px;line-height:1.35;letter-spacing:-.01em;color:var(--fg);margin:-4px 0 4px}
 .loginCard img{border-radius:10px}
 .loginCard img.sglogo{border-radius:0;width:190px;height:auto;align-self:flex-start}
 .sglogo-neg{display:none!important}
@@ -737,6 +738,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <div id="loginBox" hidden><form id="loginForm" class="loginCard" novalidate>
   <img class="sglogo sglogo-pos" src="icons/shotgun-logo-horizontal.svg" alt="Shotgun" width="190" height="42">
   <img class="sglogo sglogo-neg" src="icons/shotgun-logo-horizontal-negativo.svg" alt="Shotgun" width="190" height="42">
+  <p class="slogan">Cada cliente na mira, do primeiro contato ao pós-venda.</p>
   <p class="hint" id="loginMsg">Entre com o e-mail e a senha que o administrador cadastrou para você.</p>
   <label>E-mail<input id="l-email" type="email" autocomplete="username" required></label>
   <label>Senha<input id="l-senha" type="password" autocomplete="current-password" required></label>
