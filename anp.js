@@ -102,29 +102,31 @@
     const f = faixas();
     const cidade = [String(p.municipio || '').toUpperCase(), p.uf].filter(Boolean).join('/');
     const item = (rot, val, cls) => `<div${cls ? ` class="${cls}"` : ''}><small>${rot}</small><span>${val}</span></div>`;
-    const prods = p.produtos.map(x => `${esc(x.nome)}: ${fmtM3(x.tanc)}`).join('; ') || '-';
     const bicosPorProd = p.produtos.filter(x => x.bicos).map(x => `${esc(x.nome)}: ${x.bicos}`).join('; ');
     const tanc = fmtM3(p.tancagem) + (p.tancagemDuvidosa ? ' <em>(valor da ANP parece errado, confira)</em>' : '');
-    const geo = p.lat != null && p.lng != null
-      ? `<a href="https://www.google.com/maps?q=${p.lat},${p.lng}" target="_blank" rel="noopener">${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</a>${p.coordValidada ? '' : ' <em>(não validadas pela ANP)</em>'}`
-      : '-';
+    const temGeo = p.lat != null && p.lng != null;
+    // Sem coordenadas na ANP, o botão procura pelo endereço
+    const urlMapa = temGeo ? `https://www.google.com/maps?q=${p.lat},${p.lng}`
+      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([p.endereco, p.bairro, p.municipio, p.uf, p.cep].filter(Boolean).join(', '))}`;
+    const pino = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>';
+    const geo = (temGeo ? `${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}${p.coordValidada ? '' : ' <em>(não validadas pela ANP)</em>'}` : '<em>Sem coordenadas na ANP</em>')
+      + `<a class="anpmapa" href="${esc(urlMapa)}" target="_blank" rel="noopener">${pino}Abrir no mapa</a>`;
     return `<div class="anpcard">
       <p class="anpfonte">Posto na base da ANP</p>
       <h4>${esc(p.razao)}</h4>
       <p class="anpend">${esc([p.endereco, cidade].filter(Boolean).join(' · '))}</p>
       <div class="anpselos">
-        ${window.anpSeloBandeira(p.bandeira, p.bandeiraBranca)}
-        ${p.porte ? `<span class="anpporte" title="Pequeno até ${f.p} m³, Médio até ${f.m} m³, Grande acima">${esc(p.porte)}</span>` : ''}
+        <div><small>Bandeira</small>${window.anpSeloBandeira(p.bandeira, p.bandeiraBranca)}</div>
+        <div><small>Porte</small>${p.porte ? `<span class="anpporte" title="Pequeno até ${f.p} m³, Médio até ${f.m} m³, Grande acima">${esc(p.porte)}</span>` : '<span class="anpporte">A conferir</span>'}</div>
       </div>
       <div class="anpgrade">
         ${item('CNPJ', fmtCnpj(p.cnpj))}
         ${item('Tancagem total', tanc)}
-        ${item('Porte', esc(p.porte || 'A conferir'))}
         ${item('Bicos', `<span title="${bicosPorProd}">${p.bicos}</span>`)}
-        ${item('Produtos', prods)}
         ${item('CEP', esc(p.cep || '-'))}
         ${item('Autorização ANP', esc(p.autorizacao || '-'))}
         ${item('Coordenadas', geo)}
+        <div class="anpprod"><details><summary><small>Produtos <b>${p.produtos.length}</b></small></summary><ul>${p.produtos.map(x => `<li>${esc(x.nome)}: ${fmtM3(x.tanc)}${x.bicos ? ` <em>· ${x.bicos} ${x.bicos === 1 ? 'bico' : 'bicos'}</em>` : ''}</li>`).join('') || '<li>-</li>'}</ul></details></div>
       </div>
       ${p.atualizado ? `<p class="hint">Base da ANP atualizada em ${new Date(p.atualizado).toLocaleDateString('pt-BR')}.</p>` : ''}
     </div>`;
