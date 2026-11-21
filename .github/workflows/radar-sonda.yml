@@ -1,0 +1,32 @@
+name: Radar - sonda das fontes (temporária)
+# Só roda na branch de desenvolvimento do Radar; será removida antes do merge.
+on:
+  push:
+    branches: ['claude/project-thread-wpu830']
+    paths: ['scripts/radar-sonda.mjs', '.github/workflows/radar-sonda.yml']
+permissions:
+  contents: read
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Testar fontes
+        env:
+          ALVOS: >-
+            https://www.sema.mt.gov.br/
+            https://sema.mt.gov.br/site/index.php/sem-virtual
+            https://sema.mt.gov.br/site/index.php/simlam
+            https://monitoramento.sema.mt.gov.br/simlam/
+            https://iomat.mt.gov.br/
+            https://www.iomat.mt.gov.br/
+            https://pnla.mma.gov.br/
+            https://www.diariomunicipal.com.br/amm-mt/
+            https://www.amm.org.br/
+            https://api.queridodiario.ok.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADvel%22&territory_ids=5103403&size=3
+            https://api.queridodiario.ok.org.br/cities?city_name=
+            https://servicodados.ibge.gov.br/api/v1/localidades/estados/51/municipios
+        run: node scripts/radar-sonda.mjs
