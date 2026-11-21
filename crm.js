@@ -40,7 +40,7 @@ function iniciar() {
   }, e => msg('Não foi possível carregar o CRM (' + (e.code || 'erro') + ').' + (e.code === 'permission-denied' ? ' As regras do banco ainda não liberam o CRM.' : '')));
   const pc = F.collection(db, 'propostas');
   unsubP = F.onSnapshot(admin ? F.query(pc, F.orderBy('criado', 'desc'), F.limit(500)) : F.query(pc, F.where('owner', '==', perfil.uid)), qs => {
-    props = qs.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => (b.criado?.seconds || 9e9) - (a.criado?.seconds || 9e9)); desenhar();
+    props = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.status !== 'substituida').sort((a, b) => (b.criado?.seconds || 9e9) - (a.criado?.seconds || 9e9)); desenhar();
   }, () => {});
   $('crmMinhas').closest('label').hidden = !admin;
   desenhar();

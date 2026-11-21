@@ -154,7 +154,10 @@ const vendNum=()=>{ const d=String(P.vendedorFone||'').replace(/\D/g,''); return
 
     const aprovada=()=>{ $('fAprov').hidden=true; $('jaAprovada').hidden=false;
       $('jaAprovada').innerHTML=`<b>Proposta aprovada.</b> Obrigado${P.aprovadoNome?', '+P.aprovadoNome.replace(/[<>&]/g,''):''}! Seu consultor já foi avisado e vai enviar os próximos passos.` };
-    if(P.status==='aprovada') aprovada();
+    if(P.status==='substituida'){ $('fAprov').hidden=true; $('jaAprovada').hidden=false;
+      $('jaAprovada').innerHTML='<b>Esta proposta foi atualizada pelo seu consultor.</b> '+(P.substituidaPor?'<a href="#'+encodeURIComponent(P.substituidaPor)+'" id="irNova">Ver a proposta atualizada</a>':'Peça o novo link ao seu consultor.');
+      const l=document.getElementById('irNova'); if(l) l.addEventListener('click',e=>{ e.preventDefault(); location.hash=l.getAttribute('href'); location.reload() }); }
+    else if(P.status==='aprovada') aprovada();
     else if(P.validade && P.validade<hoje()){ $('fAprov').hidden=true; $('erro').hidden=false; $('erro').textContent='O prazo desta condição terminou. Fale com seu consultor para receber uma proposta atualizada.' }
 
     $('btnVer').addEventListener('click', async ()=>{
