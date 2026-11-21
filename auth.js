@@ -169,6 +169,7 @@ async function iniciar() {
     if (fb.admin) { ouvirUsuarios(); carregarE2(); carregarE3(); }
     carregarE4(); if (fb.admin) { carregarMod(); carregarBand(); }
     ouvirPropostas();
+    window.dispatchEvent(new CustomEvent('shotgun-crm', { detail: { F, db, perfil, admin: fb.admin, temTask: fb.temTask } }));
     abrirAba('tabHoje');
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa2')).then(s => { if (s.exists() && s.data().json) E2PUB = JSON.parse(s.data().json); }).catch(() => {});
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa3')).then(s => { if (s.exists() && s.data().json) E3PUB = JSON.parse(s.data().json); }).catch(() => {});
@@ -211,7 +212,7 @@ async function iniciar() {
   }
 
   /* ---------- Abas ---------- */
-  const EXTRA = { tabHoje: 'viewHoje', tabTask: 'viewTask', tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4' };
+  const EXTRA = { tabHoje: 'viewHoje', tabTask: 'viewTask', tabUsers: 'viewUsers', tabList: 'viewList', tabCrm: 'viewCrm', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4' };
   function abrirAba(tab) {
     Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
     document.body.classList.toggle('semBarra', !!EXTRA[tab]);
@@ -250,7 +251,8 @@ async function iniciar() {
       cliente: String(S.cliente || '').trim(), cnpj: S.cnpj || '', contato: String(S.contato || '').trim(), cidade: S.cidade || '',
       waCli: n, data: S.data || hojeIso(), validade: S.validade || '',
       totLic: sumRows(S.lic), totMen: sumRows(S.men), totDes: deslocamento(), arquivo: fileName(),
-      dados: JSON.parse(assin), criado: F.serverTimestamp()
+      dados: JSON.parse(assin), criado: F.serverTimestamp(),
+      ...(window.crmLeadId ? { leadId: window.crmLeadId } : {})
     };
     const lote = F.writeBatch(db);
     lote.set(ref, meta);
