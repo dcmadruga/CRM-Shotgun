@@ -1082,7 +1082,7 @@ async function iniciar() {
       pai.innerHTML = `<span>Este módulo é</span><select data-mpai aria-label="Etapa de outro módulo"><option value="">um módulo principal</option>${pais.map(x => `<option value="${esc(x.id)}"${s.pai === x.id ? ' selected' : ''}>etapa dentro de ${esc(x.titulo)}</option>`).join('')}</select>`;
       body.prepend(pai);
       const pr = document.createElement('div'); pr.className = 'modproc';
-      pr.innerHTML = `<h3>Processos (${s.processos.length})</h3><div class="refwrap"><table class="e2tab"><thead><tr><th>Processo</th><th>Responsável padrão</th><th>Prazo (dias após a Data da Base)</th><th><span class="sr">Ações</span></th></tr></thead><tbody>${s.processos.map((x, pi) => `<tr data-pi="${pi}"><td><input data-mp="t" value="${esc(x.t)}" aria-label="Processo"></td><td><input data-mp="resp" value="${esc(x.resp || '')}" placeholder="Ex.: Implantação" aria-label="Responsável padrão"></td><td><input data-mp="prazo" type="number" min="0" value="${esc(x.prazo || '')}" aria-label="Prazo em dias" style="max-width:110px"></td><td class="a"><button type="button" data-mpa="up" ${pi === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-mpa="down" ${pi === s.processos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button><button type="button" data-mpa="del" aria-label="Excluir processo">✕</button></td></tr>`).join('') || '<tr><td colspan="4" class="hint">Nenhum processo.</td></tr>'}</tbody></table></div><div class="tools"><button type="button" data-mpa="add">+ Processo</button></div>`;
+      pr.innerHTML = `<h3>Processos (${s.processos.length})</h3><div class="refwrap"><table class="e2tab"><thead><tr><th><span class="sr">Ordem</span></th><th>Processo</th><th>Responsável padrão</th><th>Prazo (dias após a Data da Base)</th><th><span class="sr">Ações</span></th></tr></thead><tbody>${s.processos.map((x, pi) => `<tr data-pi="${pi}"><td class="mdrag"><span class="mhandle" data-mdrag title="Arraste para mudar a ordem" aria-hidden="true">⠿</span></td><td><input data-mp="t" value="${esc(x.t)}" aria-label="Processo"></td><td><input data-mp="resp" value="${esc(x.resp || '')}" placeholder="Ex.: Implantação" aria-label="Responsável padrão"></td><td><input data-mp="prazo" type="number" min="0" value="${esc(x.prazo || '')}" aria-label="Prazo em dias" style="max-width:110px"></td><td class="a"><button type="button" data-mpa="up" ${pi === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-mpa="down" ${pi === s.processos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button><button type="button" data-mpa="del" aria-label="Excluir processo">✕</button></td></tr>`).join('') || '<tr><td colspan="5" class="hint">Nenhum processo.</td></tr>'}</tbody></table></div><div class="tools"><button type="button" data-mpa="add">+ Processo</button></div>`;
       body.appendChild(pr);
     });
   }
@@ -1094,6 +1094,16 @@ async function iniciar() {
     if (a === 'add') s.processos.push({ id: 'p' + Date.now().toString(36), t: 'Novo processo', resp: '', prazo: '' });
     else { const i = +b.closest('[data-pi]').dataset.pi, L = s.processos; if (a === 'del') L.splice(i, 1); else { const j = a === 'up' ? i - 1 : i + 1; if (j < 0 || j >= L.length) return; [L[i], L[j]] = [L[j], L[i]]; } }
     marcarMod(); desenharMod();
+  });
+  // Arrastar a linha pela alça ⠿ (mouse e toque); as setas continuam como alternativa
+  $('modSecoes').addEventListener('pointerdown', e => {
+    const h = e.target.closest('[data-mdrag]'); if (!h || !MOD) return; e.preventDefault();
+    const tr = h.closest('tr'), tb = tr.parentElement, s = MOD.secoes[+tr.closest('[data-si]').dataset.si];
+    tr.classList.add('arrastando');
+    const mover = ev => { const rows = [...tb.children].filter(r => r !== tr && r.dataset.pi != null); const alvo = rows.find(r => { const b = r.getBoundingClientRect(); return ev.clientY < b.top + b.height / 2; }); if (alvo) { if (alvo !== tr.nextElementSibling) tb.insertBefore(tr, alvo); } else if (tb.lastElementChild !== tr) tb.appendChild(tr); };
+    const soltar = () => { window.removeEventListener('pointermove', mover); window.removeEventListener('pointerup', soltar); window.removeEventListener('pointercancel', soltar); tr.classList.remove('arrastando');
+      const ordem = [...tb.children].map(r => +r.dataset.pi).filter(n => !isNaN(n)); if (ordem.some((n, i) => n !== i)) { s.processos = ordem.map(i => s.processos[i]); marcarMod(); } desenharMod(); };
+    window.addEventListener('pointermove', mover); window.addEventListener('pointerup', soltar); window.addEventListener('pointercancel', soltar);
   });
   $('btnModNovo').addEventListener('click', () => { if (!MOD) return; MOD.secoes.push({ id: 'm' + Date.now().toString(36), titulo: 'Novo módulo', pai: '', campos: [], processos: [{ id: 'p' + Date.now().toString(36), t: 'Novo processo', resp: '', prazo: '' }] }); marcarMod(); desenharMod(); });
   let modResetT = 0;
