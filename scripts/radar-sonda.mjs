@@ -1,6 +1,6 @@
 // Sonda temporária do Radar de novos postos: testa, a partir do GitHub Actions, quais fontes públicas respondem
 // sem login nem CAPTCHA. Só lê páginas públicas e o robots.txt; não envia formulários.
-const UA = 'Mozilla/5.0 (compatible; shotgun-radar-sonda/0.1; +https://github.com/dcmadruga/crm-shotgun)';
+const UA = 'Mozilla/5.0 (compatible; shotgun-radar-sonda/0.2; +https://github.com/dcmadruga/crm-shotgun)';
 const alvos = (process.env.ALVOS || '').split(/\s+/).filter(Boolean);
 const PALAVRAS = /simlam|consulta|processo|licen|pesquis|edi[cç]|di[aá]rio|busca|api|download|pdf|publica|caderno|atos|empreendimento|sema|virtual|servi/i;
 const robots = new Set();
@@ -23,7 +23,7 @@ for (const u of alvos) {
   const titulo = (t.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1]?.replace(/\s+/g, ' ').trim();
   const flags = ['recaptcha', 'hcaptcha', 'captcha', 'cloudflare', 'cf-chl', 'turnstile', 'type="password"', 'login', 'g-recaptcha'].filter(f => t.toLowerCase().includes(f));
   console.log(JSON.stringify({ status: r.status, final: r.final, ct: r.ct, bytes: r.bytes, ms: r.ms, titulo, flags }));
-  if (/json/.test(r.ct)) console.log('JSON:', t.slice(0, 1500));
+  if (/json/.test(r.ct)) console.log('JSON:', t.slice(0, 2500));
   else if (/html/.test(r.ct)) {
     const links = [...t.matchAll(/<(?:a|form|iframe)[^>]+(?:href|action|src)=["']([^"'#]+)["'][^>]*>([\s\S]{0,120}?)<\/?/gi)]
       .map(m => [m[1], m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()]).filter(([h, x]) => PALAVRAS.test(h + ' ' + x));

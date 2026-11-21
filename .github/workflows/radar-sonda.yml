@@ -17,16 +17,13 @@ jobs:
       - name: Testar fontes
         env:
           ALVOS: >-
-            https://www.sema.mt.gov.br/
-            https://sema.mt.gov.br/site/index.php/sem-virtual
-            https://sema.mt.gov.br/site/index.php/simlam
+            https://www.iomat.mt.gov.br/busca/busca/buscar/query/0/di:2026-10-21/df:2026-11-21/?1=1&q=%22posto%20de%20combust%C3%ADvel%22
+            https://iomat.mt.gov.br/apifront/portal/edicoes/edicoes_from_data/2026-11-19.json?&subtheme=false
+            https://amm.diariomunicipal.org/publicacoes/?q=%22posto+de+combust%C3%ADvel%22
+            https://amm.diariomunicipal.org/publicacao/1943972/
+            https://monitoramento.sema.mt.gov.br/simlam/ListarProcessoPublico.aspx
             https://monitoramento.sema.mt.gov.br/simlam/
-            https://iomat.mt.gov.br/
-            https://www.iomat.mt.gov.br/
-            https://pnla.mma.gov.br/
-            https://www.diariomunicipal.com.br/amm-mt/
-            https://www.amm.org.br/
-            https://api.queridodiario.ok.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADvel%22&territory_ids=5103403&size=3
-            https://api.queridodiario.ok.org.br/cities?city_name=
-            https://servicodados.ibge.gov.br/api/v1/localidades/estados/51/municipios
+            https://pnla2.mma.gov.br/pnla/pesquisa-licenciamentos/
+            https://protocolo.seplag.mt.gov.br/consulta/cp.php
+            https://queridodiario.ok.org.br/api/gazettes?territory_ids=5103403&querystring=posto&size=2
         run: node scripts/radar-sonda.mjs
