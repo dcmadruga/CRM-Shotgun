@@ -1,8 +1,9 @@
 // Baixa os postos revendedores da ANP (API pública de revendedores) e grava a base interna do Shotgun.
 // Saída: anp/postos/NNN.json (NNN = 3 primeiros dígitos do CNPJ), anp/uf/UF.json (índice para a
-// Pesquisa na ANP: [cnpj, razão social, município, bandeira]) e anp/meta.json.
+// Pesquisa na ANP: [cnpj, razão social, município, bandeira]), anp/novos.json (Telemetria ANP: postos novos) e anp/meta.json.
 // Roda todo dia pelo GitHub Actions (.github/workflows/anp-postos.yml). Uso local: node scripts/anp-postos.mjs
 import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { cnpjsConhecidos, gravarNovos } from './anp-novos.mjs';
 
 const API = process.env.ANP_API || 'https://revendedoresapi.anp.gov.br/v1/combustivel';
 const SAIDA = new URL('../anp/', import.meta.url);
@@ -56,6 +57,11 @@ for (const d of postos) {
   if (!fatias.has(k)) fatias.set(k, new Map());
   fatias.get(k).set(cnpj, compacto(d));
 }
+
+// Telemetria ANP: compara com a base de ontem (antes de regravar anp/uf) para saber quais CNPJs são novos
+const conhecidos = await cnpjsConhecidos();
+const todos = new Map([...fatias.values()].flatMap(m => [...m]));
+console.log(`Telemetria ANP: ${await gravarNovos(todos, conhecidos)} postos novos na janela.`);
 
 // Índice por UF para pesquisar sem o CNPJ (nome, cidade, bandeira)
 const porUf = new Map();

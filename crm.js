@@ -24,7 +24,7 @@ const ETAPAS = [
   { id: 'contrato', nome: 'Contrato aceito' },
   { id: 'perdido', nome: 'Perdido' }
 ];
-const ORIGENS = ['Indicação', 'Site', 'Evento', 'Prospecção ativa', 'Redes sociais', 'Cliente antigo', 'Outro'];
+const ORIGENS = ['Indicação', 'Site', 'Evento', 'Prospecção ativa', 'Telemetria ANP', 'Redes sociais', 'Cliente antigo', 'Outro'];
 const MOTIVOS = ['Preço', 'Escolheu concorrente', 'Sem interesse no momento', 'Sem retorno', 'Fora do perfil', 'Outro'];
 const TIPOS_NOTA = ['Ligação', 'WhatsApp', 'Visita', 'E-mail', 'Reunião', 'Anotação'];
 
@@ -423,6 +423,12 @@ function ligar() {
   $('crmBusca').addEventListener('input', desenhar);
   $('crmMinhas').addEventListener('change', e => { soMinhas = e.target.checked; desenhar(); });
   $('crmNovo').addEventListener('click', () => formLead());
+  // Telemetria ANP: abre o Novo lead com o CNPJ do posto e já busca os dados (Receita e ANP)
+  window.crmLeadDoPosto = cnpj => {
+    $('tabCrm').click();
+    formLead({ etapa: 'lead', origem: 'Telemetria ANP', cnpj });
+    const b = $('crmForm') && $('crmForm').querySelector('[data-a=cnpj]'); if (b) b.click();
+  };
   $('crmProp').addEventListener('click', () => { $('tabProp').click(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
   $('btnNova').addEventListener('click', () => { window.crmLeadId = ''; });
   $('viewCrm').addEventListener('click', e => {

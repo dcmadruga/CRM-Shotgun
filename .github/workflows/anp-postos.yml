@@ -10,6 +10,7 @@ on:
   push:
     paths:
       - 'scripts/anp-postos.mjs'
+      - 'scripts/anp-novos.mjs'
       - '.github/workflows/anp-postos.yml'
 
 permissions:
@@ -32,7 +33,7 @@ jobs:
         run: node scripts/anp-postos.mjs
       - name: Gravar se mudou
         run: |
-          if [ -z "$(git status --porcelain anp/postos anp/uf)" ]; then git checkout -q -- anp/meta.json 2>/dev/null || true; echo "Nenhuma mudança na ANP hoje."; exit 0; fi
+          if [ -z "$(git status --porcelain anp/postos anp/uf anp/novos.json)" ]; then git checkout -q -- anp/meta.json 2>/dev/null || true; echo "Nenhuma mudança na ANP hoje."; exit 0; fi
           node -e "const f='anp/meta.json',fs=require('fs'),m=JSON.parse(fs.readFileSync(f));m.atualizado=new Date().toISOString();fs.writeFileSync(f,JSON.stringify(m,null,1)+'\n')"
           git config user.name "github-actions[bot]"
           git config user.email "41898341+github-actions[bot]@users.noreply.github.com"
