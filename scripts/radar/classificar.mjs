@@ -43,6 +43,7 @@ export function avisosDaPagina(texto) {
     const re = /(?:^|[.;)”"]\s+|\d{4}-\d{4}\)?\s+|Publicar-[\d-]+\s+|ASPLEMAT Publica[cç][oõ]es \(\d+\) [\d-]+\s+)(?=[A-ZÀ-Ú0-9"“])/g;
     let m;
     while ((m = re.exec(bloco))) {
+      if (!m[0]) re.lastIndex++; // início do bloco casa vazio: avança para não repetir para sempre
       const i = m.index + m[0].length, adiante = bloco.slice(i, i + 700);
       if (i > 0 && !/^(CNPJ|CPF|inscrit|CEP|IE\b|Inscri)/i.test(adiante) && /CNPJ|CPF/i.test(adiante.slice(0, 320)) && REQUER.test(adiante)) inicios.push(i);
     }
