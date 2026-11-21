@@ -137,6 +137,61 @@ function desenharClientes() {
     </button>`; }).join('')}</div>` : `<p class="hint">${q ? 'Nenhum cliente encontrado.' : 'Os clientes aparecem aqui quando o contrato de uma proposta é aceito.'}</p>`;
 }
 
+/* ---------- Ditado: gravar a fala e transcrever no campo ---------- */
+// Usa o reconhecimento de voz do próprio navegador (Chrome, Edge, Safari). Não guarda o áudio.
+// No Android o modo contínuo repete frases, então lá cada frase é uma rodada e o app reinicia sozinho.
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const ANDROID = /Android/i.test(navigator.userAgent);
+const MIC = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.9V21h2v-3.1A7 7 0 0 0 19 11h-2Z"/></svg>';
+const micBtn = () => `<button type="button" class="ditbtn" data-a="ditar" aria-pressed="false" aria-label="Gravar áudio e transcrever" title="Gravar áudio e transcrever">${MIC}<span>Parar</span></button>`;
+let dit = null; // { r, btn, campo, st, base, finais, ativo }
+const juntar = (a, b) => { a = a.replace(/\s+$/, ''); b = b.trim(); if (!b) return a; if (!a || /[.!?\n]$/.test(a)) b = b[0].toUpperCase() + b.slice(1); return a ? a + (/\n$/.test(a) ? '' : ' ') + b : b; };
+function pararDitado() {
+  if (!dit) return;
+  const d = dit; dit = null; d.ativo = false;
+  try { d.r.stop(); } catch (_) {}
+  d.btn.setAttribute('aria-pressed', 'false'); d.btn.setAttribute('aria-label', 'Gravar áudio e transcrever'); d.btn.title = 'Gravar áudio e transcrever';
+  if (d.interino) { d.finais = (d.finais + ' ' + d.interino).trim(); d.interino = ''; }
+  d.campo.value = juntar(d.base, d.finais);
+  d.campo.dispatchEvent(new Event('input', { bubbles: true }));
+  if (d.st && !d.erro) { d.st.hidden = true; d.st.textContent = ''; }
+}
+function ditar(btn) {
+  if (dit) { const mesmo = dit.btn === btn; pararDitado(); if (mesmo) return; }
+  const box = btn.closest('.ditado'), campo = box.querySelector('textarea,input'), st = box.parentElement.querySelector('.ditst');
+  const aviso = t => { if (st) { st.textContent = t; st.hidden = false; st.classList.add('erro'); } else dmsg(t); };
+  if (!SR) { aviso('Este navegador não transcreve áudio. Use o Chrome, o Edge ou o Safari.'); return; }
+  const d = dit = { btn, campo, st, base: campo.value, finais: '', interino: '', ativo: true, erro: false };
+  const mostrar = () => { campo.value = juntar(d.base, d.finais + ' ' + d.interino); campo.scrollTop = campo.scrollHeight; };
+  const rodada = () => {
+    const r = d.r = new SR();
+    r.lang = 'pt-BR'; r.interimResults = true; r.continuous = !ANDROID; r.maxAlternatives = 1;
+    let feitos = 0; // resultados finais desta rodada já somados
+    r.onresult = e => {
+      let interino = '';
+      for (let i = feitos; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) { d.finais = (d.finais + ' ' + t).trim(); feitos = i + 1; } else interino += t;
+      }
+      d.interino = interino; mostrar();
+    };
+    r.onerror = e => {
+      if (e.error === 'no-speech' || e.error === 'aborted') return;
+      d.erro = true;
+      aviso({ 'not-allowed': 'O navegador bloqueou o microfone. Libere o microfone para este site e tente de novo.', 'service-not-allowed': 'O navegador bloqueou a transcrição. Libere o microfone para este site e tente de novo.', 'audio-capture': 'Não encontrei um microfone neste aparelho.', network: 'A transcrição precisa de internet. Tente de novo quando estiver conectado.', 'language-not-supported': 'Este navegador não transcreve português.' }[e.error] || 'A gravação parou (' + e.error + ').');
+      if (dit === d) pararDitado();
+    };
+    r.onend = () => {
+      if (d.interino) { d.finais = (d.finais + ' ' + d.interino).trim(); d.interino = ''; mostrar(); }
+      if (d.ativo && dit === d) { try { rodada(); } catch (_) { pararDitado(); } }
+    };
+    r.start();
+  };
+  try { rodada(); } catch (er) { dit = null; aviso('Não foi possível começar a gravar (' + (er.message || er) + ').'); return; }
+  btn.setAttribute('aria-pressed', 'true'); btn.setAttribute('aria-label', 'Parar a gravação'); btn.title = 'Parar a gravação';
+  if (st) { st.classList.remove('erro'); st.textContent = 'Ouvindo… fale normalmente. Toque em Parar quando terminar.'; st.hidden = false; }
+}
+
 /* ---------- Diálogo ---------- */
 const dlg = () => $('crmDlg');
 function abrirDlg(tit, html) { $('crmDlgTit').textContent = tit; $('crmDlgBody').innerHTML = html; $('crmDlgMsg').textContent = ''; if (!dlg().open) dlg().showModal(); }
@@ -148,8 +203,8 @@ function notasHtml(notas, contatos) {
   return `<div class="crmhist"><h4>Histórico</h4>
     <div class="crmnova"><select id="crmNTipo" aria-label="Tipo">${TIPOS_NOTA.map(t => `<option>${t}</option>`).join('')}</select>
       <select id="crmNCont" aria-label="Com quem"${nomes.length ? '' : ' hidden'}><option value="">Com quem?</option>${nomes.map(n => `<option>${esc(n)}</option>`).join('')}</select>
-      <input id="crmNTexto" placeholder="O que aconteceu? Ex.: liguei, pediu retorno na sexta" maxlength="1000">
-      <button type="button" id="crmNAdd">Anotar</button></div>
+      <span class="ditado ditlinha"><input id="crmNTexto" placeholder="O que aconteceu? Ex.: liguei, pediu retorno na sexta" maxlength="1000">${micBtn()}</span>
+      <button type="button" id="crmNAdd">Anotar</button><small class="ditst" hidden></small></div>
     ${ns.length ? `<ul>${ns.map(n => `<li><span class="pill">${esc(n.tipo)}</span> ${n.contato ? `<b class="crmncont">com ${esc(n.contato)}</b> ` : ''}<small>${fmtTs(n.em)}${n.por ? ' · ' + esc(n.por) : ''}</small><p>${esc(n.texto)}</p></li>`).join('')}</ul>` : '<p class="hint">Nenhuma anotação ainda.</p>'}
   </div>`;
 }
@@ -209,7 +264,7 @@ function formLead(l) {
           <label>Origem<select data-f="origem"><option value="">Escolha…</option>${ORIGENS.map(o => `<option${o === l.origem ? ' selected' : ''}>${o}</option>`).join('')}</select></label>
           <label>Próximo contato<input data-f="prox" type="date" value="${esc(l.prox || '')}"></label>
           <label class="crmmot" ${l.etapa === 'perdido' ? '' : 'hidden'}>Motivo da perda<select data-f="motivo"><option value="">Escolha…</option>${MOTIVOS.map(m => `<option${m === l.motivo ? ' selected' : ''}>${m}</option>`).join('')}</select></label>
-          <label class="full">Observações<textarea data-f="obs" rows="2">${esc(l.obs || '')}</textarea></label>
+          <label class="full">Observações<span class="ditado"><textarea data-f="obs" rows="2" placeholder="Digite ou toque no microfone e fale">${esc(l.obs || '')}</textarea>${micBtn()}</span><small class="ditst" hidden></small></label>
         </div>
       </section>
     </div>
@@ -445,14 +500,17 @@ function ligar() {
   fun.addEventListener('drop', e => { const col = e.target.closest('.crmcol'); if (!col) return; e.preventDefault(); col.classList.remove('alvo'); const [tipo, id] = String(e.dataTransfer.getData('text/plain')).split(':'); if (id) mover(tipo, id, col.dataset.etapa); });
 
   $('crmDlgFechar').addEventListener('click', () => dlg().close());
+  dlg().addEventListener('close', pararDitado);
   dlg().addEventListener('input', e => { if (e.target.dataset.f === 'cnpj' && dig(e.target.value).length === 14) anpLead(e.target.value, true); });
   dlg().addEventListener('change', e => { if (e.target.dataset.f === 'etapa') { const m = dlg().querySelector('.crmmot'); if (m) m.hidden = e.target.value !== 'perdido'; } });
   dlg().addEventListener('input', e => { if (e.target.closest('#crmCts')) atualizarNCont(); });
-  dlg().addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'crmNTexto') { e.preventDefault(); anotar(); } });
+  dlg().addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'crmNTexto') { e.preventDefault(); pararDitado(); anotar(); } });
   dlg().addEventListener('click', async e => {
-    if (e.target.id === 'crmNAdd') { anotar(); return; }
+    if (e.target.id === 'crmNAdd') { pararDitado(); anotar(); return; }
     const b = e.target.closest('[data-a]'); if (!b) return;
     const a = b.dataset.a;
+    if (a === 'ditar') { ditar(b); return; }
+    pararDitado();
     if (a === 'salvar') { if (await salvarLead()) desenhar(); }
     else if (a === 'gerar') { const id = await salvarLead(true); if (id) gerarProposta({ id, ...lerForm() }); }
     else if (a === 'excluir') {
