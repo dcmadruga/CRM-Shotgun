@@ -44,7 +44,7 @@ export function avisosDaPagina(texto) {
     let m;
     while ((m = re.exec(bloco))) {
       const i = m.index + m[0].length, adiante = bloco.slice(i, i + 700);
-      if (i > 0 && /CNPJ|CPF/i.test(adiante.slice(0, 320)) && REQUER.test(adiante)) inicios.push(i);
+      if (i > 0 && !/^(CNPJ|CPF|inscrit|CEP|IE\b|Inscri)/i.test(adiante) && /CNPJ|CPF/i.test(adiante.slice(0, 320)) && REQUER.test(adiante)) inicios.push(i);
     }
     // nome em maiúsculas seguido de CNPJ no meio do texto: começa outro aviso se o anterior já tinha o seu "torna público"
     const caps = /(?<=\s)(?:[A-ZÀ-Ú0-9&.\-]{2,}\s){1,8}[A-ZÀ-Ú0-9&.\-]{2,}\.?,?\s*[-–]?\s*(?:(?:inscrit[oa]|devidamente\s+inscrit[oa])\s+no\s+)?CNPJ/g;

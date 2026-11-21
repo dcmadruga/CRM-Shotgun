@@ -2,7 +2,7 @@
 // pôr no mapa quem não tem coordenada exata.
 const UA = { 'user-agent': 'shotgun-radar/1.0' };
 export const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-const chaveMun = s => semAcento(s).replace(/[’'`´]/g, '').replace(/\bd\s?oeste\b/g, 'doeste').replace(/[^a-z0-9]+/g, ' ').trim();
+const chaveMun = s => semAcento(s).replace(/[’'`´]/g, '').replace(/\bnossa\s+s(ra)?\.?\s/g, 'nossa senhora ').replace(/\bsto\.?\s/g, 'santo ').replace(/\bsta\.?\s/g, 'santa ').replace(/\bs\.\s?(?=jose|felix|pedro)/g, 'sao ').replace(/\bd\s?oeste\b/g, 'doeste').replace(/[^a-z0-9]+/g, ' ').trim();
 
 export async function municipiosMT(listaPronta) {
   let lista = listaPronta;
