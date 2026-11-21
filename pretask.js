@@ -156,7 +156,15 @@
   // Conta preenchidos e obrigatórios de uma lista de campos, para o marcador do menu
   function contar(campos, pref, v) {
     let ok = 0, tot = 0;
-    campos.forEach(c => { if (!c.req) return; tot++; const x = v[pref + c.k]; if (Array.isArray(x) ? x.length : String(x || '').trim()) ok++; });
+    // Mesma regra da tela: campo que depende de um Sim/Não só conta quando a resposta é Sim (e o de "Outros" só quando escolheu Outros)
+    let dep = null;
+    campos.forEach((c, i) => {
+      const abre = c.tipo === 'simnao' && (c.abre != null ? c.abre : i === 0) && i < campos.length - 1;
+      if (c.solto || abre) dep = null;
+      const oculto = (dep && v[pref + dep] !== 'Sim') || (c.seOpcao && String(v[pref + c.seOpcao[0]] || '').split(':')[0].trim() !== c.seOpcao[1]);
+      if (abre) dep = c.k;
+      if (!c.req || oculto) return; tot++; const x = v[pref + c.k]; if (Array.isArray(x) ? x.length : String(x || '').trim()) ok++;
+    });
     return { ok, tot };
   }
   // Anexos: lista, remover, um certificado por campo e senha conferida no aparelho
@@ -410,7 +418,8 @@
     const base = [P.tipoBase, P.inclusao, P.potencial, P.nome].filter(Boolean).length + (P.filiais.length && P.filiais.every(f => dig(f.cnpj).length === 14 && f.tipo) ? 1 : 0) + (P.tipoBase !== 'Central' || P.f100 ? 1 : 0);
     const m = { status: marca(nStatus, 4), base: marca(base, 6), proposta: marca(1, 1), contrato: marca(C.p.ctAceitoEm ? 1 : 0, 1) };
     let ok2 = 0, t2 = 0; secs2().forEach(s => { const r = contar(s.campos, '', C.v2); ok2 += r.ok; t2 += r.tot; }); m.e2 = marca(ok2, t2);
-    secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, C.v); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
+    const vv = { ...C.v }; Object.entries(C.anx || {}).forEach(([k, st]) => { if (st && st.salvos) vv[k] = st.salvos.concat(st.novos || []); }); // anexos escolhidos e ainda não salvos também contam
+    secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
     m.anexos = marca(1, 1);
     // a aba Base e posto também mostra pendência das seções de anexos que estão dentro dela
     secoesParam(C.cfg4).forEach((s, i) => { if (ehSecAnx(s) && !/dgm ok/.test(m['p' + i]) && /dgm ok/.test(m.base)) m.base = marca(0, 1).replace('falta', 'parcial'); });
@@ -666,6 +675,8 @@
       let f = []; try { f = validar(false).faltas; } catch (e) { return; }
       bt.classList.toggle('incompleto', f.length > 0); bt.setAttribute('aria-disabled', String(f.length > 0));
       bt.title = f.length ? faltaTxt(f) + ' Use "Salvar parcial" para guardar o que já foi preenchido.' : '';
+      // marcas do menu acompanham o preenchimento, sem precisar salvar
+      try { colherCampos(); const M = marcadores(); document.querySelectorAll('#ptWrap .dgnav[data-pt]').forEach(b => { const n = M[b.dataset.pt], old = b.querySelector('.dgm'); if (!n || !old) return; const t = document.createElement('span'); t.innerHTML = n; old.replaceWith(t.firstChild); }); } catch (e) {}
     }, ja ? 0 : 350);
   }
   async function salvar(parcial) {
