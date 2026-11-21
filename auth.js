@@ -252,7 +252,7 @@ async function iniciar() {
       numero, status: 'enviada', owner: perfil.uid, vendedor: perfil.nome || '', vendedorFone: dig(perfil.fone),
       cliente: String(S.cliente || '').trim(), cnpj: S.cnpj || '', contato: String(S.contato || '').trim(), cidade: S.cidade || '',
       waCli: n, data: S.data || hojeIso(), validade: S.validade || '',
-      totLic: sumRows(S.lic), totMen: sumRows(S.men), totDes: deslocamento(), arquivo: fileName(),
+      totLic: sumRows(S.lic), totMen: sumRows(S.men), totDes: deslocamento(), implantacao: S.implantacao === 'Remota' ? 'Remota' : 'Presencial', arquivo: fileName(),
       dados: JSON.parse(assin), criado: F.serverTimestamp(),
       ...(window.crmLeadId ? { leadId: window.crmLeadId } : {})
     };
@@ -413,7 +413,7 @@ async function iniciar() {
       return `<div class="pcard" data-id="${esc(p.id)}">
         <div class="top"><div><b>${esc(p.cliente)}</b><div class="meta">Nº ${esc(p.numero)} · ${esc(p.cidade || '')}${fb.admin ? ' · ' + esc(p.vendedor) : ''}</div></div>
           ${fb.admin ? '<button type="button" class="danger" data-a="excluirp">Excluir proposta</button>' : ''}</div>
-        <div class="vals">Licenças ${brl(p.totLic)} · Mensalidade ${brl(p.totMen)} · Deslocamento ${brl(p.totDes)}</div>
+        <div class="vals">Licenças ${brl(p.totLic)} · Mensalidade ${brl(p.totMen)} · ${p.implantacao === 'Remota' ? 'Implantação remota (sem custo)' : 'Deslocamento ' + brl(p.totDes)}</div>
         <div class="meta">Enviada em ${esc(fmtTs(p.criado) || fmtD(p.data))}${p.validade ? ' · válida até ' + esc(fmtD(p.validade)) : ''}${ok ? `<br><b style="color:#1f7a46">Aprovada por ${esc(p.aprovadoNome)}${p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : ''} em ${esc(fmtTs(p.aprovadoEm))}</b>` : ''}</div>
         ${passosHtml(p, sel)}
         <div class="etapa" data-passo="0"${oc(0)}><div class="etit">Passo 1 · Proposta</div>
