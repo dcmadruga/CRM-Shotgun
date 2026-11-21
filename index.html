@@ -529,9 +529,24 @@ body.fb #tabProp{display:none!important}
 @media (max-width:480px){.anpgrade,.anpg1{grid-template-columns:1fr}.anpg2{grid-template-columns:1fr 1fr}.anpg2 .anpprod{grid-column:1/-1}}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .anpband:not(.branca){background:#F4F6F8;color:#0F1419}:root:not([data-theme="light"]) .anpcard .anpfonte{color:#8fb0f0}}
 :root[data-theme="dark"] .anpband:not(.branca){background:#F4F6F8;color:#0F1419}:root[data-theme="dark"] .anpcard .anpfonte{color:#8fb0f0}
-.crmnova{display:flex;gap:8px;margin-bottom:10px}
+.crmnova{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .crmnova select{width:auto}.crmncont{font-size:12.5px;color:var(--purple);font-weight:600}.crmnova input{flex:1}
-@media (max-width:560px){.crmnova{flex-wrap:wrap}.crmnova input{flex-basis:100%}}
+@media (max-width:560px){.crmnova .ditlinha{flex-basis:100%}}
+/* Ditado: microfone dentro do campo, laranja (Disparo) enquanto grava */
+.ditado{position:relative;display:block}
+.ditado textarea{padding-right:46px}
+.ditado:has(.ditbtn[aria-pressed=true]) textarea,.ditado:has(.ditbtn[aria-pressed=true]) input{padding-right:96px}
+.ditbtn{position:absolute;right:6px;top:6px;display:inline-flex;align-items:center;gap:6px;min-width:36px;height:36px;padding:0 9px;border-radius:999px;color:var(--muted);background:var(--surface)}
+.ditbtn span{display:none;font-size:12.5px}
+.ditbtn[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);animation:ditpulso 1.4s ease-in-out infinite}
+.ditbtn[aria-pressed=true] span{display:inline}
+@keyframes ditpulso{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 0%,transparent)}}
+@media (prefers-reduced-motion:reduce){.ditbtn[aria-pressed=true]{animation:none}}
+.ditlinha{flex:1;min-width:0}.ditlinha input{padding-right:46px;height:100%}
+.ditlinha .ditbtn{top:50%;transform:translateY(-50%);right:4px;height:30px;min-width:30px;padding:0 7px}
+.ditst{font-size:12px;font-weight:500;color:var(--sg-disparo-texto,#C2410C);letter-spacing:0}
+.ditst.erro{color:var(--danger)}
+.crmnova .ditst{flex-basis:100%}
 .crmhist ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
 .crmhist li{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
 .crmhist li small{color:var(--muted)}.crmhist li p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
