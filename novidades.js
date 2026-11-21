@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 182, data: '2026-11-21', titulo: 'Nova senha em português e correção no cadastro', itens: [
+    'Esqueci minha senha: o e-mail e a página para criar a nova senha agora vêm em português, com a cara do Shotgun.',
+    'Login: se você começou o cadastro antes e não terminou, "Me cadastrar" com o mesmo e-mail e a mesma senha agora entra e leva você de volta para terminar o cadastro.'
+  ] },
   { v: 181, data: '2026-11-21', titulo: 'Central de notificações e outras novidades', itens: [
     'Sino de notificações no topo da tela, ao lado da versão: o número mostra quantos avisos você ainda não leu. Cada pessoa vê os avisos do seu setor; o administrador vê os de todos.',
     'Login: "Me cadastrar" cria a sua conta. No primeiro acesso, o app pede nome completo, estado de atuação e uma selfie, e o cadastro fica aguardando liberação do administrador.',

@@ -22,6 +22,7 @@ async function iniciar() {
     import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]);
   const app = initializeApp(C);
   const auth = A.getAuth(app);
+  auth.languageCode = 'pt-BR'; // e-mails do Firebase (nova senha, verificação) em português do Brasil
   let db; try { db = F.initializeFirestore(app, { localCache: F.persistentLocalCache() }); } catch (e) { db = F.getFirestore(app); }
   const $ = id => document.getElementById(id);
   const body = document.body;
@@ -46,8 +47,16 @@ async function iniciar() {
       $('btnLogin').disabled = true; lmsg('Criando sua conta…');
       try { await A.createUserWithEmailAndPassword(auth, email.toLowerCase(), senha); $('l-senha').value = ''; $('l-conf').value = ''; modoCadastro(false); }
       catch (err) {
-        const c = err.code || '';
-        lmsg(/email-already-in-use/.test(c) ? 'Esse e-mail já tem conta. Toque em "Entrar" e use a sua senha (ou "Esqueci minha senha").' :
+        let c = err.code || '';
+        if (/email-already-in-use/.test(c)) {
+          // A conta já existe (ex.: um cadastro começado antes e não terminado): entra com a mesma senha e segue o fluxo
+          try { senhaDigitada = senha; await A.signInWithEmailAndPassword(auth, email, senha); $('l-senha').value = ''; $('l-conf').value = ''; modoCadastro(false); return; }
+          catch (e2) {
+            c = e2.code || '';
+            if (/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)) { modoCadastro(false); lmsg('Esse e-mail já tem conta, mas a senha não confere. Digite a senha certa e toque em "Entrar", ou use "Esqueci minha senha" para criar uma nova.'); return; }
+          }
+        }
+        lmsg(/too-many-requests/.test(c) ? 'Muitas tentativas. Espere alguns minutos ou use "Esqueci minha senha".' :
           /invalid-email/.test(c) ? 'Digite um e-mail válido.' : /weak-password/.test(c) ? 'Senha fraca: use pelo menos 6 caracteres.' :
           /operation-not-allowed|admin-restricted/.test(c) ? 'O cadastro pelo app não está ativado. Fale com o administrador.' :
           /network/.test(c) ? 'Sem internet. Conecte-se para se cadastrar.' : 'Não foi possível criar a conta (' + c + ').');
@@ -1415,7 +1424,7 @@ async function iniciar() {
     const btn = $('btnAddUser'); btn.disabled = true; uStatus('Cadastrando…');
     try {
       app2 = app2 || initializeApp(C, 'cadastro');
-      const auth2 = A.getAuth(app2);
+      const auth2 = A.getAuth(app2); auth2.languageCode = 'pt-BR';
       const cred = await A.createUserWithEmailAndPassword(auth2, email, senha);
       await F.setDoc(F.doc(db, 'usuarios', cred.user.uid), { nome, email, fone, papel, papeis: [papel], ativo: true, trocarSenha: true, criado: F.serverTimestamp() });
       await A.signOut(auth2);

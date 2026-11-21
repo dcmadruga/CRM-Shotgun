@@ -25,3 +25,8 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 
 - `novidades.js` guarda o que mudou em cada versão, em linguagem de usuário. Quando o app atualiza, a janela "Novidades" abre sozinha uma vez (por usuário, em cada aparelho), depois do login. Tocar em "Versão N" no cabeçalho reabre a janela, que também tem o botão "Forçar atualização do app".
 - Todo PR que sobe a versão do `sw.js` acrescenta no topo de `novidades.js` uma entrada com o mesmo número (instruções no começo do arquivo). Mudança sem nada visível pode ficar sem entrada.
+
+## Nova senha e e-mails da conta
+
+- `acao.html` é a página das ações de conta do Firebase (criar nova senha, confirmar e-mail), em português e com a marca Shotgun. O app pede os e-mails em `pt-BR`.
+- Configuração no Console do Firebase (idioma dos modelos e URL de ação): `docs/emails-firebase.md`.
