@@ -1257,6 +1257,7 @@ async function iniciar() {
   A.onAuthStateChanged(auth, u => { if (!u && unsub) { unsub(); unsub = null; } });
 
   const fotosU = {};
+  const UF_NOMES = { AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PA: 'Pará', PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SP: 'São Paulo', SE: 'Sergipe', TO: 'Tocantins' }, UFS = Object.keys(UF_NOMES);
   function desenharUsuarios() {
     $('uCount').textContent = lista.length + (lista.length === 1 ? ' usuário' : ' usuários');
     $('usersBody').innerHTML = lista.map(u => {
@@ -1265,13 +1266,20 @@ async function iniciar() {
         <div class="ucol0">${fotosU[u.uid] ? `<img class="ufoto" src="${fotosU[u.uid]}" alt="Foto de ${esc(u.nome)}">` : `<span class="ufoto" title="${fotosU[u.uid] === '' ? 'Ainda não enviou a foto' : 'Carregando'}"></span>`}</div>
         <div class="ucol1"><label class="ulab">Nome<input data-f="nome" value="${esc(u.nome)}" aria-label="Nome"></label><span class="umail">${esc(u.email)}</span></div>
         <label class="ulab ucol2">Telefone<input data-f="fone" value="${esc(u.fone)}" aria-label="Telefone" inputmode="tel"></label>
-        <div class="ucol3"><span class="ulabt">Perfil</span>${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; return `<div class="upapeis">${[['vendedor', 'Vendedor'], ['task', 'TASK'], ['adm', 'Administrador']].map(([k, l]) => `<label class="uchip"><input type="checkbox" data-papel="${k}"${ps.includes(k) ? ' checked' : ''}${eu ? ' disabled' : ''}> ${l}</label>`).join('')}</div>`; })()}${(() => { const ss = Array.isArray(u.setores) ? u.setores : [], top = ((MOD || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai); return top.length ? `<span class="ulabt" style="display:block;margin-top:8px">Setor no TASK</span><div class="upapeis">${top.map(m => `<label class="uchip"><input type="checkbox" data-setor="${esc(m.id)}"${ss.includes(m.id) ? ' checked' : ''}> ${esc(m.titulo)}</label>`).join('')}</div>` : ''; })()}</div>
+        <div class="ucol3"><span class="ulabt">Perfil</span>${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; return `<div class="upapeis">${[['vendedor', 'Vendedor'], ['task', 'TASK'], ['adm', 'Administrador']].map(([k, l]) => `<label class="uchip"><input type="checkbox" data-papel="${k}"${ps.includes(k) ? ' checked' : ''}${eu ? ' disabled' : ''}> ${l}</label>`).join('')}</div>`; })()}${(() => { const ss = Array.isArray(u.setores) ? u.setores : [], top = ((MOD || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai); return top.length ? `<span class="ulabt" style="display:block;margin-top:8px">Setor no TASK</span><div class="upapeis">${top.map(m => `<label class="uchip"><input type="checkbox" data-setor="${esc(m.id)}"${ss.includes(m.id) ? ' checked' : ''}> ${esc(m.titulo)}</label>`).join('')}</div>` : ''; })()}${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; if (!ps.includes('vendedor')) return ''; const us = Array.isArray(u.estados) ? u.estados : []; return `<span class="ulabt" style="display:block;margin-top:8px">Estados de atuação <small class="uufn">${us.length ? us.length + (us.length === 1 ? ' estado' : ' estados') : 'nenhum marcado'}</small></span><div class="uufs">${UFS.map(uf => `<label class="uuf" title="${UF_NOMES[uf]}"><input type="checkbox" data-uf="${uf}"${us.includes(uf) ? ' checked' : ''}><span>${uf}</span></label>`).join('')}</div>`; })()}</div>
         <div class="ucol4"><span class="pill ${u.ativo ? '' : 'off'}">${u.ativo ? 'Liberado' : 'Bloqueado'}</span>${eu ? '<span class="hint">você</span>' : ''}</div>
         <div class="uacts">${eu ? '' : `<button type="button" data-a="toggle">${u.ativo ? 'Bloquear' : 'Liberar'}</button><button type="button" data-a="excluir" class="danger">Excluir</button>`}<button type="button" data-a="reset">Nova senha</button>${fotosU[u.uid] ? '<button type="button" data-a="novafoto">Pedir nova foto</button>' : ''}</div></div>`;
     }).join('');
     lista.filter(u => !(u.uid in fotosU)).forEach(u => { fotosU[u.uid] = ''; F.getDoc(F.doc(db, 'fotos', u.uid)).then(sn => { if (sn.exists()) { fotosU[u.uid] = sn.data().b64 || ''; desenharUsuarios(); } }).catch(() => {}); });
   }
   $('usersBody').addEventListener('change', async e => {
+    if (e.target.dataset.uf) {
+      const tr = e.target.closest('[data-uid]'), estados = [...tr.querySelectorAll('[data-uf]:checked')].map(x => x.dataset.uf), u = lista.find(x => x.uid === tr.dataset.uid);
+      const n = tr.querySelector('.uufn'); if (n) n.textContent = estados.length ? estados.length + (estados.length === 1 ? ' estado' : ' estados') : 'nenhum marcado';
+      try { await F.updateDoc(F.doc(db, 'usuarios', tr.dataset.uid), { estados }); if (u) u.estados = estados; uStatus(estados.length ? 'Estados de atuação salvos: ' + estados.join(', ') + '.' : 'Nenhum estado de atuação marcado.'); }
+      catch (err) { uStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); }
+      return;
+    }
     if (e.target.dataset.setor) {
       const tr = e.target.closest('[data-uid]'), setores = [...tr.querySelectorAll('[data-setor]:checked')].map(x => x.dataset.setor);
       try { await F.updateDoc(F.doc(db, 'usuarios', tr.dataset.uid), { setores }); uStatus(setores.length ? 'Setor salvo. Vale no próximo acesso da pessoa.' : 'Sem setor: a pessoa pode alterar todos os módulos.'); }
@@ -1282,7 +1290,7 @@ async function iniciar() {
       const tr = e.target.closest('[data-uid]'), papeis = [...tr.querySelectorAll('[data-papel]:checked')].map(x => x.dataset.papel);
       if (!papeis.length) { e.target.checked = true; uStatus('A pessoa precisa ter pelo menos um perfil.'); return; }
       const papel = papeis.includes('adm') ? 'adm' : papeis.includes('vendedor') ? 'vendedor' : 'task';
-      try { await F.updateDoc(F.doc(db, 'usuarios', tr.dataset.uid), { papeis, papel }); uStatus('Perfis salvos. Valem no próximo acesso da pessoa.'); }
+      try { await F.updateDoc(F.doc(db, 'usuarios', tr.dataset.uid), { papeis, papel }); const u = lista.find(x => x.uid === tr.dataset.uid); if (u) { Object.assign(u, { papeis, papel }); desenharUsuarios(); } uStatus('Perfis salvos. Valem no próximo acesso da pessoa.'); }
       catch (err) { uStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); }
       return;
     }
