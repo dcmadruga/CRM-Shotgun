@@ -153,6 +153,12 @@ function notasHtml(notas) {
 }
 const novaNota = () => { const texto = $('crmNTexto').value.trim(); return texto ? { tipo: $('crmNTipo').value, texto, em: new Date().toISOString(), por: quem() } : null; };
 
+// Sócios da Receita (QSA): tocar num nome preenche o Contato do lead
+const nomeProprio = n => String(n || '').toLowerCase().replace(/(^|\s)(\S)/g, (m, a, c) => a + c.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E)\s/g, m => m.toLowerCase());
+function sociosHtml(socios, contato) {
+  if (!socios || !socios.length) return '';
+  return `<small>Sócios na Receita (toque para usar como contato):</small><div class="crmsocl">${socios.map((x, i) => `<button type="button" class="crmsocb" data-a="socio" data-i="${i}" aria-pressed="${norm(nomeProprio(x.nome)) === norm(contato)}"><b>${esc(nomeProprio(x.nome))}</b>${x.qual ? `<small>${esc(x.qual)}</small>` : ''}</button>`).join('')}</div>`;
+}
 function formLead(l) {
   l = l || { etapa: 'lead', origem: '' };
   const p = l.id ? propDoLead(l) : null;
@@ -162,6 +168,7 @@ function formLead(l) {
       <label>CNPJ<span class="tkrow"><input data-f="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" value="${esc(fmtCnpj(l.cnpj))}"><button type="button" data-a="cnpj">Buscar</button></span></label>
       <label>Empresa *<input data-f="empresa" value="${esc(l.empresa || '')}" required></label>
       <label>Contato<input data-f="contato" value="${esc(l.contato || '')}"></label>
+      <div class="crmsoc full" id="crmSoc" data-socios="${esc(JSON.stringify(l.socios || []))}">${sociosHtml(l.socios, l.contato)}</div>
       <label>WhatsApp / telefone<input data-f="fone" inputmode="tel" placeholder="(65) 99999-0000" value="${esc(l.fone || '')}"></label>
       <label>E-mail<input data-f="email" type="email" value="${esc(l.email || '')}"></label>
       <label>Cidade<input data-f="cidade" placeholder="Ex.: Cuiabá - MT" value="${esc(l.cidade || '')}"></label>
@@ -210,6 +217,7 @@ function lerForm() {
   o.cnpj = dig(o.cnpj);
   if (o.etapa !== 'perdido') o.motivo = '';
   if (anpAtual && anpAtual.cnpj === o.cnpj && window.anpResumo) o.anp = window.anpResumo(anpAtual);
+  try { o.socios = JSON.parse($('crmSoc').dataset.socios || '[]'); } catch (e) { o.socios = []; }
   return o;
 }
 
@@ -390,11 +398,18 @@ function ligar() {
       inp.value = fmtCnpj(d);
       const [r, pa] = await Promise.all([window.cnpjInfo ? window.cnpjInfo(d) : null, anpLead(d, false)]);
       const put = (f, v) => { const el = $('crmForm').querySelector(`[data-f=${f}]`); if (el && v && !el.value.trim()) el.value = v; };
+      if (r && r.socios) { const box = $('crmSoc'); box.dataset.socios = JSON.stringify(r.socios); box.innerHTML = sociosHtml(r.socios, $('crmForm').querySelector('[data-f=contato]').value); }
       if (r) { put('empresa', r.razao); put('cidade', r.municipio && r.uf ? r.municipio + ' - ' + r.uf : r.municipio); put('fone', r.telefone); put('email', r.email); }
       if (pa) { put('empresa', pa.razao); put('cidade', pa.cidade); }
       const anpTxt = pa ? ` Posto encontrado na ANP${pa.porte ? ' (porte ' + pa.porte + ')' : ''}.` : pa === null ? ' Não está na base de postos da ANP.' : '';
       if (!r && !pa) { dmsg('Não encontrei esse CNPJ agora. Preencha os dados à mão.' + anpTxt); return; }
       dmsg((r ? (r.situacao && !/ativa/i.test(r.situacao) ? 'Atenção: situação na Receita: ' + r.situacao + '.' : 'Dados da Receita preenchidos.') : 'A Receita não respondeu agora.') + anpTxt);
+    }
+    else if (a === 'socio') {
+      const socios = JSON.parse($('crmSoc').dataset.socios || '[]'), x = socios[+b.dataset.i]; if (!x) return;
+      const inp = $('crmForm').querySelector('[data-f=contato]'); inp.value = nomeProprio(x.nome);
+      $('crmSoc').querySelectorAll('.crmsocb').forEach(bt => bt.setAttribute('aria-pressed', String(bt === b)));
+      dmsg('Contato: ' + inp.value + (x.qual ? ' (' + x.qual + ')' : '') + '. Lembre de salvar.');
     }
     else if (a === 'verprop') { const p = props.find(x => x.id === b.dataset.id); if (p) verProposta(p); }
     else if (a === 'perder') { if (await marcarProp(b.dataset.id, true, ($('crmPMot') || {}).value)) dlg().close(); }
