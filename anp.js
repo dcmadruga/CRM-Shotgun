@@ -102,7 +102,6 @@
     const f = faixas();
     const cidade = [String(p.municipio || '').toUpperCase(), p.uf].filter(Boolean).join('/');
     const item = (rot, val, cls) => `<div${cls ? ` class="${cls}"` : ''}><small>${rot}</small><span>${val}</span></div>`;
-    const prods = p.produtos.map(x => `${esc(x.nome)}: ${fmtM3(x.tanc)}`).join('; ') || '-';
     const bicosPorProd = p.produtos.filter(x => x.bicos).map(x => `${esc(x.nome)}: ${x.bicos}`).join('; ');
     const tanc = fmtM3(p.tancagem) + (p.tancagemDuvidosa ? ' <em>(valor da ANP parece errado, confira)</em>' : '');
     const temGeo = p.lat != null && p.lng != null;
@@ -125,7 +124,7 @@
         ${item('Tancagem total', tanc)}
         ${item('Porte', esc(p.porte || 'A conferir'))}
         ${item('Bicos', `<span title="${bicosPorProd}">${p.bicos}</span>`)}
-        ${item('Produtos', prods)}
+        <div class="anpprod"><details><summary><small>Produtos <b>${p.produtos.length}</b></small></summary><ul>${p.produtos.map(x => `<li>${esc(x.nome)}: ${fmtM3(x.tanc)}${x.bicos ? ` <em>· ${x.bicos} ${x.bicos === 1 ? 'bico' : 'bicos'}</em>` : ''}</li>`).join('') || '<li>-</li>'}</ul></details></div>
         ${item('CEP', esc(p.cep || '-'))}
         ${item('Autorização ANP', esc(p.autorizacao || '-'))}
         ${item('Coordenadas', geo)}
