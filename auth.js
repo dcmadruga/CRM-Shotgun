@@ -38,6 +38,22 @@ async function iniciar() {
     e.preventDefault();
     const email = $('l-email').value.trim(), senha = $('l-senha').value;
     if (!email || !senha) { lmsg('Informe e-mail e senha.'); return; }
+    if (modoCad) {
+      // Me cadastrar: cria a conta e segue para a tela de cadastro (nome, estado e selfie), que fica aguardando liberação
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { lmsg('Digite um e-mail válido.'); return; }
+      if (senha.length < 6) { lmsg('A senha precisa ter pelo menos 6 caracteres.'); return; }
+      if (senha !== $('l-conf').value) { lmsg('As duas senhas não são iguais. Digite de novo.'); return; }
+      $('btnLogin').disabled = true; lmsg('Criando sua conta…');
+      try { await A.createUserWithEmailAndPassword(auth, email.toLowerCase(), senha); $('l-senha').value = ''; $('l-conf').value = ''; modoCadastro(false); }
+      catch (err) {
+        const c = err.code || '';
+        lmsg(/email-already-in-use/.test(c) ? 'Esse e-mail já tem conta. Toque em "Entrar" e use a sua senha (ou "Esqueci minha senha").' :
+          /invalid-email/.test(c) ? 'Digite um e-mail válido.' : /weak-password/.test(c) ? 'Senha fraca: use pelo menos 6 caracteres.' :
+          /operation-not-allowed|admin-restricted/.test(c) ? 'O cadastro pelo app não está ativado. Fale com o administrador.' :
+          /network/.test(c) ? 'Sem internet. Conecte-se para se cadastrar.' : 'Não foi possível criar a conta (' + c + ').');
+      } finally { $('btnLogin').disabled = false; }
+      return;
+    }
     $('btnLogin').disabled = true; lmsg('Entrando…');
     try { senhaDigitada = senha; await A.signInWithEmailAndPassword(auth, email, senha); $('l-senha').value = ''; }
     catch (err) {
@@ -47,6 +63,17 @@ async function iniciar() {
         /network/.test(c) ? 'Sem internet. Conecte-se para entrar.' : 'Não foi possível entrar (' + c + ').');
     } finally { $('btnLogin').disabled = false; }
   });
+  let modoCad = false;
+  function modoCadastro(on) {
+    modoCad = on; $('l-confBox').hidden = !on; $('btnEsqueci').hidden = on;
+    $('btnLogin').textContent = on ? 'Criar conta' : 'Entrar';
+    $('l-senha').autocomplete = on ? 'new-password' : 'current-password';
+    $('loginAltTxt').textContent = on ? 'Já tem acesso?' : 'Ainda não tem acesso?';
+    $('btnCadastrar').textContent = on ? 'Entrar' : 'Me cadastrar';
+    lmsg(on ? 'Crie sua conta com seu e-mail e uma senha. Depois você preenche nome, estado de atuação e uma selfie, e o administrador libera o acesso.' : 'Entre com o seu e-mail e a sua senha.');
+    setTimeout(() => $('l-email').focus(), 50);
+  }
+  $('btnCadastrar').addEventListener('click', () => modoCadastro(!modoCad));
   $('btnEsqueci').addEventListener('click', async () => {
     const email = $('l-email').value.trim();
     if (!email) { lmsg('Digite seu e-mail acima e toque de novo em "Esqueci minha senha".'); $('l-email').focus(); return; }
@@ -168,7 +195,7 @@ async function iniciar() {
   A.onAuthStateChanged(auth, async user => {
     perfil = null; fb.admin = false; fb.task = false; fb.temTask = false; body.classList.remove('is-admin', 'is-task', 'tem-task'); window.dispatchEvent(new Event('argo-sair'));
     if (!user) { sbox.hidden = true; trocaOk = null; fbox.hidden = true; fotoOk = null; cadCtx = null; pararCam(); }
-    if (!user) { mostrarLogin('Entre com o e-mail e a senha que o administrador cadastrou para você.'); return; }
+    if (!user) { mostrarLogin('Entre com o seu e-mail e a sua senha.'); return; }
     try {
       const ref = F.doc(db, 'usuarios', user.uid);
       let snap = await F.getDoc(ref);
