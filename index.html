@@ -146,7 +146,7 @@ body.is-admin .noadmin{display:none!important}
 body.fb:not(.is-admin) .cfgtab,body.fb:not(.is-admin) #viewCfg{display:none!important}
 body:not(.is-admin):not(.is-task):not(.tem-task) .tasktab{display:none!important}
 .ulista{display:flex;flex-direction:column}
-.ucard{display:grid;grid-template-columns:48px minmax(220px,1.5fr) minmax(150px,.8fr) auto auto;grid-template-areas:"f n t p a" "f n t p b";gap:6px 16px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line)}
+.ucard{display:grid;grid-template-columns:48px minmax(0,1.4fr) minmax(0,.8fr) auto;grid-template-areas:"f n t a" "f n t b" "f p p p";gap:8px 16px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line)}
 .ucard:last-child{border-bottom:0}
 .ucol0{grid-area:f;align-self:start}.ucol0 .ufoto{width:44px;height:44px}
 .ucol1{grid-area:n;display:flex;flex-direction:column;gap:4px;min-width:0}.ucol2{grid-area:t}.ucol3{grid-area:p}.ucol4{grid-area:a;display:flex;gap:8px;align-items:center;justify-self:end}
@@ -167,7 +167,8 @@ button.lnk{background:none;border:0;padding:0;min-height:0;color:var(--purple);t
 .uufn{font-weight:400;color:var(--muted);margin-left:4px}
 .uchip{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:6px;margin:0;color:var(--fg);font-weight:500;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;white-space:nowrap;cursor:pointer}
 .uchip input{width:auto!important;height:auto;margin:0!important;flex:none;display:inline-block!important;padding:0}.uchip:has(input:checked){border-color:var(--purple);background:color-mix(in srgb,var(--purple) 10%,transparent)}
-@media (max-width:900px){.ucard{grid-template-columns:48px 1fr 1fr;grid-template-areas:"f n n" "f t a" "f p p" "f b b"}.ucol4{justify-self:start}.uacts{justify-content:flex-start}}
+.ucol3{min-width:0;padding-top:4px;border-top:1px dashed var(--line)}
+@media (max-width:760px){.ucard{grid-template-columns:44px minmax(0,1fr);grid-template-areas:"f n" "f t" "f a" "f p" "f b"}.ucol4{justify-self:start}.uacts{justify-content:flex-start}.uufs{max-width:none}}
 
 /* ---------- Módulo TASK ---------- */
 .tkhead h2{font-family:var(--display);font-size:20px;margin:0}
