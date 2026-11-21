@@ -63,6 +63,7 @@
 .ptanx .bt{align-self:flex-start;cursor:pointer;border:1px dashed var(--line);border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--purple)}
 .ptanx .cst{font-size:12.5px;font-weight:500}.ptanx .cst.ok{color:#2f8f57}.ptanx .cst.bad{color:var(--danger)}.ptanx .cst:empty{display:none}.ptanx .ccnpj{display:block;margin-top:4px}.ptanx .ccnpj.alerta{background:#fde2e1;color:#9b1c1c;border-left:4px solid #d93025;border-radius:4px;padding:6px 10px;font-weight:600}.ptanx .cst.venc{display:block;background:#fff3c4;color:#6b4e00;border-left:4px solid #e0a800;border-radius:4px;padding:6px 10px;margin-top:4px}
 .ptbtns{display:flex;gap:8px;flex-wrap:wrap}
+.ptpfoot{display:flex;justify-content:flex-end;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}.ptpfoot .hint{font-size:12.5px}
 .pthist{font-size:12px;color:var(--muted);font-weight:400}
 .dgm.ok,.dgm.parcial,.dgm.vazio{flex:none}
 .dgm.falta{border:2px solid #d69e2e}
@@ -347,7 +348,7 @@
     d.addEventListener('close', () => { C = null; });
     return d;
   }
-  const msg = t => { const m = document.getElementById('ptMsg'); if (m) m.textContent = t || ''; };
+  const msg = t => { const m = document.getElementById('ptMsg'); if (m) m.textContent = t || ''; document.querySelectorAll('#ptCorpo .ptpfoot .hint').forEach(x => { x.textContent = t || ''; }); };
   const ICO = t => (window.TK_ICONE ? window.TK_ICONE(t) : '');
 
   async function abrir(ctx) {
@@ -427,6 +428,9 @@
         ${painelStatus()}${painelBase(ps.map((s, i) => ehSecAnx(s) ? painelParam(s, i, true) : '').join(''))}${painelProposta()}${painelE2()}${painelContrato()}${ps.map((s, i) => ehSecAnx(s) ? '' : painelParam(s, i)).join('')}
       </div></div>`;
     const corpo = document.getElementById('ptCorpo');
+    // Salvar parcial também no fim de cada tela de Validação
+    corpo.querySelectorAll(':scope > [data-ptp]').forEach(pn => { const id = pn.dataset.ptp; if (id !== 'status' && id !== 'base' && !/^p\d+$/.test(id)) return; pn.insertAdjacentHTML('beforeend', '<div class="ptpfoot"><span class="hint" role="status"></span><button type="button" data-ptparc="1">Salvar parcial</button></div>'); });
+    corpo.addEventListener('click', ev => { if (ev.target.closest('[data-ptparc]')) salvar(true); });
     ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo);
     corpo.addEventListener('pt-mudou', ev => { cabecalhoMudou(ev); conferirFinal(); });
     corpo.addEventListener('input', () => conferirFinal()); corpo.addEventListener('change', () => conferirFinal());
@@ -674,7 +678,7 @@
       msg(faltaTxt(faltas) + ' Para guardar assim mesmo, use "Salvar parcial".'); return;
     }
     if (parcial && faltas.some(x => /senha do certificado/.test(x[1]))) { msg('A senha do certificado não confere. Corrija ou remova o certificado para salvar.'); return; }
-    bt.disabled = true; msg(parcial ? 'Salvando parcial…' : 'Salvando…');
+    bt.disabled = true; document.querySelectorAll('#ptCorpo [data-ptparc]').forEach(x => { x.disabled = true; }); msg(parcial ? 'Salvando parcial…' : 'Salvando…');
     try {
       const { F, db, pid, perfil } = C;
       await subirAnexos(F, db, pid, fila, msg);
@@ -717,11 +721,11 @@
         } catch (e) { console.warn('Pré TASK: card do TASK', e); }
       }
       C.e4 = { ...doc, em: { toDate: () => new Date() } };
-      msg(parcial ? 'Salvo parcial. Quando tudo estiver preenchido, use o salvar final.' : 'Pré TASK salvo' + (taskOk ? ' e card do TASK atualizado.' : '.'));
       if (C.aoSalvar && !parcial) C.aoSalvar(pre);
       colherCampos(); desenhar();
+      msg(parcial ? 'Salvo parcial. Quando tudo estiver preenchido, use o salvar final.' : 'Pré TASK salvo' + (taskOk ? ' e card do TASK atualizado.' : '.'));
     } catch (err) { msg('Não foi possível salvar (' + (err.code || err.message) + ').'); }
-    finally { bt.disabled = false; }
+    finally { bt.disabled = false; document.querySelectorAll('#ptCorpo [data-ptparc]').forEach(x => { x.disabled = false; }); }
   }
   // Central no formato do card do TASK
   function centralDoPre(pre) {
