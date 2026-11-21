@@ -116,18 +116,17 @@
       <h4>${esc(p.razao)}</h4>
       <p class="anpend">${esc([p.endereco, cidade].filter(Boolean).join(' · '))}</p>
       <div class="anpselos">
-        ${window.anpSeloBandeira(p.bandeira, p.bandeiraBranca)}
-        ${p.porte ? `<span class="anpporte" title="Pequeno até ${f.p} m³, Médio até ${f.m} m³, Grande acima">${esc(p.porte)}</span>` : ''}
+        <div><small>Bandeira</small>${window.anpSeloBandeira(p.bandeira, p.bandeiraBranca)}</div>
+        <div><small>Porte</small>${p.porte ? `<span class="anpporte" title="Pequeno até ${f.p} m³, Médio até ${f.m} m³, Grande acima">${esc(p.porte)}</span>` : '<span class="anpporte">A conferir</span>'}</div>
       </div>
       <div class="anpgrade">
         ${item('CNPJ', fmtCnpj(p.cnpj))}
         ${item('Tancagem total', tanc)}
-        ${item('Porte', esc(p.porte || 'A conferir'))}
         ${item('Bicos', `<span title="${bicosPorProd}">${p.bicos}</span>`)}
-        <div class="anpprod"><details><summary><small>Produtos <b>${p.produtos.length}</b></small></summary><ul>${p.produtos.map(x => `<li>${esc(x.nome)}: ${fmtM3(x.tanc)}${x.bicos ? ` <em>· ${x.bicos} ${x.bicos === 1 ? 'bico' : 'bicos'}</em>` : ''}</li>`).join('') || '<li>-</li>'}</ul></details></div>
         ${item('CEP', esc(p.cep || '-'))}
         ${item('Autorização ANP', esc(p.autorizacao || '-'))}
         ${item('Coordenadas', geo)}
+        <div class="anpprod"><details><summary><small>Produtos <b>${p.produtos.length}</b></small></summary><ul>${p.produtos.map(x => `<li>${esc(x.nome)}: ${fmtM3(x.tanc)}${x.bicos ? ` <em>· ${x.bicos} ${x.bicos === 1 ? 'bico' : 'bicos'}</em>` : ''}</li>`).join('') || '<li>-</li>'}</ul></details></div>
       </div>
       ${p.atualizado ? `<p class="hint">Base da ANP atualizada em ${new Date(p.atualizado).toLocaleDateString('pt-BR')}.</p>` : ''}
     </div>`;
