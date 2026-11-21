@@ -250,6 +250,8 @@ button.lnk{background:none;border:0;padding:0;min-height:0;color:var(--purple);t
 .mdproc .ptseg button{padding:5px 10px;font-size:12px}
 .mdproc .ptseg button[data-pst=ni][aria-pressed=true]{background:var(--muted)}.mdproc .ptseg button[data-pst=in][aria-pressed=true]{background:#2b6cb0}.mdproc .ptseg button[data-pst=an][aria-pressed=true]{background:#b7791f}.mdproc .ptseg button[data-pst=pa][aria-pressed=true]{background:var(--danger)}.mdproc .ptseg button[data-pst=fi][aria-pressed=true]{background:#2f8f57}
 .mdmot{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.mdmot input{flex:1;min-width:200px}
+.mdlink{font-size:12px;margin-top:4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0}.mdlink span{color:var(--muted)}.mdlink a{color:var(--purple);font-weight:600;word-break:break-all}.mdlink button{padding:2px 8px;font-size:12px}
+.mdlkdica{font-size:12px;color:var(--muted);margin-top:4px}.mdlkbox input{min-width:220px}
 @media (max-width:760px){.mdproc{grid-template-columns:1fr}}
 .tkf100{font-weight:700;font-size:14px;margin:4px 0 2px}.tkf100 .tkbaserow{display:inline-flex;align-items:center;gap:6px}.tklink{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--purple);cursor:pointer}.tklink:hover{border-color:var(--purple)}.tklink.vazio{color:var(--muted);opacity:.6}.tklink.ok{background:var(--purple);color:#fff;border-color:var(--purple)}
 .tk100{margin-left:0;font-size:11px;padding:2px 8px}
@@ -386,7 +388,11 @@ table.users{min-width:640px}
 .teleabas{display:flex;gap:4px;padding:4px;margin-bottom:12px;background:var(--surface);border:1px solid var(--line);border-radius:999px;width:max-content;max-width:100%;overflow-x:auto}
 .teleabas button{font:600 13.5px/1 var(--body);min-height:40px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
 .teleabas button[aria-selected="true"]{background:var(--sg-ink);color:#fff}
-.tanpq{flex:1;min-width:200px}.tanpq input{width:100%}
+.tanpfiltros{display:grid;grid-template-columns:minmax(140px,170px) minmax(160px,1fr) minmax(160px,1fr) minmax(180px,1.3fr) auto;align-items:end;gap:8px}
+.tanpfiltros label{min-width:0}.tanpfiltros select,.tanpfiltros input{width:100%}
+.tanplimpar{min-height:40px;white-space:nowrap;background:none;border:1px solid var(--line);border-radius:12px;padding:0 14px;color:var(--purple);font:600 13px/1 var(--body);cursor:pointer}
+@media (max-width:900px){.tanpfiltros{grid-template-columns:1fr 1fr}.tanpfiltros .tanpq{grid-column:1/-1}.tanplimpar{grid-column:1/-1;justify-self:start}}
+@media (max-width:600px){.tanpfiltros label:nth-child(2){grid-column:1/-1;order:3}.tanpfiltros label:nth-child(3){order:2}.tanpfiltros .tanpq{order:4}.tanplimpar{order:5}}
 .tanparea{display:grid;gap:16px;margin-top:12px}
 .tanpkpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tanpkpi{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--field);display:grid;gap:2px}
@@ -778,7 +784,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
     <button type="button" role="tab" data-tele="obras" aria-selected="false">Postos em construção</button>
   </div>
   <section class="sec" id="teleAnp" data-telepainel="anp"><h2>Telemetria ANP · Postos novos nos últimos 15 dias</h2><div class="body">
-    <div class="tools"><label class="telefiltro">Estado<select id="tanpUf"></select></label><label class="tanpq">Pesquisar<input id="tanpBusca" type="search" placeholder="Nome, cidade, bandeira ou CNPJ"></label></div>
+    <div class="tools tanpfiltros"><label>Estado<select id="tanpUf"></select></label><label>Cidade<select id="tanpCid"><option value="">Todas as cidades</option></select></label><label>Bandeira<select id="tanpBand"><option value="">Todas as bandeiras</option></select></label><label class="tanpq">Pesquisar<input id="tanpBusca" type="search" placeholder="Nome ou CNPJ"></label><button type="button" id="tanpLimpar" class="tanplimpar" hidden>Limpar filtros</button></div>
     <div id="tanpArea" class="tanparea"></div>
   </div></section>
   <section class="sec" data-telepainel="obras" hidden><h2>Telemetria · Monitoramento de postos em construção</h2><div class="body">
