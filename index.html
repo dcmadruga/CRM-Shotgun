@@ -412,18 +412,21 @@ body.fb #tabProp{display:none!important}
 .crmsec,.crmhist{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
 .crmsec h4,.crmhist h4{margin:0 0 8px;font-family:var(--display);font-size:14px}
 .crmul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px}
-.anpcard{margin:10px 0 4px;padding:10px 12px;border:1px solid var(--line);border-left:3px solid var(--sg-comercial);border-radius:10px;background:var(--surface);font-size:13px}
-.anpcard h4{margin:0 0 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-family:var(--display);font-size:14px}
-.anpcard dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:4px 14px}
-.anpcard dt{color:var(--muted);font-size:12px;padding-top:1px}.anpcard dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
-.anpcard dd small{color:var(--muted)}.anpcard ul{margin:0;padding-left:16px}.anpcard .hint{margin-top:8px}
-.anpporte{font:600 12px/1 var(--sg-font-ui,inherit);padding:5px 10px;border-radius:999px;background:var(--sg-comercial-claro);color:var(--sg-comercial-escuro);white-space:nowrap}
-.anpporte::before{content:'';display:inline-block;width:18px;height:6px;margin-right:6px;border-radius:3px;vertical-align:1px;background:linear-gradient(90deg,currentColor 33%,transparent 33%) 0 0/100% 100%,color-mix(in srgb,currentColor 25%,transparent)}
-.anpporte[data-porte="Médio"]::before{background:linear-gradient(90deg,currentColor 66%,transparent 66%),color-mix(in srgb,currentColor 25%,transparent)}
-.anpporte[data-porte="Grande"]{background:var(--sg-comercial-escuro);color:#fff}.anpporte[data-porte="Grande"]::before{background:currentColor}
-@media (max-width:480px){.anpcard dl{grid-template-columns:1fr}.anpcard dt{padding-top:6px}}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .anpporte{background:#1b2740;color:#8fb0f0}:root:not([data-theme="light"]) .anpporte[data-porte="Grande"]{background:#8fb0f0;color:#0F1419}}
-:root[data-theme="dark"] .anpporte{background:#1b2740;color:#8fb0f0}:root[data-theme="dark"] .anpporte[data-porte="Grande"]{background:#8fb0f0;color:#0F1419}
+.anpcard{margin:12px 0 4px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.anpcard .anpfonte{margin:0 0 4px;font:600 11px/1.2 var(--sg-font-ui,inherit);letter-spacing:.06em;text-transform:uppercase;color:var(--sg-comercial-escuro)}
+.anpcard h4{margin:0;font:700 20px/1.25 var(--display);letter-spacing:-.01em;overflow-wrap:anywhere}
+.anpcard .anpend{margin:4px 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;overflow-wrap:anywhere}
+.anpselos{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.anpband,.anpporte{font:600 13px/1 var(--sg-font-ui,inherit);padding:8px 14px;border-radius:999px;white-space:nowrap}
+.anpband{background:var(--sg-ink);color:#fff;letter-spacing:.02em}.anpband.branca{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.anpporte{border:1px solid var(--line);color:var(--fg);background:var(--surface)}
+.anpgrade{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
+.anpgrade small{display:block;font:600 11px/1.3 var(--sg-font-ui,inherit);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.anpgrade span{font-size:14px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.anpgrade em{font-style:normal;font-size:12px;color:var(--muted)}
+.anpcard .hint{margin-top:12px}
+@media (max-width:480px){.anpgrade{grid-template-columns:1fr}}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .anpband:not(.branca){background:#F4F6F8;color:#0F1419}:root:not([data-theme="light"]) .anpcard .anpfonte{color:#8fb0f0}}
+:root[data-theme="dark"] .anpband:not(.branca){background:#F4F6F8;color:#0F1419}:root[data-theme="dark"] .anpcard .anpfonte{color:#8fb0f0}
 .crmnova{display:flex;gap:8px;margin-bottom:10px}
 .crmnova select{width:auto}.crmnova input{flex:1}
 @media (max-width:560px){.crmnova{flex-wrap:wrap}.crmnova input{flex-basis:100%}}
