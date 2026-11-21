@@ -58,7 +58,7 @@ function propDoLead(l) {
 }
 function cards() {
   const out = [];
-  leads().forEach(l => { if (!propDoLead(l)) out.push({ tipo: 'lead', id: l.id, etapa: ETAPAS.some(e => e.id === l.etapa) && ['lead', 'qualificado', 'perdido'].includes(l.etapa) ? l.etapa : 'lead', titulo: l.empresa || '(sem nome)', sub: [l.contato, l.origem].filter(Boolean).join(' · '), prox: l.prox, dono: l.vendedor, ref: l }); });
+  leads().forEach(l => { if (!propDoLead(l)) out.push({ tipo: 'lead', id: l.id, etapa: ETAPAS.some(e => e.id === l.etapa) && ['lead', 'qualificado', 'perdido'].includes(l.etapa) ? l.etapa : 'lead', titulo: l.empresa || '(sem nome)', sub: [l.contato, l.origem, l.anp?.porte && 'Porte ' + l.anp.porte].filter(Boolean).join(' · '), prox: l.prox, dono: l.vendedor, ref: l }); });
   props.filter(meu).forEach(p => out.push({ tipo: 'prop', id: p.id, etapa: etapaProp(p), titulo: p.cliente || '(sem nome)', sub: `Nº ${p.numero || ''} · ${brl(p.totMen)}/mês`, valor: Number(p.totMen) || 0, lic: Number(p.totLic) || 0, dono: p.vendedor, ref: p }));
   return out;
 }
@@ -114,7 +114,7 @@ function desenharLeads() {
   $('crm-leads').innerHTML = ls.length ? `<div class="crmlist">${ls.map(l => {
     const p = propDoLead(l), et = p ? ETAPAS.find(e => e.id === etapaProp(p)).nome : (ETAPAS.find(e => e.id === l.etapa) || ETAPAS[0]).nome;
     return `<button type="button" class="crmrow${l.prox && l.prox < h && !p && l.etapa !== 'perdido' ? ' atras' : ''}" data-tipo="lead" data-id="${esc(l.id)}">
-      <span><b>${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.contato, l.fone, l.cidade].filter(Boolean).join(' · '))}</small></span>
+      <span><b>${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.contato, l.fone, l.cidade, l.anp?.bandeira, l.anp?.porte && 'Porte ' + l.anp.porte].filter(Boolean).join(' · '))}</small></span>
       <span><small>${esc(l.origem || '')}</small>${admin && l.vendedor ? `<small>${esc(l.vendedor)}</small>` : ''}</span>
       <span><small>${l.prox ? 'Próx.: ' + fmtD(l.prox) : 'Sem próximo contato'}</small><span class="pill">${esc(et)}</span></span>
     </button>`; }).join('')}</div>` : `<p class="hint">${q ? 'Nenhum lead encontrado.' : 'Nenhum lead ainda. Clique em "+ Novo lead" para cadastrar o primeiro contato.'}</p>`;
@@ -166,6 +166,7 @@ function formLead(l) {
       <label class="crmmot" ${l.etapa === 'perdido' ? '' : 'hidden'}>Motivo da perda<select data-f="motivo"><option value="">Escolha…</option>${MOTIVOS.map(m => `<option${m === l.motivo ? ' selected' : ''}>${m}</option>`).join('')}</select></label>
       <label class="full">Observações<textarea data-f="obs" rows="2">${esc(l.obs || '')}</textarea></label>
     </div>
+    <div id="crmAnp" hidden></div>
     <div class="tools crmacts">
       <button type="button" class="primary" data-a="salvar">Salvar</button>
       ${p ? '' : '<button type="button" data-a="gerar">Gerar proposta</button>'}
@@ -173,6 +174,29 @@ function formLead(l) {
     </div>
     ${l.id ? notasHtml(l.notas) : ''}`);
   dlg().dataset.modo = 'lead';
+  anpAtual = null; anpLead(l.cnpj, false);
+}
+
+/* ---------- Base de postos da ANP ---------- */
+// Busca o CNPJ na base interna da ANP, mostra o cartão e (preencher=true) completa os campos vazios do lead
+let anpAtual = null, anpPedido = '';
+async function anpLead(cnpj, preencher) {
+  const box = $('crmAnp'), d = dig(cnpj);
+  if (!box) return null;
+  if (d.length !== 14 || !window.anpPosto) { anpAtual = null; anpPedido = ''; box.hidden = true; box.innerHTML = ''; return null; }
+  if (anpAtual && anpAtual.cnpj === d && !preencher) return anpAtual;
+  anpPedido = d;
+  let p;
+  try { p = await window.anpPosto(d); } catch (e) { return undefined; }
+  if (anpPedido !== d || !$('crmAnp')) return null;
+  anpAtual = p;
+  box.innerHTML = p ? window.anpHtml(p) : '<p class="hint">Este CNPJ não aparece na base de postos da ANP.</p>';
+  box.hidden = false;
+  if (p && preencher) {
+    const put = (f, v) => { const el = $('crmForm')?.querySelector(`[data-f=${f}]`); if (el && v && !el.value.trim()) el.value = v; };
+    put('empresa', p.razao); put('cidade', p.cidade);
+  }
+  return p;
 }
 
 function lerForm() {
@@ -180,6 +204,7 @@ function lerForm() {
   $('crmForm').querySelectorAll('[data-f]').forEach(el => { o[el.dataset.f] = el.value.trim(); });
   o.cnpj = dig(o.cnpj);
   if (o.etapa !== 'perdido') o.motivo = '';
+  if (anpAtual && anpAtual.cnpj === o.cnpj && window.anpResumo) o.anp = window.anpResumo(anpAtual);
   return o;
 }
 
@@ -252,9 +277,11 @@ async function fichaCliente(k) {
     </div>
     <div class="crmsec"><h4>Contatos</h4>${contatos.size ? `<ul class="crmul">${[...contatos.values()].map(x => `<li>${esc(x.nome || '(sem nome)')}${x.fone ? ` · <a href="https://wa.me/${x.fone.length <= 11 ? '55' + x.fone : x.fone}" target="_blank" rel="noopener">${fone(x.fone)}</a>` : ''}${x.email ? ` · <a href="mailto:${esc(x.email)}">${esc(x.email)}</a>` : ''}</li>`).join('')}</ul>` : '<p class="hint">Nenhum contato registrado.</p>'}</div>
     <div class="crmsec"><h4>Propostas e contratos</h4><ul class="crmul">${c.props.map(p => `<li><button type="button" class="linkbtn" data-a="verprop" data-id="${esc(p.id)}">Nº ${esc(p.numero)}</button> · ${fmtD(p.data)} · ${esc(ETAPAS.find(e => e.id === etapaProp(p)).nome)} · ${brl(p.totLic)} + ${brl(p.totMen)}/mês</li>`).join('')}</ul></div>
+    <div id="crmAnpCli" hidden></div>
     <div class="crmsec" id="crmTask"></div>
     ${notasHtml(c.doc?.notas)}`);
   dlg().dataset.modo = 'cli'; dlg().dataset.k = k;
+  if (dig(c.cnpj).length === 14 && window.anpPosto) window.anpPosto(c.cnpj).then(p => { const b = $('crmAnpCli'); if (p && b && dlg().dataset.k === k) { b.innerHTML = window.anpHtml(p); b.hidden = false; } }).catch(() => {});
   // Implantação (TASK): só quem tem acesso ao TASK enxerga
   if (admin || temTask) {
     try {
@@ -338,6 +365,7 @@ function ligar() {
   fun.addEventListener('drop', e => { const col = e.target.closest('.crmcol'); if (!col) return; e.preventDefault(); col.classList.remove('alvo'); const [tipo, id] = String(e.dataTransfer.getData('text/plain')).split(':'); if (id) mover(tipo, id, col.dataset.etapa); });
 
   $('crmDlgFechar').addEventListener('click', () => dlg().close());
+  dlg().addEventListener('input', e => { if (e.target.dataset.f === 'cnpj' && dig(e.target.value).length === 14) anpLead(e.target.value, true); });
   dlg().addEventListener('change', e => { if (e.target.dataset.f === 'etapa') { const m = dlg().querySelector('.crmmot'); if (m) m.hidden = e.target.value !== 'perdido'; } });
   dlg().addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'crmNTexto') { e.preventDefault(); anotar(); } });
   dlg().addEventListener('click', async e => {
@@ -354,11 +382,14 @@ function ligar() {
       const inp = $('crmForm').querySelector('[data-f=cnpj]'), d = dig(inp.value);
       if (d.length !== 14) { dmsg('Digite os 14 números do CNPJ.'); return; }
       dmsg('Buscando o CNPJ…');
-      const r = window.cnpjInfo ? await window.cnpjInfo(d) : null;
-      if (!r) { dmsg('Não encontrei esse CNPJ agora. Preencha os dados à mão.'); return; }
+      inp.value = fmtCnpj(d);
+      const [r, pa] = await Promise.all([window.cnpjInfo ? window.cnpjInfo(d) : null, anpLead(d, false)]);
       const put = (f, v) => { const el = $('crmForm').querySelector(`[data-f=${f}]`); if (el && v && !el.value.trim()) el.value = v; };
-      inp.value = fmtCnpj(d); put('empresa', r.razao); put('cidade', r.municipio && r.uf ? r.municipio + ' - ' + r.uf : r.municipio); put('fone', r.telefone); put('email', r.email);
-      dmsg(r.situacao && !/ativa/i.test(r.situacao) ? 'Atenção: situação na Receita: ' + r.situacao + '.' : 'Dados da Receita preenchidos.');
+      if (r) { put('empresa', r.razao); put('cidade', r.municipio && r.uf ? r.municipio + ' - ' + r.uf : r.municipio); put('fone', r.telefone); put('email', r.email); }
+      if (pa) { put('empresa', pa.razao); put('cidade', pa.cidade); }
+      const anpTxt = pa ? ` Posto encontrado na ANP${pa.porte ? ' (porte ' + pa.porte + ')' : ''}.` : pa === null ? ' Não está na base de postos da ANP.' : '';
+      if (!r && !pa) { dmsg('Não encontrei esse CNPJ agora. Preencha os dados à mão.' + anpTxt); return; }
+      dmsg((r ? (r.situacao && !/ativa/i.test(r.situacao) ? 'Atenção: situação na Receita: ' + r.situacao + '.' : 'Dados da Receita preenchidos.') : 'A Receita não respondeu agora.') + anpTxt);
     }
     else if (a === 'verprop') { const p = props.find(x => x.id === b.dataset.id); if (p) verProposta(p); }
     else if (a === 'perder') { if (await marcarProp(b.dataset.id, true, ($('crmPMot') || {}).value)) dlg().close(); }

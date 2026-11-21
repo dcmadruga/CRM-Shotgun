@@ -414,6 +414,21 @@ body.fb #tabProp{display:none!important}
 .crmsec,.crmhist{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
 .crmsec h4,.crmhist h4{margin:0 0 8px;font-family:var(--display);font-size:14px}
 .crmul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px}
+.anpcard{margin:12px 0 4px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.anpcard .anpfonte{margin:0 0 4px;font:600 11px/1.2 var(--sg-font-ui,inherit);letter-spacing:.06em;text-transform:uppercase;color:var(--sg-comercial-escuro)}
+.anpcard h4{margin:0;font:700 20px/1.25 var(--display);letter-spacing:-.01em;overflow-wrap:anywhere}
+.anpcard .anpend{margin:4px 0 10px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.02em;overflow-wrap:anywhere}
+.anpselos{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.anpband,.anpporte{font:600 13px/1 var(--sg-font-ui,inherit);padding:8px 14px;border-radius:999px;white-space:nowrap}
+.anpband{background:var(--sg-ink);color:#fff;letter-spacing:.02em}.anpband.branca{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.anpporte{border:1px solid var(--line);color:var(--fg);background:var(--surface)}
+.anpgrade{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
+.anpgrade small{display:block;font:600 11px/1.3 var(--sg-font-ui,inherit);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.anpgrade span{font-size:14px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}.anpgrade em{font-style:normal;font-size:12px;color:var(--muted)}
+.anpcard .hint{margin-top:12px}
+@media (max-width:480px){.anpgrade{grid-template-columns:1fr}}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .anpband:not(.branca){background:#F4F6F8;color:#0F1419}:root:not([data-theme="light"]) .anpcard .anpfonte{color:#8fb0f0}}
+:root[data-theme="dark"] .anpband:not(.branca){background:#F4F6F8;color:#0F1419}:root[data-theme="dark"] .anpcard .anpfonte{color:#8fb0f0}
 .crmnova{display:flex;gap:8px;margin-bottom:10px}
 .crmnova select{width:auto}.crmnova input{flex:1}
 @media (max-width:560px){.crmnova{flex-wrap:wrap}.crmnova input{flex-basis:100%}}
@@ -512,6 +527,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
       <label>Condição válida até<input id="validade" type="date"></label>
     </div>
     <p class="hint" id="cnpjMsg"></p>
+    <div id="anpInfo" hidden></div>
   </div></section>
 
   <section class="sec"><h2>Licenças <span>Quantidade × Preço unitário</span></h2><div class="body">
@@ -617,7 +633,10 @@ button.danger{color:var(--danger);border-color:var(--danger)}
     <div class="grid">
       <label>Deslocamento (R$ por km)<input id="c-vkm" type="number" step="0.01" min="0"></label>
       <label>Validade da condição (dias)<input id="c-validDias" type="number" step="1" min="0" placeholder="30"></label>
+      <label>Porte Pequeno: tancagem até (m³)<input id="c-portePeq" type="number" step="1" min="1" placeholder="60"></label>
+      <label>Porte Médio: tancagem até (m³)<input id="c-porteMed" type="number" step="1" min="1" placeholder="120"></label>
     </div>
+    <p class="hint">O porte do posto vem da tancagem total registrada na ANP. Acima do limite do Médio, o posto é Grande.</p>
     <label>Bases de deslocamento (uma por linha)<textarea id="c-bases" rows="2"></textarea></label>
   </div></section>
 
@@ -884,6 +903,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <script src="pretask.js"></script>
 <script type="module" src="auth.js"></script>
 <script type="module" src="task.js"></script>
+<script src="anp.js"></script>
 <script type="module" src="crm.js"></script>
 <script>
 const $ = id => document.getElementById(id);
@@ -895,7 +915,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 /* ---------- Parâmetros (valores do modelo) ---------- */
 function cfgModelo(){ return {
   vNome:'', vFone:'', vEmail:'',
-  vkm:1.72, alim:50, hosp:200, refMax:100, validDias:30, bases:'Nova Mutum - MT\nCuiabá - MT',
+  vkm:1.72, alim:50, hosp:200, refMax:100, validDias:30, portePeq:60, porteMed:120, bases:'Nova Mutum - MT\nCuiabá - MT',
   catLic:[
     {desc:'Licença Sistema Argo - Posto', sub:'Parcela única', qty:'1', price:2000, isento:false, padrao:true},
     {desc:'Licença Sistema Argo (Loja)', sub:'Parcela única - Isenta', qty:'1', price:0, isento:true, padrao:true},
@@ -1039,7 +1059,7 @@ function calcValidade(dataIso){
   return `${r.getFullYear()}-${String(r.getMonth()+1).padStart(2,'0')}-${String(r.getDate()).padStart(2,'0')}`;
 }
 function aplicarValidade(){ S.validade=calcValidade(S.data); $('validade').value=S.validade; save() }
-const CFGF=['vNome','vFone','vEmail','vkm','validDias','bases','detImp','eqMin','eqIdeal','bullets'];
+const CFGF=['vNome','vFone','vEmail','vkm','validDias','portePeq','porteMed','bases','detImp','eqMin','eqIdeal','bullets'];
 CFGF.forEach(id=>$('c-'+id).addEventListener('input',e=>{ CFG[id]=e.target.value; if(VEND.includes(id)){ const v=vendData(); v[id]=e.target.value; lsSet(VEND_KEY,v); lsSet(CFG_KEY,CFG); return } markCfg(); if(id==='bases') renderBases(); if(id==='validDias') aplicarValidade(); totals() }));
 
 function renderBases(){
@@ -1079,7 +1099,7 @@ function parseRefs(v){
 }
 function renderImp(){ const r=impRemota(); document.querySelectorAll('[data-imp]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.imp===(r?'Remota':'Presencial')))); $('impPres').hidden=r; $('impRemMsg').hidden=!r }
 document.querySelectorAll('[data-imp]').forEach(b=>b.addEventListener('click',()=>{ S.implantacao=b.dataset.imp; save(); renderImp(); totals() }));
-function renderProp(){ PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderImp(); renderBases(); renderItems('lic'); renderItems('men') }
+function renderProp(){ PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderImp(); renderBases(); renderItems('lic'); renderItems('men'); setTimeout(()=>anpProposta(),0) }
 function aplicarLogo(){ $('logo').src=logoAtual(); $('logoPrev').src=logoAtual() }
 function renderCfg(){ aplicarLogo(); CFG.refs=parseRefs(CFG.refs); CFGF.forEach(id=>{ $('c-'+id).value=CFG[id]??'' }); renderRefs(); renderItems('catLic'); renderItems('catMen'); renderPickers(); renderBases(); totals() }
 
@@ -1155,7 +1175,20 @@ function syncCnpjLink(){
   else if(!ok && !$('cliente').value) cnpjMsg('');
 }
 let lastAuto='';
-$('cnpj').addEventListener('input',()=>{ syncCnpjLink(); const d=onlyDigits(S.cnpj); if(cnpjOk(d) && d!==lastAuto){ lastAuto=d; buscarAuto(d) } });
+$('cnpj').addEventListener('input',()=>{ syncCnpjLink(); const d=onlyDigits(S.cnpj); if(cnpjOk(d) && d!==lastAuto){ lastAuto=d; buscarAuto(d) } anpProposta() });
+/* Base de postos da ANP: mostra bandeira, bicos, tancagem e porte do posto do CNPJ */
+var anpUlt=''; // var: renderProp chama antes desta linha rodar
+async function anpProposta(){
+  const box=$('anpInfo'), d=onlyDigits($('cnpj').value);
+  if(!cnpjOk(d) || !window.anpPosto){ anpUlt=''; box.hidden=true; box.innerHTML=''; return }
+  if(d===anpUlt) return; anpUlt=d;
+  try{
+    const p=await window.anpPosto(d); if(anpUlt!==d) return;
+    if(!p){ box.innerHTML='<p class="hint">Este CNPJ não aparece na base de postos da ANP.</p>'; box.hidden=false; return }
+    box.innerHTML=window.anpHtml(p); box.hidden=false;
+    if(!$('cidade').value.trim() && p.cidade){ S.cidade=p.cidade; $('cidade').value=p.cidade; save(); setTimeout(()=>calcularKm(),0) }
+  }catch(e){ if(anpUlt===d){ anpUlt=''; box.hidden=true } }
+}
 $('cnpj').addEventListener('blur',()=>{ const d=onlyDigits(S.cnpj); if(cnpjOk(d)){ S.cnpj=fmtCnpj(d); $('cnpj').value=S.cnpj; save() } });
 $('cnpj').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('btnCnpj').click() } });
 /* Busca automática: funciona quando a página pode acessar a internet (arquivo no computador).
