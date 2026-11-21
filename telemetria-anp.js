@@ -90,7 +90,33 @@
     let p = null; try { p = window.anpPosto ? await window.anpPosto(c) : null; } catch (e) { }
     if (aberto !== c) return;
     det.innerHTML = (p && window.anpHtml ? window.anpHtml(p) : '<p class="hint">Não consegui abrir os dados completos deste posto agora.</p>')
+      + '<div class="tanprf"><p class="tanprftit">Sócios na Receita</p><p class="hint">Buscando o CNPJ na Receita…</p></div>'
       + (window.crmLeadDoPosto ? `<div class="tanpacoes"><button type="button" class="primary" data-a="lead">Criar lead no CRM</button></div>` : '');
+    receita(c, det.querySelector('.tanprf'));
+  }
+
+  // Dados da Receita pelo CNPJ (window.cnpjInfo, auth.js): quadro de sócios, situação, abertura e contato
+  const rfCache = new Map();
+  const nomeP = n => String(n || '').toLowerCase().replace(/(^|\s)(\S)/g, (m, a, c) => a + c.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E)\s/g, m => m.toLowerCase());
+  const fone = t => { const d = String(t || '').replace(/\D/g, ''); return d.length >= 10 ? d.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : d; };
+  async function receita(c, el) {
+    if (!rfCache.has(c)) { const pr = window.cnpjInfo ? window.cnpjInfo(c) : Promise.resolve(null); rfCache.set(c, pr); pr.then(r => { if (!r) rfCache.delete(c); }, () => rfCache.delete(c)); }
+    let r = null; try { r = await rfCache.get(c); } catch (e) { }
+    if (!el.isConnected) return;
+    if (!r) { el.innerHTML = '<p class="tanprftit">Sócios na Receita</p><p class="hint">Não consegui consultar a Receita agora. Feche e abra o posto para tentar de novo.</p>'; return; }
+    const soc = r.socios || [];
+    const item = (rot, val) => val ? `<div><small>${rot}</small><span>${val}</span></div>` : '';
+    const ativa = /ativa/i.test(r.situacao || '');
+    el.innerHTML = `<p class="tanprftit">Sócios na Receita <b>${soc.length}</b></p>
+      ${soc.length ? `<ul class="tanpsoc">${soc.map(x => `<li><b>${esc(nomeP(x.nome))}</b>${x.qual ? `<small>${esc(x.qual)}</small>` : ''}</li>`).join('')}</ul>`
+        : '<p class="hint">A Receita não informa sócios para este CNPJ.</p>'}
+      <div class="tanprfgrade">
+        ${item('Situação', r.situacao ? `<span class="tanpsit${ativa ? ' ok' : ''}">${esc(r.situacao)}</span>` : '')}
+        ${item('Abertura', esc(br(String(r.abertura || '').slice(0, 10))))}
+        ${item('Nome fantasia', esc(r.fantasia))}
+        ${item('Telefone', r.telefone ? `<a href="tel:${esc(String(r.telefone).replace(/\D/g, ''))}">${esc(fone(r.telefone))}</a>` : '')}
+        ${item('E-mail', r.email ? `<a href="mailto:${esc(r.email)}">${esc(r.email)}</a>` : '')}
+      </div>`;
   }
 
   area.addEventListener('click', e => {
