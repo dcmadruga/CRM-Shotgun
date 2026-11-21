@@ -157,6 +157,12 @@ body:not(.is-admin):not(.is-task):not(.tem-task) .tasktab{display:none!important
 .umail{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
 .ulabt{display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:4px}
 .upapeis{display:flex;flex-wrap:wrap;gap:6px}
+.uufs{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:4px;max-width:420px}
+.uuf{position:relative;cursor:pointer}.uuf input{position:absolute;opacity:0;pointer-events:none}
+.uuf span{display:block;text-align:center;font-size:12px;font-weight:600;padding:5px 0;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--muted)}
+.uuf input:checked+span{background:var(--purple);border-color:var(--purple);color:#fff}
+.uuf input:focus-visible+span{outline:2px solid var(--purple);outline-offset:1px}
+.uufn{font-weight:400;color:var(--muted);margin-left:4px}
 .uchip{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:6px;margin:0;color:var(--fg);font-weight:500;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;white-space:nowrap;cursor:pointer}
 .uchip input{width:auto!important;height:auto;margin:0!important;flex:none;display:inline-block!important;padding:0}.uchip:has(input:checked){border-color:var(--purple);background:color-mix(in srgb,var(--purple) 10%,transparent)}
 @media (max-width:900px){.ucard{grid-template-columns:48px 1fr 1fr;grid-template-areas:"f n n" "f t a" "f p p" "f b b"}.ucol4{justify-self:start}.uacts{justify-content:flex-start}}
