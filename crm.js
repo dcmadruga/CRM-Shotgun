@@ -159,8 +159,11 @@ const novaNota = () => { const texto = $('crmNTexto').value.trim(); const ct = $
 const nomeProprio = n => String(n || '').toLowerCase().replace(/(^|\s)(\S)/g, (m, a, c) => a + c.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E)\s/g, m => m.toLowerCase());
 // Contatos do lead: lista de { nome, fone, email, cargo }. Leads antigos tinham um contato só (contato/fone/email).
 const contatosDe = l => Array.isArray(l.contatos) && l.contatos.length ? l.contatos : (l.contato || l.fone || l.email ? [{ nome: l.contato || '', fone: l.fone || '', email: l.email || '', cargo: '' }] : []);
-const ctLinha = (c = {}) => `<div class="crmct" data-cargo="${esc(c.cargo || '')}">
-  <label><span>Nome${c.cargo ? ` · <em>${esc(c.cargo)}</em>` : ''}</span><input data-c="nome" value="${esc(c.nome || '')}"></label>
+const CARGOS = ['Proprietário', 'Sócio-Administrador', 'Sócio', 'Gerente', 'Financeiro', 'Compras', 'TI', 'Frentista líder'];
+const cargosList = () => `<datalist id="crmCargos">${CARGOS.map(c => `<option value="${c}">`).join('')}</datalist>`;
+const ctLinha = (c = {}) => `<div class="crmct">
+  <label>Nome<input data-c="nome" value="${esc(c.nome || '')}"></label>
+  <label>Cargo<input data-c="cargo" list="crmCargos" placeholder="Ex.: Gerente" value="${esc(c.cargo || '')}"></label>
   <label>WhatsApp / telefone<input data-c="fone" inputmode="tel" placeholder="(65) 99999-0000" value="${esc(c.fone || '')}"></label>
   <label>E-mail<input data-c="email" type="email" value="${esc(c.email || '')}"></label>
   <button type="button" class="crmctx" data-a="ctdel" aria-label="Tirar este contato" title="Tirar este contato">✕</button>
@@ -173,7 +176,7 @@ function atualizarNCont() {
   sel.hidden = !nomes.length;
 }
 function lerContatos() {
-  return [...document.querySelectorAll('#crmCts .crmct')].map(r => ({ nome: r.querySelector('[data-c=nome]').value.trim(), fone: r.querySelector('[data-c=fone]').value.trim(), email: r.querySelector('[data-c=email]').value.trim(), cargo: r.dataset.cargo || '' })).filter(c => c.nome || c.fone || c.email);
+  return [...document.querySelectorAll('#crmCts .crmct')].map(r => ({ nome: r.querySelector('[data-c=nome]').value.trim(), fone: r.querySelector('[data-c=fone]').value.trim(), email: r.querySelector('[data-c=email]').value.trim(), cargo: r.querySelector('[data-c=cargo]').value.trim() })).filter(c => c.nome || c.fone || c.email || c.cargo);
 }
 function sociosHtml(socios, contato) {
   if (!socios || !socios.length) return '';
@@ -188,7 +191,7 @@ function formLead(l) {
       <label>CNPJ<span class="tkrow"><input data-f="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" value="${esc(fmtCnpj(l.cnpj))}"><button type="button" data-a="cnpj">Buscar</button></span></label>
       <label>Empresa *<input data-f="empresa" value="${esc(l.empresa || '')}" required></label>
       <div class="crmcts full" id="crmCts"><span class="crmctt">Contatos</span>
-        <div id="crmCtLista">${(contatosDe(l).length ? contatosDe(l) : [{}]).map(ctLinha).join('')}</div>
+        ${cargosList()}<div id="crmCtLista">${(contatosDe(l).length ? contatosDe(l) : [{}]).map(ctLinha).join('')}</div>
         <button type="button" class="crmctadd" data-a="ctadd">+ Contato</button></div>
       <div class="crmsoc full" id="crmSoc" data-socios="${esc(JSON.stringify(l.socios || []))}">${sociosHtml(l.socios, contatosDe(l).map(c => c.nome))}</div>
       <label>Cidade<input data-f="cidade" placeholder="Ex.: Cuiabá - MT" value="${esc(l.cidade || '')}"></label>
@@ -315,7 +318,7 @@ async function fichaCliente(k) {
       <p><small>${c.desde ? 'Cliente desde ' + c.desde.toLocaleDateString('pt-BR') + ' · ' : ''}${brl(c.men)}/mês em contratos aceitos</small></p>
     </div>
     <div class="crmsec"><h4>Contatos</h4>${contatos.size ? `<ul class="crmul">${[...contatos.values()].map(x => `<li>${esc(x.nome || '(sem nome)')}${x.cargo ? ` <small>(${esc(x.cargo)})</small>` : ''}${x.fone ? ` · <a href="https://wa.me/${x.fone.length <= 11 ? '55' + x.fone : x.fone}" target="_blank" rel="noopener">${fone(x.fone)}</a>` : ''}${x.email ? ` · <a href="mailto:${esc(x.email)}">${esc(x.email)}</a>` : ''}${x.i !== undefined ? ` <button type="button" class="linkbtn crmctdel" data-a="clictdel" data-i="${x.i}" aria-label="Tirar contato">✕</button>` : ''}</li>`).join('')}</ul>` : '<p class="hint">Nenhum contato registrado.</p>'}
-      <div class="crmctnovo"><input id="crmCliNome" placeholder="Nome"><input id="crmCliFone" inputmode="tel" placeholder="WhatsApp / telefone"><input id="crmCliEmail" type="email" placeholder="E-mail"><button type="button" data-a="clictadd">+ Contato</button></div></div>
+      <div class="crmctnovo">${cargosList()}<input id="crmCliNome" placeholder="Nome"><input id="crmCliCargo" list="crmCargos" placeholder="Cargo"><input id="crmCliFone" inputmode="tel" placeholder="WhatsApp / telefone"><input id="crmCliEmail" type="email" placeholder="E-mail"><button type="button" data-a="clictadd">+ Contato</button></div></div>
     <div class="crmsec"><h4>Propostas e contratos</h4><ul class="crmul">${c.props.map(p => `<li><button type="button" class="linkbtn" data-a="verprop" data-id="${esc(p.id)}">Nº ${esc(p.numero)}</button> · ${fmtD(p.data)} · ${esc(ETAPAS.find(e => e.id === etapaProp(p)).nome)} · ${brl(p.totLic)} + ${brl(p.totMen)}/mês</li>`).join('')}</ul></div>
     <div id="crmAnpCli" hidden></div>
     <div class="crmsec" id="crmTask"></div>
@@ -343,7 +346,7 @@ async function gravarCli(k, campos) {
   docs = docs.filter(d => d.id !== 'c_' + k).concat([{ ...atual, ...campos }]);
 }
 async function addContatoCli() {
-  const k = dlg().dataset.k, x = { nome: $('crmCliNome').value.trim(), fone: $('crmCliFone').value.trim(), email: $('crmCliEmail').value.trim(), cargo: '' };
+  const k = dlg().dataset.k, x = { nome: $('crmCliNome').value.trim(), fone: $('crmCliFone').value.trim(), email: $('crmCliEmail').value.trim(), cargo: $('crmCliCargo').value.trim() };
   if (!x.nome && !x.fone && !x.email) { $('crmCliNome').focus(); dmsg('Preencha o nome, o telefone ou o e-mail do contato.'); return; }
   const c = clientes().find(y => y.k === k);
   try { await gravarCli(k, { contatos: [...(c.doc?.contatos || []), x] }); fichaCliente(k); dmsg('Contato adicionado.'); }
