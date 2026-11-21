@@ -69,6 +69,31 @@
     simp: p.simp, consultado: new Date().toISOString().slice(0, 10)
   } : null;
 
+  // Logos das Bandeiras (Administração > Parâmetros Pré TASK). O CRM carrega o cadastro publicado
+  // (publico/bandeiras) em window.anpLogos; sem cadastro, usa os logos que vêm com o app.
+  const LOGOS_PADRAO = [{ nome: 'Petrobras', img: 'icons/bandeiras/petrobras.svg' }, { nome: 'Ipiranga', img: 'icons/bandeiras/ipiranga.svg' }, { nome: 'ALE', img: 'icons/bandeiras/ale.svg' }];
+  // Nome da ANP (distribuidora) -> nome comum da bandeira
+  const APELIDOS = [[/\bvibra\b|\bbr\b|petrobras/, 'petrobras'], [/raizen|\bshell\b/, 'shell'], [/alesat|\bale\b/, 'ale'], [/ipiranga/, 'ipiranga'], [/\btotal/, 'total'], [/branca|sem bandeira/, 'bandeira branca']];
+  const SUFIXOS = /\b(ltda|s\/?a|sa|eireli|me|epp|distribuidora|distribuicao|distrib|comercio|comercial|combustiveis|combustivel|derivados|de|do|da|e|petroleo|cia|companhia|brasileira|brasil|ind|industria)\b/g;
+  const normBand = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bandeira\s+(?!branca)/, '').replace(/[^a-z0-9/ ]/g, ' ').replace(/\s+/g, ' ').trim();
+  const nucleo = x => normBand(x).replace(SUFIXOS, ' ').replace(/\s+/g, ' ').trim();
+  const canon = x => { const n = normBand(x); const a = APELIDOS.find(([re]) => re.test(n)); return a ? a[1] : nucleo(x); };
+  function logoBandeira(nome) {
+    if (!nome) return null;
+    const lista = (Array.isArray(window.anpLogos) && window.anpLogos.length ? window.anpLogos : LOGOS_PADRAO).filter(x => x && x.img && x.nome);
+    const c = canon(nome), n = nucleo(nome);
+    return lista.find(x => canon(x.nome) === c)
+      || lista.find(x => { const k = nucleo(x.nome); return k.length >= 3 && n.length >= 3 && (` ${n} `.includes(` ${k} `) || ` ${k} `.includes(` ${n} `)); })
+      || null;
+  }
+  window.anpLogoBandeira = logoBandeira;
+  // Selo da bandeira: miniatura do logo cadastrado; sem imagem, o selo de texto
+  window.anpSeloBandeira = (nome, branca, mini) => {
+    const it = logoBandeira(nome);
+    if (it) return `<span class="anpband img${mini ? ' mini' : ''}" title="${esc(nome)}"><img src="${esc(it.img)}" alt="${esc(nome)}"></span>`;
+    return mini ? '' : `<span class="anpband${branca ? ' branca' : ''}">${esc(String(nome || 'Sem bandeira').toUpperCase())}</span>`;
+  };
+
   // Cartão-resumo da ANP (CRM e Nova proposta), no modelo pedido pelo Diego:
   // razão social, endereço e cidade/UF; selos de bandeira e porte; grade com os números do posto.
   const fmtCnpj = d => String(d).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
@@ -88,7 +113,7 @@
       <h4>${esc(p.razao)}</h4>
       <p class="anpend">${esc([p.endereco, cidade].filter(Boolean).join(' · '))}</p>
       <div class="anpselos">
-        <span class="anpband${p.bandeiraBranca ? ' branca' : ''}">${esc((p.bandeira || 'Sem bandeira').toUpperCase())}</span>
+        ${window.anpSeloBandeira(p.bandeira, p.bandeiraBranca)}
         ${p.porte ? `<span class="anpporte" title="Pequeno até ${f.p} m³, Médio até ${f.m} m³, Grande acima">${esc(p.porte)}</span>` : ''}
       </div>
       <div class="anpgrade">

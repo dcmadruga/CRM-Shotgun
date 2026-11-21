@@ -422,6 +422,8 @@ body.fb #tabProp{display:none!important}
 .anpselos{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .anpband,.anpporte{font:600 13px/1 var(--sg-font-ui,inherit);padding:8px 14px;border-radius:999px;white-space:nowrap}
 .anpband{background:var(--sg-ink);color:#fff;letter-spacing:.02em}.anpband.branca{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.anpband.img{background:#fff;border:1px solid var(--line);padding:4px 12px;display:inline-flex;align-items:center;height:36px;box-sizing:border-box}.anpband.img img{height:26px;max-width:120px;object-fit:contain;display:block}
+.anpband.mini{height:22px;padding:2px 6px;margin-right:6px;vertical-align:-5px;border-radius:6px}.anpband.mini img{height:16px;max-width:60px}
 .anpporte{border:1px solid var(--line);color:var(--fg);background:var(--surface)}
 .anpgrade{display:grid;grid-template-columns:1fr 1fr;gap:12px 24px}
 .anpgrade small{display:block;font:600 11px/1.3 var(--sg-font-ui,inherit);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
@@ -1179,6 +1181,7 @@ let lastAuto='';
 $('cnpj').addEventListener('input',()=>{ syncCnpjLink(); const d=onlyDigits(S.cnpj); if(cnpjOk(d) && d!==lastAuto){ lastAuto=d; buscarAuto(d) } anpProposta() });
 /* Base de postos da ANP: mostra bandeira, bicos, tancagem e porte do posto do CNPJ */
 var anpUlt=''; // var: renderProp chama antes desta linha rodar
+window.addEventListener('anp-logos',()=>{ anpUlt=''; anpProposta() });
 async function anpProposta(){
   const box=$('anpInfo'), d=onlyDigits($('cnpj').value);
   if(!cnpjOk(d) || !window.anpPosto){ anpUlt=''; box.hidden=true; box.innerHTML=''; return }
