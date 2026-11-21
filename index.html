@@ -306,7 +306,7 @@ button.lnk{background:none;border:0;padding:0;min-height:0;color:var(--purple);t
 .tkimp li{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
 .tkimp small{display:block;color:var(--muted);font-size:12px}
 /* Perfil TASK: só o módulo TASK */
-body.is-task .tabs [role=tab]:not(#tabTask),body.is-task .subtabs,body.is-task #viewProp,body.is-task #viewCfg,body.is-task #viewList,body.is-task #viewCrm,body.is-task .bar{display:none!important}
+body.is-task .tabs [role=tab]:not(#tabTask),body.is-task .subtabs,body.is-task #viewProp,body.is-task #viewCfg,body.is-task #viewList,body.is-task #viewCrm,body.is-task #viewTele,body.is-task .bar{display:none!important}
 header.top .wrap>div{flex:1;min-width:0}
 #btnInstall{background:var(--accent);color:var(--accent-fg);border:0;border-radius:4px;padding:8px 12px;font-weight:600;white-space:nowrap}
 .team{border-left:4px solid var(--purple)}
@@ -377,6 +377,11 @@ table.users{min-width:640px}
 .pmini[aria-pressed="true"]{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
 .pmini .pill{justify-self:start;font-size:10px}
 .pcol .vazio{font-size:12px;color:var(--muted);padding:4px}
+/* Telemetria */
+.telefiltro{max-width:280px}
+.teleembreve{border:1px dashed var(--line);border-radius:10px;padding:18px;background:var(--field);display:grid;gap:6px;justify-items:start}
+.teleembreve b{font-family:var(--display);font-size:15px}.teleembreve small{color:var(--muted);font-size:13px;line-height:1.45}
+.teleembreve .pill{font-size:10.5px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);border-color:transparent}
 /* CRM */
 .crmtools #crmBusca{flex:1;min-width:200px}
 .crmtools #crmNovo{margin-left:auto}
@@ -547,6 +552,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <button type="button" role="tab" id="tabHoje" aria-selected="false" class="fbonly">Hoje</button>
   <button type="button" role="tab" id="tabList" aria-selected="false" class="fbonly">Propostas</button>
   <button type="button" role="tab" id="tabCrm" aria-selected="false" class="fbonly">CRM</button>
+  <button type="button" role="tab" id="tabTele" aria-selected="false" class="fbonly">Telemetria</button>
   <button type="button" role="tab" id="tabTask" aria-selected="false" class="fbonly tasktab">TASK</button>
   <button type="button" role="tab" id="tabParam" aria-selected="false" aria-expanded="false" aria-controls="subParam" class="cfgtab">Administração ▾</button>
   <span class="tabuser fbonly" id="tabUser"></span><button type="button" class="linkbtn fbonly" id="btnSair">Sair</button>
@@ -716,6 +722,14 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <section class="sec"><h2>Hoje <span id="hCount"></span></h2><div class="body">
     <div class="tools hojetools"><p class="hint" style="margin:0">O próximo passo de cada proposta. Clique para abrir direto no passo.</p><label class="chk admin fbonly"><input type="checkbox" id="hMinhas"> Só as minhas</label></div>
     <div id="hList" class="hlist"></div>
+  </div></section>
+</main>
+
+<main id="viewTele" hidden>
+  <section class="sec"><h2>Telemetria · Monitoramento de postos em construção</h2><div class="body">
+    <p class="hint" style="margin:0">As pesquisas são feitas por Estado. Escolha o Estado para começar.</p>
+    <div class="tools"><label class="telefiltro">Estado<select id="teleUf"><option value="">Escolha o Estado…</option></select></label></div>
+    <div id="teleArea" class="teleembreve"><span class="pill">Em construção</span><b>Escolha um Estado</b><small>O monitoramento começa pelo Mato Grosso (MT). Os outros Estados entram depois.</small></div>
   </div></section>
 </main>
 
@@ -951,6 +965,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <script type="module" src="task.js"></script>
 <script src="anp.js"></script>
 <script type="module" src="crm.js"></script>
+<script src="telemetria.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const LOGO_PADRAO = $('logo').src;
