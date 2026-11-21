@@ -1,0 +1,108 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Shotgun · Sua conta</title>
+<meta name="theme-color" content="#0F1419">
+<meta name="robots" content="noindex">
+<link rel="icon" href="icons/shotgun-favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Página das ações de conta do Firebase (criar nova senha, confirmar e-mail), com a identidade visual Shotgun */
+:root{--sg-ink:#0F1419;--sg-disparo:#FF5A1F;--sg-grafite:#5B6573;--sg-nevoa:#F4F6F8;--sg-borda:#DDE2E8;--sg-comercial:#2E6BFF;--sg-comercial-escuro:#1F4FCC;--sg-posvenda-escuro:#0B7A59;
+  --bg:var(--sg-nevoa);--surface:#fff;--fg:var(--sg-ink);--muted:var(--sg-grafite);--line:var(--sg-borda);--field:#fff;--btn:var(--sg-comercial-escuro);--ok:var(--sg-posvenda-escuro);--danger:#b42335;
+  --sombra:0 1px 2px rgba(15,20,25,.06),0 12px 32px rgba(15,20,25,.08)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0b0f13;--surface:#151b22;--fg:#eef1f4;--muted:#9aa4b1;--line:#2a323c;--field:#0f1419;--btn:#2E6BFF;--ok:#12B886;--danger:#ff6b7d}}
+:root[data-theme="dark"]{--bg:#0b0f13;--surface:#151b22;--fg:#eef1f4;--muted:#9aa4b1;--line:#2a323c;--field:#0f1419;--btn:#2E6BFF;--ok:#12B886;--danger:#ff6b7d}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--bg);color:var(--fg);font:400 15px/24px Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sombra);padding:24px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
+.logo{width:170px;height:auto;align-self:flex-start;margin-bottom:4px}.logo-neg{display:none}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-pos{display:none}:root:not([data-theme="light"]) .logo-neg{display:block}}
+h1{font:700 22px/28px "Space Grotesk",Inter,sans-serif;letter-spacing:-.02em;margin:4px 0 0}
+p{margin:0}.hint{color:var(--muted);font-size:14px;line-height:21px}.hint b{color:var(--fg);font-weight:600;word-break:break-all}
+label{display:flex;flex-direction:column;gap:6px;font:500 12px/16px Inter,sans-serif;color:var(--muted)}
+.campo{position:relative}.campo input{width:100%;padding-right:76px}
+input{font:400 15px Inter,sans-serif;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:11px 12px;min-height:44px}
+input:focus{outline:2px solid var(--btn);outline-offset:-1px;border-color:var(--btn)}
+.ver{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--btn);font:600 13px Inter,sans-serif;padding:8px 10px;min-height:36px;cursor:pointer}
+.btn{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:12px;border:0;background:var(--btn);color:#fff;font:600 14px Inter,sans-serif;cursor:pointer;text-decoration:none;padding:0 16px}
+.btn:disabled{opacity:.6;cursor:default}
+.msg{font-size:13.5px;line-height:20px;color:var(--danger)}.msg:empty{display:none}.msg.ok{color:var(--muted)}
+.selo{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.selo.erro{background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger)}
+[hidden]{display:none!important}
+</style></head><body>
+<main class="card" id="card">
+  <img class="logo logo-pos" src="icons/shotgun-logo-horizontal.svg" alt="Shotgun" width="170" height="38">
+  <img class="logo logo-neg" src="icons/shotgun-logo-horizontal-negativo.svg" alt="Shotgun" width="170" height="38">
+
+  <section id="vCarregando" class="hint">Carregando…</section>
+
+  <form id="vSenha" hidden novalidate>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <h1>Crie uma nova senha</h1>
+      <p class="hint">Para a conta <b id="sEmail"></b></p>
+      <label>Nova senha<span class="campo"><input id="sNova" type="password" autocomplete="new-password" minlength="6" required><button type="button" class="ver" data-ver="sNova">Mostrar</button></span></label>
+      <label>Repita a nova senha<span class="campo"><input id="sConf" type="password" autocomplete="new-password" minlength="6" required><button type="button" class="ver" data-ver="sConf">Mostrar</button></span></label>
+      <p class="hint" style="font-size:13px">Use pelo menos 6 caracteres.</p>
+      <p class="msg" id="sMsg" role="status"></p>
+      <button type="submit" class="btn" id="sBtn">Salvar nova senha</button>
+    </div>
+  </form>
+
+  <section id="vFim" hidden>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="selo" id="fSelo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <h1 id="fTit"></h1>
+      <p class="hint" id="fTxt"></p>
+      <a class="btn" id="fBtn" href="./">Entrar no Shotgun</a>
+    </div>
+  </section>
+</main>
+<script src="firebase-config.js"></script>
+<script type="module">
+const $ = id => document.getElementById(id);
+const q = new URLSearchParams(location.search);
+const modo = q.get('mode'), codigo = q.get('oobCode') || '';
+const X = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+function ver(id) { ['vCarregando', 'vSenha', 'vFim'].forEach(v => $(v).hidden = v !== id); }
+function fim(tit, txt, erro) { $('fTit').textContent = tit; $('fTxt').textContent = txt; $('fSelo').classList.toggle('erro', !!erro); if (erro) $('fSelo').innerHTML = X; ver('vFim'); }
+const ERRO_LINK = ['Este link não vale mais', 'O link expirou ou já foi usado. Abra o Shotgun e toque em "Esqueci minha senha" para receber um novo e-mail.'];
+function erroGeral(e) {
+  const c = (e && e.code) || '';
+  if (/expired|invalid-action-code|invalid-oob/.test(c)) return fim(...ERRO_LINK, true);
+  if (/network/.test(c)) return fim('Sem internet', 'Conecte-se e abra o link do e-mail de novo.', true);
+  fim('Não foi possível concluir', 'Tente abrir o link do e-mail de novo (' + (c || 'erro') + ').', true);
+}
+document.querySelectorAll('[data-ver]').forEach(b => b.addEventListener('click', () => { const i = $(b.dataset.ver), mostra = i.type === 'password'; i.type = mostra ? 'text' : 'password'; b.textContent = mostra ? 'Ocultar' : 'Mostrar'; }));
+
+try {
+  const V = '10.12.2', base = `https://www.gstatic.com/firebasejs/${V}/`;
+  const [{ initializeApp }, A] = await Promise.all([import(base + 'firebase-app.js'), import(base + 'firebase-auth.js')]);
+  const C = { ...(window.FIREBASE_CONFIG || {}) }; if (!C.apiKey && q.get('apiKey')) C.apiKey = q.get('apiKey');
+  const auth = A.getAuth(initializeApp(C)); auth.languageCode = 'pt-BR';
+  if (!codigo) fim(...ERRO_LINK, true);
+  else if (modo === 'resetPassword') {
+    const email = await A.verifyPasswordResetCode(auth, codigo);
+    $('sEmail').textContent = email; ver('vSenha'); setTimeout(() => $('sNova').focus(), 50);
+    const msg = (t, ok) => { $('sMsg').textContent = t; $('sMsg').classList.toggle('ok', !!ok); };
+    $('vSenha').addEventListener('submit', async e => {
+      e.preventDefault();
+      const nova = $('sNova').value, conf = $('sConf').value;
+      if (nova.length < 6) { msg('A nova senha precisa ter pelo menos 6 caracteres.'); $('sNova').focus(); return; }
+      if (nova !== conf) { msg('As duas senhas não são iguais. Digite de novo.'); $('sConf').focus(); return; }
+      $('sBtn').disabled = true; msg('Salvando…', true);
+      try { await A.confirmPasswordReset(auth, codigo, nova); fim('Senha alterada', 'Pronto. Agora entre no Shotgun com o seu e-mail e a nova senha.'); }
+      catch (err) { const c = err.code || ''; if (/weak-password/.test(c)) msg('Senha fraca: use pelo menos 6 caracteres.'); else erroGeral(err); }
+      finally { $('sBtn').disabled = false; }
+    });
+  } else if (modo === 'verifyEmail') {
+    await A.applyActionCode(auth, codigo); fim('E-mail confirmado', 'Seu e-mail foi confirmado. Você já pode entrar no Shotgun.');
+  } else if (modo === 'recoverEmail') {
+    const info = await A.checkActionCode(auth, codigo); await A.applyActionCode(auth, codigo);
+    fim('E-mail restaurado', `O e-mail da sua conta voltou a ser ${info.data.email || 'o anterior'}. Se não foi você quem pediu a troca, crie uma nova senha pelo "Esqueci minha senha".`);
+  } else fim('Link não reconhecido', 'Abra o Shotgun e tente de novo.', true);
+} catch (e) { erroGeral(e); }
+</script>
+</body></html>

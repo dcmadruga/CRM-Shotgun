@@ -22,6 +22,7 @@ async function iniciar() {
     import(base + 'firebase-app.js'), import(base + 'firebase-auth.js'), import(base + 'firebase-firestore.js')]);
   const app = initializeApp(C);
   const auth = A.getAuth(app);
+  auth.languageCode = 'pt-BR'; // e-mails do Firebase (nova senha, verificação) em português do Brasil
   let db; try { db = F.initializeFirestore(app, { localCache: F.persistentLocalCache() }); } catch (e) { db = F.getFirestore(app); }
   const $ = id => document.getElementById(id);
   const body = document.body;
@@ -1423,7 +1424,7 @@ async function iniciar() {
     const btn = $('btnAddUser'); btn.disabled = true; uStatus('Cadastrando…');
     try {
       app2 = app2 || initializeApp(C, 'cadastro');
-      const auth2 = A.getAuth(app2);
+      const auth2 = A.getAuth(app2); auth2.languageCode = 'pt-BR';
       const cred = await A.createUserWithEmailAndPassword(auth2, email, senha);
       await F.setDoc(F.doc(db, 'usuarios', cred.user.uid), { nome, email, fone, papel, papeis: [papel], ativo: true, trocarSenha: true, criado: F.serverTimestamp() });
       await A.signOut(auth2);
