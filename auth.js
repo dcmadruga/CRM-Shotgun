@@ -211,7 +211,7 @@ async function iniciar() {
   }
 
   /* ---------- Abas ---------- */
-  const EXTRA = { tabHoje: 'viewHoje', tabTask: 'viewTask', tabUsers: 'viewUsers', tabList: 'viewList', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4' };
+  const EXTRA = { tabHoje: 'viewHoje', tabTask: 'viewTask', tabUsers: 'viewUsers', tabList: 'viewList', tabCrm: 'viewCrm', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4' };
   function abrirAba(tab) {
     Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
     document.body.classList.toggle('semBarra', !!EXTRA[tab]);

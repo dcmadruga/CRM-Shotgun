@@ -291,7 +291,7 @@ body:not(.is-admin):not(.is-task):not(.tem-task) .tasktab{display:none!important
 .tkimp li{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
 .tkimp small{display:block;color:var(--muted);font-size:12px}
 /* Perfil TASK: só o módulo TASK */
-body.is-task .tabs [role=tab]:not(#tabTask),body.is-task .subtabs,body.is-task #viewProp,body.is-task #viewCfg,body.is-task #viewList,body.is-task .bar{display:none!important}
+body.is-task .tabs [role=tab]:not(#tabTask),body.is-task .subtabs,body.is-task #viewProp,body.is-task #viewCfg,body.is-task #viewList,body.is-task #viewCrm,body.is-task .bar{display:none!important}
 header.top .wrap>div{flex:1;min-width:0}
 #btnInstall{background:var(--accent);color:var(--accent-fg);border:0;border-radius:4px;padding:8px 12px;font-weight:600;white-space:nowrap}
 .team{border-left:4px solid var(--purple)}
@@ -362,6 +362,12 @@ table.users{min-width:640px}
 .pmini[aria-pressed="true"]{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
 .pmini .pill{justify-self:start;font-size:10px}
 .pcol .vazio{font-size:12px;color:var(--muted);padding:4px}
+/* CRM */
+.crmgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.crmcard{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--field);display:grid;gap:6px;align-content:start}
+.crmcard b{font-family:var(--display);font-size:15px}
+.crmcard small{color:var(--muted);font-size:12.5px;line-height:1.45}
+.crmcard .pill{justify-self:start;font-size:10.5px;border-radius:999px;padding:2px 8px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-weight:600}
 /* Hoje */
 .hojetools{justify-content:space-between}
 .hlist{display:flex;flex-direction:column;gap:8px}
@@ -428,6 +434,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <button type="button" role="tab" id="tabProp" aria-selected="true">+ Nova proposta</button>
   <button type="button" role="tab" id="tabHoje" aria-selected="false" class="fbonly">Hoje</button>
   <button type="button" role="tab" id="tabList" aria-selected="false" class="fbonly">Propostas</button>
+  <button type="button" role="tab" id="tabCrm" aria-selected="false" class="fbonly">CRM</button>
   <button type="button" role="tab" id="tabTask" aria-selected="false" class="fbonly tasktab">TASK</button>
   <button type="button" role="tab" id="tabParam" aria-selected="false" aria-expanded="false" aria-controls="subParam" class="cfgtab">Administração ▾</button>
   <span class="tabuser fbonly" id="tabUser"></span><button type="button" class="linkbtn fbonly" id="btnSair">Sair</button>
@@ -587,6 +594,17 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <section class="sec"><h2>Hoje <span id="hCount"></span></h2><div class="body">
     <div class="tools hojetools"><p class="hint" style="margin:0">O próximo passo de cada proposta. Clique para abrir direto no passo.</p><label class="chk admin fbonly"><input type="checkbox" id="hMinhas"> Só as minhas</label></div>
     <div id="hList" class="hlist"></div>
+  </div></section>
+</main>
+
+<main id="viewCrm" hidden>
+  <section class="sec"><h2>CRM</h2><div class="body">
+    <p class="hint" style="margin-top:0">Cada cliente na mira, do primeiro contato ao pós-venda.</p>
+    <div class="crmgrid">
+      <div class="crmcard"><span class="pill">Em breve</span><b>Leads</b><small>Contatos que ainda não viraram proposta: origem, responsável e próximo contato.</small></div>
+      <div class="crmcard"><span class="pill">Em breve</span><b>Funil de vendas</b><small>Quadro com as etapas da venda, do primeiro contato ao contrato aceito.</small></div>
+      <div class="crmcard"><span class="pill">Em breve</span><b>Clientes</b><small>Empresas com contrato, com propostas, contatos e histórico num só lugar.</small></div>
+    </div>
   </div></section>
 </main>
 
