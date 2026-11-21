@@ -123,7 +123,6 @@
         ${item('CNPJ', fmtCnpj(p.cnpj))}
         ${item('Tancagem total', tanc)}
         ${item('Bicos', `<span title="${bicosPorProd}">${p.bicos}</span>`)}
-        ${item('CEP', esc(p.cep || '-'))}
         ${item('Autorização ANP', esc(p.autorizacao || '-'))}
         ${item('Coordenadas', geo)}
         <div class="anpprod"><details><summary><small>Produtos <b>${p.produtos.length}</b></small></summary><ul>${p.produtos.map(x => `<li>${esc(x.nome)}: ${fmtM3(x.tanc)}${x.bicos ? ` <em>· ${x.bicos} ${x.bicos === 1 ? 'bico' : 'bicos'}</em>` : ''}</li>`).join('') || '<li>-</li>'}</ul></details></div>
