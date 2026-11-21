@@ -10,6 +10,18 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 181, data: '2026-11-21', titulo: 'Central de notificações e outras novidades', itens: [
+    'Sino de notificações no topo da tela, ao lado da versão: o número mostra quantos avisos você ainda não leu. Cada pessoa vê os avisos do seu setor; o administrador vê os de todos.',
+    'Login: "Me cadastrar" cria a sua conta. No primeiro acesso, o app pede nome completo, estado de atuação e uma selfie, e o cadastro fica aguardando liberação do administrador.',
+    'Seus dados: você pode colocar a logo da sua revenda no cabeçalho do PDF da proposta (opcional).',
+    'Implantação: nova modalidade "Só combustível". A proposta mostra a quilometragem de ida e volta e informa que é cobrado apenas o combustível.',
+    'Módulos: botão "Finalizar todos" no cabeçalho de Processos marca de uma vez os processos que faltam.',
+    'TASK: quando o Pré TASK está completo, o botão do card passa a se chamar DADOS.',
+    'Telemetria: nova tela "Postos em construção" do Mato Grosso, com os avisos publicados no Diário Oficial (IOMAT).'
+  ] },
+  { v: 179, data: '2026-11-21', titulo: 'Ditado nas Observações do CRM', itens: [
+    'CRM: grave um áudio e o app transcreve o texto direto no campo Observações.'
+  ] },
   { v: 176, data: '2026-11-21', titulo: 'Novidades a cada atualização', itens: [
     'Sempre que o app atualizar, esta janela mostra o que mudou.',
     'Para rever depois, toque em "Versão" no topo da tela. Lá também fica o botão para forçar a atualização do app.'
