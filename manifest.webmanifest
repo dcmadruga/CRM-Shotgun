@@ -1,7 +1,7 @@
 {
   "name": "Shotgun",
   "short_name": "Shotgun",
-  "description": "Shotgun: gerador de propostas comerciais da Argo Sistemas.",
+  "description": "Shotgun: cada cliente na mira, do primeiro contato ao pós-venda.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",
