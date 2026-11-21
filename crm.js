@@ -187,22 +187,32 @@ function formLead(l) {
   const p = l.id ? propDoLead(l) : null;
   abrirDlg(l.id ? l.empresa || 'Lead' : 'Novo lead', `
     ${p ? `<p class="crmaviso">Este lead já virou a proposta nº ${esc(p.numero)} (${esc(ETAPAS.find(e => e.id === etapaProp(p)).nome)}). <button type="button" class="linkbtn" data-a="verprop" data-id="${esc(p.id)}">Ver proposta</button></p>` : ''}
-    <div id="crmAnpBusca" hidden></div>
-    <div class="tkform" id="crmForm" data-id="${esc(l.id || '')}">
-      <label>CNPJ<span class="tkrow"><input data-f="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" value="${esc(fmtCnpj(l.cnpj))}"><button type="button" data-a="cnpj">Buscar</button></span><span class="anpacao"><button type="button" data-a="anpbusca"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/></svg>Pesquisar na ANP</button><small>quando não souber o CNPJ</small></span></label>
-      <label>Empresa *<input data-f="empresa" value="${esc(l.empresa || '')}" required></label>
-      <div class="crmcts full" id="crmCts"><span class="crmctt">Contatos</span>
+    <div id="crmForm" class="crmleadf" data-id="${esc(l.id || '')}">
+      <section class="crmbloco"><h4>Empresa</h4>
+        <div class="tkform">
+          <label class="full">CNPJ<span class="tkrow"><input data-f="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" value="${esc(fmtCnpj(l.cnpj))}"><button type="button" data-a="cnpj">Buscar</button></span><span class="anpacao"><button type="button" data-a="anpbusca"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/></svg>Pesquisar na ANP</button><small>quando não souber o CNPJ</small></span></label>
+          <label>Empresa *<input data-f="empresa" value="${esc(l.empresa || '')}" required></label>
+          <label>Cidade<input data-f="cidade" placeholder="Ex.: Cuiabá - MT" value="${esc(l.cidade || '')}"></label>
+        </div>
+        <div id="crmAnpBusca" hidden></div>
+        <div id="crmAnp" hidden></div>
+      </section>
+      <section class="crmbloco"><h4>Contatos</h4>
+        <div class="crmsoc full" id="crmSoc" data-socios="${esc(JSON.stringify(l.socios || []))}">${sociosHtml(l.socios, contatosDe(l).map(c => c.nome))}</div>
+        <div class="crmcts full" id="crmCts">
         ${cargosList()}<div id="crmCtLista">${(contatosDe(l).length ? contatosDe(l) : [{}]).map(ctLinha).join('')}</div>
         <button type="button" class="crmctadd" data-a="ctadd">+ Contato</button></div>
-      <div class="crmsoc full" id="crmSoc" data-socios="${esc(JSON.stringify(l.socios || []))}">${sociosHtml(l.socios, contatosDe(l).map(c => c.nome))}</div>
-      <label>Cidade<input data-f="cidade" placeholder="Ex.: Cuiabá - MT" value="${esc(l.cidade || '')}"></label>
-      <label>Origem<select data-f="origem"><option value="">Escolha…</option>${ORIGENS.map(o => `<option${o === l.origem ? ' selected' : ''}>${o}</option>`).join('')}</select></label>
-      <label>Próximo contato<input data-f="prox" type="date" value="${esc(l.prox || '')}"></label>
-      <label>Etapa<select data-f="etapa">${ETAPAS.filter(e => ['lead', 'qualificado', 'perdido'].includes(e.id)).map(e => `<option value="${e.id}"${e.id === l.etapa ? ' selected' : ''}>${e.nome}</option>`).join('')}</select></label>
-      <label class="crmmot" ${l.etapa === 'perdido' ? '' : 'hidden'}>Motivo da perda<select data-f="motivo"><option value="">Escolha…</option>${MOTIVOS.map(m => `<option${m === l.motivo ? ' selected' : ''}>${m}</option>`).join('')}</select></label>
-      <label class="full">Observações<textarea data-f="obs" rows="2">${esc(l.obs || '')}</textarea></label>
+      </section>
+      <section class="crmbloco"><h4>Negociação</h4>
+        <div class="tkform">
+          <label>Etapa<select data-f="etapa">${ETAPAS.filter(e => ['lead', 'qualificado', 'perdido'].includes(e.id)).map(e => `<option value="${e.id}"${e.id === l.etapa ? ' selected' : ''}>${e.nome}</option>`).join('')}</select></label>
+          <label>Origem<select data-f="origem"><option value="">Escolha…</option>${ORIGENS.map(o => `<option${o === l.origem ? ' selected' : ''}>${o}</option>`).join('')}</select></label>
+          <label>Próximo contato<input data-f="prox" type="date" value="${esc(l.prox || '')}"></label>
+          <label class="crmmot" ${l.etapa === 'perdido' ? '' : 'hidden'}>Motivo da perda<select data-f="motivo"><option value="">Escolha…</option>${MOTIVOS.map(m => `<option${m === l.motivo ? ' selected' : ''}>${m}</option>`).join('')}</select></label>
+          <label class="full">Observações<textarea data-f="obs" rows="2">${esc(l.obs || '')}</textarea></label>
+        </div>
+      </section>
     </div>
-    <div id="crmAnp" hidden></div>
     <div class="tools crmacts">
       <button type="button" class="primary" data-a="salvar">Salvar</button>
       ${p ? '' : '<button type="button" data-a="gerar">Gerar proposta</button>'}
