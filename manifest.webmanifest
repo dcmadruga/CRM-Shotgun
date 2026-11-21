@@ -1,7 +1,7 @@
 {
-  "name": "Propostas Argo",
-  "short_name": "Propostas",
-  "description": "Gerador de propostas comerciais da Argo.",
+  "name": "Shotgun",
+  "short_name": "Shotgun",
+  "description": "Shotgun: gerador de propostas comerciais da Argo Sistemas.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",
