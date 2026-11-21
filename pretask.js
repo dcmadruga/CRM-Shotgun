@@ -380,6 +380,7 @@
     const v2 = (e2 && e2.valores) || {};
     const pre = e4 && e4.pre ? copia(e4.pre) : migrar(e4, task, p, v2);
     if (task && task.status) pre.status = task.status; // o status do card é o que vale
+    if (!pre.modalidade) { const im = p.implantacao || (p.dados && p.dados.implantacao); if (im) pre.modalidade = im === 'Remota' ? 'Remoto' : 'Presencial'; } // vem da proposta
     if (pre.tipoBase === 'Central' && !pre.nome) { const f = (v2.fantasia || p.cliente || '').trim(); if (f) pre.nome = /^central\b/i.test(f) ? f : 'Central ' + f; }
     Object.assign(C, { p, e4: e4 || {}, e2, cfg4: cfg4 && cfg4.json ? json(cfg4) : copia(window.ETAPA4_PADRAO || { secoes: [] }), cfg2: json(pub2) || window.ETAPA2_PADRAO || { secoes: [] }, an, dono, centrais, pre, v: copia((e4 && e4.valores) || {}), v2: copia(v2) });
     d.querySelector('#ptTit').textContent = 'Pré TASK · ' + (p.cliente || '');
@@ -506,7 +507,7 @@
     const p = C.p, l = (t, v) => v ? `<div class="ptf"><span>${t}</span><div class="ptro">${v}</div></div>` : '';
     return painel('proposta', 'Proposta', 'valores da proposta só para leitura', `<div class="ptsec"><h5>Proposta nº ${esc(p.numero || '')}</h5><div class="ptgrid">
       ${l('Cliente', esc(p.cliente))}${l('CNPJ', esc(fmtCnpj(p.cnpj)))}${l('Cidade', esc(p.cidade))}${l('Contato', esc(p.contato))}${l('Telefone', esc(p.fone))}${l('Vendedor', esc(p.vendedor))}
-      ${l('Licenças', brl(p.totLic))}${l('Mensalidade', brl(p.totMen))}${l('Deslocamento', brl(p.totDes))}
+      ${l('Licenças', brl(p.totLic))}${l('Mensalidade', brl(p.totMen))}${p.implantacao === 'Remota' ? l('Implantação', 'Remota (sem custo)') : l('Deslocamento', brl(p.totDes))}
       ${l('Aprovada por', p.aprovadoNome ? esc(p.aprovadoNome) + (p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : '') + `<small>${esc(fmtTs(p.aprovadoEm))}</small>` : '')}
       <div class="ptbtns full"><button type="button" data-pta="pdf">Ver proposta (PDF)</button></div></div></div>`);
   }

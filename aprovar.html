@@ -146,7 +146,7 @@ const vendNum=()=>{ const d=String(P.vendedorFone||'').replace(/\D/g,''); return
     P=snap.data();
     $('sub').textContent=`Nº ${P.numero} · consultor: ${P.vendedor}`;
     $('tit').textContent=P.cliente;
-    $('vLic').textContent=brl(P.totLic); $('vMen').textContent=brl(P.totMen); $('vDes').textContent=brl(P.totDes);
+    $('vLic').textContent=brl(P.totLic); $('vMen').textContent=brl(P.totMen); $('vDes').textContent=P.implantacao==='Remota'?'Implantação remota · sem custo':brl(P.totDes);
     $('validade').textContent=`Proposta emitida em ${fmtD(P.data)}`+(P.validade?`, condição válida até ${fmtD(P.validade)}.`:'.');
     $('carregando').hidden=true; $('conteudo').hidden=false;
     // Sugestão: o contato informado na proposta (o cliente pode trocar)
