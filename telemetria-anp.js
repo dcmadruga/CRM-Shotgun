@@ -5,7 +5,7 @@
   const DIAS = 15;
   const UFS = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'];
   const $ = id => document.getElementById(id);
-  const box = $('teleAnp'), selUf = $('tanpUf'), busca = $('tanpBusca'), area = $('tanpArea');
+  const box = $('teleAnp'), selUf = $('tanpUf'), selCid = $('tanpCid'), selBand = $('tanpBand'), limpar = $('tanpLimpar'), busca = $('tanpBusca'), area = $('tanpArea');
   if (!box || !selUf || !area) return;
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const tit = s => window.anpTitulo ? window.anpTitulo(s) : String(s || '');
@@ -15,6 +15,8 @@
   const menos = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() - n); return local(d); };
   const br = iso => iso ? iso.split('-').reverse().join('/') : '';
   const entrada = x => [x.v || '', x.at || ''].sort().pop();
+  const bandKey = x => /branca/i.test(x.b || '') || !x.b ? 'BANDEIRA BRANCA' : x.b;
+  const bandRot = k => k === 'BANDEIRA BRANCA' ? 'Bandeira branca' : k;
   const SEM = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
   const rotDia = (iso, hoje) => iso === hoje ? 'Hoje' : iso === menos(hoje, 1) ? 'Ontem' : SEM[new Date(iso + 'T12:00:00').getDay()].replace(/^./, c => c.toUpperCase());
 
@@ -57,13 +59,30 @@
     try { const [j, m] = await carregar(); novos = j.postos || []; meta = m; }
     catch (e) { area.innerHTML = '<p class="hint">Não consegui carregar a base da ANP agora. Confira a internet e tente de novo.</p>'; return; }
     const hoje = local(), corte = menos(hoje, DIAS - 1), uf = selUf.value, q = norm(busca.value).split(' ').filter(Boolean);
-    const lista = novos.filter(x => { const d = entrada(x); return d >= corte && d <= hoje; })
-      .filter(x => !uf || x.uf === uf)
+    const janela = novos.filter(x => { const d = entrada(x); return d >= corte && d <= hoje; }).filter(x => !uf || x.uf === uf);
+    // Cidade e Bandeira: só as opções que têm posto novo no Estado escolhido (com a quantidade)
+    const opcoes = (sel, lista, chave, rot, todos) => {
+      const m = new Map(); lista.forEach(x => { const k = chave(x); if (k) m.set(k, (m.get(k) || 0) + 1); });
+      const atual = sel.value;
+      sel.innerHTML = `<option value="">${todos}</option>` + [...m].sort((a, b) => rot(a[0]).localeCompare(rot(b[0]), 'pt-BR'))
+        .map(([k, n]) => `<option value="${esc(k)}">${esc(rot(k))} (${n})</option>`).join('');
+      sel.value = m.has(atual) ? atual : '';
+    };
+    const cidKey = x => x.m ? x.m + '|' + (x.uf || '') : '';
+    const cidRot = k => { const [m, u] = k.split('|'); return tit(m) + (uf ? '' : ' - ' + u); };
+    opcoes(selCid, janela, cidKey, cidRot, 'Todas as cidades');
+    const cid = selCid.value;
+    opcoes(selBand, janela.filter(x => !cid || cidKey(x) === cid), bandKey, bandRot, 'Todas as bandeiras');
+    const band = selBand.value;
+    limpar.hidden = !(cid || band || q.length);
+    const lista = janela
+      .filter(x => !cid || cidKey(x) === cid)
+      .filter(x => !band || bandKey(x) === band)
       .filter(x => { if (!q.length) return true; const t = norm([x.r, x.m, x.b, x.c].join(' ')); return q.every(p => t.includes(p)); })
       .sort((a, b) => entrada(b).localeCompare(entrada(a)) || (a.m || '').localeCompare(b.m || '') || (a.r || '').localeCompare(b.r || ''));
     const deHoje = lista.filter(x => entrada(x) === hoje);
     const resto = lista.filter(x => entrada(x) !== hoje);
-    const onde = uf ? ` em ${uf}` : ' no Brasil';
+    const onde = cid ? ` em ${esc(cidRot(cid))}${uf ? ' - ' + uf : ''}` : uf ? ` em ${uf}` : ' no Brasil';
     const dias = new Map();
     resto.forEach(x => { const d = entrada(x); if (!dias.has(d)) dias.set(d, []); dias.get(d).push(x); });
     area.innerHTML = `
@@ -78,7 +97,7 @@
       </section>
       ${[...dias].map(([d, l]) => `<section class="tanpbloco"><h3>${rotDia(d, hoje)} <small>${br(d)} · ${l.length} ${l.length === 1 ? 'posto' : 'postos'}</small></h3>
         <ul class="tanplista">${l.map(x => cartao(x, hoje)).join('')}</ul></section>`).join('')}
-      ${!lista.length && q.length ? '<p class="tanpvazio">Nenhum posto novo com esse nome, cidade ou bandeira.</p>' : ''}
+      ${!lista.length && (q.length || cid || band) ? '<p class="tanpvazio">Nenhum posto novo com esses filtros.</p>' : ''}
       <p class="hint">Postos que entraram na base da ANP ou receberam autorização da ANP nos últimos ${DIAS} dias.${meta && meta.atualizado ? ` Base da ANP atualizada em ${new Date(meta.atualizado).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}.` : ''}</p>`;
     if (aberto) { const li = area.querySelector(`.tanpitem[data-c="${aberto}"]`); if (li) detalhar(li); else aberto = ''; }
   }
@@ -128,7 +147,10 @@
     if (aberto === c) { aberto = ''; li.querySelector('.tanpdet').hidden = true; cab.setAttribute('aria-expanded', 'false'); return; }
     aberto = c; cab.setAttribute('aria-expanded', 'true'); detalhar(li);
   });
-  selUf.addEventListener('change', () => { try { localStorage.setItem('tanpUf', selUf.value); } catch { } aberto = ''; desenhar(); });
+  selUf.addEventListener('change', () => { try { localStorage.setItem('tanpUf', selUf.value); } catch { } selCid.value = ''; aberto = ''; desenhar(); });
+  selCid.addEventListener('change', () => { aberto = ''; desenhar(); });
+  selBand.addEventListener('change', () => { aberto = ''; desenhar(); });
+  limpar.addEventListener('click', () => { selCid.value = ''; selBand.value = ''; busca.value = ''; aberto = ''; desenhar(); });
   let t; busca.addEventListener('input', () => { clearTimeout(t); t = setTimeout(desenhar, 200); });
 
   // Abas da Telemetria: Postos em construção | Telemetria ANP
