@@ -241,25 +241,38 @@ async function iniciar() {
 
   // Salva a proposta uma vez; se nada mudou desde o último envio, reaproveita o mesmo link.
   let ultimo = null;
+  // Atualizar / Refazer: a nova versão substitui a proposta anterior (que fica guardada como "substituida")
+  let refazer = null;
+  function mostrarRefazer() { const el = $('refazInfo'); if (!el) return; el.hidden = !refazer; if (refazer) el.innerHTML = `<b>Atualizando a proposta nº ${esc(refazer.numero)}.</b> Ao enviar, a nova versão entra no lugar dela e o link antigo leva o cliente para a nova. <button type="button" class="lnk" id="refazCancel">Cancelar</button>`; }
+  function limparRefazer() { refazer = null; mostrarRefazer(); }
+  $('btnNova').addEventListener('click', limparRefazer);
+  document.addEventListener('click', e => { if (e.target.id === 'refazCancel') { limparRefazer(); msg('Atualização cancelada. Se enviar agora, sai como uma proposta nova.'); } });
   async function salvarProposta(n) {
     const assin = JSON.stringify(S);
     if (ultimo && ultimo.assin === assin) { if (n && n !== ultimo.meta.waCli) { ultimo.meta.waCli = n; F.updateDoc(F.doc(db, 'propostas', ultimo.id), { waCli: n }).catch(() => {}); } return ultimo; }
     const b64 = buildPdf().output('datauristring').split(',')[1];
     if (b64.length > 950000) throw new Error('o PDF ficou grande demais (troque o logo por uma imagem menor)');
     const ref = F.doc(F.collection(db, 'propostas'));
-    const numero = hojeIso().replace(/-/g, '').slice(2) + '-' + ref.id.slice(0, 4).toUpperCase();
+    const rf = refazer, versao = rf ? rf.versao + 1 : 1;
+    const numero = rf ? String(rf.numero || '').replace(/-R\d+$/, '') + '-R' + versao : hojeIso().replace(/-/g, '').slice(2) + '-' + ref.id.slice(0, 4).toUpperCase();
     const meta = {
       numero, status: 'enviada', owner: perfil.uid, vendedor: perfil.nome || '', vendedorFone: dig(perfil.fone),
       cliente: String(S.cliente || '').trim(), cnpj: S.cnpj || '', contato: String(S.contato || '').trim(), cidade: S.cidade || '',
       waCli: n, data: S.data || hojeIso(), validade: S.validade || '',
       totLic: sumRows(S.lic), totMen: sumRows(S.men), totDes: deslocamento(), implantacao: S.implantacao === 'Remota' ? 'Remota' : 'Presencial', arquivo: fileName(),
       dados: JSON.parse(assin), criado: F.serverTimestamp(),
-      ...(window.crmLeadId ? { leadId: window.crmLeadId } : {})
+      ...(window.crmLeadId ? { leadId: window.crmLeadId } : {}),
+      ...(rf ? { owner: rf.owner || perfil.uid, vendedor: rf.vendedor || perfil.nome || '', vendedorFone: rf.vendedorFone || dig(perfil.fone), substitui: rf.id, substituiNumero: rf.numero || '', versao, ...(rf.leadId ? { leadId: rf.leadId } : {}) } : {})
     };
     const lote = F.writeBatch(db);
     lote.set(ref, meta);
     lote.set(F.doc(db, 'propostas', ref.id, 'arquivo', 'pdf'), { b64, nome: fileName() });
     await lote.commit();
+    if (rf) {
+      try { await F.updateDoc(F.doc(db, 'propostas', rf.id), { status: 'substituida', substituidaPor: ref.id, substituidaEm: F.serverTimestamp() }); }
+      catch (e) { pMsg('A nova versão foi salva, mas não consegui marcar a nº ' + rf.numero + ' como substituída (' + (e.code || 'erro') + ').'); }
+      limparRefazer();
+    }
     ultimo = { id: ref.id, meta, assin };
     return ultimo;
   }
@@ -309,7 +322,7 @@ async function iniciar() {
     const col = F.collection(db, 'propostas');
     const q = fb.admin ? F.query(col, F.orderBy('criado', 'desc'), F.limit(300)) : F.query(col, F.where('owner', '==', perfil.uid));
     unsubP = F.onSnapshot(q, qs => {
-      props = qs.docs.map(d => ({ id: d.id, ...d.data() }))
+      props = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.status !== 'substituida') // versões antigas ficam guardadas, mas saem do quadro
         .sort((a, b) => (b.criado?.seconds || 9e9) - (a.criado?.seconds || 9e9));
       desenharPropostas();
     }, e => pMsg('Não foi possível carregar as propostas (' + (e.code || 'erro') + ').'));
@@ -414,12 +427,13 @@ async function iniciar() {
         <div class="top"><div><b>${esc(p.cliente)}</b><div class="meta">Nº ${esc(p.numero)} · ${esc(p.cidade || '')}${fb.admin ? ' · ' + esc(p.vendedor) : ''}</div></div>
           ${fb.admin ? '<button type="button" class="danger" data-a="excluirp">Excluir proposta</button>' : ''}</div>
         <div class="vals">Licenças ${brl(p.totLic)} · Mensalidade ${brl(p.totMen)} · ${p.implantacao === 'Remota' ? 'Implantação remota (sem custo)' : 'Deslocamento ' + brl(p.totDes)}</div>
-        <div class="meta">Enviada em ${esc(fmtTs(p.criado) || fmtD(p.data))}${p.validade ? ' · válida até ' + esc(fmtD(p.validade)) : ''}${ok ? `<br><b style="color:#1f7a46">Aprovada por ${esc(p.aprovadoNome)}${p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : ''} em ${esc(fmtTs(p.aprovadoEm))}</b>` : ''}</div>
+        <div class="meta">Enviada em ${esc(fmtTs(p.criado) || fmtD(p.data))}${p.validade ? ' · válida até ' + esc(fmtD(p.validade)) : ''}${p.substitui ? `<br>Versão ${p.versao || 2} · atualiza a nº ${esc(p.substituiNumero || '')} <button type="button" class="lnk" data-a="pdfant">ver PDF anterior</button>` : ''}${ok ? `<br><b style="color:#1f7a46">Aprovada por ${esc(p.aprovadoNome)}${p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : ''} em ${esc(fmtTs(p.aprovadoEm))}</b>` : ''}</div>
         ${passosHtml(p, sel)}
         <div class="etapa" data-passo="0"${oc(0)}><div class="etit">Passo 1 · Proposta</div>
           <div class="acts">
             <button type="button" data-a="pdf">Ver PDF</button>
             <button type="button" data-a="abrir">Abrir no formulário</button>
+            ${ok ? '' : '<button type="button" class="primary" data-a="refazer" title="Edita esta proposta e envia uma nova versão no lugar dela">Atualizar / Refazer proposta</button>'}
             ${ok ? '' : '<button type="button" data-a="reenviar">Reenviar pelo WhatsApp</button>'}
             <button type="button" data-a="copiar">Copiar link da proposta</button>
             ${p.duvidaEm ? `<button type="button" data-a="duvidas"${duvNova(p) ? ' class="primary"' : ''}>Dúvidas do cliente${p.duvidaN ? ' (' + p.duvidaN + ')' : ''}${duvNova(p) ? ' · nova' : ''}</button>` : ''}
@@ -737,15 +751,19 @@ async function iniciar() {
     if (a === 'e4cancelar') { card.querySelector('.e4box').hidden = true; return; }
     if (a === 'reenviar') { abrirWa(p.waCli, textoAprov(p)); pMsg('WhatsApp aberto com o link da proposta.'); }
     if (a === 'copiar') { try { await navigator.clipboard.writeText(linkAprov(p.id)); pMsg('Link da proposta nº ' + p.numero + ' copiado.'); } catch (_) { pMsg('Link: ' + linkAprov(p.id)); } }
-    if (a === 'abrir') {
+    if (a === 'abrir' || a === 'refazer') {
       S = { ...JSON.parse(JSON.stringify(p.dados || {})) }; save(); renderProp(); aplicarValidade(); totals();
       $('waAprov').value = p.waCli ? String(p.waCli).replace(/^55/, '') : '';
-      showTab(false); abrirAba('tabProp'); msg(`Proposta nº ${p.numero} carregada. Se mudar algo, envie de novo para aprovação.`);
+      ultimo = null;
+      if (a === 'refazer') { refazer = { id: p.id, numero: p.numero, owner: p.owner, vendedor: p.vendedor, vendedorFone: p.vendedorFone, leadId: p.leadId || '', versao: p.versao || 1 }; mostrarRefazer(); }
+      else limparRefazer();
+      showTab(false); abrirAba('tabProp');
+      msg(a === 'refazer' ? `Proposta nº ${p.numero} aberta para atualizar. Ajuste o que precisar e envie: a nova versão substitui esta.` : `Proposta nº ${p.numero} carregada. Se mudar algo, envie de novo para aprovação.`);
     }
-    if (a === 'pdf') {
+    if (a === 'pdf' || a === 'pdfant') {
       pMsg('Abrindo o PDF…');
       try {
-        const snap = await F.getDoc(F.doc(db, 'propostas', p.id, 'arquivo', 'pdf'));
+        const snap = await F.getDoc(F.doc(db, 'propostas', a === 'pdfant' ? p.substitui : p.id, 'arquivo', 'pdf'));
         const bin = atob(snap.data().b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
         const url = URL.createObjectURL(new Blob([u8], { type: 'application/pdf' }));
         const l = document.createElement('a'); l.href = url; l.download = p.arquivo || 'Proposta Argo.pdf'; l.target = '_blank'; l.click();
