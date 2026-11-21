@@ -365,6 +365,8 @@ table.users{min-width:640px}
 /* CRM */
 .crmtools #crmBusca{flex:1;min-width:200px}
 .crmtools #crmNovo{margin-left:auto}
+/* Com login, a Nova proposta sai do menu principal e abre pelo CRM */
+body.fb #tabProp{display:none!important}
 .crmmsg{margin:0;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--accent) 12%,transparent);font-size:13px}
 .crmboard{display:grid;grid-template-columns:repeat(6,minmax(132px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
 .crmboard[hidden]{display:none}
@@ -639,7 +641,8 @@ button.danger{color:var(--danger);border-color:var(--danger)}
       <span class="pmodo" role="group" aria-label="Parte do CRM" id="crmNav"><button type="button" data-aba="funil" aria-pressed="true">Funil de vendas</button><button type="button" data-aba="leads" aria-pressed="false">Leads</button><button type="button" data-aba="clientes" aria-pressed="false">Clientes</button></span>
       <input id="crmBusca" hidden autocomplete="off">
       <label class="chk" hidden><input type="checkbox" id="crmMinhas"> Só os meus</label>
-      <button type="button" class="primary" id="crmNovo">+ Novo lead</button>
+      <button type="button" id="crmNovo">+ Novo lead</button>
+      <button type="button" class="primary" id="crmProp">+ Nova proposta</button>
     </div>
     <p id="crmMsg" class="crmmsg" role="status" hidden></p>
     <div id="crm-funil" class="crmboard"></div>
