@@ -363,11 +363,47 @@ table.users{min-width:640px}
 .pmini .pill{justify-self:start;font-size:10px}
 .pcol .vazio{font-size:12px;color:var(--muted);padding:4px}
 /* CRM */
-.crmgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-.crmcard{border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--field);display:grid;gap:6px;align-content:start}
-.crmcard b{font-family:var(--display);font-size:15px}
-.crmcard small{color:var(--muted);font-size:12.5px;line-height:1.45}
-.crmcard .pill{justify-self:start;font-size:10.5px;border-radius:999px;padding:2px 8px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-weight:600}
+.crmtools #crmBusca{flex:1;min-width:200px}
+.crmtools #crmNovo{margin-left:auto}
+.crmmsg{margin:0;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--accent) 12%,transparent);font-size:13px}
+.crmboard{display:grid;grid-template-columns:repeat(6,minmax(132px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+.crmboard[hidden]{display:none}
+.crmcol{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:132px;transition:border-color .15s,background .15s}
+.crmcol.alvo{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--bg))}
+.crmcol h4{margin:0;font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:6px}
+.crmcol h4 b{color:var(--fg)}
+.crmcol[data-etapa=contrato] h4 span{color:var(--sg-posvenda-escuro,#0B7A59)}
+.crmcol[data-etapa=perdido] h4 span{color:var(--danger)}
+.crmtot{font-size:12px;color:var(--fg);font-weight:600;font-variant-numeric:tabular-nums;margin-top:-4px}
+.crmcol .vazio{font-size:12px;color:var(--muted);padding:4px;margin:0}
+.crmc{font:inherit;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px;display:grid;gap:2px;cursor:grab;color:var(--fg);border-left:3px solid var(--sg-comercial,#2E6BFF)}
+.crmc.lead{border-left-color:var(--accent)}
+.crmc.arrastando{opacity:.5}
+.crmc b{font-size:13px;overflow-wrap:anywhere}.crmc small{font-size:11.5px;color:var(--muted)}
+.crmc .crmprox{color:var(--fg)}.crmc.atras .crmprox{color:var(--danger);font-weight:600}
+.crmc .crmdono{font-style:italic}
+.crmlist{display:flex;flex-direction:column;gap:8px}
+.crmrow{font:inherit;text-align:left;display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--field);color:var(--fg);font-weight:400}
+.crmrow>span{display:flex;flex-direction:column;gap:2px;min-width:0}
+.crmrow>span:last-child{align-items:flex-end}
+.crmrow b{font-size:14px;overflow-wrap:anywhere}.crmrow small{color:var(--muted);font-size:12.5px}
+.crmrow.atras>span:last-child small{color:var(--danger);font-weight:600}
+@media (max-width:560px){.crmrow{grid-template-columns:minmax(0,1fr)}.crmrow>span:last-child{align-items:flex-start;flex-direction:row;gap:8px;flex-wrap:wrap}}
+#crmDlgBody{padding:16px}
+#crmDlgMsg{padding:0 16px 14px;margin:0}
+.crmacts{margin-top:14px}
+.crmacts .danger{color:var(--danger);margin-left:auto}
+.crmaviso{margin:0 0 12px;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--sg-comercial,#2E6BFF) 10%,transparent);font-size:13px}
+.crmresumo p{margin:0 0 4px}.crmresumo small{color:var(--muted)}
+.crmsec,.crmhist{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.crmsec h4,.crmhist h4{margin:0 0 8px;font-family:var(--display);font-size:14px}
+.crmul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px}
+.crmnova{display:flex;gap:8px;margin-bottom:10px}
+.crmnova select{width:auto}.crmnova input{flex:1}
+@media (max-width:560px){.crmnova{flex-wrap:wrap}.crmnova input{flex-basis:100%}}
+.crmhist ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.crmhist li{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.crmhist li small{color:var(--muted)}.crmhist li p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
 /* Hoje */
 .hojetools{justify-content:space-between}
 .hlist{display:flex;flex-direction:column;gap:8px}
@@ -598,14 +634,23 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 </main>
 
 <main id="viewCrm" hidden>
-  <section class="sec"><h2>CRM</h2><div class="body">
-    <p class="hint" style="margin-top:0">Cada cliente na mira, do primeiro contato ao pós-venda.</p>
-    <div class="crmgrid">
-      <div class="crmcard"><span class="pill">Em breve</span><b>Leads</b><small>Contatos que ainda não viraram proposta: origem, responsável e próximo contato.</small></div>
-      <div class="crmcard"><span class="pill">Em breve</span><b>Funil de vendas</b><small>Quadro com as etapas da venda, do primeiro contato ao contrato aceito.</small></div>
-      <div class="crmcard"><span class="pill">Em breve</span><b>Clientes</b><small>Empresas com contrato, com propostas, contatos e histórico num só lugar.</small></div>
+  <section class="sec"><h2>CRM <span id="crmCount"></span></h2><div class="body">
+    <div class="tools crmtools">
+      <span class="pmodo" role="group" aria-label="Parte do CRM" id="crmNav"><button type="button" data-aba="funil" aria-pressed="true">Funil de vendas</button><button type="button" data-aba="leads" aria-pressed="false">Leads</button><button type="button" data-aba="clientes" aria-pressed="false">Clientes</button></span>
+      <input id="crmBusca" hidden autocomplete="off">
+      <label class="chk" hidden><input type="checkbox" id="crmMinhas"> Só os meus</label>
+      <button type="button" class="primary" id="crmNovo">+ Novo lead</button>
     </div>
+    <p id="crmMsg" class="crmmsg" role="status" hidden></p>
+    <div id="crm-funil" class="crmboard"></div>
+    <div id="crm-leads" hidden></div>
+    <div id="crm-clientes" hidden></div>
   </div></section>
+  <dialog id="crmDlg" class="tkdlg" aria-labelledby="crmDlgTit">
+    <div class="tkdlghead"><h3 id="crmDlgTit"></h3><button type="button" id="crmDlgFechar" aria-label="Fechar">✕</button></div>
+    <div id="crmDlgBody"></div>
+    <p id="crmDlgMsg" class="hint" role="status"></p>
+  </dialog>
 </main>
 
 <main id="viewList" hidden>
@@ -817,6 +862,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <script src="pretask.js"></script>
 <script type="module" src="auth.js"></script>
 <script type="module" src="task.js"></script>
+<script type="module" src="crm.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const LOGO_PADRAO = $('logo').src;
