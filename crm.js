@@ -32,6 +32,11 @@ window.addEventListener('shotgun-crm', e => { ({ F, db, perfil, admin, temTask }
 window.addEventListener('argo-sair', () => { if (unsubC) unsubC(); if (unsubP) unsubP(); unsubC = unsubP = null; docs = []; props = []; tasksCache = null; });
 
 function iniciar() {
+  // Logos das Bandeiras publicados pelo ADM: usados no cartão da ANP e na lista de leads
+  F.getDoc(F.doc(db, 'publico', 'bandeiras')).then(snap => {
+    const d = snap.exists() ? snap.data() : null;
+    if (d && d.json) { try { window.anpLogos = JSON.parse(d.json); desenhar(); window.dispatchEvent(new Event('anp-logos')); } catch (e) {} }
+  }).catch(() => {});
   if (unsubC) unsubC();
   if (unsubP) unsubP();
   const col = F.collection(db, 'crm');
@@ -114,7 +119,7 @@ function desenharLeads() {
   $('crm-leads').innerHTML = ls.length ? `<div class="crmlist">${ls.map(l => {
     const p = propDoLead(l), et = p ? ETAPAS.find(e => e.id === etapaProp(p)).nome : (ETAPAS.find(e => e.id === l.etapa) || ETAPAS[0]).nome;
     return `<button type="button" class="crmrow${l.prox && l.prox < h && !p && l.etapa !== 'perdido' ? ' atras' : ''}" data-tipo="lead" data-id="${esc(l.id)}">
-      <span><b>${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.contato, l.fone, l.cidade, l.anp?.bandeira, l.anp?.porte && 'Porte ' + l.anp.porte].filter(Boolean).join(' · '))}</small></span>
+      <span><b>${l.anp?.bandeira && window.anpSeloBandeira ? window.anpSeloBandeira(l.anp.bandeira, false, true) : ''}${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.contato, l.fone, l.cidade, l.anp?.bandeira, l.anp?.porte && 'Porte ' + l.anp.porte].filter(Boolean).join(' · '))}</small></span>
       <span><small>${esc(l.origem || '')}</small>${admin && l.vendedor ? `<small>${esc(l.vendedor)}</small>` : ''}</span>
       <span><small>${l.prox ? 'Próx.: ' + fmtD(l.prox) : 'Sem próximo contato'}</small><span class="pill">${esc(et)}</span></span>
     </button>`; }).join('')}</div>` : `<p class="hint">${q ? 'Nenhum lead encontrado.' : 'Nenhum lead ainda. Clique em "+ Novo lead" para cadastrar o primeiro contato.'}</p>`;
