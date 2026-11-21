@@ -103,6 +103,9 @@ function etapas(t) {
   const d = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString('pt-BR') : '';
   return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${p.e2Em ? e(2, 'Dados Primários', true, d(p.e2Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e2" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(2, 'Dados Primários', false, '', 'aguardando')}${(() => { const h = e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : ''); return p.ctEm ? h.replace('</span>', `<button type="button" class="tkver" data-tk="ct" data-pid="${esc(p.id)}">Ver contrato</button></span>`) : h; })()}${p.e4Em ? e(4, 'Pré TASK', true, d(p.e4Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e4" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(4, 'Pré TASK', false, '', p.ctAceitoEm ? 'aguardando vendedor' : '')}</div>`;
 }
+// Pré TASK completo (salvar final com todos os obrigatórios): o botão do card passa de "Pré TASK" para "DADOS".
+// preOk é gravado pelo Pré TASK; cards antigos usam o passo 4 da proposta (e4Em só é marcado no salvar final).
+const preCompleto = t => t.preOk !== undefined ? !!t.preOk : !!(propostaDe(t) || {}).e4Em;
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
@@ -115,7 +118,7 @@ function cartao(t) {
     ${etapas(t)}
     ${modsCard(t)}
     ${pr.total ? `<div class="tkprogtxt">Checklists antigos: ${pr.feitos} de ${pr.total} itens (${pct}%)</div>` : ''}
-    <div class="tkacts"><button type="button" data-tk="dados">${t.propostaId ? 'Pré TASK' : 'Dados gerais'}</button><button type="button" class="primary" data-tk="mods">Módulos</button>${pr.total ? '<button type="button" data-tk="check">Checklists</button>' : ''}</div>
+    <div class="tkacts"><button type="button" data-tk="dados"${t.propostaId && preCompleto(t) ? ' title="Pré TASK completo: todos os obrigatórios lançados"' : ''}>${t.propostaId ? (preCompleto(t) ? 'DADOS' : 'Pré TASK') : 'Dados gerais'}</button><button type="button" class="primary" data-tk="mods">Módulos</button>${pr.total ? '<button type="button" data-tk="check">Checklists</button>' : ''}</div>
   </article>`;
 }
 

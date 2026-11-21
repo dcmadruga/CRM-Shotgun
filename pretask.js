@@ -726,11 +726,15 @@
       if (!parcial && (C.task || C.podeTask)) {
         try {
           const tid = (C.task && C.task.id) || pid, fin = pre.status === 'fin';
-          const up = { status: pre.status, finalizado: fin, dataBase: pre.dataBase, start: pre.start, modalidade: pre.modalidade, central: centralDoPre(pre), respCadastro: { uid: perfil.uid, nome: por, email: perfil.email || '' }, preSync: Date.now(), alteradoEm: F.serverTimestamp(), alteradoPor: por };
+          const up = { preOk: true, status: pre.status, finalizado: fin, dataBase: pre.dataBase, start: pre.start, modalidade: pre.modalidade, central: centralDoPre(pre), respCadastro: { uid: perfil.uid, nome: por, email: perfil.email || '' }, preSync: Date.now(), alteradoEm: F.serverTimestamp(), alteradoPor: por };
           if (C.task && fin !== !!C.task.finalizado) up.finalizadoEm = fin ? F.serverTimestamp() : null;
           const ref = F.doc(db, 'tasks', tid), ex = await F.getDoc(ref);
           if (ex.exists() && !ex.data().removido) { await F.updateDoc(ref, up); taskOk = true; }
         } catch (e) { console.warn('Pré TASK: card do TASK', e); }
+      }
+      // Salvar parcial depois de um salvar final: o card volta a mostrar "Pré TASK" (só esse campo muda)
+      if (parcial && (C.task || C.podeTask)) {
+        try { const ref = F.doc(db, 'tasks', (C.task && C.task.id) || pid), ex = await F.getDoc(ref); if (ex.exists() && !ex.data().removido && ex.data().preOk !== false) await F.updateDoc(ref, { preOk: false }); } catch (e) { console.warn('Pré TASK: card do TASK', e); }
       }
       C.e4 = { ...doc, em: { toDate: () => new Date() } };
       if (C.aoSalvar && !parcial) C.aoSalvar(pre);
