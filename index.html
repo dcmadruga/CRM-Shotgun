@@ -119,6 +119,9 @@ button.del{border:none;background:none;color:var(--danger);padding:6px;font-size
 .logoprev{width:72px;height:72px;border-radius:6px;background:var(--ink);display:grid;place-items:center;flex:none}
 .logoprev img{max-width:58px;max-height:58px}
 .logoacts{display:flex;flex-direction:column;gap:6px;min-width:0}
+.logorow+.logorow{margin-top:14px}
+.logovazio{font-size:11px;color:#9AA3AE;text-align:center}
+.logoacts .opc{font-weight:500;font-size:12px;color:var(--muted);margin-left:4px}
 label.btn.up{display:inline-flex;align-items:center;padding:8px 14px;border-radius:4px;background:var(--purple);color:#fff;font-weight:600;font-size:13.5px;cursor:pointer;letter-spacing:0}
 .diaswrap{gap:4px}
 .item.hid .desc,.item.hid label:not(.chk){opacity:.45}
@@ -848,6 +851,18 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
         <button type="button" id="btnLogoReset">Usar logo padrão</button>
       </div>
     </div>
+  </div>
+  <div class="logorow admin">
+    <div class="logoprev"><img id="logoRevPrev" alt="Logo da revenda" hidden><span id="logoRevVazio" class="logovazio">sem logo</span></div>
+    <div class="logoacts">
+      <b>Logo da revenda <span class="opc">opcional</span></b>
+      <span class="hint">Aparece no cabeçalho do PDF, ao lado do logo principal. PNG ou JPG, de preferência com fundo transparente.</span>
+      <div class="tools">
+        <label class="btn up" for="c-logoRevFile">Carregar logo da revenda</label>
+        <input type="file" id="c-logoRevFile" accept="image/png,image/jpeg,image/webp" hidden>
+        <button type="button" id="btnLogoRevDel" hidden>Remover</button>
+      </div>
+    </div>
   </div></div></section>
 
   <section class="sec admin"><h2>Valores de base <span>usados no cálculo e nas observações</span></h2><div class="body">
@@ -1351,7 +1366,8 @@ function parseRefs(v){
 function renderImp(){ const r=impRemota(); document.querySelectorAll('[data-imp]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.imp===(r?'Remota':'Presencial')))); $('impPres').hidden=r; $('impRemMsg').hidden=!r }
 document.querySelectorAll('[data-imp]').forEach(b=>b.addEventListener('click',()=>{ S.implantacao=b.dataset.imp; save(); renderImp(); totals() }));
 function renderProp(){ PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderImp(); renderBases(); renderItems('lic'); renderItems('men'); setTimeout(()=>anpProposta(),0) }
-function aplicarLogo(){ $('logo').src=logoAtual(); $('logoPrev').src=logoAtual() }
+function aplicarLogo(){ $('logo').src=logoAtual(); $('logoPrev').src=logoAtual();
+  const r=CFG.logoRev||''; $('logoRevPrev').hidden=!r; if(r) $('logoRevPrev').src=r; else $('logoRevPrev').removeAttribute('src'); $('logoRevVazio').hidden=!!r; $('btnLogoRevDel').hidden=!r }
 function renderCfg(){ aplicarLogo(); CFG.refs=parseRefs(CFG.refs); CFGF.forEach(id=>{ $('c-'+id).value=CFG[id]??'' }); renderRefs(); renderItems('catLic'); renderItems('catMen'); renderPickers(); renderBases(); totals() }
 
 /* ---------- Abas ---------- */
@@ -1592,7 +1608,8 @@ $('cidade').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefaul
 $('base').addEventListener('change',()=>{ if($('cidade').value.trim()) calcularKm($('base').value) });
 
 /* ---------- Logo ---------- */
-$('c-logoFile').addEventListener('change',e=>{
+function lerLogo(input, aplicar){
+  input.addEventListener('change',e=>{
   const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
   if(!/^image\/(png|jpeg|webp)$/.test(f.type)){ status('Use uma imagem PNG ou JPG.'); return }
   const rd=new FileReader();
@@ -1601,11 +1618,14 @@ $('c-logoFile').addEventListener('change',e=>{
       const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
       c.getContext('2d').drawImage(img,0,0,c.width,c.height);
       let url=c.toDataURL('image/png'); if(url.length>180000){ status('Essa imagem ficou grande demais. Use um logo mais simples ou menor.'); return }
-      CFG.logo=url; CFG.logoW=c.width; CFG.logoH=c.height;
-      markCfg(); aplicarLogo(); status('Logo carregado. Clique em Salvar parâmetros para guardar.');
+      aplicar(url,c.width,c.height); markCfg(); aplicarLogo();
     }; img.onerror=()=>status('Não consegui ler essa imagem. Tente outro arquivo PNG ou JPG.'); img.src=rd.result };
   rd.readAsDataURL(f);
-});
+  });
+}
+lerLogo($('c-logoFile'),(url,w,h)=>{ CFG.logo=url; CFG.logoW=w; CFG.logoH=h; status('Logo carregado. Clique em Salvar parâmetros para guardar.') });
+lerLogo($('c-logoRevFile'),(url,w,h)=>{ CFG.logoRev=url; CFG.logoRevW=w; CFG.logoRevH=h; status('Logo da revenda carregado. Clique em Salvar parâmetros para guardar.') });
+$('btnLogoRevDel').addEventListener('click',()=>{ CFG.logoRev=''; delete CFG.logoRevW; delete CFG.logoRevH; markCfg(); aplicarLogo(); status('Logo da revenda removido. Clique em Salvar parâmetros para guardar.') });
 $('btnLogoReset').addEventListener('click',()=>{ delete CFG.logo; delete CFG.logoW; delete CFG.logoH; CFG.logo=''; markCfg(); aplicarLogo(); status('Voltou ao logo padrão. Clique em Salvar parâmetros para guardar.') });
 
 /* ---------- PDF ---------- */
@@ -1624,8 +1644,14 @@ function buildPdf(){
   color(C.ink,'setFillColor'); doc.rect(0,0,W,27,'F');
   { const lw=num(CFG.logoW)||1, lh=num(CFG.logoH)||1, k=Math.min(18/lw,18/lh), w=CFG.logo?lw*k:18, h=CFG.logo?lh*k:18;
     doc.addImage(logoAtual(),'PNG',M-2+(18-w)/2,4.5+(18-h)/2,w,h); }
-  color([255,255,255]); font('bold',14); doc.text('Proposta Comercial',M+20,12.5);
-  font('normal',9); doc.text(fmtDate(S.data),M+20,18.5);
+  let tx=M+20;
+  if(CFG.logoRev){ // logo da revenda (opcional): depois do principal, separado por um fio
+    const lw=num(CFG.logoRevW)||1, lh=num(CFG.logoRevH)||1, k=Math.min(34/lw,16/lh), w=lw*k, h=lh*k, x=M+21;
+    doc.setDrawColor(90,96,104); doc.setLineWidth(0.3); doc.line(x,7,x,20);
+    try{ doc.addImage(CFG.logoRev,'PNG',x+3,4.5+(18-h)/2,w,h); tx=x+3+w+5 }catch(e){}
+  }
+  color([255,255,255]); font('bold',14); doc.text('Proposta Comercial',tx,12.5);
+  font('normal',9); doc.text(fmtDate(S.data),tx,18.5);
   font('bold',11.5); doc.text(pdfSafe(CFG.vNome),R,10,{align:'right'});
   font('normal',9); doc.text(pdfSafe(CFG.vFone),R,16,{align:'right'}); doc.text(pdfSafe(CFG.vEmail),R,21.5,{align:'right'});
 
