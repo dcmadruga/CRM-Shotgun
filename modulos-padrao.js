@@ -6,7 +6,7 @@
   const c = (k, label, tipo, extra) => ({ k, label, tipo: tipo || 'texto', req: false, show: true, custom: true, ...(extra || {}) });
   window.MODULOS_PADRAO = {
     secoes: [
-      { id: 'impl', titulo: 'Implantação', pai: '', campos: [c('baseLiberada', 'Base liberada', 'simnao', { abre: false }), c('linkBase', 'Link da base'), c('obsImpl', 'Observações', 'textolongo')],
+      { id: 'impl', titulo: 'Implantação', pai: '', campos: [c('baseLiberada', 'Base liberada', 'simnao', { abre: false }), c('linkBase', 'Link da base', 'link'), c('obsImpl', 'Observações', 'textolongo')],
         processos: [p('p1', 'Conferir dados do Pré TASK', 'Cadastro', 0), p('p2', 'Criar a base', 'Implantação', 1), p('p3', 'Converter dados do sistema legado', 'Implantação', 3), p('p4', 'Liberar a base', 'Implantação', 4), p('p5', 'Enviar link da base ao cliente', 'Implantação', 4)] },
       { id: 'boletos', titulo: 'Homologação de Boletos', pai: 'impl', campos: [c('banco', 'Banco'), c('agencia', 'Agência'), c('conta', 'Conta'), c('carteira', 'Carteira / convênio')],
         processos: [p('p1', 'Solicitar dados bancários ao cliente'), p('p2', 'Gerar boleto de teste'), p('p3', 'Validar retorno com o banco'), p('p4', 'Homologação concluída')] },
