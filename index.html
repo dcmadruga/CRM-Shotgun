@@ -400,6 +400,18 @@ body.fb #tabProp{display:none!important}
 .crmsec,.crmhist{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
 .crmsec h4,.crmhist h4{margin:0 0 8px;font-family:var(--display);font-size:14px}
 .crmul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px}
+.anpcard{margin:10px 0 4px;padding:10px 12px;border:1px solid var(--line);border-left:3px solid var(--sg-comercial);border-radius:10px;background:var(--surface);font-size:13px}
+.anpcard h4{margin:0 0 8px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font-family:var(--display);font-size:14px}
+.anpcard dl{margin:0;display:grid;grid-template-columns:max-content 1fr;gap:4px 14px}
+.anpcard dt{color:var(--muted);font-size:12px;padding-top:1px}.anpcard dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.anpcard dd small{color:var(--muted)}.anpcard ul{margin:0;padding-left:16px}.anpcard .hint{margin-top:8px}
+.anpporte{font:600 12px/1 var(--sg-font-ui,inherit);padding:5px 10px;border-radius:999px;background:var(--sg-comercial-claro);color:var(--sg-comercial-escuro);white-space:nowrap}
+.anpporte::before{content:'';display:inline-block;width:18px;height:6px;margin-right:6px;border-radius:3px;vertical-align:1px;background:linear-gradient(90deg,currentColor 33%,transparent 33%) 0 0/100% 100%,color-mix(in srgb,currentColor 25%,transparent)}
+.anpporte[data-porte="Médio"]::before{background:linear-gradient(90deg,currentColor 66%,transparent 66%),color-mix(in srgb,currentColor 25%,transparent)}
+.anpporte[data-porte="Grande"]{background:var(--sg-comercial-escuro);color:#fff}.anpporte[data-porte="Grande"]::before{background:currentColor}
+@media (max-width:480px){.anpcard dl{grid-template-columns:1fr}.anpcard dt{padding-top:6px}}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .anpporte{background:#1b2740;color:#8fb0f0}:root:not([data-theme="light"]) .anpporte[data-porte="Grande"]{background:#8fb0f0;color:#0F1419}}
+:root[data-theme="dark"] .anpporte{background:#1b2740;color:#8fb0f0}:root[data-theme="dark"] .anpporte[data-porte="Grande"]{background:#8fb0f0;color:#0F1419}
 .crmnova{display:flex;gap:8px;margin-bottom:10px}
 .crmnova select{width:auto}.crmnova input{flex:1}
 @media (max-width:560px){.crmnova{flex-wrap:wrap}.crmnova input{flex-basis:100%}}
@@ -498,6 +510,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
       <label>Condição válida até<input id="validade" type="date"></label>
     </div>
     <p class="hint" id="cnpjMsg"></p>
+    <div id="anpInfo" hidden></div>
   </div></section>
 
   <section class="sec"><h2>Licenças <span>Quantidade × Preço unitário</span></h2><div class="body">
@@ -598,7 +611,10 @@ button.danger{color:var(--danger);border-color:var(--danger)}
     <div class="grid">
       <label>Deslocamento (R$ por km)<input id="c-vkm" type="number" step="0.01" min="0"></label>
       <label>Validade da condição (dias)<input id="c-validDias" type="number" step="1" min="0" placeholder="30"></label>
+      <label>Porte Pequeno: tancagem até (m³)<input id="c-portePeq" type="number" step="1" min="1" placeholder="60"></label>
+      <label>Porte Médio: tancagem até (m³)<input id="c-porteMed" type="number" step="1" min="1" placeholder="120"></label>
     </div>
+    <p class="hint">O porte do posto vem da tancagem total registrada na ANP. Acima do limite do Médio, o posto é Grande.</p>
     <label>Bases de deslocamento (uma por linha)<textarea id="c-bases" rows="2"></textarea></label>
   </div></section>
 
@@ -865,6 +881,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <script src="pretask.js"></script>
 <script type="module" src="auth.js"></script>
 <script type="module" src="task.js"></script>
+<script src="anp.js"></script>
 <script type="module" src="crm.js"></script>
 <script>
 const $ = id => document.getElementById(id);
@@ -876,7 +893,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 /* ---------- Parâmetros (valores do modelo) ---------- */
 function cfgModelo(){ return {
   vNome:'', vFone:'', vEmail:'',
-  vkm:1.72, alim:50, hosp:200, refMax:100, validDias:30, bases:'Nova Mutum - MT\nCuiabá - MT',
+  vkm:1.72, alim:50, hosp:200, refMax:100, validDias:30, portePeq:60, porteMed:120, bases:'Nova Mutum - MT\nCuiabá - MT',
   catLic:[
     {desc:'Licença Sistema Argo - Posto', sub:'Parcela única', qty:'1', price:2000, isento:false, padrao:true},
     {desc:'Licença Sistema Argo (Loja)', sub:'Parcela única - Isenta', qty:'1', price:0, isento:true, padrao:true},
@@ -1019,7 +1036,7 @@ function calcValidade(dataIso){
   return `${r.getFullYear()}-${String(r.getMonth()+1).padStart(2,'0')}-${String(r.getDate()).padStart(2,'0')}`;
 }
 function aplicarValidade(){ S.validade=calcValidade(S.data); $('validade').value=S.validade; save() }
-const CFGF=['vNome','vFone','vEmail','vkm','validDias','bases','detImp','eqMin','eqIdeal','bullets'];
+const CFGF=['vNome','vFone','vEmail','vkm','validDias','portePeq','porteMed','bases','detImp','eqMin','eqIdeal','bullets'];
 CFGF.forEach(id=>$('c-'+id).addEventListener('input',e=>{ CFG[id]=e.target.value; if(VEND.includes(id)){ const v=vendData(); v[id]=e.target.value; lsSet(VEND_KEY,v); lsSet(CFG_KEY,CFG); return } markCfg(); if(id==='bases') renderBases(); if(id==='validDias') aplicarValidade(); totals() }));
 
 function renderBases(){
@@ -1057,7 +1074,7 @@ function parseRefs(v){
     return {nome:(m?m[1]:t.split(/ - |\./)[0]).trim(), postos:m?m[2]:'', regiao:'', contato:c?c[1].trim():'', fone:f?f[1]:''};
   });
 }
-function renderProp(){ PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderBases(); renderItems('lic'); renderItems('men') }
+function renderProp(){ PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderBases(); renderItems('lic'); renderItems('men'); setTimeout(()=>anpProposta(),0) }
 function aplicarLogo(){ $('logo').src=logoAtual(); $('logoPrev').src=logoAtual() }
 function renderCfg(){ aplicarLogo(); CFG.refs=parseRefs(CFG.refs); CFGF.forEach(id=>{ $('c-'+id).value=CFG[id]??'' }); renderRefs(); renderItems('catLic'); renderItems('catMen'); renderPickers(); renderBases(); totals() }
 
@@ -1133,7 +1150,20 @@ function syncCnpjLink(){
   else if(!ok && !$('cliente').value) cnpjMsg('');
 }
 let lastAuto='';
-$('cnpj').addEventListener('input',()=>{ syncCnpjLink(); const d=onlyDigits(S.cnpj); if(cnpjOk(d) && d!==lastAuto){ lastAuto=d; buscarAuto(d) } });
+$('cnpj').addEventListener('input',()=>{ syncCnpjLink(); const d=onlyDigits(S.cnpj); if(cnpjOk(d) && d!==lastAuto){ lastAuto=d; buscarAuto(d) } anpProposta() });
+/* Base de postos da ANP: mostra bandeira, bicos, tancagem e porte do posto do CNPJ */
+var anpUlt=''; // var: renderProp chama antes desta linha rodar
+async function anpProposta(){
+  const box=$('anpInfo'), d=onlyDigits($('cnpj').value);
+  if(!cnpjOk(d) || !window.anpPosto){ anpUlt=''; box.hidden=true; box.innerHTML=''; return }
+  if(d===anpUlt) return; anpUlt=d;
+  try{
+    const p=await window.anpPosto(d); if(anpUlt!==d) return;
+    if(!p){ box.innerHTML='<p class="hint">Este CNPJ não aparece na base de postos da ANP.</p>'; box.hidden=false; return }
+    box.innerHTML=window.anpHtml(p); box.hidden=false;
+    if(!$('cidade').value.trim() && p.cidade){ S.cidade=p.cidade; $('cidade').value=p.cidade; save(); setTimeout(()=>calcularKm(),0) }
+  }catch(e){ if(anpUlt===d){ anpUlt=''; box.hidden=true } }
+}
 $('cnpj').addEventListener('blur',()=>{ const d=onlyDigits(S.cnpj); if(cnpjOk(d)){ S.cnpj=fmtCnpj(d); $('cnpj').value=S.cnpj; save() } });
 $('cnpj').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); $('btnCnpj').click() } });
 /* Busca automática: funciona quando a página pode acessar a internet (arquivo no computador).
