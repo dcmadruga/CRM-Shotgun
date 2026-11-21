@@ -203,7 +203,8 @@ body:not(.is-admin):not(.is-task):not(.tem-task) .tasktab{display:none!important
 .modtit{font-family:var(--display);font-size:19px;margin:28px 0 4px}
 .modproc{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}.modproc h3{font-size:14px;margin:0 0 6px}.modproc .e2tab input{width:100%}.modpai{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;font-size:13px}.modpai select{max-width:260px}.secfil{display:flex;gap:6px;align-items:center;font-size:13px;margin:0 0 10px}
 .tkmods{display:grid;gap:5px;margin:4px 0}
-.tkmod{display:grid;grid-template-columns:96px 1fr 38px;gap:8px;align-items:center;font-size:12px}
+.tkmod{display:grid;grid-template-columns:148px 1fr 38px;gap:8px;align-items:center;font-size:12px}
+.tkmod span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tkmod i{display:flex;height:6px;border-radius:99px;background:var(--line);overflow:hidden}.tkmod i b{display:block;height:100%;background:var(--purple)}.tkmod i b.an{background:color-mix(in srgb,var(--purple) 35%,transparent)}
 #tkMinhas[aria-pressed=true]{background:var(--purple);border-color:var(--purple);color:#fff}
 .mdro{margin:8px 0;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--purple) 8%,transparent);font-size:13px}
@@ -1483,7 +1484,7 @@ async function atualizarApp(el){
   location.reload();
 }
 (async()=>{ const el=document.getElementById('versaoApp'); if(!el) return;
-  const num=t=>{ const m=String(t||'').match(/(?:shotgun|argo)-v(\d+)/); return m?+m[1]:0 };
+  const num=t=>{ const m=String(t||'').match(/(?:argo|shotgun)-v(\d+)/); return m?+m[1]:0 };
   let atual=0; try{ atual=Math.max(0,...(await caches.keys()).map(num)) }catch(_){}
   let srv=0; try{ srv=num(await (await fetch('sw.js',{cache:'no-store'})).text()) }catch(_){}
   const v=atual||srv; if(!v) return; el.textContent='Versão '+v; el.title='Clique para atualizar o app (como Ctrl+Shift+R)';
