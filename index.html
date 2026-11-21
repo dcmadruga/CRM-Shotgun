@@ -204,7 +204,14 @@ body:not(.is-admin):not(.is-task):not(.tem-task) .tasktab{display:none!important
 .modproc{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}.modproc h3{font-size:14px;margin:0 0 6px}.modproc .e2tab input{width:100%}.modpai{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 10px;font-size:13px}.modpai select{max-width:260px}.secfil{display:flex;gap:6px;align-items:center;font-size:13px;margin:0 0 10px}
 .tkmods{display:grid;gap:5px;margin:4px 0}
 .tkmod{display:grid;grid-template-columns:96px 1fr 38px;gap:8px;align-items:center;font-size:12px}
-.tkmod i{display:block;height:6px;border-radius:99px;background:var(--line);overflow:hidden}.tkmod i b{display:block;height:100%;background:var(--purple)}
+.tkmod i{display:flex;height:6px;border-radius:99px;background:var(--line);overflow:hidden}.tkmod i b{display:block;height:100%;background:var(--purple)}.tkmod i b.an{background:color-mix(in srgb,var(--purple) 35%,transparent)}
+#tkMinhas[aria-pressed=true]{background:var(--purple);border-color:var(--purple);color:#fff}
+.mdro{margin:8px 0;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--purple) 8%,transparent);font-size:13px}
+.mtwrap{display:flex;flex-direction:column;gap:10px;grid-column:1/-1;max-width:900px}.mttopo{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.mttopo select{max-width:240px}
+.mtlista{display:flex;flex-direction:column;gap:6px}
+.mtit{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;color:var(--fg);font:inherit;width:100%}
+.mtit:hover{border-color:var(--purple)}.mtit .t{font-weight:600}.mtit .s{font-size:12px;color:var(--muted)}.mtit .st{font-size:12px;font-weight:600;white-space:nowrap}.mtit .pz{font-size:12px;color:var(--muted);text-align:right;white-space:nowrap}
+.mtit.atr{border-left-color:var(--danger)}.mtit.atr .pz{color:var(--danger);font-weight:700}.mtit.pa{border-left-color:var(--danger)}.mtit.an{border-left-color:var(--purple)}
 .tkmod em{font-style:normal;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
 .tkmod.parado i b{background:var(--danger)}
 .tkparado{align-self:flex-start;font-size:11.5px;font-weight:600;color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,transparent);border-radius:999px;padding:2px 9px}
@@ -670,6 +677,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <div class="tkhead"><div><h2>Shotgun Task</h2><p>Checklist de implantação</p></div></div>
   <div class="tktools">
     <input id="tkBusca" type="search" placeholder="Buscar por posto, razão ou CNPJ…" aria-label="Buscar cadastros">
+    <button type="button" id="tkMinhas" aria-pressed="false">Minhas tarefas</button>
     <button type="button" id="tkTemplates">Templates</button>
     <button type="button" id="tkImportar">Importar das propostas</button>
     <button type="button" id="tkNovo" class="primary">+ Novo cadastro</button>

@@ -3,7 +3,7 @@
 let F, db, perfil, admin = false, unsubT = null, unsubM = null, unsubP = null, unsubMod = null, tasksOk = false, aprovadas = null;
 // Módulos do TASK (Implantação, TEF/PIX…): configurados em Parâmetros Pré TASK
 let MODS = window.MODULOS_PADRAO ? JSON.parse(JSON.stringify(window.MODULOS_PADRAO)) : { secoes: [] };
-let tasks = [], removidas = new Set(), templates = [], resps = [], aba = 'and';
+let tasks = [], removidas = new Set(), templates = [], resps = [], aba = 'and', minhas = false, setorVer = null;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const dig = v => String(v || '').replace(/\D/g, '');
@@ -61,8 +61,27 @@ function opcoesResp(sel, atual) {
   const lista = [...resps]; tasks.forEach(t => [t.respCadastro, t.respStart].forEach(r => { if (r?.uid && !lista.some(x => x.uid === r.uid)) lista.push(r); }));
   return lista.map(r => `<option value="${esc(r.uid)}"${r.uid === atual ? ' selected' : ''}>${esc(r.nome)}</option>`).join('');
 }
+// Minhas tarefas: processos ainda não finalizados dos módulos do meu setor, em todos os cards que não estão finalizados
+function minhasTarefas() {
+  const top = (MODS.secoes || []).filter(m => !m.pai), meus = meusSetores().filter(id => top.some(m => m.id === id));
+  if (setorVer === null) setorVer = meus.length === 1 ? meus[0] : meus.length ? 'meus' : '';
+  const alvo = setorVer === 'meus' ? meus : setorVer ? [setorVer] : top.map(m => m.id);
+  const mods = (MODS.secoes || []).filter(m => alvo.includes(topDe(m).id)), hj = hoje(), b = $('tkBusca').value.trim().toLowerCase(), bd = dig(b), itens = [];
+  tasks.filter(t => statusDe(t) !== 'fin' && (!b || [t.apelido, t.razao, t.cidade].join(' ').toLowerCase().includes(b) || (bd.length >= 3 && dig(t.cnpj).includes(bd)))).forEach(t => mods.forEach(m => (m.processos || []).forEach(p => {
+    const s = procDe(t, m.id, p.id), st = s ? s.st : 'ni'; if (st === 'fi') return;
+    itens.push({ t, m, p, st, s, pz: prazoDe(t, p) });
+  })));
+  itens.sort((a, b) => (a.pz || '9999') .localeCompare(b.pz || '9999') || String(a.t.apelido || a.t.razao || '').localeCompare(String(b.t.apelido || b.t.razao || ''), 'pt-BR'));
+  const opt = (v, l) => `<option value="${esc(v)}"${setorVer === v ? ' selected' : ''}>${esc(l)}</option>`;
+  const sel = `<label>Setor<select id="tkSetor">${meus.length > 1 ? opt('meus', 'Meus setores') : ''}${opt('', 'Todos os setores')}${top.map(m => opt(m.id, m.titulo)).join('')}</select></label>`;
+  const nAtr = itens.filter(x => x.pz && x.pz < hj).length;
+  return `<div class="mtwrap"><div class="mttopo">${sel}<span class="hint">${itens.length} processo${itens.length === 1 ? '' : 's'} pendente${itens.length === 1 ? '' : 's'}${nAtr ? ` · <b style="color:var(--danger)">${nAtr} atrasado${nAtr === 1 ? '' : 's'}</b>` : ''}</span></div>
+    <div class="mtlista">${itens.map(x => { const atr = x.pz && x.pz < hj; return `<button type="button" class="mtit${atr ? ' atr' : ''}${x.st === 'pa' ? ' pa' : x.st === 'an' || x.st === 'in' ? ' an' : ''}" data-mtid="${esc(x.t.id)}" data-mtmod="${esc(x.m.id)}"><span class="t">${esc(x.p.t)}</span><span class="st">${esc(PST[x.st] || '')}</span><span class="s">${esc(x.t.apelido || x.t.razao || '')} · ${esc(x.m.titulo)}${x.st === 'pa' && x.s.motivo ? ' · ' + esc(x.s.motivo) : ''}</span><span class="pz">${x.pz ? (atr ? 'atrasado · ' : 'prazo ') + fmtD(x.pz) : 'sem prazo'}</span></button>`; }).join('') || '<p class="hint">Nenhum processo pendente para este setor.</p>'}</div></div>`;
+}
 function desenhar() {
   if (!$('tkGrid')) return;
+  $('tkMinhas').setAttribute('aria-pressed', String(minhas)); $('tkAbas').hidden = minhas; document.querySelector('.tkfiltros').hidden = minhas;
+  if (minhas) { $('tkGrid').innerHTML = minhasTarefas(); return; }
   const rcV = $('tkRespCad').value, rsV = $('tkRespStart').value, base = tasks.length;
   $('tkRespCad').innerHTML = `<option value="">Todos (${base})</option>` + opcoesResp(null, rcV);
   $('tkRespStart').innerHTML = `<option value="">Todos (${base})</option>` + opcoesResp(null, rsV);
@@ -104,10 +123,16 @@ function cartao(t) {
 const PST = window.PROC_STATUS || { ni: 'Não iniciado', in: 'Iniciado', an: 'Em andamento', pa: 'Parado', fi: 'Finalizado' };
 const procDe = (t, mid, pid) => ((((t.mods || {})[mid] || {}).proc || {})[pid]) || null;
 const filhosDe = m => [m, ...(MODS.secoes || []).filter(x => x.pai === m.id)];
-function contaMod(t, lista) { let f = 0, tot = 0; const pa = []; lista.forEach(m => (m.processos || []).forEach(p => { tot++; const s = procDe(t, m.id, p.id); if (s && s.st === 'fi') f++; if (s && s.st === 'pa') pa.push(m.titulo + ': ' + p.t); })); return { f, tot, pa }; }
+function contaMod(t, lista) { let f = 0, an = 0, tot = 0; const pa = []; lista.forEach(m => (m.processos || []).forEach(p => { tot++; const s = procDe(t, m.id, p.id); if (s && s.st === 'fi') f++; if (s && (s.st === 'in' || s.st === 'an')) an++; if (s && s.st === 'pa') pa.push(m.titulo + ': ' + p.t); })); return { f, an, tot, pa }; }
+// Setores: cada módulo principal é um setor (as etapas dele são do mesmo setor). O ADM marca o setor de cada pessoa em Usuários.
+const topDe = m => (m && m.pai && (MODS.secoes || []).find(x => x.id === m.pai)) || m;
+const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
+// Quem não tem setor marcado (e o ADM) altera todos os módulos
+const podeMod = m => admin || !meusSetores().length || meusSetores().includes(topDe(m).id);
+const prazoDe = (t, p) => { if (p.prazo === '' || p.prazo == null || !t.dataBase) return ''; const dt = new Date(t.dataBase + 'T12:00:00'); dt.setDate(dt.getDate() + (+p.prazo || 0)); return dt.toISOString().slice(0, 10); };
 function modsCard(t) {
   const top = (MODS.secoes || []).filter(m => !m.pai); if (!top.length) return '';
-  const linhas = top.map(m => { const c = contaMod(t, filhosDe(m)), pct = c.tot ? Math.round(c.f * 100 / c.tot) : 0; return `<div class="tkmod${c.pa.length ? ' parado' : ''}" title="${esc(c.f + ' de ' + c.tot + ' processos finalizados')}"><span>${esc(m.titulo)}</span><i><b style="width:${pct}%"></b></i><em>${c.f}/${c.tot}</em></div>`; }).join('');
+  const linhas = top.map(m => { const c = contaMod(t, filhosDe(m)), pct = c.tot ? c.f * 100 / c.tot : 0, pa = c.tot ? c.an * 100 / c.tot : 0; return `<div class="tkmod${c.pa.length ? ' parado' : ''}" title="${esc(c.f + ' de ' + c.tot + ' processos finalizados' + (c.an ? ' · ' + c.an + ' em andamento' : ''))}"><span>${esc(m.titulo)}</span><i><b style="width:${pct}%"></b><b class="an" style="width:${pa}%"></b></i><em>${c.f}/${c.tot}</em></div>`; }).join('');
   const pa = contaMod(t, MODS.secoes || []).pa;
   return `<div class="tkmods">${linhas}</div>${pa.length ? `<div class="tkparado" title="${esc(pa.join('\n'))}">${pa.length} processo${pa.length > 1 ? 's' : ''} parado${pa.length > 1 ? 's' : ''} · ${esc(pa[0].split(':')[0])}</div>` : ''}`;
 }
@@ -119,7 +144,8 @@ function formMods(id, mid) {
   const nav = x => { const c = contaMod(t, [x]); return `<button type="button" class="dgnav${x.pai ? ' sub' : ''}" data-md="${esc(x.id)}" aria-selected="${x.id === m.id}">${iconeDe(x.titulo)}<span>${esc(x.titulo)}</span><small class="mdn${c.pa.length ? ' pa' : c.tot && c.f === c.tot ? ' ok' : ''}">${c.f}/${c.tot}</small></button>`; };
   const c = contaMod(t, [m]), pct = c.tot ? Math.round(c.f * 100 / c.tot) : 0, dados = ((t.mods || {})[m.id] || {}).dados || {};
   const fmtDia = ms => ms ? new Date(ms).toLocaleDateString('pt-BR') : '';
-  const prazo = p => { if (p.prazo === '' || p.prazo == null || !t.dataBase) return ''; const dt = new Date(t.dataBase + 'T12:00:00'); dt.setDate(dt.getDate() + (+p.prazo || 0)); return 'prazo ' + dt.toLocaleDateString('pt-BR'); };
+  const prazo = p => { const d = prazoDe(t, p); return d ? 'prazo ' + fmtD(d) : ''; };
+  const pode = podeMod(m);
   const meta = (p, s) => { const st = s ? s.st : 'ni'; const quem = s && s.por ? ' · ' + s.por : ''; const txt = st === 'fi' ? `Finalizado em ${fmtDia(s.em)}${quem}` : st === 'pa' ? `Parado desde ${fmtDia(s.desde || s.em)}${quem}` : st === 'an' ? `Em andamento desde ${fmtDia(s.desde || s.em)}${quem}` : st === 'in' ? `Iniciado em ${fmtDia(s.desde || s.em)}${quem}` : 'Não iniciado'; return [txt, p.resp ? 'resp.: ' + p.resp : '', prazo(p)].filter(Boolean).join(' · '); };
   window.PtCampos && window.PtCampos.estilos();
   abrirDlg('mods', 'Módulos · ' + (t.apelido || t.razao || ''), `<div class="dgwrap" id="tkMods" data-id="${esc(id)}" data-mid="${esc(m.id)}">
@@ -127,12 +153,14 @@ function formMods(id, mid) {
     <div class="dgcorpo">
       <div class="mdtopo"><h4>${esc(m.titulo)}${m.pai ? `<small>etapa de ${esc((L.find(x => x.id === m.pai) || {}).titulo || '')}</small>` : ''}</h4><span class="hint">${c.f} de ${c.tot} processos finalizados</span></div>
       <div class="tkprog"><span style="width:${pct}%"></span></div>
-      ${(m.campos || []).filter(x => x.show !== false).length ? `<div class="ptsec"><h5>Dados</h5><div class="ptgrid" id="mdDados">${window.PtCampos ? window.PtCampos.camposHtml((m.campos || []).filter(x => x.show !== false), '', dados, {}) : ''}<div class="ptbtns full"><button type="button" class="primary" data-mdsalvar="1">Salvar dados</button></div></div></div>` : ''}
+      ${pode ? '' : `<p class="mdro">Só o setor ${esc(topDe(m).titulo)} altera este módulo. Você pode acompanhar.</p>`}
+      ${(m.campos || []).filter(x => x.show !== false).length ? `<div class="ptsec"><h5>Dados</h5><div class="ptgrid" id="mdDados">${window.PtCampos ? window.PtCampos.camposHtml((m.campos || []).filter(x => x.show !== false), '', dados, {}) : ''}${pode ? '<div class="ptbtns full"><button type="button" class="primary" data-mdsalvar="1">Salvar dados</button></div>' : ''}</div></div>` : ''}
       <div class="ptsec"><h5>Processos</h5><div class="mdprocs">${(m.processos || []).map(p => { const s = procDe(t, m.id, p.id), st = s ? s.st : 'ni'; return `<div class="mdproc" data-pid="${esc(p.id)}"><div><div class="t">${esc(p.t)}</div><div class="d">${esc(meta(p, s))}</div>${st === 'pa' ? `<div class="mdmot"><input data-mot="${esc(p.id)}" value="${esc(s.motivo || '')}" placeholder="Motivo da parada (ex.: aguardando o banco)" aria-label="Motivo da parada"><button type="button" data-motok="${esc(p.id)}">Salvar motivo</button></div>` : ''}</div>
-        <div class="ptseg ps" role="group" aria-label="Status de ${esc(p.t)}">${Object.entries(PST).map(([k, n]) => `<button type="button" data-pst="${k}" data-pid="${esc(p.id)}" aria-pressed="${st === k}">${n}</button>`).join('')}</div></div>`; }).join('') || '<p class="hint">Nenhum processo neste módulo.</p>'}</div></div>
+        <div class="ptseg ps" role="group" aria-label="Status de ${esc(p.t)}">${Object.entries(PST).map(([k, n]) => `<button type="button" data-pst="${k}" data-pid="${esc(p.id)}" aria-pressed="${st === k}"${pode ? '' : ' disabled'}>${n}</button>`).join('')}</div></div>`; }).join('') || '<p class="hint">Nenhum processo neste módulo.</p>'}</div></div>
     </div></div>`);
   d.classList.add('largo');
-  if (window.PtCampos && $('mdDados')) { window.PtCampos.ligarCampos($('mdDados')); window.PtCampos.sincronizar($('mdDados')); }
+  if (window.PtCampos && $('mdDados')) { window.PtCampos.ligarCampos($('mdDados')); window.PtCampos.sincronizar($('mdDados')); if (!pode) $('mdDados').querySelectorAll('input,select,textarea,button').forEach(x => { x.disabled = true; }); }
+  if (!pode) d.querySelectorAll('[data-mot],[data-motok]').forEach(x => { x.disabled = true; });
   d.scrollTop = top;
 }
 async function salvarMods(id, fn, mid) {
@@ -577,6 +605,9 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 function ligar() {
   if (ligado || !$('tkGrid')) return; ligado = true;
   $('tkBusca').addEventListener('input', desenhar);
+  $('tkMinhas').addEventListener('click', () => { minhas = !minhas; desenhar(); });
+  $('tkGrid').addEventListener('change', e => { if (e.target.id === 'tkSetor') { setorVer = e.target.value; desenhar(); } });
+  $('tkGrid').addEventListener('click', e => { const it = e.target.closest('[data-mtid]'); if (it) formMods(it.dataset.mtid, it.dataset.mtmod); });
   $('tkRespCad').addEventListener('change', desenhar);
   $('tkRespStart').addEventListener('change', desenhar);
   $('tkAbas').addEventListener('click', e => { const b = e.target.closest('[data-aba]'); if (!b) return; aba = b.dataset.aba; desenhar(); });
@@ -608,6 +639,7 @@ function ligar() {
     const dg = e.target.closest('[data-dg]'); if (dg) return mostrarDg(dg.dataset.dg);
     const md = e.target.closest('[data-md]'); if (md) return formMods($('tkMods').dataset.id, md.dataset.md);
     const ps = e.target.closest('[data-pst]');
+    if ((ps || e.target.closest('[data-motok]') || e.target.closest('[data-mdsalvar]')) && $('tkMods') && !podeMod((MODS.secoes || []).find(x => x.id === $('tkMods').dataset.mid))) { dmsg('Só o setor responsável altera este módulo.'); return; }
     if (ps) {
       const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, pid = ps.dataset.pid, st = ps.dataset.pst, quem = perfil.nome || perfil.email;
       return salvarMods(id, mods => { const m = mods[mid] = mods[mid] || {}; m.proc = m.proc || {}; const ant = m.proc[pid] || {}; m.proc[pid] = { st, por: quem, em: Date.now(), desde: ant.st === st ? (ant.desde || ant.em || Date.now()) : Date.now(), motivo: st === 'pa' ? (ant.motivo || '') : '' }; }, mid).then(ok => { if (ok && st === 'pa') { const i = document.querySelector(`[data-mot="${CSS.escape(pid)}"]`); if (i) i.focus(); dmsg('Informe o motivo da parada.'); } });

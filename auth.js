@@ -1068,6 +1068,7 @@ async function iniciar() {
       if (fb.admin) modStatus(snap.exists() ? (snap.data().por ? 'Publicado por ' + snap.data().por + (snap.data().em ? ' em ' + fmtQuando(snap.data().em) : '') + '.' : '') : 'Usando os módulos padrão. Ajuste e publique.');
     } catch (e) { MOD = copia(window.MODULOS_PADRAO); }
     modSujo = false; desenharMod();
+    try { if (lista.length) desenharUsuarios(); } catch (e) {}
   }
   function marcarMod() { modSujo = true; modStatus('Alterações ainda não publicadas.'); }
   function desenharMod() {
@@ -1250,13 +1251,19 @@ async function iniciar() {
         <div class="ucol0">${fotosU[u.uid] ? `<img class="ufoto" src="${fotosU[u.uid]}" alt="Foto de ${esc(u.nome)}">` : `<span class="ufoto" title="${fotosU[u.uid] === '' ? 'Ainda não enviou a foto' : 'Carregando'}"></span>`}</div>
         <div class="ucol1"><label class="ulab">Nome<input data-f="nome" value="${esc(u.nome)}" aria-label="Nome"></label><span class="umail">${esc(u.email)}</span></div>
         <label class="ulab ucol2">Telefone<input data-f="fone" value="${esc(u.fone)}" aria-label="Telefone" inputmode="tel"></label>
-        <div class="ucol3"><span class="ulabt">Perfil</span>${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; return `<div class="upapeis">${[['vendedor', 'Vendedor'], ['task', 'TASK'], ['adm', 'Administrador']].map(([k, l]) => `<label class="uchip"><input type="checkbox" data-papel="${k}"${ps.includes(k) ? ' checked' : ''}${eu ? ' disabled' : ''}> ${l}</label>`).join('')}</div>`; })()}</div>
+        <div class="ucol3"><span class="ulabt">Perfil</span>${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; return `<div class="upapeis">${[['vendedor', 'Vendedor'], ['task', 'TASK'], ['adm', 'Administrador']].map(([k, l]) => `<label class="uchip"><input type="checkbox" data-papel="${k}"${ps.includes(k) ? ' checked' : ''}${eu ? ' disabled' : ''}> ${l}</label>`).join('')}</div>`; })()}${(() => { const ss = Array.isArray(u.setores) ? u.setores : [], top = ((MOD || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai); return top.length ? `<span class="ulabt" style="display:block;margin-top:8px">Setor no TASK</span><div class="upapeis">${top.map(m => `<label class="uchip"><input type="checkbox" data-setor="${esc(m.id)}"${ss.includes(m.id) ? ' checked' : ''}> ${esc(m.titulo)}</label>`).join('')}</div>` : ''; })()}</div>
         <div class="ucol4"><span class="pill ${u.ativo ? '' : 'off'}">${u.ativo ? 'Liberado' : 'Bloqueado'}</span>${eu ? '<span class="hint">você</span>' : ''}</div>
         <div class="uacts">${eu ? '' : `<button type="button" data-a="toggle">${u.ativo ? 'Bloquear' : 'Liberar'}</button><button type="button" data-a="excluir" class="danger">Excluir</button>`}<button type="button" data-a="reset">Nova senha</button>${fotosU[u.uid] ? '<button type="button" data-a="novafoto">Pedir nova foto</button>' : ''}</div></div>`;
     }).join('');
     lista.filter(u => !(u.uid in fotosU)).forEach(u => { fotosU[u.uid] = ''; F.getDoc(F.doc(db, 'fotos', u.uid)).then(sn => { if (sn.exists()) { fotosU[u.uid] = sn.data().b64 || ''; desenharUsuarios(); } }).catch(() => {}); });
   }
   $('usersBody').addEventListener('change', async e => {
+    if (e.target.dataset.setor) {
+      const tr = e.target.closest('[data-uid]'), setores = [...tr.querySelectorAll('[data-setor]:checked')].map(x => x.dataset.setor);
+      try { await F.updateDoc(F.doc(db, 'usuarios', tr.dataset.uid), { setores }); uStatus(setores.length ? 'Setor salvo. Vale no próximo acesso da pessoa.' : 'Sem setor: a pessoa pode alterar todos os módulos.'); }
+      catch (err) { uStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); }
+      return;
+    }
     if (e.target.dataset.papel) {
       const tr = e.target.closest('[data-uid]'), papeis = [...tr.querySelectorAll('[data-papel]:checked')].map(x => x.dataset.papel);
       if (!papeis.length) { e.target.checked = true; uStatus('A pessoa precisa ter pelo menos um perfil.'); return; }
