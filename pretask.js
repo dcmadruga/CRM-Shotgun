@@ -507,7 +507,7 @@
     const p = C.p, l = (t, v) => v ? `<div class="ptf"><span>${t}</span><div class="ptro">${v}</div></div>` : '';
     return painel('proposta', 'Proposta', 'valores da proposta só para leitura', `<div class="ptsec"><h5>Proposta nº ${esc(p.numero || '')}</h5><div class="ptgrid">
       ${l('Cliente', esc(p.cliente))}${l('CNPJ', esc(fmtCnpj(p.cnpj)))}${l('Cidade', esc(p.cidade))}${l('Contato', esc(p.contato))}${l('Telefone', esc(p.fone))}${l('Vendedor', esc(p.vendedor))}
-      ${l('Licenças', brl(p.totLic))}${l('Mensalidade', brl(p.totMen))}${p.implantacao === 'Remota' ? l('Implantação', 'Remota (sem custo)') : l('Deslocamento', brl(p.totDes))}
+      ${l('Licenças', brl(p.totLic))}${l('Mensalidade', brl(p.totMen))}${p.implantacao === 'Remota' ? l('Implantação', 'Remota (sem custo)') : p.implantacao === 'Combustível' ? l('Deslocamento', 'Só combustível' + (p.dados && p.dados.km ? ' · ' + Number(p.dados.km).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' km' : '')) : l('Deslocamento', brl(p.totDes))}
       ${l('Aprovada por', p.aprovadoNome ? esc(p.aprovadoNome) + (p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : '') + `<small>${esc(fmtTs(p.aprovadoEm))}</small>` : '')}
       <div class="ptbtns full"><button type="button" data-pta="pdf">Ver proposta (PDF)</button></div></div></div>`);
   }
@@ -726,11 +726,15 @@
       if (!parcial && (C.task || C.podeTask)) {
         try {
           const tid = (C.task && C.task.id) || pid, fin = pre.status === 'fin';
-          const up = { status: pre.status, finalizado: fin, dataBase: pre.dataBase, start: pre.start, modalidade: pre.modalidade, central: centralDoPre(pre), respCadastro: { uid: perfil.uid, nome: por, email: perfil.email || '' }, preSync: Date.now(), alteradoEm: F.serverTimestamp(), alteradoPor: por };
+          const up = { preOk: true, status: pre.status, finalizado: fin, dataBase: pre.dataBase, start: pre.start, modalidade: pre.modalidade, central: centralDoPre(pre), respCadastro: { uid: perfil.uid, nome: por, email: perfil.email || '' }, preSync: Date.now(), alteradoEm: F.serverTimestamp(), alteradoPor: por };
           if (C.task && fin !== !!C.task.finalizado) up.finalizadoEm = fin ? F.serverTimestamp() : null;
           const ref = F.doc(db, 'tasks', tid), ex = await F.getDoc(ref);
           if (ex.exists() && !ex.data().removido) { await F.updateDoc(ref, up); taskOk = true; }
         } catch (e) { console.warn('Pré TASK: card do TASK', e); }
+      }
+      // Salvar parcial depois de um salvar final: o card volta a mostrar "Pré TASK" (só esse campo muda)
+      if (parcial && (C.task || C.podeTask)) {
+        try { const ref = F.doc(db, 'tasks', (C.task && C.task.id) || pid), ex = await F.getDoc(ref); if (ex.exists() && !ex.data().removido && ex.data().preOk !== false) await F.updateDoc(ref, { preOk: false }); } catch (e) { console.warn('Pré TASK: card do TASK', e); }
       }
       C.e4 = { ...doc, em: { toDate: () => new Date() } };
       if (C.aoSalvar && !parcial) C.aoSalvar(pre);

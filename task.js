@@ -103,6 +103,9 @@ function etapas(t) {
   const d = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString('pt-BR') : '';
   return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${p.e2Em ? e(2, 'Dados Primários', true, d(p.e2Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e2" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(2, 'Dados Primários', false, '', 'aguardando')}${(() => { const h = e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : ''); return p.ctEm ? h.replace('</span>', `<button type="button" class="tkver" data-tk="ct" data-pid="${esc(p.id)}">Ver contrato</button></span>`) : h; })()}${p.e4Em ? e(4, 'Pré TASK', true, d(p.e4Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e4" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(4, 'Pré TASK', false, '', p.ctAceitoEm ? 'aguardando vendedor' : '')}</div>`;
 }
+// Pré TASK completo (salvar final com todos os obrigatórios): o botão do card passa de "Pré TASK" para "DADOS".
+// preOk é gravado pelo Pré TASK; cards antigos usam o passo 4 da proposta (e4Em só é marcado no salvar final).
+const preCompleto = t => t.preOk !== undefined ? !!t.preOk : !!(propostaDe(t) || {}).e4Em;
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
@@ -115,7 +118,7 @@ function cartao(t) {
     ${etapas(t)}
     ${modsCard(t)}
     ${pr.total ? `<div class="tkprogtxt">Checklists antigos: ${pr.feitos} de ${pr.total} itens (${pct}%)</div>` : ''}
-    <div class="tkacts"><button type="button" data-tk="dados">${t.propostaId ? 'Pré TASK' : 'Dados gerais'}</button><button type="button" class="primary" data-tk="mods">Módulos</button>${pr.total ? '<button type="button" data-tk="check">Checklists</button>' : ''}</div>
+    <div class="tkacts"><button type="button" data-tk="dados"${t.propostaId && preCompleto(t) ? ' title="Pré TASK completo: todos os obrigatórios lançados"' : ''}>${t.propostaId ? (preCompleto(t) ? 'DADOS' : 'Pré TASK') : 'Dados gerais'}</button><button type="button" class="primary" data-tk="mods">Módulos</button>${pr.total ? '<button type="button" data-tk="check">Checklists</button>' : ''}</div>
   </article>`;
 }
 
@@ -141,7 +144,17 @@ const exigeLink = (m, p) => !!m && !!p && /criar\s+(a\s+)?base/i.test(p.t || '')
 const campoLinkBase = () => { const mid = modDoLink(), m = (MODS.secoes || []).find(x => x.id === mid); const c = m && ((m.campos || []).find(x => /link/i.test(x.label || '') && /base/i.test(x.label || '')) || (m.campos || []).find(x => x.k === 'linkBase')); const lib = m && ((m.campos || []).find(x => x.tipo === 'simnao' && /base/i.test(x.label || '') && /liberad/i.test(x.label || '')) || (m.campos || []).find(x => x.k === 'baseLiberada')); return { mid, k: c ? c.k : 'linkBase', lib: lib ? lib.k : 'baseLiberada' }; };
 const urlOk = v => { if (/\s/.test(v)) return false; try { const u = new URL(v); return /^https?:$/.test(u.protocol) && (/^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(u.hostname) || u.hostname === 'localhost'); } catch (e) { return false; } };
 const comHttp = v => { v = String(v || '').trim(); return v && !/^[a-z][a-z0-9+.-]*:/i.test(v) ? 'https://' + v : v; };
-let pedeLink = null; // { id, mid, pid } enquanto o usuário informa o link para finalizar
+let pedeLink = null; // { id, mid, pid, todos? } enquanto o usuário informa o link para finalizar
+// "Finalizar todos": marca Finalizado os processos do módulo que ainda não estão. "Criar a base" leva o link junto (url).
+function finalizarTodos(id, mid, url) {
+  const m = (MODS.secoes || []).find(x => x.id === mid), quem = perfil.nome || perfil.email, agora = Date.now(), cl = campoLinkBase();
+  return salvarMods(id, mods => {
+    const x = mods[mid] = mods[mid] || {}; x.proc = x.proc || {}; let lk = false;
+    (m.processos || []).forEach(p => { const ant = x.proc[p.id] || {}; if (ant.st === 'fi') return; const exige = exigeLink(m, p); if (exige) lk = true; x.proc[p.id] = { st: 'fi', por: quem, em: agora, desde: agora, motivo: '', ...(exige ? { link: url } : {}) }; });
+    if (lk && url) { const y = mods[cl.mid] = mods[cl.mid] || {}; y.dados = { ...(y.dados || {}), [cl.k]: url, [cl.lib]: 'Sim' }; }
+    pedeLink = null;
+  }, mid).then(ok => { if (ok) dmsg('Todos os processos deste módulo foram finalizados.'); return ok; });
+}
 const prazoDe = (t, p) => { if (p.prazo === '' || p.prazo == null || !t.dataBase) return ''; const dt = new Date(t.dataBase + 'T12:00:00'); dt.setDate(dt.getDate() + (+p.prazo || 0)); return dt.toISOString().slice(0, 10); };
 function modsCard(t) {
   const top = (MODS.secoes || []).filter(m => !m.pai); if (!top.length) return '';
@@ -158,7 +171,7 @@ function formMods(id, mid) {
   const c = contaMod(t, [m]), pct = c.tot ? Math.round(c.f * 100 / c.tot) : 0, dados = ((t.mods || {})[m.id] || {}).dados || {};
   const fmtDia = ms => ms ? new Date(ms).toLocaleDateString('pt-BR') : '';
   const prazo = p => { const d = prazoDe(t, p); return d ? 'prazo ' + fmtD(d) : ''; };
-  const pode = podeMod(m);
+  const pode = podeMod(m), pend = (m.processos || []).filter(p => { const s = procDe(t, m.id, p.id); return !s || s.st !== 'fi'; }).length;
   const meta = (p, s) => { const st = s ? s.st : 'ni'; const quem = s && s.por ? ' · ' + s.por : ''; const txt = st === 'fi' ? `Finalizado em ${fmtDia(s.em)}${quem}` : st === 'pa' ? `Parado desde ${fmtDia(s.desde || s.em)}${quem}` : st === 'an' ? `Em andamento desde ${fmtDia(s.desde || s.em)}${quem}` : st === 'in' ? `Iniciado em ${fmtDia(s.desde || s.em)}${quem}` : 'Não iniciado'; return [txt, p.resp ? 'resp.: ' + p.resp : '', prazo(p)].filter(Boolean).join(' · '); };
   window.PtCampos && window.PtCampos.estilos();
   abrirDlg('mods', 'Módulos · ' + (t.apelido || t.razao || ''), `<div class="dgwrap" id="tkMods" data-id="${esc(id)}" data-mid="${esc(m.id)}">
@@ -168,7 +181,7 @@ function formMods(id, mid) {
       <div class="tkprog"><span style="width:${pct}%"></span></div>
       ${pode ? '' : `<p class="mdro">Só o setor ${esc(topDe(m).titulo)} altera este módulo. Você pode acompanhar.</p>`}
       ${(m.campos || []).filter(x => x.show !== false).length ? `<div class="ptsec"><h5>Dados</h5><div class="ptgrid" id="mdDados">${window.PtCampos ? window.PtCampos.camposHtml((m.campos || []).filter(x => x.show !== false), '', dados, {}) : ''}${pode ? '<div class="ptbtns full"><button type="button" class="primary" data-mdsalvar="1">Salvar dados</button></div>' : ''}</div></div>` : ''}
-      <div class="ptsec"><h5>Processos</h5><div class="mdprocs">${(m.processos || []).map(p => { const s = procDe(t, m.id, p.id), st = s ? s.st : 'ni'; const lk = exigeLink(m, p), lkUrl = lk ? ((s && s.link) || (linkBaseDe(t) || {}).url || '') : '', pede = lk && pedeLink && pedeLink.id === id && pedeLink.mid === m.id && pedeLink.pid === p.id; return `<div class="mdproc" data-pid="${esc(p.id)}"><div><div class="t">${esc(p.t)}</div><div class="d">${esc(meta(p, s))}</div>${lk && st === 'fi' && lkUrl && !pede ? `<div class="mdlink"><span>Link da base:</span> <a href="${esc(lkUrl)}" target="_blank" rel="noopener">${esc(lkUrl)}</a>${pode ? `<button type="button" data-lkalt="${esc(p.id)}">Alterar</button>` : ''}</div>` : ''}${lk && !pede && st !== 'fi' ? `<div class="mdlkdica">Para finalizar, informe o link da base.</div>` : ''}${pede ? `<div class="mdmot mdlkbox"><input type="url" data-lk="${esc(p.id)}" value="${esc(lkUrl)}" placeholder="https://… link para acessar a base" aria-label="Link da base" inputmode="url"><button type="button" class="primary" data-lkok="${esc(p.id)}">${st === 'fi' ? 'Salvar link' : 'Finalizar com este link'}</button><button type="button" data-lkcanc="1">Cancelar</button></div>` : ''}${st === 'pa' ? `<div class="mdmot"><input data-mot="${esc(p.id)}" value="${esc(s.motivo || '')}" placeholder="Motivo da parada (ex.: aguardando o banco)" aria-label="Motivo da parada"><button type="button" data-motok="${esc(p.id)}">Salvar motivo</button></div>` : ''}</div>
+      <div class="ptsec"><h5>Processos${pode && pend > 1 && !(pedeLink && pedeLink.todos && pedeLink.id === id && pedeLink.mid === m.id) ? `<button type="button" class="mdtodos" data-mdtodos="1" title="Marcar como Finalizado os ${pend} processos que ainda não foram finalizados">Finalizar todos</button>` : ''}</h5><div class="mdprocs">${(m.processos || []).map(p => { const s = procDe(t, m.id, p.id), st = s ? s.st : 'ni'; const lk = exigeLink(m, p), lkUrl = lk ? ((s && s.link) || (linkBaseDe(t) || {}).url || '') : '', pede = lk && pedeLink && pedeLink.id === id && pedeLink.mid === m.id && pedeLink.pid === p.id; return `<div class="mdproc" data-pid="${esc(p.id)}"><div><div class="t">${esc(p.t)}</div><div class="d">${esc(meta(p, s))}</div>${lk && st === 'fi' && lkUrl && !pede ? `<div class="mdlink"><span>Link da base:</span> <a href="${esc(lkUrl)}" target="_blank" rel="noopener">${esc(lkUrl)}</a>${pode ? `<button type="button" data-lkalt="${esc(p.id)}">Alterar</button>` : ''}</div>` : ''}${lk && !pede && st !== 'fi' ? `<div class="mdlkdica">Para finalizar, informe o link da base.</div>` : ''}${pede ? `<div class="mdmot mdlkbox"><input type="url" data-lk="${esc(p.id)}" value="${esc(lkUrl)}" placeholder="https://… link para acessar a base" aria-label="Link da base" inputmode="url"><button type="button" class="primary" data-lkok="${esc(p.id)}">${pedeLink.todos ? 'Finalizar todos com este link' : st === 'fi' ? 'Salvar link' : 'Finalizar com este link'}</button><button type="button" data-lkcanc="1">Cancelar</button></div>` : ''}${st === 'pa' ? `<div class="mdmot"><input data-mot="${esc(p.id)}" value="${esc(s.motivo || '')}" placeholder="Motivo da parada (ex.: aguardando o banco)" aria-label="Motivo da parada"><button type="button" data-motok="${esc(p.id)}">Salvar motivo</button></div>` : ''}</div>
         <div class="ptseg ps" role="group" aria-label="Status de ${esc(p.t)}">${Object.entries(PST).map(([k, n]) => `<button type="button" data-pst="${k}" data-pid="${esc(p.id)}" aria-pressed="${st === k}"${pode ? '' : ' disabled'}>${n}</button>`).join('')}</div></div>`; }).join('') || '<p class="hint">Nenhum processo neste módulo.</p>'}</div></div>
     </div></div>`);
   d.classList.add('largo');
@@ -665,6 +678,16 @@ function ligar() {
       if (pedeLink && pedeLink.pid === pid) pedeLink = null;
       return salvarMods(id, mods => { const m = mods[mid] = mods[mid] || {}; m.proc = m.proc || {}; const ant = m.proc[pid] || {}; m.proc[pid] = { st, por: quem, em: Date.now(), desde: ant.st === st ? (ant.desde || ant.em || Date.now()) : Date.now(), motivo: st === 'pa' ? (ant.motivo || '') : '' }; }, mid).then(ok => { if (ok && st === 'pa') { const i = document.querySelector(`[data-mot="${CSS.escape(pid)}"]`); if (i) i.focus(); dmsg('Informe o motivo da parada.'); } });
     }
+    const ft = e.target.closest('[data-mdtodos]');
+    if (ft) {
+      const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, t = tasks.find(x => x.id === id), mm = (MODS.secoes || []).find(x => x.id === mid);
+      if (!t || !mm || !podeMod(mm)) { dmsg('Só o setor responsável altera este módulo.'); return; }
+      const pend = (mm.processos || []).filter(p => { const s = procDe(t, mid, p.id); return !s || s.st !== 'fi'; }); if (!pend.length) return;
+      if (!confirmar(ft, 'todos' + id + mid, `Confirmar (${pend.length})`)) { const pa = pend.filter(p => (procDe(t, mid, p.id) || {}).st === 'pa').length; dmsg(`Finalizar ${pend.length} processo${pend.length > 1 ? 's' : ''} de uma vez${pa ? ` (${pa} parado${pa > 1 ? 's' : ''})` : ''}? Clique de novo para confirmar.`); return; }
+      const pl = pend.find(p => exigeLink(mm, p));
+      if (pl) { const url = (linkBaseDe(t) || {}).url || ''; if (!url || !urlOk(url)) { pedeLink = { id, mid, pid: pl.id, todos: true }; formMods(id, mid); dmsg(`"${pl.t}" só finaliza com o link da base. Informe o link para finalizar todos.`); return; } return finalizarTodos(id, mid, url); }
+      return finalizarTodos(id, mid, '');
+    }
     const la = e.target.closest('[data-lkalt]');
     if (la) { pedeLink = { id: $('tkMods').dataset.id, mid: $('tkMods').dataset.mid, pid: la.dataset.lkalt }; return formMods(pedeLink.id, pedeLink.mid); }
     if (e.target.closest('[data-lkcanc]')) { const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid; pedeLink = null; formMods(id, mid); return; }
@@ -674,6 +697,7 @@ function ligar() {
       const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, pid = lo.dataset.lkok, inp = document.querySelector(`[data-lk="${CSS.escape(pid)}"]`), url = comHttp(inp && inp.value), quem = perfil.nome || perfil.email;
       if (!url) { dmsg('Informe o link da base. Sem ele a etapa não é finalizada.'); if (inp) inp.focus(); return; }
       if (!urlOk(url)) { dmsg('Link inválido. Cole o endereço completo da base (ex.: https://…).'); if (inp) inp.focus(); return; }
+      if (pedeLink && pedeLink.todos && pedeLink.id === id && pedeLink.mid === mid) return finalizarTodos(id, mid, url);
       const cl = campoLinkBase();
       return salvarMods(id, mods => { const m = mods[mid] = mods[mid] || {}; m.proc = m.proc || {}; const ant = m.proc[pid] || {}; m.proc[pid] = ant.st === 'fi' ? { ...ant, link: url, linkPor: quem, linkEm: Date.now() } : { st: 'fi', por: quem, em: Date.now(), desde: Date.now(), motivo: '', link: url }; const x = mods[cl.mid] = mods[cl.mid] || {}; x.dados = { ...(x.dados || {}), [cl.k]: url, [cl.lib]: 'Sim' }; pedeLink = null; }, mid).then(ok => { if (ok) dmsg('Etapa finalizada com o link da base.'); });
     }

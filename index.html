@@ -96,6 +96,7 @@ button.del{border:none;background:none;color:var(--danger);padding:6px;font-size
 .impseg button+button{border-left:1px solid var(--line)}
 .impseg button[aria-pressed=true]{background:var(--purple);color:#fff;font-weight:600}
 .imprem{border-left:3px solid #2f8f57;padding-left:8px}
+.impcomb{border-left:3px solid var(--sg-disparo,#FF6B1A);padding-left:8px}
 </style>
 <style>
 .tabs{background:var(--ink)}
@@ -119,6 +120,9 @@ button.del{border:none;background:none;color:var(--danger);padding:6px;font-size
 .logoprev{width:72px;height:72px;border-radius:6px;background:var(--ink);display:grid;place-items:center;flex:none}
 .logoprev img{max-width:58px;max-height:58px}
 .logoacts{display:flex;flex-direction:column;gap:6px;min-width:0}
+.logorow+.logorow{margin-top:14px}
+.logovazio{font-size:11px;color:#9AA3AE;text-align:center}
+.logoacts .opc{font-weight:500;font-size:12px;color:var(--muted);margin-left:4px}
 label.btn.up{display:inline-flex;align-items:center;padding:8px 14px;border-radius:4px;background:var(--purple);color:#fff;font-weight:600;font-size:13.5px;cursor:pointer;letter-spacing:0}
 .diaswrap{gap:4px}
 .item.hid .desc,.item.hid label:not(.chk){opacity:.45}
@@ -251,6 +255,7 @@ button.lnk{background:none;border:0;padding:0;min-height:0;color:var(--purple);t
 .mdproc .ptseg button[data-pst=ni][aria-pressed=true]{background:var(--muted)}.mdproc .ptseg button[data-pst=in][aria-pressed=true]{background:#2b6cb0}.mdproc .ptseg button[data-pst=an][aria-pressed=true]{background:#b7791f}.mdproc .ptseg button[data-pst=pa][aria-pressed=true]{background:var(--danger)}.mdproc .ptseg button[data-pst=fi][aria-pressed=true]{background:#2f8f57}
 .mdmot{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.mdmot input{flex:1;min-width:200px}
 .mdlink{font-size:12px;margin-top:4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-width:0}.mdlink span{color:var(--muted)}.mdlink a{color:var(--purple);font-weight:600;word-break:break-all}.mdlink button{padding:2px 8px;font-size:12px}
+.ptsec>h5 .mdtodos{min-height:0;align-self:center;padding:2px 12px;font-size:12px;font-weight:600;font-family:var(--body);letter-spacing:0;border-radius:999px;border:1px solid #fff;background:#fff;color:var(--sg-disparo-texto,#C2410C);cursor:pointer}.ptsec>h5 .mdtodos:hover{background:transparent;color:#fff}
 .mdlkdica{font-size:12px;color:var(--muted);margin-top:4px}.mdlkbox input{min-width:220px}
 @media (max-width:760px){.mdproc{grid-template-columns:1fr}}
 .tkf100{font-weight:700;font-size:14px;margin:4px 0 2px}.tkf100 .tkbaserow{display:inline-flex;align-items:center;gap:6px}.tklink{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;padding:0;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--purple);cursor:pointer}.tklink:hover{border-color:var(--purple)}.tklink.vazio{color:var(--muted);opacity:.6}.tklink.ok{background:var(--purple);color:#fff;border-color:var(--purple)}
@@ -278,6 +283,30 @@ button.lnk{background:none;border:0;padding:0;min-height:0;color:var(--purple);t
 .dgcorpo>.tkacts{margin-top:16px}
 @media (max-width:760px){.dgwrap{grid-template-columns:1fr}.dgmenu{flex-direction:row;overflow-x:auto;position:static;padding-bottom:4px}.dgnav{width:auto;white-space:nowrap;padding:8px 12px}}
 .tkdlg::backdrop{background:rgba(0,0,0,.45)}
+/* Novidades: o que mudou em cada versão (novidades.js) */
+.novdlg{width:min(520px,calc(100vw - 24px));border-radius:16px;box-shadow:var(--sg-sombra);display:none;flex-direction:column}
+.novdlg[open]{display:flex}
+.novdlg .tkdlghead{background:var(--ink);color:var(--ink-fg);border-bottom:0;border-left:4px solid var(--accent)}
+.novdlg .tkdlghead h3{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.novdlg .tkdlghead button{background:none;border:0;color:var(--ink-fg);font-size:16px;min-width:44px;min-height:44px;cursor:pointer;opacity:.8}
+.novdlg .tkdlghead button:hover{opacity:1}
+.novbody{padding:6px 16px 4px;overflow:auto;display:flex;flex-direction:column}
+.novitem{padding:14px 0;border-bottom:1px solid var(--line)}
+.novitem:last-of-type{border-bottom:0}
+.novv{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.novnum{font-family:var(--display);font-weight:500;font-size:11.5px;padding:2px 9px;border-radius:999px;background:var(--sg-comercial-claro);color:var(--sg-comercial-escuro);font-variant-numeric:tabular-nums}
+.novitem.atual .novnum{background:var(--accent);color:var(--accent-fg)}
+.novdata{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.novitem h4{margin:2px 0 6px;font-family:var(--display);font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+.novitem ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px;line-height:1.5}
+.novitem li::marker{color:var(--muted)}
+.novtodas{align-self:flex-start;margin:4px 0 12px}
+.novpe{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.novpe .primary{min-height:44px;padding-inline:22px}
+.novpe .lnk{font-size:13px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .novnum{background:color-mix(in srgb,var(--sg-comercial) 22%,transparent);color:#a9c2ff}}
+:root[data-theme="dark"] .novnum{background:color-mix(in srgb,var(--sg-comercial) 22%,transparent);color:#a9c2ff}
+:root .novitem.atual .novnum{background:var(--accent);color:var(--accent-fg)}
 .tkdlghead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
 .tkdlghead h3{margin:0;font-family:var(--display);font-size:16px}
 #tkDlgBody{padding:16px}
@@ -319,7 +348,7 @@ body:not(.fb) .fbonly{display:none!important}
 body.fb .nofb{display:none!important}
 .tabuser{margin-left:auto;align-self:center;font-size:12px;color:var(--ink-fg);opacity:.7;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:40vw}
 .linkbtn{background:none!important;border:0!important;color:var(--purple)!important;padding:6px 8px;font-weight:600;cursor:pointer}
-.fotoCard{max-width:380px}.fotoArea{position:relative;width:240px;height:240px;margin:6px auto;border-radius:50%;overflow:hidden;background:#111}
+#fotoBox{overflow-y:auto;align-items:flex-start}#fotoBox .fotoCard{margin:auto 0}.fotoCard{max-width:420px}.cadBloco{display:flex;flex-direction:column;gap:6px}.cadRot{font-size:12px;font-weight:500;line-height:16px;color:var(--muted)}.cadRot small{font-weight:400;margin-left:4px}.cadDica{margin:0}.cadUfs{max-width:none}.cadUfs .uuf span{padding:9px 0;font-size:12.5px}.cadFotoBtns{justify-content:center}.cadMsg{margin:0;font-size:13px;min-height:0;color:var(--danger)}.cadMsg:empty{display:none}.cadMsg.ok{color:var(--muted)}.fotoArea{position:relative;width:240px;height:240px;margin:6px auto;border-radius:50%;overflow:hidden;background:#111}
 .fotoArea video,.fotoArea img{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}.fotoArea img{transform:none}
 .fotoOval{position:absolute;inset:18px 38px;border:2px dashed rgba(255,255,255,.7);border-radius:50%}
 .fotoOk{display:flex;flex-direction:row;align-items:flex-start;gap:8px;font-size:13px;font-weight:500;line-height:1.35}.fotoOk input{width:18px;height:18px;flex:none;margin:1px 0 0;appearance:auto;-webkit-appearance:checkbox}
@@ -336,6 +365,7 @@ body.fb .nofb{display:none!important}
 header.top h1 img.sgmarca{width:auto;height:30px;display:block}
 #viewTask{--purple:var(--sg-implantacao-escuro)}
 .loginCard button.primary{padding:10px}
+.loginAlt{margin:4px 0 0;padding-top:12px;border-top:1px solid var(--line);text-align:center;font-size:13.5px;color:var(--muted)}.loginAlt .lnk{font-weight:600;text-decoration:none;padding:6px 2px}
 body.locked>*:not(#loginBox):not(#senhaBox):not(#fotoBox):not(script){visibility:hidden}
 table.users{min-width:640px}
 .ptools input{flex:1;min-width:180px}
@@ -384,6 +414,37 @@ table.users{min-width:640px}
 .teleembreve{border:1px dashed var(--line);border-radius:10px;padding:18px;background:var(--field);display:grid;gap:6px;justify-items:start}
 .teleembreve b{font-family:var(--display);font-size:15px}.teleembreve small{color:var(--muted);font-size:13px;line-height:1.45}
 .teleembreve .pill{font-size:10.5px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);border-color:transparent}
+/* Radar de Novos Postos – MT (aba Telemetria) */
+.radar{display:grid;gap:12px}
+.rdcab{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.rdcab>div{display:grid;gap:2px}.rdtit{font-family:var(--display);font-size:17px;letter-spacing:-.01em}.rdcab small{color:var(--muted);font-size:12.5px}
+.rdkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.rdkpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface);display:grid;gap:2px;border-top:3px solid var(--accent)}
+.rdkpi b{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums;line-height:1.1}.rdkpi small{color:var(--muted);font-size:12px}
+.rdnav{flex-wrap:wrap}
+.rdfiltros input[type=search]{flex:1 1 220px;width:auto}.rdfiltros select{flex:0 1 190px;width:auto}.rdfiltros label{flex:0 1 150px}
+.rdgeral{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:12px;align-items:start}
+@media (max-width:820px){.rdgeral{grid-template-columns:minmax(0,1fr)}}
+.rdbarras{display:grid;gap:6px}
+.rdbarra{font:inherit;display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) auto;align-items:center;gap:8px;border:0;background:none;padding:2px 0;color:var(--fg);text-align:left;cursor:pointer;min-height:0}
+.rdbarra span{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rdbarra i{display:block;height:10px;border-radius:5px;background:var(--accent)}.rdbarra b{font-size:12.5px;font-variant-numeric:tabular-nums}
+.rdrow>span:last-child{gap:4px}
+.rdconf{font-size:10.5px;white-space:nowrap}
+.rdconf.confirmado{background:var(--sg-posvenda-claro);color:var(--sg-posvenda-escuro);border-color:transparent}
+.rdconf.possivel{background:var(--sg-comercial-claro);color:var(--sg-comercial-escuro);border-color:transparent}
+.rdconf.analise{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--sg-disparo-texto);border-color:transparent}
+.rdconf.nao_confirmado{background:color-mix(in srgb,var(--danger) 12%,transparent);color:var(--danger);border-color:transparent}
+:root[data-theme="dark"] .rdconf.confirmado{background:#163323;color:#7ed3a0}:root[data-theme="dark"] .rdconf.possivel{background:#1b2740;color:#8fb0f0}:root[data-theme="dark"] .rdconf.analise{color:#ff9a6b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rdconf.confirmado{background:#163323;color:#7ed3a0}:root:not([data-theme="light"]) .rdconf.possivel{background:#1b2740;color:#8fb0f0}:root:not([data-theme="light"]) .rdconf.analise{color:#ff9a6b}}
+.rdpend{font-style:italic;color:var(--muted);font-size:.92em}
+.rdtrecho{white-space:normal;line-height:1.45}
+.rdpre{white-space:pre-line}
+.rderro{color:var(--danger)}
+.rdalerta.lido{opacity:.65}
+.rdmapa{height:min(62vh,560px);border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--field)}
+.rddl{display:grid;grid-template-columns:minmax(0,11em) minmax(0,1fr);gap:6px 12px;margin:0;font-size:13.5px}
+.rddl dt{color:var(--muted)}.rddl dd{margin:0;overflow-wrap:anywhere}
+@media (max-width:560px){.rddl{grid-template-columns:minmax(0,1fr)}.rddl dd{margin-bottom:6px}}
 /* Telemetria ANP */
 .teleabas{display:flex;gap:4px;padding:4px;margin-bottom:12px;background:var(--surface);border:1px solid var(--line);border-radius:999px;width:max-content;max-width:100%;overflow-x:auto}
 .teleabas button{font:600 13.5px/1 var(--body);min-height:40px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
@@ -599,11 +660,54 @@ table.users select{min-width:140px}
 button.danger{color:var(--danger);border-color:var(--danger)}
 .pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--field);border:1px solid var(--line)}
 .pill.off{color:var(--danger);border-color:var(--danger)}
+.pill.pend{color:var(--sg-disparo-texto);border-color:var(--sg-disparo);background:color-mix(in srgb,var(--sg-disparo) 10%,transparent)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pill.pend{color:var(--sg-disparo)}}:root[data-theme="dark"] .pill.pend{color:var(--sg-disparo)}
+.ucard.upend{background:color-mix(in srgb,var(--sg-disparo) 5%,transparent);border-radius:12px}
 .marcs{display:flex;flex-wrap:wrap;gap:6px}
 .marcs button{font-size:12px;padding:4px 8px}
 .marcs .mg{width:100%;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:4px}
 .pcard .ctinfo{font-size:12.5px;color:#1f7a46;font-weight:600}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* Central de notificações (notificacoes.js) */
+header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-width:0}
+.sgnbtn{position:relative;display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,.14);color:var(--ink-fg)}
+.sgnbtn:hover,.sgnbtn[aria-expanded="true"]{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28)}
+.sgnbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sgnqtd{position:absolute;top:-6px;right:-6px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--sg-disparo);color:var(--sg-ink);font:700 11px/20px var(--body);text-align:center;font-variant-numeric:tabular-nums;box-shadow:0 0 0 2px var(--ink)}
+.sgnpainel{position:absolute;right:0;top:calc(100% + 10px);z-index:60;width:min(380px,calc(100vw - 32px));max-height:min(72vh,560px);display:flex;flex-direction:column;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sg-sombra);overflow:hidden;text-align:left}
+.sgntopo{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 4px}
+.sgntopo h3{margin:0;font:700 17px/24px var(--display);letter-spacing:-.01em}
+.sgnlink{background:none;border:0;padding:6px 0;font-size:12.5px;font-weight:600;color:var(--sg-comercial-escuro);cursor:pointer}
+.sgnlink:hover{text-decoration:underline}
+.sgnescopo{margin:0;padding:0 16px 10px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line)}
+.sgnlista{overflow-y:auto;flex:1}
+.sgnit{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:start;padding:12px 16px;border-bottom:1px solid var(--line);cursor:default}
+.sgnit.link,.sgnit.nova{cursor:pointer}
+.sgnit:hover{background:var(--bg)}
+.sgnit:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.sgnponto{width:8px;height:8px;margin-top:6px;border-radius:50%;background:transparent}
+.sgnit.nova .sgnponto{background:var(--sg-disparo)}
+.sgnit.nova{background:color-mix(in srgb,var(--sg-disparo) 5%,var(--surface))}
+.sgncorpo b{display:block;font-size:13.5px;font-weight:600;line-height:1.35}
+.sgnit:not(.nova) .sgncorpo b{font-weight:500}
+.sgncorpo p{margin:2px 0 0;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere;white-space:pre-line}
+.sgnmeta{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.sgnsetor{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--bg);border:1px solid var(--line);font-weight:500;color:var(--fg)}
+.sgndel{display:grid;place-items:center;width:28px;height:28px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted)}
+.sgndel:hover{background:var(--bg);color:var(--fg)}
+.sgnvazio{display:flex;flex-direction:column;align-items:center;gap:6px;padding:32px 24px;text-align:center;color:var(--muted);font-size:12.5px}
+.sgnvazio svg{width:30px;height:30px;opacity:.6}
+.sgnvazio b{color:var(--fg);font-size:13.5px;font-weight:600}
+.sgnnova{border-top:1px solid var(--line);padding:10px 16px 12px;background:var(--bg)}
+.sgnnova summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--sg-comercial-escuro)}
+.sgnnova form{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.sgnnova small{font-weight:400}
+.sgnacoes{display:flex;align-items:center;justify-content:flex-end;gap:10px}
+.sgnmsg{font-size:12px;color:var(--muted);margin-right:auto}
+.sgnenviar{background:var(--sg-disparo);border-color:var(--sg-disparo);color:var(--sg-ink);border-radius:12px;min-height:40px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .sgnlink,:root:not([data-theme="light"]) .sgnnova summary{color:#8fb0ff}}
+:root[data-theme="dark"] .sgnlink,:root[data-theme="dark"] .sgnnova summary{color:#8fb0ff}
+@media (max-width:560px){.sgnpainel{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 76px);width:auto;max-height:calc(100dvh - 100px)}}
 </style>
 </head><body>
 <header class="top"><div class="wrap">
@@ -612,6 +716,11 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <button type="button" id="btnInstall" hidden>Instalar app</button>
   <span id="versaoApp" class="versao" title="Versão do app instalada neste aparelho"></span>
 </div></header>
+<dialog id="novDlg" class="tkdlg novdlg" aria-labelledby="novTit">
+  <div class="tkdlghead"><h3 id="novTit">Novidades</h3><button type="button" id="novFechar" aria-label="Fechar">✕</button></div>
+  <div id="novBody" class="novbody"></div>
+  <div class="novpe"><button type="button" class="lnk" id="novAtualizar">Forçar atualização do app</button><button type="button" class="primary" id="novOk" autofocus>Entendi</button></div>
+</dialog>
 <nav class="tabs" aria-label="Seções"><div class="wrap" role="tablist">
   <button type="button" role="tab" id="tabProp" aria-selected="true">+ Nova proposta</button>
   <button type="button" role="tab" id="tabHoje" aria-selected="false" class="fbonly">Hoje</button>
@@ -660,8 +769,9 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   </div></section>
 
   <section class="sec"><h2>Implantação <span>valor aproximado</span></h2><div class="body">
-    <div class="impmod"><span>Modalidade da implantação</span><div class="impseg" role="group" aria-label="Modalidade da implantação"><button type="button" data-imp="Presencial" aria-pressed="true">Presencial</button><button type="button" data-imp="Remota" aria-pressed="false">Remota</button></div></div>
+    <div class="impmod"><span>Modalidade da implantação</span><div class="impseg" role="group" aria-label="Modalidade da implantação"><button type="button" data-imp="Presencial" aria-pressed="true">Presencial</button><button type="button" data-imp="Remota" aria-pressed="false">Remota</button><button type="button" data-imp="Combustível" aria-pressed="false">Só combustível</button></div></div>
     <p class="hint imprem" id="impRemMsg" hidden><b>Implantação remota:</b> sem custo de deslocamento para o cliente. A proposta mostra a implantação como "Sem custo".</p>
+    <p class="hint impcomb" id="impCombMsg" hidden><b>Só combustível:</b> o cliente paga apenas o combustível. A proposta mostra só a quilometragem (ida e volta), sem calcular valores.</p>
     <div id="impPres">
     <div class="grid">
       <label class="cnpjlbl">Cidade do cliente<span class="cnpjrow"><input id="cidade" placeholder="Ex.: Acorizal - MT"><button type="button" id="btnKm">Calcular km</button></span></label>
@@ -669,7 +779,7 @@ button.danger{color:var(--danger);border-color:var(--danger)}
       <label>Km rodados (ida e volta)<input id="km" type="number" step="0.1" min="0"></label>
     </div>
     <p class="hint" id="kmMsg">A cidade vem do CNPJ e o km é calculado pela rota de carro, ida e volta, a partir da base mais próxima.</p>
-    <p class="hint">Deslocamento: <span class="calc" id="desl">R$ 0,00</span> <span class="param" id="kmInfo"></span></p>
+    <p class="hint" id="deslLinha">Deslocamento: <span class="calc" id="desl">R$ 0,00</span> <span class="param" id="kmInfo"></span></p>
     </div>
     <p class="hint">Observações, equipamentos, suporte e referências vêm da aba Parâmetros.</p>
   </div></section>
@@ -742,6 +852,18 @@ button.danger{color:var(--danger);border-color:var(--danger)}
         <label class="btn up" for="c-logoFile">Carregar logo</label>
         <input type="file" id="c-logoFile" accept="image/png,image/jpeg,image/webp" hidden>
         <button type="button" id="btnLogoReset">Usar logo padrão</button>
+      </div>
+    </div>
+  </div>
+  <div class="logorow admin">
+    <div class="logoprev"><img id="logoRevPrev" alt="Logo da revenda" hidden><span id="logoRevVazio" class="logovazio">sem logo</span></div>
+    <div class="logoacts">
+      <b>Logo da revenda <span class="opc">opcional</span></b>
+      <span class="hint">Aparece no cabeçalho do PDF, ao lado do logo principal. PNG ou JPG, de preferência com fundo transparente.</span>
+      <div class="tools">
+        <label class="btn up" for="c-logoRevFile">Carregar logo da revenda</label>
+        <input type="file" id="c-logoRevFile" accept="image/png,image/jpeg,image/webp" hidden>
+        <button type="button" id="btnLogoRevDel" hidden>Remover</button>
       </div>
     </div>
   </div></div></section>
@@ -976,11 +1098,13 @@ button.danger{color:var(--danger);border-color:var(--danger)}
   <img class="sglogo sglogo-pos" src="icons/shotgun-logo-horizontal.svg" alt="Shotgun" width="190" height="42">
   <img class="sglogo sglogo-neg" src="icons/shotgun-logo-horizontal-negativo.svg" alt="Shotgun" width="190" height="42">
   <p class="slogan">Cada cliente na mira, do primeiro contato ao pós-venda.</p>
-  <p class="hint" id="loginMsg">Entre com o e-mail e a senha que o administrador cadastrou para você.</p>
+  <p class="hint" id="loginMsg">Entre com o seu e-mail e a sua senha.</p>
   <label>E-mail<input id="l-email" type="email" autocomplete="username" required></label>
   <label>Senha<input id="l-senha" type="password" autocomplete="current-password" required></label>
+  <label id="l-confBox" hidden>Repita a senha<input id="l-conf" type="password" autocomplete="new-password"></label>
   <button type="submit" class="primary" id="btnLogin">Entrar</button>
   <button type="button" class="linkbtn" id="btnEsqueci">Esqueci minha senha</button>
+  <p class="loginAlt" id="loginAlt"><span id="loginAltTxt">Ainda não tem acesso?</span> <button type="button" class="lnk" id="btnCadastrar">Me cadastrar</button></p>
 </form></div>
 
 <div id="senhaBox" hidden><form id="senhaForm" class="loginCard" novalidate>
@@ -994,12 +1118,19 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 </form></div>
 
 <div id="fotoBox" hidden><div class="loginCard fotoCard">
-  <h2>Foto do rosto</h2>
-  <p class="hint" id="fotoMsg">Para a sua identificação no sistema, tire uma foto do seu rosto. Fique de frente, em um lugar com boa luz e sem óculos escuros ou boné.</p>
-  <div class="fotoArea"><video id="fotoVideo" playsinline muted autoplay></video><img id="fotoPrev" alt="Prévia da foto" hidden><div class="fotoOval" aria-hidden="true"></div></div>
+  <h2 id="cadTitulo">Complete seu cadastro</h2>
+  <p class="hint" id="cadIntro">Antes de entrar, confirme seus dados. É rápido e só acontece uma vez.</p>
+  <label>Nome completo<input id="cadNome" autocomplete="name" autocapitalize="words" placeholder="Nome e sobrenome" required></label>
+  <div class="cadBloco"><span class="cadRot">Estado de atuação <small id="cadUfN">marque um ou mais</small></span><div class="uufs cadUfs" id="cadUfs"></div></div>
+  <div class="cadBloco"><span class="cadRot">Foto do rosto (selfie)</span>
+    <p class="hint cadDica">Fique de frente, em um lugar com boa luz, sem óculos escuros ou boné.</p>
+    <div class="fotoArea"><video id="fotoVideo" playsinline muted autoplay></video><img id="fotoPrev" alt="Prévia da foto" hidden><div class="fotoOval" aria-hidden="true"></div></div>
+    <div class="tools cadFotoBtns"><button type="button" id="btnFotoTirar">Tirar foto</button><button type="button" id="btnFotoRefazer" hidden>Tirar outra</button></div>
+    <label class="linkbtn fotoArq">Sem câmera? Enviar uma foto<input type="file" id="fotoArq" accept="image/*" capture="user" hidden></label>
+  </div>
   <label class="fotoOk"><input type="checkbox" id="fotoAceite"> Autorizo o uso desta foto para a minha identificação no Shotgun.</label>
-  <div class="tools"><button type="button" class="primary" id="btnFotoTirar">Tirar foto</button><button type="button" id="btnFotoRefazer" hidden>Tirar outra</button><button type="button" class="primary" id="btnFotoSalvar" hidden>Salvar e entrar</button></div>
-  <label class="linkbtn fotoArq">Sem câmera? Enviar uma foto<input type="file" id="fotoArq" accept="image/*" capture="user" hidden></label>
+  <p class="cadMsg" id="fotoMsg" role="status"></p>
+  <button type="button" class="primary" id="btnFotoSalvar">Salvar e entrar</button>
   <button type="button" class="linkbtn" id="btnFotoSair">Sair</button>
 </div></div>
 
@@ -1039,7 +1170,10 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 <script src="anp.js"></script>
 <script type="module" src="crm.js"></script>
 <script src="telemetria.js"></script>
+<script type="module" src="radar.js"></script>
 <script src="telemetria-anp.js"></script>
+<script src="notificacoes.js"></script>
+<script src="novidades.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const LOGO_PADRAO = $('logo').src;
@@ -1099,7 +1233,8 @@ const isentoTemp = r => r.isento && num(r.diasIsento)>0;
 const rowTotal = r => (r.oculto || (r.isento && !isentoTemp(r))) ? 0 : (qtyNum(r.qty)===null ? 0 : qtyNum(r.qty)*num(r.price));
 const sumRows = rows => rows.reduce((a,r)=>a+rowTotal(r),0);
 const impRemota = () => S.implantacao==='Remota';
-const deslocamento = () => impRemota() ? 0 : num(S.km)*num(CFG.vkm);
+const impComb = () => S.implantacao==='Combustível'; // só combustível: informa os km, sem calcular valor
+const deslocamento = () => (impRemota()||impComb()) ? 0 : num(S.km)*num(CFG.vkm);
 const fmtDate = iso => { if(!iso) return ''; const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}` };
 const basesList = () => String(CFG.bases||'').split('\n').map(s=>s.trim()).filter(Boolean);
 const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -1213,7 +1348,7 @@ function totals(){
   const tl=sumRows(S.lic), tm=sumRows(S.men), d=deslocamento();
   $('totLic').textContent=$('sLic').textContent=brl(tl);
   $('totMen').textContent=$('sMen').textContent=brl(tm);
-  $('desl').textContent=brl(d); $('sDes').textContent=impRemota()?'Remota · sem custo':brl(d);
+  $('desl').textContent=brl(d); $('sDes').textContent=impRemota()?'Remota · sem custo':impComb()?`Só combustível · ${km1(S.km)} km`:brl(d);
   $('kmInfo').textContent=`(R$ ${dec(CFG.vkm)} por km, definido em Parâmetros)`;
 }
 const REF_F=['nome','postos','regiao','contato','fone'];
@@ -1232,10 +1367,11 @@ function parseRefs(v){
     return {nome:(m?m[1]:t.split(/ - |\./)[0]).trim(), postos:m?m[2]:'', regiao:'', contato:c?c[1].trim():'', fone:f?f[1]:''};
   });
 }
-function renderImp(){ const r=impRemota(); document.querySelectorAll('[data-imp]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.imp===(r?'Remota':'Presencial')))); $('impPres').hidden=r; $('impRemMsg').hidden=!r }
+function renderImp(){ const r=impRemota(), c=impComb(), m=r?'Remota':c?'Combustível':'Presencial'; document.querySelectorAll('[data-imp]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.imp===m))); $('impPres').hidden=r; $('impRemMsg').hidden=!r; $('impCombMsg').hidden=!c; $('deslLinha').hidden=c }
 document.querySelectorAll('[data-imp]').forEach(b=>b.addEventListener('click',()=>{ S.implantacao=b.dataset.imp; save(); renderImp(); totals() }));
 function renderProp(){ PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderImp(); renderBases(); renderItems('lic'); renderItems('men'); setTimeout(()=>anpProposta(),0) }
-function aplicarLogo(){ $('logo').src=logoAtual(); $('logoPrev').src=logoAtual() }
+function aplicarLogo(){ $('logo').src=logoAtual(); $('logoPrev').src=logoAtual();
+  const r=CFG.logoRev||''; $('logoRevPrev').hidden=!r; if(r) $('logoRevPrev').src=r; else $('logoRevPrev').removeAttribute('src'); $('logoRevVazio').hidden=!!r; $('btnLogoRevDel').hidden=!r }
 function renderCfg(){ aplicarLogo(); CFG.refs=parseRefs(CFG.refs); CFGF.forEach(id=>{ $('c-'+id).value=CFG[id]??'' }); renderRefs(); renderItems('catLic'); renderItems('catMen'); renderPickers(); renderBases(); totals() }
 
 /* ---------- Abas ---------- */
@@ -1476,7 +1612,8 @@ $('cidade').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefaul
 $('base').addEventListener('change',()=>{ if($('cidade').value.trim()) calcularKm($('base').value) });
 
 /* ---------- Logo ---------- */
-$('c-logoFile').addEventListener('change',e=>{
+function lerLogo(input, aplicar){
+  input.addEventListener('change',e=>{
   const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f) return;
   if(!/^image\/(png|jpeg|webp)$/.test(f.type)){ status('Use uma imagem PNG ou JPG.'); return }
   const rd=new FileReader();
@@ -1485,11 +1622,14 @@ $('c-logoFile').addEventListener('change',e=>{
       const c=document.createElement('canvas'); c.width=Math.round(img.width*k); c.height=Math.round(img.height*k);
       c.getContext('2d').drawImage(img,0,0,c.width,c.height);
       let url=c.toDataURL('image/png'); if(url.length>180000){ status('Essa imagem ficou grande demais. Use um logo mais simples ou menor.'); return }
-      CFG.logo=url; CFG.logoW=c.width; CFG.logoH=c.height;
-      markCfg(); aplicarLogo(); status('Logo carregado. Clique em Salvar parâmetros para guardar.');
+      aplicar(url,c.width,c.height); markCfg(); aplicarLogo();
     }; img.onerror=()=>status('Não consegui ler essa imagem. Tente outro arquivo PNG ou JPG.'); img.src=rd.result };
   rd.readAsDataURL(f);
-});
+  });
+}
+lerLogo($('c-logoFile'),(url,w,h)=>{ CFG.logo=url; CFG.logoW=w; CFG.logoH=h; status('Logo carregado. Clique em Salvar parâmetros para guardar.') });
+lerLogo($('c-logoRevFile'),(url,w,h)=>{ CFG.logoRev=url; CFG.logoRevW=w; CFG.logoRevH=h; status('Logo da revenda carregado. Clique em Salvar parâmetros para guardar.') });
+$('btnLogoRevDel').addEventListener('click',()=>{ CFG.logoRev=''; delete CFG.logoRevW; delete CFG.logoRevH; markCfg(); aplicarLogo(); status('Logo da revenda removido. Clique em Salvar parâmetros para guardar.') });
 $('btnLogoReset').addEventListener('click',()=>{ delete CFG.logo; delete CFG.logoW; delete CFG.logoH; CFG.logo=''; markCfg(); aplicarLogo(); status('Voltou ao logo padrão. Clique em Salvar parâmetros para guardar.') });
 
 /* ---------- PDF ---------- */
@@ -1508,8 +1648,14 @@ function buildPdf(){
   color(C.ink,'setFillColor'); doc.rect(0,0,W,27,'F');
   { const lw=num(CFG.logoW)||1, lh=num(CFG.logoH)||1, k=Math.min(18/lw,18/lh), w=CFG.logo?lw*k:18, h=CFG.logo?lh*k:18;
     doc.addImage(logoAtual(),'PNG',M-2+(18-w)/2,4.5+(18-h)/2,w,h); }
-  color([255,255,255]); font('bold',14); doc.text('Proposta Comercial',M+20,12.5);
-  font('normal',9); doc.text(fmtDate(S.data),M+20,18.5);
+  let tx=M+20;
+  if(CFG.logoRev){ // logo da revenda (opcional): depois do principal, separado por um fio
+    const lw=num(CFG.logoRevW)||1, lh=num(CFG.logoRevH)||1, k=Math.min(34/lw,16/lh), w=lw*k, h=lh*k, x=M+21;
+    doc.setDrawColor(90,96,104); doc.setLineWidth(0.3); doc.line(x,7,x,20);
+    try{ doc.addImage(CFG.logoRev,'PNG',x+3,4.5+(18-h)/2,w,h); tx=x+3+w+5 }catch(e){}
+  }
+  color([255,255,255]); font('bold',14); doc.text('Proposta Comercial',tx,12.5);
+  font('normal',9); doc.text(fmtDate(S.data),tx,18.5);
   font('bold',11.5); doc.text(pdfSafe(CFG.vNome),R,10,{align:'right'});
   font('normal',9); doc.text(pdfSafe(CFG.vFone),R,16,{align:'right'}); doc.text(pdfSafe(CFG.vEmail),R,21.5,{align:'right'});
 
@@ -1575,6 +1721,8 @@ function buildPdf(){
   const cidadeCli = pdfSafe(titulo(splitCidade(S.cidade).cidade)) || 'Cliente';
   const linhas = impRemota() ? [
     ['Implantação remota', 'Implantação realizada de forma remota, sem deslocamento de técnico.\nSem custo para o cliente.', 'Sem custo'],
+  ] : impComb() ? [
+    ['Deslocamento', `${baseNome} - ${cidadeCli} - ${baseNome} (ida e volta)\nCobrado apenas o valor do combustível.`, `${km1(S.km)} km`],
   ] : [
     ['Deslocamento', `${baseNome} - ${cidadeCli} - ${baseNome}\n${km1(S.km)} km x R$ ${dec(CFG.vkm)} por km`, brl(deslocamento())],
   ];
@@ -1591,7 +1739,7 @@ function buildPdf(){
   y+=3;
 
   font('normal',7.5); color(C.text);
-  (impRemota() ? [] : [ (String(CFG.detImp||'').trim()==='Detalhamento de custos de implantação (por dia 1 técnico). Valores normais de referência. A Hospedagem a escolha do contratante.' ? cfgModelo().detImp : CFG.detImp), ...obsParagrafos()]).filter(t=>String(t||'').trim()).forEach(p=>{
+  (impRemota() ? [] : impComb() ? obsParagrafos() : [ (String(CFG.detImp||'').trim()==='Detalhamento de custos de implantação (por dia 1 técnico). Valores normais de referência. A Hospedagem a escolha do contratante.' ? cfgModelo().detImp : CFG.detImp), ...obsParagrafos()]).filter(t=>String(t||'').trim()).forEach(p=>{
     const l=doc.splitTextToSize(pdfSafe(p), W-2*M); ensure(l.length*3.3+2);
     doc.text(l,M,y+3); y+=l.length*3.3+1.6;
   });
@@ -1768,14 +1916,16 @@ async function atualizarApp(el){
   const num=t=>{ const m=String(t||'').match(/(?:argo|shotgun)-v(\d+)/); return m?+m[1]:0 };
   let atual=0; try{ atual=Math.max(0,...(await caches.keys()).map(num)) }catch(_){}
   let srv=0; try{ srv=num(await (await fetch('sw.js',{cache:'no-store'})).text()) }catch(_){}
-  const v=atual||srv; if(!v) return; el.textContent='Versão '+v; el.title='Clique para atualizar o app (como Ctrl+Shift+R)';
+  const v=atual||srv; if(!v) return; el.textContent='Versão '+v; el.title='Ver as novidades desta versão';
   el.setAttribute('role','button'); el.tabIndex=0;
   if(atual&&srv>atual){ el.textContent='Versão '+atual+' · nova '+srv+', toque para atualizar'; el.classList.add('nova') }
-  el.addEventListener('click',()=>atualizarApp(el));
+  // Toque na versão: se há versão nova, atualiza; senão abre as Novidades (que têm o botão de forçar a atualização)
+  const tocar=()=>{ if(el.classList.contains('nova')||!window.shotgunNovidades) atualizarApp(el); else window.shotgunNovidades.abrir() };
+  el.addEventListener('click',tocar);
   // Página aberta há tempo: confere a cada 2 min se saiu versão nova e avisa no cabeçalho
   const base=srv||atual;
   setInterval(async()=>{ try{ const n=num(await (await fetch('sw.js',{cache:'no-store'})).text()); if(n>base&&!el.classList.contains('nova')){ el.textContent='Versão '+base+' · nova '+n+', toque para atualizar'; el.classList.add('nova') } }catch(_){} },120000);
-  el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); atualizarApp(el) } });
+  el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); tocar() } });
 })();
 
 aplicarModo();

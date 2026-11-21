@@ -38,6 +38,22 @@ async function iniciar() {
     e.preventDefault();
     const email = $('l-email').value.trim(), senha = $('l-senha').value;
     if (!email || !senha) { lmsg('Informe e-mail e senha.'); return; }
+    if (modoCad) {
+      // Me cadastrar: cria a conta e segue para a tela de cadastro (nome, estado e selfie), que fica aguardando liberação
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { lmsg('Digite um e-mail válido.'); return; }
+      if (senha.length < 6) { lmsg('A senha precisa ter pelo menos 6 caracteres.'); return; }
+      if (senha !== $('l-conf').value) { lmsg('As duas senhas não são iguais. Digite de novo.'); return; }
+      $('btnLogin').disabled = true; lmsg('Criando sua conta…');
+      try { await A.createUserWithEmailAndPassword(auth, email.toLowerCase(), senha); $('l-senha').value = ''; $('l-conf').value = ''; modoCadastro(false); }
+      catch (err) {
+        const c = err.code || '';
+        lmsg(/email-already-in-use/.test(c) ? 'Esse e-mail já tem conta. Toque em "Entrar" e use a sua senha (ou "Esqueci minha senha").' :
+          /invalid-email/.test(c) ? 'Digite um e-mail válido.' : /weak-password/.test(c) ? 'Senha fraca: use pelo menos 6 caracteres.' :
+          /operation-not-allowed|admin-restricted/.test(c) ? 'O cadastro pelo app não está ativado. Fale com o administrador.' :
+          /network/.test(c) ? 'Sem internet. Conecte-se para se cadastrar.' : 'Não foi possível criar a conta (' + c + ').');
+      } finally { $('btnLogin').disabled = false; }
+      return;
+    }
     $('btnLogin').disabled = true; lmsg('Entrando…');
     try { senhaDigitada = senha; await A.signInWithEmailAndPassword(auth, email, senha); $('l-senha').value = ''; }
     catch (err) {
@@ -47,6 +63,17 @@ async function iniciar() {
         /network/.test(c) ? 'Sem internet. Conecte-se para entrar.' : 'Não foi possível entrar (' + c + ').');
     } finally { $('btnLogin').disabled = false; }
   });
+  let modoCad = false;
+  function modoCadastro(on) {
+    modoCad = on; $('l-confBox').hidden = !on; $('btnEsqueci').hidden = on;
+    $('btnLogin').textContent = on ? 'Criar conta' : 'Entrar';
+    $('l-senha').autocomplete = on ? 'new-password' : 'current-password';
+    $('loginAltTxt').textContent = on ? 'Já tem acesso?' : 'Ainda não tem acesso?';
+    $('btnCadastrar').textContent = on ? 'Entrar' : 'Me cadastrar';
+    lmsg(on ? 'Crie sua conta com seu e-mail e uma senha. Depois você preenche nome, estado de atuação e uma selfie, e o administrador libera o acesso.' : 'Entre com o seu e-mail e a sua senha.');
+    setTimeout(() => $('l-email').focus(), 50);
+  }
+  $('btnCadastrar').addEventListener('click', () => modoCadastro(!modoCad));
   $('btnEsqueci').addEventListener('click', async () => {
     const email = $('l-email').value.trim();
     if (!email) { lmsg('Digite seu e-mail acima e toque de novo em "Esqueci minha senha".'); $('l-email').focus(); return; }
@@ -86,13 +113,20 @@ async function iniciar() {
     } finally { $('btnSenha').disabled = false; }
   });
 
-  /* ---------- Foto do rosto (identificação), pedida no primeiro acesso ---------- */
-  const fbox = $('fotoBox'), fmsg = t => { $('fotoMsg').textContent = t; };
-  let fotoOk = null, fotoStream = null, fotoDado = '';
+  /* ---------- Cadastro no primeiro acesso: nome completo, estado de atuação e foto do rosto ---------- */
+  const fbox = $('fotoBox'), fmsg = (t, ok) => { const m = $('fotoMsg'); m.textContent = t || ''; m.classList.toggle('ok', !!ok); };
+  const CAD_UF = { AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PA: 'Pará', PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SP: 'São Paulo', SE: 'Sergipe', TO: 'Tocantins' };
+  $('cadUfs').innerHTML = Object.keys(CAD_UF).map(uf => `<label class="uuf" title="${CAD_UF[uf]}"><input type="checkbox" data-uf="${uf}"><span>${uf}</span></label>`).join('');
+  const cadUfsMarcadas = () => [...$('cadUfs').querySelectorAll('input:checked')].map(x => x.dataset.uf);
+  const cadUfConta = () => { const n = cadUfsMarcadas().length; $('cadUfN').textContent = n ? n + (n === 1 ? ' estado marcado' : ' estados marcados') : 'marque um ou mais'; };
+  $('cadUfs').addEventListener('change', cadUfConta);
+  const nomeCompleto = n => String(n || '').trim().split(/\s+/).filter(p => p.length >= 2).length >= 2;
+  const limpaNome = n => String(n || '').replace(/\s+/g, ' ').trim();
+  let fotoOk = null, fotoStream = null, fotoDado = '', cadCtx = null;
   const pararCam = () => { if (fotoStream) fotoStream.getTracks().forEach(t => t.stop()); fotoStream = null; };
-  function modoFoto(tirada) { $('fotoVideo').hidden = tirada; $('fotoPrev').hidden = !tirada; $('btnFotoTirar').hidden = tirada; $('btnFotoRefazer').hidden = !tirada; $('btnFotoSalvar').hidden = !tirada; }
+  function modoFoto(tirada) { $('fotoVideo').hidden = tirada; $('fotoPrev').hidden = !tirada; $('btnFotoTirar').hidden = tirada; $('btnFotoRefazer').hidden = !tirada; }
   async function ligarCam() {
-    modoFoto(false); fotoDado = '';
+    modoFoto(false); fotoDado = ''; fmsg('');
     try { fotoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 720 } }, audio: false }); $('fotoVideo').srcObject = fotoStream; $('btnFotoTirar').disabled = false; }
     catch (e) { $('btnFotoTirar').disabled = true; fmsg('Não foi possível abrir a câmera. Libere a câmera no navegador ou use "Enviar uma foto".'); }
   }
@@ -103,37 +137,65 @@ async function iniciar() {
     g.drawImage(src, (w - lado) / 2, (h - lado) / 2, lado, lado, 0, 0, 360, 360);
     return c.toDataURL('image/jpeg', 0.82);
   }
-  function exigirFoto() {
-    box.hidden = true; body.classList.add('locked'); fbox.hidden = false; $('fotoAceite').checked = false;
-    ligarCam();
+  // ctx: { user, perfil (null = ainda não tem cadastro), foto (b64 já salvo ou '') }
+  function exigirCadastro(ctx) {
+    cadCtx = ctx; const p = ctx.perfil || {};
+    box.hidden = true; body.classList.add('locked'); fbox.hidden = false; fmsg('');
+    const novo = !ctx.perfil;
+    $('cadTitulo').textContent = novo ? 'Crie seu cadastro' : 'Complete seu cadastro';
+    $('cadIntro').textContent = novo ? `Primeiro acesso com ${ctx.user.email}. Preencha seus dados e envie: o administrador confere e libera o seu acesso.` : 'Antes de entrar, confirme seus dados. É rápido e só acontece uma vez.';
+    $('btnFotoSalvar').textContent = novo ? 'Enviar cadastro' : 'Salvar e entrar';
+    $('cadNome').value = nomeCompleto(p.nome) ? p.nome : '';
+    const ufs = Array.isArray(p.estados) ? p.estados : [];
+    $('cadUfs').querySelectorAll('input').forEach(i => { i.checked = ufs.includes(i.dataset.uf); }); cadUfConta();
+    $('fotoAceite').checked = !!ctx.foto;
+    if (ctx.foto) { pararCam(); fotoDado = ctx.foto; $('fotoPrev').src = ctx.foto; modoFoto(true); } else ligarCam();
+    setTimeout(() => { if (!$('cadNome').value) $('cadNome').focus(); }, 50);
     return new Promise(res => { fotoOk = res; });
   }
-  $('btnFotoTirar').addEventListener('click', () => { const v = $('fotoVideo'); if (!v.videoWidth) return; fotoDado = reduzir(v, v.videoWidth, v.videoHeight, true); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); });
+  $('btnFotoTirar').addEventListener('click', () => { const v = $('fotoVideo'); if (!v.videoWidth) return; fotoDado = reduzir(v, v.videoWidth, v.videoHeight, true); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); fmsg(''); });
   $('btnFotoRefazer').addEventListener('click', ligarCam);
   $('fotoArq').addEventListener('change', e => {
     const f = e.target.files[0]; if (!f) return; const img = new Image();
-    img.onload = () => { fotoDado = reduzir(img, img.naturalWidth, img.naturalHeight, false); URL.revokeObjectURL(img.src); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); };
+    img.onload = () => { fotoDado = reduzir(img, img.naturalWidth, img.naturalHeight, false); URL.revokeObjectURL(img.src); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); fmsg(''); };
     img.onerror = () => fmsg('Esse arquivo não é uma imagem válida.'); img.src = URL.createObjectURL(f); e.target.value = '';
   });
-  $('btnFotoSair').addEventListener('click', () => { pararCam(); fbox.hidden = true; fotoOk = null; A.signOut(auth); });
+  $('btnFotoSair').addEventListener('click', () => { pararCam(); fbox.hidden = true; fotoOk = null; cadCtx = null; A.signOut(auth); });
   $('btnFotoSalvar').addEventListener('click', async () => {
-    if (!fotoDado) return; if (!$('fotoAceite').checked) { fmsg('Marque a autorização para continuar.'); return; }
-    const u = auth.currentUser; if (!u) return; $('btnFotoSalvar').disabled = true; fmsg('Salvando…');
+    const ctx = cadCtx, u = auth.currentUser; if (!ctx || !u) return;
+    const nome = limpaNome($('cadNome').value), estados = cadUfsMarcadas();
+    if (!nomeCompleto(nome)) { fmsg('Digite seu nome completo (nome e sobrenome).'); $('cadNome').focus(); return; }
+    if (!estados.length) { fmsg('Marque pelo menos um estado de atuação.'); return; }
+    if (!fotoDado) { fmsg('Tire uma foto do rosto (ou envie uma) para continuar.'); return; }
+    if (!$('fotoAceite').checked) { fmsg('Marque a autorização da foto para continuar.'); return; }
+    $('btnFotoSalvar').disabled = true; fmsg('Salvando…', true);
     try {
-      await F.setDoc(F.doc(db, 'fotos', u.uid), { b64: fotoDado, em: F.serverTimestamp(), aceite: true });
-      fbox.hidden = true; const r = fotoOk; fotoOk = null; if (r) r();
-    } catch (err) { fmsg('Não foi possível salvar a foto (' + (err.code || 'erro') + '). Tente de novo.'); }
-    finally { $('btnFotoSalvar').disabled = false; }
+      if (!ctx.perfil && !ctx.criado) {
+        // Sem cadastro: cria como vendedor, bloqueado e aguardando o administrador liberar
+        await F.setDoc(F.doc(db, 'usuarios', u.uid), { nome, email: (u.email || '').toLowerCase(), fone: '', papel: 'vendedor', papeis: ['vendedor'], estados, ativo: false, pendente: true, criado: F.serverTimestamp(), cadastroEm: F.serverTimestamp() });
+        ctx.criado = true;
+      }
+      if (fotoDado !== ctx.foto) await F.setDoc(F.doc(db, 'fotos', u.uid), { b64: fotoDado, em: F.serverTimestamp(), aceite: true });
+      if (ctx.perfil) await F.updateDoc(F.doc(db, 'usuarios', u.uid), { nome, estados, cadastroEm: F.serverTimestamp() });
+      pararCam(); fbox.hidden = true; const r = fotoOk; fotoOk = null; cadCtx = null; if (r) r({ nome, estados });
+    } catch (err) {
+      const c = err.code || 'erro';
+      fmsg(/permission/.test(c) ? (ctx.perfil ? 'O sistema ainda não permite salvar seus dados. Avise o administrador.' : 'O sistema ainda não aceita cadastros novos. Fale com o administrador.') + ' (' + c + ')' :
+        /network|unavailable/.test(c) ? 'Sem internet. Conecte-se e tente de novo.' : 'Não foi possível salvar (' + c + '). Tente de novo.');
+    } finally { $('btnFotoSalvar').disabled = false; }
   });
-  async function precisaFoto(uid) {
-    try { return !(await F.getDoc(F.doc(db, 'fotos', uid))).exists(); }
-    catch (e) { return false; } // sem permissão ou sem internet: não bloqueia o acesso
+  // Foto já salva: '' se não tem; null se não deu para conferir (sem permissão ou sem internet)
+  async function fotoSalva(uid) {
+    try { const sn = await F.getDoc(F.doc(db, 'fotos', uid)); return sn.exists() ? (sn.data().b64 || '') : ''; }
+    catch (e) { return null; }
   }
+  // Pede o cadastro quando falta nome completo, estado de atuação ou foto
+  const cadastroIncompleto = (p, foto) => foto === '' || !nomeCompleto(p.nome) || !(Array.isArray(p.estados) && p.estados.length);
 
   A.onAuthStateChanged(auth, async user => {
     perfil = null; fb.admin = false; fb.task = false; fb.temTask = false; body.classList.remove('is-admin', 'is-task', 'tem-task'); window.dispatchEvent(new Event('argo-sair'));
-    if (!user) { sbox.hidden = true; trocaOk = null; fbox.hidden = true; fotoOk = null; pararCam(); }
-    if (!user) { mostrarLogin('Entre com o e-mail e a senha que o administrador cadastrou para você.'); return; }
+    if (!user) { sbox.hidden = true; trocaOk = null; fbox.hidden = true; fotoOk = null; cadCtx = null; pararCam(); }
+    if (!user) { mostrarLogin('Entre com o seu e-mail e a sua senha.'); return; }
     try {
       const ref = F.doc(db, 'usuarios', user.uid);
       let snap = await F.getDoc(ref);
@@ -142,13 +204,19 @@ async function iniciar() {
         try { await F.setDoc(ref, { nome: user.email.split('@')[0], email: user.email, fone: '', papel: 'adm', ativo: true, criado: F.serverTimestamp() }); snap = await F.getDoc(ref); }
         catch (e) { /* não é o dono */ }
       }
-      if (!snap.exists() || snap.data().ativo !== true) { await A.signOut(auth); mostrarLogin('Seu acesso não está liberado. Fale com o administrador.'); return; }
+      if (!snap.exists()) {
+        // Primeiro login de quem ainda não tem cadastro: pede os dados e deixa aguardando a liberação
+        await exigirCadastro({ user, perfil: null, foto: (await fotoSalva(user.uid)) || '' });
+        if (auth.currentUser?.uid !== user.uid) return;
+        await A.signOut(auth); mostrarLogin('Cadastro enviado. O administrador vai conferir seus dados e liberar o seu acesso. Depois é só entrar de novo.'); return;
+      }
+      if (snap.data().ativo !== true) { await A.signOut(auth); mostrarLogin(snap.data().pendente ? 'Seu cadastro está aguardando a liberação do administrador.' : 'Seu acesso não está liberado. Fale com o administrador.'); return; }
       perfil = { uid: user.uid, ...snap.data() };
     } catch (e) {
       mostrarLogin(e.code === 'unavailable' ? 'Sem internet. Conecte-se para entrar.' : 'Não foi possível verificar seu acesso (' + (e.code || 'erro') + ').'); return;
     }
     if (perfil.trocarSenha === true) { await exigirTroca(); if (auth.currentUser?.uid !== user.uid) return; perfil.trocarSenha = false; }
-    if (await precisaFoto(user.uid)) { await exigirFoto(); if (auth.currentUser?.uid !== user.uid) return; }
+    { const foto = await fotoSalva(user.uid); if (cadastroIncompleto(perfil, foto)) { const d = await exigirCadastro({ user, perfil, foto: foto || '' }); if (auth.currentUser?.uid !== user.uid) return; Object.assign(perfil, d); } }
     // Perfis: a pessoa pode ter mais de um (papeis); "papel" guarda o principal
     const papeis = Array.isArray(perfil.papeis) && perfil.papeis.length ? perfil.papeis : [perfil.papel || 'vendedor'];
     fb.admin = perfil.papel === 'adm' || papeis.includes('adm');
@@ -159,12 +227,14 @@ async function iniciar() {
       box.hidden = true; body.classList.remove('locked');
       $('tabUser').textContent = perfil.nome || perfil.email;
       aplicarModo(); abrirAba('tabTask');
+      window.dispatchEvent(new CustomEvent('shotgun-entrou', { detail: { uid: user.uid } }));
       window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: false } })); return;
     }
     if (fb.admin || fb.temTask) window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: fb.admin } }));
     box.hidden = true; body.classList.remove('locked');
     $('tabUser').textContent = perfil.nome || perfil.email;
     aplicarPerfil();
+    window.dispatchEvent(new CustomEvent('shotgun-entrou', { detail: { uid: user.uid } })); // abre as Novidades se a versão é nova
     aplicarModo();
     await carregar(false);
     if (fb.admin) { ouvirUsuarios(); carregarE2(); carregarE3(); }
@@ -260,7 +330,7 @@ async function iniciar() {
       numero, status: 'enviada', owner: perfil.uid, vendedor: perfil.nome || '', vendedorFone: dig(perfil.fone),
       cliente: String(S.cliente || '').trim(), cnpj: S.cnpj || '', contato: String(S.contato || '').trim(), cidade: S.cidade || '',
       waCli: n, data: S.data || hojeIso(), validade: S.validade || '',
-      totLic: sumRows(S.lic), totMen: sumRows(S.men), totDes: deslocamento(), implantacao: S.implantacao === 'Remota' ? 'Remota' : 'Presencial', arquivo: fileName(),
+      totLic: sumRows(S.lic), totMen: sumRows(S.men), totDes: deslocamento(), implantacao: S.implantacao === 'Remota' || S.implantacao === 'Combustível' ? S.implantacao : 'Presencial', arquivo: fileName(),
       dados: JSON.parse(assin), criado: F.serverTimestamp(),
       ...(window.crmLeadId ? { leadId: window.crmLeadId } : {}),
       ...(rf ? { owner: rf.owner || perfil.uid, vendedor: rf.vendedor || perfil.nome || '', vendedorFone: rf.vendedorFone || dig(perfil.fone), substitui: rf.id, substituiNumero: rf.numero || '', versao, ...(rf.leadId ? { leadId: rf.leadId } : {}) } : {})
@@ -427,7 +497,7 @@ async function iniciar() {
       return `<div class="pcard" data-id="${esc(p.id)}">
         <div class="top"><div><b>${esc(p.cliente)}</b><div class="meta">Nº ${esc(p.numero)} · ${esc(p.cidade || '')}${fb.admin ? ' · ' + esc(p.vendedor) : ''}</div></div>
           ${fb.admin ? '<button type="button" class="danger" data-a="excluirp">Excluir proposta</button>' : ''}</div>
-        <div class="vals">Licenças ${brl(p.totLic)} · Mensalidade ${brl(p.totMen)} · ${p.implantacao === 'Remota' ? 'Implantação remota (sem custo)' : 'Deslocamento ' + brl(p.totDes)}</div>
+        <div class="vals">Licenças ${brl(p.totLic)} · Mensalidade ${brl(p.totMen)} · ${p.implantacao === 'Remota' ? 'Implantação remota (sem custo)' : p.implantacao === 'Combustível' ? 'Deslocamento só combustível' + (p.dados && p.dados.km ? ' (' + Number(p.dados.km).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' km)' : '') : 'Deslocamento ' + brl(p.totDes)}</div>
         <div class="meta">Enviada em ${esc(fmtTs(p.criado) || fmtD(p.data))}${p.validade ? ' · válida até ' + esc(fmtD(p.validade)) : ''}${p.substitui ? `<br>Versão ${p.versao || 2} · atualiza a nº ${esc(p.substituiNumero || '')} <button type="button" class="lnk" data-a="pdfant">ver PDF anterior</button>` : ''}${ok ? `<br><b style="color:#1f7a46">Aprovada por ${esc(p.aprovadoNome)}${p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : ''} em ${esc(fmtTs(p.aprovadoEm))}</b>` : ''}</div>
         ${passosHtml(p, sel)}
         <div class="etapa" data-passo="0"${oc(0)}><div class="etit">Passo 1 · Proposta</div>
@@ -1269,25 +1339,27 @@ async function iniciar() {
   function ouvirUsuarios() {
     if (unsub) return;
     unsub = F.onSnapshot(F.collection(db, 'usuarios'), qs => {
-      lista = qs.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => !u.excluido).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+      lista = qs.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => !u.excluido).sort((a, b) => (pend(b) - pend(a)) || String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
       desenharUsuarios();
     }, () => uStatus('Não foi possível carregar a lista de usuários.'));
   }
   A.onAuthStateChanged(auth, u => { if (!u && unsub) { unsub(); unsub = null; } });
 
   const fotosU = {};
+  const pend = u => u.pendente === true && u.ativo !== true ? 1 : 0;
   const UF_NOMES = { AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PA: 'Pará', PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SP: 'São Paulo', SE: 'Sergipe', TO: 'Tocantins' }, UFS = Object.keys(UF_NOMES);
   function desenharUsuarios() {
-    $('uCount').textContent = lista.length + (lista.length === 1 ? ' usuário' : ' usuários');
+    const np = lista.filter(pend).length;
+    $('uCount').textContent = lista.length + (lista.length === 1 ? ' usuário' : ' usuários') + (np ? ` · ${np} aguardando liberação` : '');
     $('usersBody').innerHTML = lista.map(u => {
       const eu = perfil && u.uid === perfil.uid;
-      return `<div class="ucard" data-uid="${esc(u.uid)}">
+      return `<div class="ucard${pend(u) ? ' upend' : ''}" data-uid="${esc(u.uid)}">
         <div class="ucol0">${fotosU[u.uid] ? `<img class="ufoto" src="${fotosU[u.uid]}" alt="Foto de ${esc(u.nome)}">` : `<span class="ufoto" title="${fotosU[u.uid] === '' ? 'Ainda não enviou a foto' : 'Carregando'}"></span>`}</div>
         <div class="ucol1"><label class="ulab">Nome<input data-f="nome" value="${esc(u.nome)}" aria-label="Nome"></label><span class="umail">${esc(u.email)}</span></div>
         <label class="ulab ucol2">Telefone<input data-f="fone" value="${esc(u.fone)}" aria-label="Telefone" inputmode="tel"></label>
         <div class="ucol3"><span class="ulabt">Perfil</span>${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; return `<div class="upapeis">${[['vendedor', 'Vendedor'], ['task', 'TASK'], ['adm', 'Administrador']].map(([k, l]) => `<label class="uchip"><input type="checkbox" data-papel="${k}"${ps.includes(k) ? ' checked' : ''}${eu ? ' disabled' : ''}> ${l}</label>`).join('')}</div>`; })()}${(() => { const ss = Array.isArray(u.setores) ? u.setores : [], top = ((MOD || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai); return top.length ? `<span class="ulabt" style="display:block;margin-top:8px">Setor no TASK</span><div class="upapeis">${top.map(m => `<label class="uchip"><input type="checkbox" data-setor="${esc(m.id)}"${ss.includes(m.id) ? ' checked' : ''}> ${esc(m.titulo)}</label>`).join('')}</div>` : ''; })()}${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; if (!ps.includes('vendedor')) return ''; const us = Array.isArray(u.estados) ? u.estados : []; return `<span class="ulabt" style="display:block;margin-top:8px">Estados de atuação <small class="uufn">${us.length ? us.length + (us.length === 1 ? ' estado' : ' estados') : 'nenhum marcado'}</small></span><div class="uufs">${UFS.map(uf => `<label class="uuf" title="${UF_NOMES[uf]}"><input type="checkbox" data-uf="${uf}"${us.includes(uf) ? ' checked' : ''}><span>${uf}</span></label>`).join('')}</div>`; })()}</div>
-        <div class="ucol4"><span class="pill ${u.ativo ? '' : 'off'}">${u.ativo ? 'Liberado' : 'Bloqueado'}</span>${eu ? '<span class="hint">você</span>' : ''}</div>
-        <div class="uacts">${eu ? '' : `<button type="button" data-a="toggle">${u.ativo ? 'Bloquear' : 'Liberar'}</button><button type="button" data-a="excluir" class="danger">Excluir</button>`}<button type="button" data-a="reset">Nova senha</button>${fotosU[u.uid] ? '<button type="button" data-a="novafoto">Pedir nova foto</button>' : ''}</div></div>`;
+        <div class="ucol4"><span class="pill ${u.ativo ? '' : pend(u) ? 'pend' : 'off'}">${u.ativo ? 'Liberado' : pend(u) ? 'Aguardando liberação' : 'Bloqueado'}</span>${eu ? '<span class="hint">você</span>' : ''}</div>
+        <div class="uacts">${eu ? '' : `<button type="button" data-a="toggle"${pend(u) ? ' class="primary"' : ''}>${u.ativo ? 'Bloquear' : 'Liberar'}</button><button type="button" data-a="excluir" class="danger">Excluir</button>`}<button type="button" data-a="reset">Nova senha</button>${fotosU[u.uid] ? '<button type="button" data-a="novafoto">Pedir nova foto</button>' : ''}</div></div>`;
     }).join('');
     lista.filter(u => !(u.uid in fotosU)).forEach(u => { fotosU[u.uid] = ''; F.getDoc(F.doc(db, 'fotos', u.uid)).then(sn => { if (sn.exists()) { fotosU[u.uid] = sn.data().b64 || ''; desenharUsuarios(); } }).catch(() => {}); });
   }
@@ -1322,7 +1394,7 @@ async function iniciar() {
     const a = e.target.dataset.a, tr = e.target.closest('[data-uid]'); if (!a || !tr) return;
     const u = lista.find(x => x.uid === tr.dataset.uid); if (!u) return;
     try {
-      if (a === 'toggle') { await F.updateDoc(F.doc(db, 'usuarios', u.uid), { ativo: !u.ativo }); uStatus(u.ativo ? `${u.nome} bloqueado.` : `${u.nome} liberado.`); }
+      if (a === 'toggle') { await F.updateDoc(F.doc(db, 'usuarios', u.uid), u.ativo ? { ativo: false } : { ativo: true, pendente: false, liberadoEm: F.serverTimestamp() }); uStatus(u.ativo ? `${u.nome} bloqueado.` : `${u.nome} liberado.`); }
       if (a === 'excluir') {
         if (excluirArm.uid !== u.uid || Date.now() - excluirArm.t > 5000) { excluirArm = { uid: u.uid, t: Date.now() }; e.target.textContent = 'Confirmar exclusão'; uStatus(`Clique de novo em "Confirmar exclusão" para excluir ${u.nome}. As propostas dele continuam na aba Propostas.`); return; }
         excluirArm = {};
