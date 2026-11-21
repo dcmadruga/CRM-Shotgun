@@ -407,6 +407,16 @@ body.fb #tabProp{display:none!important}
 .crmrow.atras>span:last-child small{color:var(--danger);font-weight:600}
 @media (max-width:560px){.crmrow{grid-template-columns:minmax(0,1fr)}.crmrow>span:last-child{align-items:flex-start;flex-direction:row;gap:8px;flex-wrap:wrap}}
 #crmDlgBody{padding:16px}
+.crmcts{display:grid;gap:8px}
+.crmctt{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+.crmct{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.2fr) auto;gap:8px;align-items:end;padding:8px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.crmct label span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.crmct label em{font-style:normal;font-weight:500;color:var(--purple)}
+.crmctx{padding:7px 10px}
+.crmctadd{justify-self:start}
+@media (max-width:640px){.crmct{grid-template-columns:minmax(0,1fr) auto}.crmct label:nth-of-type(2),.crmct label:nth-of-type(3){grid-column:1/2}.crmct .crmctx{grid-row:1;grid-column:2}}
+.crmctnovo{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.crmctnovo input{flex:1 1 150px;width:auto}
+.crmctdel{padding:0 4px!important;color:var(--muted)!important}
 .crmsoc:empty{display:none}
 .crmsoc>small{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.02em}
 .crmsocl{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}

@@ -155,9 +155,20 @@ const novaNota = () => { const texto = $('crmNTexto').value.trim(); return texto
 
 // Sócios da Receita (QSA): tocar num nome preenche o Contato do lead
 const nomeProprio = n => String(n || '').toLowerCase().replace(/(^|\s)(\S)/g, (m, a, c) => a + c.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E)\s/g, m => m.toLowerCase());
+// Contatos do lead: lista de { nome, fone, email, cargo }. Leads antigos tinham um contato só (contato/fone/email).
+const contatosDe = l => Array.isArray(l.contatos) && l.contatos.length ? l.contatos : (l.contato || l.fone || l.email ? [{ nome: l.contato || '', fone: l.fone || '', email: l.email || '', cargo: '' }] : []);
+const ctLinha = (c = {}) => `<div class="crmct" data-cargo="${esc(c.cargo || '')}">
+  <label><span>Nome${c.cargo ? ` · <em>${esc(c.cargo)}</em>` : ''}</span><input data-c="nome" value="${esc(c.nome || '')}"></label>
+  <label>WhatsApp / telefone<input data-c="fone" inputmode="tel" placeholder="(65) 99999-0000" value="${esc(c.fone || '')}"></label>
+  <label>E-mail<input data-c="email" type="email" value="${esc(c.email || '')}"></label>
+  <button type="button" class="crmctx" data-a="ctdel" aria-label="Tirar este contato" title="Tirar este contato">✕</button>
+</div>`;
+function lerContatos() {
+  return [...document.querySelectorAll('#crmCts .crmct')].map(r => ({ nome: r.querySelector('[data-c=nome]').value.trim(), fone: r.querySelector('[data-c=fone]').value.trim(), email: r.querySelector('[data-c=email]').value.trim(), cargo: r.dataset.cargo || '' })).filter(c => c.nome || c.fone || c.email);
+}
 function sociosHtml(socios, contato) {
   if (!socios || !socios.length) return '';
-  return `<small>Sócios na Receita (toque para usar como contato):</small><div class="crmsocl">${socios.map((x, i) => `<button type="button" class="crmsocb" data-a="socio" data-i="${i}" aria-pressed="${norm(nomeProprio(x.nome)) === norm(contato)}"><b>${esc(nomeProprio(x.nome))}</b>${x.qual ? `<small>${esc(x.qual)}</small>` : ''}</button>`).join('')}</div>`;
+  return `<small>Sócios na Receita (toque para adicionar como contato):</small><div class="crmsocl">${socios.map((x, i) => `<button type="button" class="crmsocb" data-a="socio" data-i="${i}" aria-pressed="${[].concat(contato || []).some(n => norm(n) === norm(nomeProprio(x.nome)))}"><b>${esc(nomeProprio(x.nome))}</b>${x.qual ? `<small>${esc(x.qual)}</small>` : ''}</button>`).join('')}</div>`;
 }
 function formLead(l) {
   l = l || { etapa: 'lead', origem: '' };
@@ -167,10 +178,10 @@ function formLead(l) {
     <div class="tkform" id="crmForm" data-id="${esc(l.id || '')}">
       <label>CNPJ<span class="tkrow"><input data-f="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00" value="${esc(fmtCnpj(l.cnpj))}"><button type="button" data-a="cnpj">Buscar</button></span></label>
       <label>Empresa *<input data-f="empresa" value="${esc(l.empresa || '')}" required></label>
-      <label>Contato<input data-f="contato" value="${esc(l.contato || '')}"></label>
-      <div class="crmsoc full" id="crmSoc" data-socios="${esc(JSON.stringify(l.socios || []))}">${sociosHtml(l.socios, l.contato)}</div>
-      <label>WhatsApp / telefone<input data-f="fone" inputmode="tel" placeholder="(65) 99999-0000" value="${esc(l.fone || '')}"></label>
-      <label>E-mail<input data-f="email" type="email" value="${esc(l.email || '')}"></label>
+      <div class="crmcts full" id="crmCts"><span class="crmctt">Contatos</span>
+        <div id="crmCtLista">${(contatosDe(l).length ? contatosDe(l) : [{}]).map(ctLinha).join('')}</div>
+        <button type="button" class="crmctadd" data-a="ctadd">+ Contato</button></div>
+      <div class="crmsoc full" id="crmSoc" data-socios="${esc(JSON.stringify(l.socios || []))}">${sociosHtml(l.socios, contatosDe(l).map(c => c.nome))}</div>
       <label>Cidade<input data-f="cidade" placeholder="Ex.: Cuiabá - MT" value="${esc(l.cidade || '')}"></label>
       <label>Origem<select data-f="origem"><option value="">Escolha…</option>${ORIGENS.map(o => `<option${o === l.origem ? ' selected' : ''}>${o}</option>`).join('')}</select></label>
       <label>Próximo contato<input data-f="prox" type="date" value="${esc(l.prox || '')}"></label>
@@ -218,6 +229,9 @@ function lerForm() {
   if (o.etapa !== 'perdido') o.motivo = '';
   if (anpAtual && anpAtual.cnpj === o.cnpj && window.anpResumo) o.anp = window.anpResumo(anpAtual);
   try { o.socios = JSON.parse($('crmSoc').dataset.socios || '[]'); } catch (e) { o.socios = []; }
+  // O primeiro contato continua em contato/fone/email (funil, busca e Gerar proposta usam esses campos)
+  o.contatos = lerContatos(); const c0 = o.contatos[0] || {};
+  o.contato = c0.nome || ''; o.fone = c0.fone || ''; o.email = c0.email || '';
   return o;
 }
 
@@ -281,14 +295,18 @@ async function fichaCliente(k) {
   const c = clientes().find(x => x.k === k); if (!c) return;
   const contatos = new Map();
   c.props.forEach(p => { const n = String(p.contato || '').trim(), f = dig(p.waCli); if (n || f) contatos.set(norm(n) + f, { nome: n, fone: f }); });
-  leads().filter(l => chave(l.cnpj, l.empresa) === k).forEach(l => { if (l.contato || l.fone || l.email) contatos.set(norm(l.contato) + dig(l.fone), { nome: l.contato, fone: dig(l.fone), email: l.email }); });
+  leads().filter(l => chave(l.cnpj, l.empresa) === k).forEach(l => contatosDe(l).forEach(x => contatos.set(norm(x.nome) + dig(x.fone), { nome: x.nome, fone: dig(x.fone), email: x.email, cargo: x.cargo })));
+  // Contatos cadastrados na própria ficha (podem ser tirados)
+  const proprios = (c.doc?.contatos || []);
+  proprios.forEach((x, i) => contatos.set(norm(x.nome) + dig(x.fone), { nome: x.nome, fone: dig(x.fone), email: x.email, cargo: x.cargo, i }));
   const fone = f => f ? (f.length > 11 ? f.slice(2) : f).replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : '';
   abrirDlg(c.nome, `
     <div class="crmresumo">
       <p><small>${esc([fmtCnpj(c.cnpj), c.cidade, c.vendedor && 'Vendedor: ' + c.vendedor].filter(Boolean).join(' · '))}</small></p>
       <p><small>${c.desde ? 'Cliente desde ' + c.desde.toLocaleDateString('pt-BR') + ' · ' : ''}${brl(c.men)}/mês em contratos aceitos</small></p>
     </div>
-    <div class="crmsec"><h4>Contatos</h4>${contatos.size ? `<ul class="crmul">${[...contatos.values()].map(x => `<li>${esc(x.nome || '(sem nome)')}${x.fone ? ` · <a href="https://wa.me/${x.fone.length <= 11 ? '55' + x.fone : x.fone}" target="_blank" rel="noopener">${fone(x.fone)}</a>` : ''}${x.email ? ` · <a href="mailto:${esc(x.email)}">${esc(x.email)}</a>` : ''}</li>`).join('')}</ul>` : '<p class="hint">Nenhum contato registrado.</p>'}</div>
+    <div class="crmsec"><h4>Contatos</h4>${contatos.size ? `<ul class="crmul">${[...contatos.values()].map(x => `<li>${esc(x.nome || '(sem nome)')}${x.cargo ? ` <small>(${esc(x.cargo)})</small>` : ''}${x.fone ? ` · <a href="https://wa.me/${x.fone.length <= 11 ? '55' + x.fone : x.fone}" target="_blank" rel="noopener">${fone(x.fone)}</a>` : ''}${x.email ? ` · <a href="mailto:${esc(x.email)}">${esc(x.email)}</a>` : ''}${x.i !== undefined ? ` <button type="button" class="linkbtn crmctdel" data-a="clictdel" data-i="${x.i}" aria-label="Tirar contato">✕</button>` : ''}</li>`).join('')}</ul>` : '<p class="hint">Nenhum contato registrado.</p>'}
+      <div class="crmctnovo"><input id="crmCliNome" placeholder="Nome"><input id="crmCliFone" inputmode="tel" placeholder="WhatsApp / telefone"><input id="crmCliEmail" type="email" placeholder="E-mail"><button type="button" data-a="clictadd">+ Contato</button></div></div>
     <div class="crmsec"><h4>Propostas e contratos</h4><ul class="crmul">${c.props.map(p => `<li><button type="button" class="linkbtn" data-a="verprop" data-id="${esc(p.id)}">Nº ${esc(p.numero)}</button> · ${fmtD(p.data)} · ${esc(ETAPAS.find(e => e.id === etapaProp(p)).nome)} · ${brl(p.totLic)} + ${brl(p.totMen)}/mês</li>`).join('')}</ul></div>
     <div id="crmAnpCli" hidden></div>
     <div class="crmsec" id="crmTask"></div>
@@ -307,6 +325,26 @@ async function fichaCliente(k) {
   }
 }
 
+// Grava no documento da ficha do cliente (cria na primeira vez)
+async function gravarCli(k, campos) {
+  const c = clientes().find(x => x.k === k), ref = F.doc(db, 'crm', 'c_' + k);
+  if (c.doc) await F.updateDoc(ref, { ...campos, alterado: F.serverTimestamp() });
+  else await F.setDoc(ref, { tipo: 'cliente', chave: k, nome: c.nome, cnpj: dig(c.cnpj), owner: admin && c.owner ? c.owner : perfil.uid, notas: [], contatos: [], ...campos, criado: F.serverTimestamp() });
+  const atual = docs.find(d => d.id === 'c_' + k) || { id: 'c_' + k, tipo: 'cliente', owner: c.owner, notas: [] };
+  docs = docs.filter(d => d.id !== 'c_' + k).concat([{ ...atual, ...campos }]);
+}
+async function addContatoCli() {
+  const k = dlg().dataset.k, x = { nome: $('crmCliNome').value.trim(), fone: $('crmCliFone').value.trim(), email: $('crmCliEmail').value.trim(), cargo: '' };
+  if (!x.nome && !x.fone && !x.email) { $('crmCliNome').focus(); dmsg('Preencha o nome, o telefone ou o e-mail do contato.'); return; }
+  const c = clientes().find(y => y.k === k);
+  try { await gravarCli(k, { contatos: [...(c.doc?.contatos || []), x] }); fichaCliente(k); dmsg('Contato adicionado.'); }
+  catch (e) { dmsg('Não foi possível salvar o contato (' + (e.code || e.message) + ').'); }
+}
+async function delContatoCli(i) {
+  const k = dlg().dataset.k, c = clientes().find(y => y.k === k), lista = (c.doc?.contatos || []).filter((_, j) => j !== i);
+  try { await gravarCli(k, { contatos: lista }); fichaCliente(k); dmsg('Contato tirado.'); }
+  catch (e) { dmsg('Não foi possível tirar o contato (' + (e.code || e.message) + ').'); }
+}
 async function anotar() {
   const n = novaNota(); if (!n) { $('crmNTexto').focus(); return; }
   const modo = dlg().dataset.modo;
@@ -398,8 +436,12 @@ function ligar() {
       inp.value = fmtCnpj(d);
       const [r, pa] = await Promise.all([window.cnpjInfo ? window.cnpjInfo(d) : null, anpLead(d, false)]);
       const put = (f, v) => { const el = $('crmForm').querySelector(`[data-f=${f}]`); if (el && v && !el.value.trim()) el.value = v; };
-      if (r && r.socios) { const box = $('crmSoc'); box.dataset.socios = JSON.stringify(r.socios); box.innerHTML = sociosHtml(r.socios, $('crmForm').querySelector('[data-f=contato]').value); }
-      if (r) { put('empresa', r.razao); put('cidade', r.municipio && r.uf ? r.municipio + ' - ' + r.uf : r.municipio); put('fone', r.telefone); put('email', r.email); }
+      if (r && r.socios) { const box = $('crmSoc'); box.dataset.socios = JSON.stringify(r.socios); box.innerHTML = sociosHtml(r.socios, lerContatos().map(c => c.nome)); }
+      if (r) {
+        put('empresa', r.razao); put('cidade', r.municipio && r.uf ? r.municipio + ' - ' + r.uf : r.municipio);
+        const r0 = document.querySelector('#crmCts .crmct'), pc = (c, v) => { const el = r0 && r0.querySelector(`[data-c=${c}]`); if (el && v && !el.value.trim()) el.value = v; };
+        pc('fone', r.telefone); pc('email', r.email);
+      }
       if (pa) { put('empresa', pa.razao); put('cidade', pa.cidade); }
       const anpTxt = pa ? ` Posto encontrado na ANP${pa.porte ? ' (porte ' + pa.porte + ')' : ''}.` : pa === null ? ' Não está na base de postos da ANP.' : '';
       if (!r && !pa) { dmsg('Não encontrei esse CNPJ agora. Preencha os dados à mão.' + anpTxt); return; }
@@ -407,10 +449,26 @@ function ligar() {
     }
     else if (a === 'socio') {
       const socios = JSON.parse($('crmSoc').dataset.socios || '[]'), x = socios[+b.dataset.i]; if (!x) return;
-      const inp = $('crmForm').querySelector('[data-f=contato]'); inp.value = nomeProprio(x.nome);
-      $('crmSoc').querySelectorAll('.crmsocb').forEach(bt => bt.setAttribute('aria-pressed', String(bt === b)));
-      dmsg('Contato: ' + inp.value + (x.qual ? ' (' + x.qual + ')' : '') + '. Lembre de salvar.');
+      const nome = nomeProprio(x.nome), lista = $('crmCtLista');
+      if (lerContatos().some(c => norm(c.nome) === norm(nome))) { dmsg(nome + ' já está nos contatos.'); return; }
+      // Usa a primeira linha sem nome; se todas tiverem nome, cria uma nova
+      let row = [...lista.querySelectorAll('.crmct')].find(r => !r.querySelector('[data-c=nome]').value.trim());
+      if (!row) { lista.insertAdjacentHTML('beforeend', ctLinha({})); row = lista.lastElementChild; }
+      const val = c => row.querySelector(`[data-c=${c}]`).value;
+      row.insertAdjacentHTML('afterend', ctLinha({ nome, fone: val('fone'), email: val('email'), cargo: x.qual || '' }));
+      const novo = row.nextElementSibling; row.remove(); row = novo;
+      b.setAttribute('aria-pressed', 'true');
+      row.querySelector('[data-c=fone]').focus();
+      dmsg(nome + (x.qual ? ' (' + x.qual + ')' : '') + ' entrou nos contatos. Complete o telefone e salve.');
     }
+    else if (a === 'ctadd') { const lista = $('crmCtLista'); lista.insertAdjacentHTML('beforeend', ctLinha({})); lista.lastElementChild.querySelector('input').focus(); }
+    else if (a === 'ctdel') {
+      const lista = $('crmCtLista'), row = b.closest('.crmct');
+      if (lista.children.length > 1) row.remove(); else row.querySelectorAll('input').forEach(i => { i.value = ''; });
+      const nomes = lerContatos().map(c => c.nome); $('crmSoc').querySelectorAll('.crmsocb').forEach(bt => { const x = JSON.parse($('crmSoc').dataset.socios || '[]')[+bt.dataset.i]; bt.setAttribute('aria-pressed', String(!!x && nomes.some(n => norm(n) === norm(nomeProprio(x.nome))))); });
+    }
+    else if (a === 'clictadd') { addContatoCli(); }
+    else if (a === 'clictdel') { delContatoCli(+b.dataset.i); }
     else if (a === 'verprop') { const p = props.find(x => x.id === b.dataset.id); if (p) verProposta(p); }
     else if (a === 'perder') { if (await marcarProp(b.dataset.id, true, ($('crmPMot') || {}).value)) dlg().close(); }
     else if (a === 'reabrir') { if (await marcarProp(b.dataset.id, false)) dlg().close(); }
