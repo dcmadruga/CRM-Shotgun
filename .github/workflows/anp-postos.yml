@@ -1,0 +1,42 @@
+name: Base de postos da ANP
+
+# Todo dia às 5h (Brasília) baixa os postos revendedores da API pública da ANP
+# e atualiza anp/postos/*.json, que o app usa para preencher o cadastro pelo CNPJ.
+on:
+  schedule:
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+  # roda também quando o script ou esta tarefa mudam (testa a mudança na hora)
+  push:
+    paths:
+      - 'scripts/anp-postos.mjs'
+      - '.github/workflows/anp-postos.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: anp-postos
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Baixar postos da ANP
+        run: node scripts/anp-postos.mjs
+      - name: Gravar se mudou
+        run: |
+          if [ -z "$(git status --porcelain anp/postos)" ]; then git checkout -q -- anp/meta.json 2>/dev/null || true; echo "Nenhuma mudança na ANP hoje."; exit 0; fi
+          node -e "const f='anp/meta.json',fs=require('fs'),m=JSON.parse(fs.readFileSync(f));m.atualizado=new Date().toISOString();fs.writeFileSync(f,JSON.stringify(m,null,1)+'\n')"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898341+github-actions[bot]@users.noreply.github.com"
+          git add anp/
+          git commit -q -m "Base ANP: atualização diária ($(date -u +%Y-%m-%d))"
+          for i in 1 2 3; do git pull -q --rebase origin "${GITHUB_REF_NAME}" && git push -q origin "HEAD:${GITHUB_REF_NAME}" && exit 0; sleep 10; done
+          exit 1
