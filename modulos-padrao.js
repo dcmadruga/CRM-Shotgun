@@ -8,7 +8,7 @@
     secoes: [
       { id: 'impl', titulo: 'Implantação', pai: '', campos: [c('baseLiberada', 'Base liberada', 'simnao', { abre: false }), c('linkBase', 'Link da base', 'link'), c('obsImpl', 'Observações', 'textolongo')],
         processos: [p('p1', 'Conferir dados do Pré TASK', 'Cadastro', 0), p('p2', 'Criar a base', 'Implantação', 1), p('p3', 'Converter dados do sistema legado', 'Implantação', 3), p('p4', 'Liberar a base', 'Implantação', 4), p('p5', 'Enviar link da base ao cliente', 'Implantação', 4)] },
-      { id: 'boletos', titulo: 'Homologação de Boletos', pai: 'impl', campos: [c('banco', 'Banco'), c('agencia', 'Agência'), c('conta', 'Conta'), c('carteira', 'Carteira / convênio')],
+      { id: 'boletos', titulo: 'Homologação de Boletos', pai: '', campos: [c('banco', 'Banco'), c('agencia', 'Agência'), c('conta', 'Conta'), c('carteira', 'Carteira / convênio')],
         processos: [p('p1', 'Solicitar dados bancários ao cliente'), p('p2', 'Gerar boleto de teste'), p('p3', 'Validar retorno com o banco'), p('p4', 'Homologação concluída')] },
       { id: 'prestart', titulo: 'Pré Start', pai: 'impl', campos: [c('obsPre', 'Observações', 'textolongo')],
         processos: [p('p1', 'Cadastro de produtos'), p('p2', 'Cadastro de tanques e bicos'), p('p3', 'Cadastro de usuários e permissões'), p('p4', 'Configuração fiscal'), p('p5', 'Teste de emissão de notas'), p('p6', 'Agendar o start com o cliente')] },
