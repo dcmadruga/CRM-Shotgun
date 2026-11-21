@@ -20,3 +20,8 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 - No primeiro login, o app pede nome completo, estado(s) de atuação e uma foto do rosto (selfie). Quem já tem tudo isso preenchido não vê a tela.
 - Na tela de login, "Me cadastrar" cria a conta (e-mail e senha) e leva para o cadastro. Quem entra com uma conta que ainda não está cadastrada em Usuários preenche os mesmos dados e fica "Aguardando liberação": o cadastro aparece no topo da tela Usuários, com a foto, e o administrador clica em Liberar.
 - Precisa das regras de `docs/cadastro-firestore.rules` publicadas no Firestore.
+
+## Novidades a cada versão
+
+- `novidades.js` guarda o que mudou em cada versão, em linguagem de usuário. Quando o app atualiza, a janela "Novidades" abre sozinha uma vez (por usuário, em cada aparelho), depois do login. Tocar em "Versão N" no cabeçalho reabre a janela, que também tem o botão "Forçar atualização do app".
+- Todo PR que sobe a versão do `sw.js` acrescenta no topo de `novidades.js` uma entrada com o mesmo número (instruções no começo do arquivo). Mudança sem nada visível pode ficar sem entrada.

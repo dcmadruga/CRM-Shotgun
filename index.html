@@ -278,6 +278,30 @@ button.lnk{background:none;border:0;padding:0;min-height:0;color:var(--purple);t
 .dgcorpo>.tkacts{margin-top:16px}
 @media (max-width:760px){.dgwrap{grid-template-columns:1fr}.dgmenu{flex-direction:row;overflow-x:auto;position:static;padding-bottom:4px}.dgnav{width:auto;white-space:nowrap;padding:8px 12px}}
 .tkdlg::backdrop{background:rgba(0,0,0,.45)}
+/* Novidades: o que mudou em cada versão (novidades.js) */
+.novdlg{width:min(520px,calc(100vw - 24px));border-radius:16px;box-shadow:var(--sg-sombra);display:none;flex-direction:column}
+.novdlg[open]{display:flex}
+.novdlg .tkdlghead{background:var(--ink);color:var(--ink-fg);border-bottom:0;border-left:4px solid var(--accent)}
+.novdlg .tkdlghead h3{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.novdlg .tkdlghead button{background:none;border:0;color:var(--ink-fg);font-size:16px;min-width:44px;min-height:44px;cursor:pointer;opacity:.8}
+.novdlg .tkdlghead button:hover{opacity:1}
+.novbody{padding:6px 16px 4px;overflow:auto;display:flex;flex-direction:column}
+.novitem{padding:14px 0;border-bottom:1px solid var(--line)}
+.novitem:last-of-type{border-bottom:0}
+.novv{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.novnum{font-family:var(--display);font-weight:500;font-size:11.5px;padding:2px 9px;border-radius:999px;background:var(--sg-comercial-claro);color:var(--sg-comercial-escuro);font-variant-numeric:tabular-nums}
+.novitem.atual .novnum{background:var(--accent);color:var(--accent-fg)}
+.novdata{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.novitem h4{margin:2px 0 6px;font-family:var(--display);font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+.novitem ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:14px;line-height:1.5}
+.novitem li::marker{color:var(--muted)}
+.novtodas{align-self:flex-start;margin:4px 0 12px}
+.novpe{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.novpe .primary{min-height:44px;padding-inline:22px}
+.novpe .lnk{font-size:13px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .novnum{background:color-mix(in srgb,var(--sg-comercial) 22%,transparent);color:#a9c2ff}}
+:root[data-theme="dark"] .novnum{background:color-mix(in srgb,var(--sg-comercial) 22%,transparent);color:#a9c2ff}
+:root .novitem.atual .novnum{background:var(--accent);color:var(--accent-fg)}
 .tkdlghead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
 .tkdlghead h3{margin:0;font-family:var(--display);font-size:16px}
 #tkDlgBody{padding:16px}
@@ -687,6 +711,11 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   <button type="button" id="btnInstall" hidden>Instalar app</button>
   <span id="versaoApp" class="versao" title="Versão do app instalada neste aparelho"></span>
 </div></header>
+<dialog id="novDlg" class="tkdlg novdlg" aria-labelledby="novTit">
+  <div class="tkdlghead"><h3 id="novTit">Novidades</h3><button type="button" id="novFechar" aria-label="Fechar">✕</button></div>
+  <div id="novBody" class="novbody"></div>
+  <div class="novpe"><button type="button" class="lnk" id="novAtualizar">Forçar atualização do app</button><button type="button" class="primary" id="novOk" autofocus>Entendi</button></div>
+</dialog>
 <nav class="tabs" aria-label="Seções"><div class="wrap" role="tablist">
   <button type="button" role="tab" id="tabProp" aria-selected="true">+ Nova proposta</button>
   <button type="button" role="tab" id="tabHoje" aria-selected="false" class="fbonly">Hoje</button>
@@ -1126,6 +1155,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
 <script type="module" src="radar.js"></script>
 <script src="telemetria-anp.js"></script>
 <script src="notificacoes.js"></script>
+<script src="novidades.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const LOGO_PADRAO = $('logo').src;
@@ -1854,14 +1884,16 @@ async function atualizarApp(el){
   const num=t=>{ const m=String(t||'').match(/(?:argo|shotgun)-v(\d+)/); return m?+m[1]:0 };
   let atual=0; try{ atual=Math.max(0,...(await caches.keys()).map(num)) }catch(_){}
   let srv=0; try{ srv=num(await (await fetch('sw.js',{cache:'no-store'})).text()) }catch(_){}
-  const v=atual||srv; if(!v) return; el.textContent='Versão '+v; el.title='Clique para atualizar o app (como Ctrl+Shift+R)';
+  const v=atual||srv; if(!v) return; el.textContent='Versão '+v; el.title='Ver as novidades desta versão';
   el.setAttribute('role','button'); el.tabIndex=0;
   if(atual&&srv>atual){ el.textContent='Versão '+atual+' · nova '+srv+', toque para atualizar'; el.classList.add('nova') }
-  el.addEventListener('click',()=>atualizarApp(el));
+  // Toque na versão: se há versão nova, atualiza; senão abre as Novidades (que têm o botão de forçar a atualização)
+  const tocar=()=>{ if(el.classList.contains('nova')||!window.shotgunNovidades) atualizarApp(el); else window.shotgunNovidades.abrir() };
+  el.addEventListener('click',tocar);
   // Página aberta há tempo: confere a cada 2 min se saiu versão nova e avisa no cabeçalho
   const base=srv||atual;
   setInterval(async()=>{ try{ const n=num(await (await fetch('sw.js',{cache:'no-store'})).text()); if(n>base&&!el.classList.contains('nova')){ el.textContent='Versão '+base+' · nova '+n+', toque para atualizar'; el.classList.add('nova') } }catch(_){} },120000);
-  el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); atualizarApp(el) } });
+  el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); tocar() } });
 })();
 
 aplicarModo();

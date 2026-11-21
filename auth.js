@@ -227,12 +227,14 @@ async function iniciar() {
       box.hidden = true; body.classList.remove('locked');
       $('tabUser').textContent = perfil.nome || perfil.email;
       aplicarModo(); abrirAba('tabTask');
+      window.dispatchEvent(new CustomEvent('shotgun-entrou', { detail: { uid: user.uid } }));
       window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: false } })); return;
     }
     if (fb.admin || fb.temTask) window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: fb.admin } }));
     box.hidden = true; body.classList.remove('locked');
     $('tabUser').textContent = perfil.nome || perfil.email;
     aplicarPerfil();
+    window.dispatchEvent(new CustomEvent('shotgun-entrou', { detail: { uid: user.uid } })); // abre as Novidades se a versão é nova
     aplicarModo();
     await carregar(false);
     if (fb.admin) { ouvirUsuarios(); carregarE2(); carregarE3(); }
