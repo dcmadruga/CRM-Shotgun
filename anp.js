@@ -59,6 +59,81 @@
       simp: o.s || '', autorizacao: o.a || '', atualizado: m.atualizado || ''
     };
   };
+  // Índice por UF (anp/uf/UF.json): [cnpj, razão social, município, bandeira], para pesquisar sem o CNPJ
+  const ufs = new Map();
+  window.anpUf = uf => {
+    uf = String(uf || '').toUpperCase();
+    if (!/^[A-Z]{2}$/.test(uf)) return Promise.resolve([]);
+    if (!ufs.has(uf)) {
+      const pr = fetch(`anp/uf/${uf}.json`).then(r => { if (r.status === 404) return []; if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
+      ufs.set(uf, pr); pr.catch(() => ufs.delete(uf));
+    }
+    return ufs.get(uf);
+  };
+  window.anpNorm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  window.anpTitulo = titulo;
+
+  // Pesquisar na ANP (sem o CNPJ): painel com filtros Nome, Estado, Cidade e Bandeira.
+  // Usado no Novo lead (CRM) e na Nova proposta. escolher(cnpj) recebe o posto clicado.
+  const UFS = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'];
+  const fmtC = d => String(d).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+  window.anpPesquisa = (box, ufIni, escolher) => {
+    if (!box) return;
+    if (!box.hidden && box.dataset.on) { box.hidden = true; return; }
+    ufIni = UFS.includes(String(ufIni || '').toUpperCase()) ? String(ufIni).toUpperCase() : '';
+    let lista = [];
+    const q = sel => box.querySelector(sel);
+    box.classList.add('anpbusca');
+    box.innerHTML = `<div class="anpbhead"><h4>Pesquisar na base de postos da ANP</h4><button type="button" class="linkbtn" data-anp="fechar">Fechar</button></div>
+      <div class="anpbfil">
+        <label>Nome<input data-anp="nome" placeholder="Razão social ou parte dela" autocomplete="off"></label>
+        <label>Estado<select data-anp="uf"><option value="">Escolha…</option>${UFS.map(u => `<option${u === ufIni ? ' selected' : ''}>${u}</option>`).join('')}</select></label>
+        <label>Cidade<select data-anp="cid" disabled><option value="">Todas</option></select></label>
+        <label>Bandeira<select data-anp="band" disabled><option value="">Todas</option></select></label>
+      </div>
+      <div class="anpbres"><p class="hint">Escolha o estado para pesquisar.</p></div>`;
+    const res = q('.anpbres');
+    const filtrar = () => {
+      if (!lista.length) return;
+      const n = window.anpNorm, ts = n(q('[data-anp=nome]').value).split(' ').filter(Boolean), cid = q('[data-anp=cid]').value, band = q('[data-anp=band]').value, uf = q('[data-anp=uf]').value;
+      const ach = lista.filter(x => (!cid || x[2] === cid) && (!band || x[3] === band) && (!ts.length || ts.every(t => n(x[1]).includes(t) || x[0].includes(t))));
+      const MAX = 100;
+      res.innerHTML = ach.length ? `<p class="hint">${ach.length} posto${ach.length === 1 ? '' : 's'}${ach.length > MAX ? ` (mostrando ${MAX}; use os filtros para refinar)` : ''}. Clique no posto para usar.</p>
+        <ul>${ach.slice(0, MAX).map(x => `<li><button type="button" data-anp="usar" data-cnpj="${x[0]}">
+          <span><b>${esc(x[1])}</b><small>${esc(titulo(x[2]))}/${uf} · ${fmtC(x[0])}</small></span>
+          <span class="anpbband">${window.anpSeloBandeira(x[3], false, true)}<small>${esc(x[3])}</small></span></button></li>`).join('')}</ul>`
+        : '<p class="hint">Nenhum posto encontrado com esses filtros.</p>';
+    };
+    const carregar = async uf => {
+      lista = [];
+      ['cid', 'band'].forEach(k => { const el = q(`[data-anp=${k}]`); el.disabled = true; el.innerHTML = '<option value="">Todas</option>'; });
+      if (!uf) { res.innerHTML = '<p class="hint">Escolha o estado para pesquisar.</p>'; return; }
+      res.innerHTML = `<p class="hint">Carregando os postos de ${esc(uf)}…</p>`;
+      let l; try { l = await window.anpUf(uf); } catch (e) { res.innerHTML = '<p class="hint">Não consegui carregar a base da ANP agora. Tente de novo.</p>'; return; }
+      if (q('[data-anp=uf]').value !== uf) return;
+      lista = l;
+      const ord = a => [...new Set(a)].filter(Boolean).sort((x, y) => x.localeCompare(y, 'pt-BR'));
+      q('[data-anp=cid]').innerHTML = '<option value="">Todas</option>' + ord(l.map(x => x[2])).map(c => `<option value="${esc(c)}">${esc(titulo(c))}</option>`).join('');
+      q('[data-anp=band]').innerHTML = '<option value="">Todas</option>' + ord(l.map(x => x[3])).map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
+      q('[data-anp=cid]').disabled = q('[data-anp=band]').disabled = false;
+      if (!l.length) res.innerHTML = '<p class="hint">Nenhum posto deste estado na base.</p>'; else filtrar();
+    };
+    if (!box.dataset.on) {
+      box.dataset.on = '1';
+      box.addEventListener('input', e => { if (e.target.dataset.anp === 'nome') box._filtrar && box._filtrar(); });
+      box.addEventListener('change', e => { const k = e.target.dataset.anp; if (k === 'uf') box._carregar(e.target.value); else if (k === 'cid' || k === 'band') box._filtrar(); });
+      box.addEventListener('click', e => {
+        const b = e.target.closest('[data-anp]'); if (!b || !box.contains(b)) return;
+        e.preventDefault(); e.stopPropagation();
+        if (b.dataset.anp === 'fechar') box.hidden = true;
+        else if (b.dataset.anp === 'usar') { box.hidden = true; box._escolher && box._escolher(b.dataset.cnpj); }
+      });
+    }
+    box._filtrar = filtrar; box._carregar = carregar; box._escolher = escolher;
+    box.hidden = false;
+    box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (ufIni) carregar(ufIni); else q('[data-anp=uf]').focus();
+  };
   window.anpPorte = porte;
   window.anpFaixas = faixas;
 

@@ -1,5 +1,6 @@
 // Baixa os postos revendedores da ANP (API pública de revendedores) e grava a base interna do Shotgun.
-// Saída: anp/postos/NNN.json (NNN = 3 primeiros dígitos do CNPJ) e anp/meta.json.
+// Saída: anp/postos/NNN.json (NNN = 3 primeiros dígitos do CNPJ), anp/uf/UF.json (índice para a
+// Pesquisa na ANP: [cnpj, razão social, município, bandeira]) e anp/meta.json.
 // Roda todo dia pelo GitHub Actions (.github/workflows/anp-postos.yml). Uso local: node scripts/anp-postos.mjs
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 
@@ -54,6 +55,20 @@ for (const d of postos) {
   const k = cnpj.slice(0, 3);
   if (!fatias.has(k)) fatias.set(k, new Map());
   fatias.get(k).set(cnpj, compacto(d));
+}
+
+// Índice por UF para pesquisar sem o CNPJ (nome, cidade, bandeira)
+const porUf = new Map();
+for (const mapa of fatias.values()) for (const [cnpj, o] of mapa) {
+  const uf = o.uf || 'XX';
+  if (!porUf.has(uf)) porUf.set(uf, []);
+  porUf.get(uf).push([cnpj, o.r || '', o.m || '', o.b || '']);
+}
+await rm(new URL('uf/', SAIDA), { recursive: true, force: true });
+await mkdir(new URL('uf/', SAIDA), { recursive: true });
+for (const [uf, lista] of [...porUf].sort()) {
+  lista.sort((a, b) => a[2].localeCompare(b[2]) || a[1].localeCompare(b[1]));
+  await writeFile(new URL(`uf/${uf}.json`, SAIDA), '[\n' + lista.map(x => JSON.stringify(x)).join(',\n') + '\n]\n');
 }
 
 await rm(new URL('postos/', SAIDA), { recursive: true, force: true });
