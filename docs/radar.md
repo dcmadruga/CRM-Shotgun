@@ -1,6 +1,6 @@
 # Radar de Novos Postos – MT
 
-Módulo da aba **Telemetria** (Estado MT) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
+Módulo da aba **Telemetria → Postos em construção** (Estado MT) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
 
 Nada é inventado: cada registro vem de um documento público, com link para o original e o trecho de texto que o sustenta. Campo que não aparece no documento fica como "pendente de confirmação".
 
@@ -29,7 +29,7 @@ GitHub Actions (a cada 15 min)
        ├─ fontes/anp.mjs     → confirma o CNPJ e acha CNPJ pelo nome + município
        ├─ deduplica (CNPJ; sem CNPJ, razão social + município; processo = órgão + número)
        └─ firestore.mjs      → grava as coleções radar_* (API REST, conta de serviço)
-App (radar.js, aba Telemetria → MT) lê as coleções e permite revisão, filtros, mapa e alertas.
+App (radar.js, aba Telemetria → Postos em construção → MT) lê as coleções e permite revisão, filtros, mapa e alertas.
 ```
 
 O agendamento confere a cada 15 minutos, mas só pesquisa quando passou o tempo configurado no app (padrão 24 h) ou quando um administrador usa **Pesquisar agora**. Isso roda no GitHub, mesmo com o app fechado.
@@ -66,7 +66,7 @@ Sem o segredo, o agendamento não faz nada, e o push de código roda em **modo d
 
 ## Operação
 
-- **Frequência:** aba Telemetria → MT → Configuração (adm). 6, 12, 24, 48 ou 72 horas.
+- **Frequência:** aba Telemetria → Postos em construção → MT → Configuração (adm). 6, 12, 24, 48 ou 72 horas.
 - **Pesquisar agora:** botão no topo do Radar (adm). O robô atende na próxima checagem (até 15 min).
 - **Reprocessar um período:** Actions → Run workflow → campo "Pesquisar a partir de". Documentos já gravados não são duplicados.
 - **Revisão:** no detalhe do empreendimento, o adm confirma ou descarta (descartados somem das listas e indicadores). O robô nunca altera a revisão.
