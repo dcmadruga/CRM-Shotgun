@@ -10,6 +10,12 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 188, data: '2026-11-22', titulo: 'Shotgun de cara nova', itens: [
+    'Nova identidade visual em todo o app: logomarca com o S estilizado, cores grafite e laranja e a fonte Montserrat. O slogan agora é "O cliente na mira, do primeiro contato ao pós-venda."',
+    'O app abre no tema escuro. Para usar o claro, toque no botão de sol no cabeçalho (ao lado do sino). A escolha fica salva no aparelho.',
+    'No computador, o menu fica na lateral esquerda, com ícones. O botão no topo do menu recolhe a lateral e deixa só os ícones, para sobrar mais espaço.',
+    'Botões principais em laranja, cards com cantos arredondados e novo ícone do app. Se o ícone antigo continuar na tela inicial do celular, remova e instale o app de novo.'
+  ] },
   { v: 187, data: '2026-11-22', titulo: 'Documento pode ficar para depois', itens: [
     'Nos dados complementares, cada anexo obrigatório (como Certificado Digital e Logo) tem a opção "Não tenho em mãos, mando mais tarde". O cliente salva os dados sem o arquivo.',
     'A proposta mostra DOCUMENTO PENDENTE no Passo 2, com o que falta, e o botão Cobrar documento pelo WhatsApp. O Pré TASK também avisa na aba Anexos.',

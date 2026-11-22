@@ -1,32 +1,29 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Shotgun · Sua conta</title>
-<meta name="theme-color" content="#0F1419">
+<meta name="theme-color" content="#161616">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem('sg-tema')=='light'?'light':'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
 <meta name="robots" content="noindex">
-<link rel="icon" href="icons/shotgun-favicon.svg" type="image/svg+xml">
-<link rel="icon" href="icons/favicon-32.png" sizes="32x32">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="tema.css">
 <style>
 /* Página das ações de conta do Firebase (criar nova senha, confirmar e-mail), com a identidade visual Shotgun */
-:root{--sg-ink:#0F1419;--sg-disparo:#FF5A1F;--sg-grafite:#5B6573;--sg-nevoa:#F4F6F8;--sg-borda:#DDE2E8;--sg-comercial:#2E6BFF;--sg-comercial-escuro:#1F4FCC;--sg-posvenda-escuro:#0B7A59;
-  --bg:var(--sg-nevoa);--surface:#fff;--fg:var(--sg-ink);--muted:var(--sg-grafite);--line:var(--sg-borda);--field:#fff;--btn:var(--sg-comercial-escuro);--ok:var(--sg-posvenda-escuro);--danger:#b42335;
-  --sombra:0 1px 2px rgba(15,20,25,.06),0 12px 32px rgba(15,20,25,.08)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0b0f13;--surface:#151b22;--fg:#eef1f4;--muted:#9aa4b1;--line:#2a323c;--field:#0f1419;--btn:#2E6BFF;--ok:#12B886;--danger:#ff6b7d}}
-:root[data-theme="dark"]{--bg:#0b0f13;--surface:#151b22;--fg:#eef1f4;--muted:#9aa4b1;--line:#2a323c;--field:#0f1419;--btn:#2E6BFF;--ok:#12B886;--danger:#ff6b7d}
+:root{--btn:var(--accent);--ok:var(--ok-text)}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--bg);color:var(--fg);font:400 15px/24px Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--bg);color:var(--fg);font:400 15px/24px var(--font)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sombra);padding:24px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px}
-.logo{width:170px;height:auto;align-self:flex-start;margin-bottom:4px}.logo-neg{display:none}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .logo-pos{display:none}:root:not([data-theme="light"]) .logo-neg{display:block}}
-h1{font:700 22px/28px "Space Grotesk",Inter,sans-serif;letter-spacing:-.02em;margin:4px 0 0}
+.logo{width:190px;height:auto;align-self:flex-start;margin-bottom:4px}.logo-neg{display:none}
+:root[data-theme="dark"] .logo-pos{display:none}:root[data-theme="dark"] .logo-neg{display:block}
+h1{font:600 22px/28px var(--font);letter-spacing:-.01em;margin:4px 0 0}
 p{margin:0}.hint{color:var(--muted);font-size:14px;line-height:21px}.hint b{color:var(--fg);font-weight:600;word-break:break-all}
-label{display:flex;flex-direction:column;gap:6px;font:500 12px/16px Inter,sans-serif;color:var(--muted)}
+label{display:flex;flex-direction:column;gap:6px;font:500 12px/16px var(--font);color:var(--muted)}
 .campo{position:relative}.campo input{width:100%;padding-right:76px}
-input{font:400 15px Inter,sans-serif;color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:11px 12px;min-height:44px}
+input{font:400 15px var(--font);color:var(--fg);background:var(--field);border:1px solid var(--line);border-radius:8px;padding:11px 12px;min-height:44px}
 input:focus{outline:2px solid var(--btn);outline-offset:-1px;border-color:var(--btn)}
-.ver{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--btn);font:600 13px Inter,sans-serif;padding:8px 10px;min-height:36px;cursor:pointer}
-.btn{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:12px;border:0;background:var(--btn);color:#fff;font:600 14px Inter,sans-serif;cursor:pointer;text-decoration:none;padding:0 16px}
+.ver{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--accent-text);font:600 13px var(--font);padding:8px 10px;min-height:36px;cursor:pointer}
+.btn{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:12px;border:0;background:var(--btn);color:var(--accent-fg);font:600 14px var(--font);cursor:pointer;text-decoration:none;padding:0 16px}
 .btn:disabled{opacity:.6;cursor:default}
 .msg{font-size:13.5px;line-height:20px;color:var(--danger)}.msg:empty{display:none}.msg.ok{color:var(--muted)}
 .selo{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
@@ -34,8 +31,8 @@ input:focus{outline:2px solid var(--btn);outline-offset:-1px;border-color:var(--
 [hidden]{display:none!important}
 </style></head><body>
 <main class="card" id="card">
-  <img class="logo logo-pos" src="icons/shotgun-logo-horizontal.svg" alt="Shotgun" width="170" height="38">
-  <img class="logo logo-neg" src="icons/shotgun-logo-horizontal-negativo.svg" alt="Shotgun" width="170" height="38">
+  <img class="logo logo-pos" src="icons/shotgun-logo.png" alt="Shotgun" width="190" height="42">
+  <img class="logo logo-neg" src="icons/shotgun-logo-negativo.png" alt="Shotgun" width="190" height="42">
 
   <section id="vCarregando" class="hint">Carregando…</section>
 
