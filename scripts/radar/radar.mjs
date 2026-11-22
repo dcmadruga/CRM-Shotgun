@@ -1,4 +1,4 @@
-// Robô do Radar de Novos Postos (MT e RS). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
+// Robô do Radar de Novos Postos (MT, RS, SC e PR). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
 // 1) decide se é hora de pesquisar (frequência e "Pesquisar agora" ficam em radar_config/geral);
 // 2) coleta as fontes integradas; 3) separa e classifica os avisos; 4) cruza com a ANP;
 // 5) deduplica e grava empreendimentos, processos, documentos, histórico, alertas e a execução.
@@ -14,6 +14,7 @@ import * as doers from './fontes/doers.mjs';
 import * as querido from './fontes/querido.mjs';
 import * as sinfat from './fontes/sinfat.mjs';
 import * as domsc from './fontes/domsc.mjs';
+import * as dioepr from './fontes/dioepr.mjs';
 import * as anpFonte from './fontes/anp.mjs';
 
 const inicio = new Date();
@@ -24,8 +25,9 @@ const teste = process.env.RADAR_TESTE === 'true';
 const db = teste ? null : firestore();
 const gatilhoBase = process.env.RADAR_GATILHO || 'agendado';
 // Fontes de diário oficial integradas, por Estado. RADAR_FONTES (ex.: "famurs,doe-rs") limita a rodada.
-const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }, { mod: querido, uf: 'RS' }, { mod: sinfat, uf: 'SC' }, { mod: domsc, uf: 'SC' }, { mod: querido.paraUF('SC', 'SC'), uf: 'SC' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
-const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA' };
+const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }, { mod: querido, uf: 'RS' }, { mod: sinfat, uf: 'SC' }, { mod: domsc, uf: 'SC' }, { mod: querido.paraUF('SC', 'SC'), uf: 'SC' },
+  { mod: dioepr, uf: 'PR' }, { mod: querido.paraUF('PR', 'PR'), uf: 'PR' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
+const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ' };
 
 const PRIOR_CAT = ['novo', 'tanques', 'ampliacao', 'reforma', 'renovacao', 'titularidade', 'ponto_proprio', 'outro'];
 const PRIOR_CONF = ['confirmado', 'possivel', 'analise', 'nao_confirmado'];
@@ -156,7 +158,7 @@ for (const a of unicos.sort((x, y) => String(x.dataPublicacao).localeCompare(Str
   (a.licencas || []).forEach(l => { if (!p.licencas.some(x => x.numero === l.numero)) p.licencas.push(l); });
   p.evento = a.evento; p.situacao = a.situacao; p.dataPublicacao = p.dataPublicacao && p.dataPublicacao < a.dataPublicacao ? p.dataPublicacao : a.dataPublicacao; p.ultimaData = a.dataPublicacao;
   processos.set(pid, p);
-  const resumo = { numero: p.numero, orgao: p.orgao, evento: a.evento, data: a.dataPublicacao, id: pid };
+  const resumo = { numero: p.numero, orgao: p.orgao, evento: a.evento, data: a.dataPublicacao, id: pid, ...(p.licencas.length ? { licencas: p.licencas.slice(0, 4).map(l => ({ tipo: l.sigla || l.tipo, numero: l.numero })) } : {}) };
   e.processos = [resumo, ...e.processos.filter(x => x.id !== pid)].slice(0, 15);
 
   e.atualizado = inicio;

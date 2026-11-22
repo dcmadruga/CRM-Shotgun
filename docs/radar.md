@@ -1,6 +1,6 @@
-# Radar de Novos Postos – MT, RS e SC
+# Radar de Novos Postos – MT, RS, SC e PR
 
-Módulo da aba **Telemetria → Postos em construção** (Estados MT, RS e SC) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso, no Rio Grande do Sul e em Santa Catarina. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
+Módulo da aba **Telemetria → Postos em construção** (Estados MT, RS, SC e PR) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso, no Rio Grande do Sul, em Santa Catarina e no Paraná. Acima da tela, além do Estado, há um filtro de Cidade que vale para todas as partes do Radar. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
 
 Nada é inventado: cada registro vem de um documento público, com link para o original e o trecho de texto que o sustenta. Campo que não aparece no documento fica como "pendente de confirmação".
 
@@ -47,6 +47,20 @@ Em SC boa parte dos postos é licenciada pelas prefeituras e fundações municip
 
 **Teste real (nov/2026, 12 meses):** o SINFAT devolveu 247 requerimentos de posto (atividade 42.32), o DOM/SC 4 e o Querido Diário 7. Entre eles, 29 novos postos, ampliações ou trocas de tanques.
 
+### Paraná
+
+Pela Resolução CEMA, o IAT (Instituto Água e Terra) publica de forma automática no Diário Oficial do Estado a súmula de cada licença ambiental que concede. O pedido de licença continua sendo publicado pelo empreendedor (DIOE e jornal), em texto livre.
+
+| Fonte | Situação | Observação |
+| --- | --- | --- |
+| Diário Oficial do Estado (DIOE), plataforma nova `dioe.pr.gov.br` | Integrada | Usa a mesma pesquisa pública do site (sem login nem CAPTCHA), que devolve o texto da página. O robô lê cada súmula "O Instituto Água e Terra torna público que concedeu à EMPRESA, a Licença ... nº ... para ... Posto de combustíveis ... no município de X/PR" e fica com as de posto: LP, LI, LO, ampliação (LP-A, LI-A), regularização, renovação e autorização ambiental. Traz empresa, endereço, município e número da licença; não traz CNPJ (vem da ANP quando o nome e o município batem). Súmulas de requerimento de posto, quando aparecem, vão para o classificador de texto. O número de protocolo que vem depois de cada súmula fica de fora, porque a página tem duas colunas e ele pode ser o da súmula vizinha. |
+| Querido Diário (diários próprios das cidades) | Integrada | Mesma fonte do RS e de SC, filtrada pelos códigos IBGE do PR. No dia do teste a API respondia 503. |
+| Base de postos da ANP | Integrada (cruzamento) | Mesma base, filtrada por PR. |
+| IAT: consulta de processos no SGA | Não integrada | Exige CAPTCHA. O robô não contorna CAPTCHA. |
+| Diário Oficial dos Municípios do Paraná (AMP) | Não integrada | Testada (mesmo sistema da FAMURS): só trouxe compras de combustível e leis municipais, nenhuma licença de posto. |
+
+**Teste real (nov/2026, 12 meses):** o DIOE devolveu 732 licenças de posto concedidas pelo IAT, que viraram 658 empreendimentos: 119 novos postos (63 com LP e 50 com LI), 64 ampliações, 354 renovações e 121 outros (LO, regularização, autorização). 390 tiveram o CNPJ achado na base da ANP.
+
 Uma fonte só aparece como "Monitorada" no app depois de uma execução real com sucesso.
 
 ## Como funciona
@@ -58,14 +72,15 @@ GitHub Actions (a cada 15 min)
        ├─ fontes/iomat.mjs   → MT: páginas do diário com as expressões pesquisadas
        ├─ fontes/famurs.mjs  → RS: matérias do Diário dos Municípios
        ├─ fontes/doers.mjs   → RS: matérias do Diário Oficial do Estado
-       ├─ fontes/querido.mjs → RS e SC: trechos dos diários próprios das cidades (Querido Diário)
+       ├─ fontes/querido.mjs → RS, SC e PR: trechos dos diários próprios das cidades (Querido Diário)
        ├─ fontes/sinfat.mjs  → SC: requerimentos de licença das prefeituras (CIGA SINFAT, já estruturados)
        ├─ fontes/domsc.mjs   → SC: publicações de licenciamento do Diário dos Municípios
+       ├─ fontes/dioepr.mjs  → PR: súmulas de licença do IAT no Diário Oficial do Estado (já estruturadas)
        ├─ classificar.mjs    → separa os avisos, decide se é posto, extrai os campos, classifica
        ├─ fontes/anp.mjs     → confirma o CNPJ e acha CNPJ pelo nome + município
        ├─ deduplica (CNPJ; sem CNPJ, razão social + município; processo = órgão + número)
        └─ firestore.mjs      → grava as coleções radar_* (API REST, conta de serviço)
-App (radar.js, aba Telemetria → Postos em construção → MT, RS ou SC) lê as coleções e permite revisão, filtros, mapa e alertas.
+App (radar.js, aba Telemetria → Postos em construção → MT, RS, SC ou PR, e Cidade) lê as coleções e permite revisão, filtros, mapa e alertas.
 ```
 
 O agendamento confere a cada 15 minutos, mas só pesquisa quando passou o tempo configurado no app (padrão 24 h) ou quando um administrador usa **Pesquisar agora**. Isso roda no GitHub, mesmo com o app fechado.
@@ -78,7 +93,7 @@ O agendamento confere a cada 15 minutos, mas só pesquisa quando passou o tempo 
 - **Confiança**: *processo confirmado* (atividade de posto explícita + CNPJ ou nº de processo), *possível novo empreendimento* (posto sem CNPJ nem processo), *documento aguardando análise* (ponto de abastecimento de fazenda, texto truncado), *informação não confirmada* (campo deduzido, como CNPJ achado pelo nome na ANP).
 - Pedido de LP/LI de um CNPJ que já é posto autorizado na ANP é tratado como ampliação/reforma.
 
-Cada registro tem o campo `uf` (MT, RS ou SC). Registros antigos sem `uf` são de MT.
+Cada registro tem o campo `uf` (MT, RS, SC ou PR). Registros antigos sem `uf` são de MT.
 
 ## Coleções no Firestore
 
@@ -115,6 +130,6 @@ Sem o segredo, o agendamento não faz nada, e o push de código roda em **modo d
 - **Nova fonte:** criar `scripts/radar/fontes/<id>.mjs` exportando `info` ({ id, uf, nome, url, tipo }) e `coletar(de, ate, log)` que devolva `{ docs: [{ id, titulo, entidade, texto, data, url, local }], consultas }`; acrescentar em `FONTES` no `radar.mjs` e na lista de fontes do Estado no `radar.js`.
 - **Novo Estado:** acrescentar em `UFS` (`municipios.mjs`), em `ATIVOS` (`telemetria.js`) e em `NOME_UF`/`CENTRO_UF` (`radar.js`). Ela só aparece como monitorada depois da primeira coleta com sucesso.
 - **Novas expressões de busca:** `TERMOS` em `fontes/iomat.mjs`.
-- **Regras de classificação:** `classificar.mjs`. Para testar sem gravar: `RADAR_TESTE=true node scripts/radar/radar.mjs` (`RADAR_FONTES=famurs,doe-rs,querido-rs` limita às fontes do RS e `RADAR_FONTES=sinfat-sc,dom-sc,querido-sc` às de SC; `RADAR_AMOSTRA_LOG=1` mostra no log o que cada fonte devolveu) (precisa de internet para o IOMAT e o IBGE).
+- **Regras de classificação:** `classificar.mjs`. Para testar sem gravar: `RADAR_TESTE=true node scripts/radar/radar.mjs` (`RADAR_FONTES=famurs,doe-rs,querido-rs` limita às fontes do RS `RADAR_FONTES=sinfat-sc,dom-sc,querido-sc` às de SC e `RADAR_FONTES=dioe-pr,querido-pr` às do PR; `RADAR_AMOSTRA_LOG=1` mostra no log o que cada fonte devolveu) (precisa de internet para o IOMAT e o IBGE).
 - **Erros:** aparecem em Fontes e execuções (no app) e no log da execução no GitHub Actions. Se o IOMAT mudar o formato da busca, a fonte fica "Com erro" e o cursor de datas não avança, então nada se perde: a próxima rodada boa recupera o período.
 - **Custo:** o GitHub Actions é gratuito para repositório público; cada checagem sem trabalho leva poucos segundos.

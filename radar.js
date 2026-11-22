@@ -1,4 +1,4 @@
-// Radar de Novos Postos – MT, RS e SC (aba Telemetria → Postos em construção). Lê o que o robô diário grava no Firestore (coleções radar_*)
+// Radar de Novos Postos – MT, RS, SC e PR (aba Telemetria → Postos em construção). Lê o que o robô diário grava no Firestore (coleções radar_*)
 // e deixa o administrador revisar, configurar fontes e pedir uma pesquisa na hora.
 // O robô é scripts/radar/radar.mjs, rodado pelo GitHub Actions (.github/workflows/radar-postos.yml).
 let F, db, perfil, admin = false, temTask = false, unsub = [], uf = 'MT';
@@ -23,8 +23,8 @@ export const CONFIANCA = { confirmado: 'Processo confirmado', possivel: 'Possív
 // Registro antigo, sem Estado, é de MT (o Radar começou por lá)
 const ufDe = x => x?.uf || 'MT';
 const daUF = x => ufDe(x) === uf;
-const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina' };
-const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7] };
+const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', PR: 'Paraná' };
+const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7], PR: [[-24.6, -51.4], 7] };
 const FONTES_RS = [
   { id: 'famurs', nome: 'Diário Oficial dos Municípios do RS (FAMURS)', url: 'https://www.diariomunicipal.com.br/famurs/' },
   { id: 'doe-rs', nome: 'Diário Oficial do Estado do RS (DOE-RS)', url: 'https://www.diariooficial.rs.gov.br/' },
@@ -39,6 +39,13 @@ const FONTES_SC = [
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
   { id: 'ima-sc', nome: 'IMA-SC: consulta e relatórios de licenciamento', url: 'https://consultas.ima.sc.gov.br/', obs: 'Exige reCAPTCHA: não monitorada' },
   { id: 'doe-sc', nome: 'Diário Oficial do Estado de SC (DOE-SC)', url: 'https://portal.doe.sea.sc.gov.br/', obs: 'Não integrada nesta entrega' }
+];
+const FONTES_PR = [
+  { id: 'dioe-pr', nome: 'Diário Oficial do Estado do PR (DIOE): licenças do IAT', url: 'https://dioe.pr.gov.br/' },
+  { id: 'querido-pr', nome: 'Querido Diário (diários próprios das cidades do PR)', url: 'https://queridodiario.ok.org.br/' },
+  { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
+  { id: 'sga-iat', nome: 'IAT: consulta de processos no SGA', url: 'https://www.sga.pr.gov.br/', obs: 'Exige CAPTCHA: não monitorada' },
+  { id: 'amp-pr', nome: 'Diário Oficial dos Municípios do Paraná (AMP)', url: 'https://www.diariomunicipal.com.br/amp/', obs: 'Testada: só trouxe compras de combustível e leis, nenhuma licença de posto. Não monitorada' }
 ];
 const FONTES_PREVISTAS_MT = [
   { id: 'iomat', nome: 'Diário Oficial de MT (IOMAT)', url: 'https://iomat.mt.gov.br/' },
@@ -65,10 +72,13 @@ function ouvir() {
   unsub.push(F.onSnapshot(F.doc(db, 'radar_config', 'geral'), s => { config = s.exists() ? s.data() : {}; desenhar(); }, falha));
 }
 
-const ativos = () => emps.filter(e => daUF(e) && e.revisao?.status !== 'descartado');
-const alertasUF = () => alertas.filter(daUF);
+const doUF = () => emps.filter(e => daUF(e) && e.revisao?.status !== 'descartado');
+// filtro de Cidade (ao lado do Estado): vale para todas as partes do Radar
+const ativos = () => doUF().filter(e => !filtro.mun || e.ibge === filtro.mun);
+const daCidade = x => !filtro.mun || x.ibge === filtro.mun || (x.eid && ativos().some(e => e.id === x.eid));
+const alertasUF = () => alertas.filter(a => daUF(a) && daCidade(a));
 const naoLidos = () => alertasUF().filter(a => !(a.lidoPor || []).includes(perfil?.uid));
-const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : FONTES_PREVISTAS_MT;
+const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : uf === 'PR' ? FONTES_PR : FONTES_PREVISTAS_MT;
 const fontesUF = () => fontes.filter(f => f.id === 'anp' ? true : f.uf ? f.uf === uf : uf === 'MT');
 const ultimaExec = () => execs[0];
 
@@ -93,6 +103,7 @@ function filtrados() {
 
 function desenhar() {
   if (!area || !area.isConnected || !perfil) return;
+  cidades();
   if (erroLeitura) { area.innerHTML = cab() + `<p class="crmmsg">${esc(erroLeitura)}</p>`; ligarCab(); return; }
   const abas = [['geral', 'Visão geral'], ['lista', `Empreendimentos (${ativos().length})`], ['mapa', 'Mapa'], ['docs', 'Documentos'], ['fontes', 'Fontes e execuções'], ['alertas', `Alertas${naoLidos().length ? ' (' + naoLidos().length + ')' : ''}`]];
   if (admin) abas.push(['config', 'Configuração']);
@@ -102,6 +113,16 @@ function desenhar() {
   area.querySelectorAll('[data-raba]').forEach(b => b.onclick = () => { aba = b.dataset.raba; desenhar(); });
   const corpo = $('rdCorpo');
   ({ geral: vGeral, lista: vLista, mapa: vMapa, docs: vDocs, fontes: vFontes, alertas: vAlertas, config: vConfig })[aba](corpo);
+}
+
+// preenche o filtro de Cidade com os municípios que têm empreendimento no Estado
+function cidades() {
+  const sel = $('teleCid'), wrap = $('teleCidWrap'); if (!sel) return;
+  const muns = [...new Map(doUF().filter(e => e.ibge).map(e => [e.ibge, e.municipio])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'));
+  if (filtro.mun && !muns.some(([id]) => id === filtro.mun)) filtro.mun = '';
+  sel.innerHTML = '<option value="">Todas as cidades</option>' + muns.map(([id, n]) => `<option value="${esc(id)}" ${filtro.mun === id ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  if (wrap) wrap.hidden = false;
+  if (!sel.ligado) { sel.ligado = true; sel.addEventListener('change', () => { filtro.mun = sel.value; desenhar(); }); }
 }
 
 function cab() {
@@ -161,22 +182,20 @@ function vGeral(el) {
 }
 
 function filtrosHtml() {
-  const muns = [...new Map(ativos().filter(e => e.ibge).map(e => [e.ibge, e.municipio])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
   const opt = (obj, cur, todos) => `<option value="">${todos}</option>` + Object.entries(obj).map(([k, n]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${esc(n)}</option>`).join('');
   return `<div class="tools rdfiltros">
     <input id="rfQ" type="search" placeholder="Empresa, CNPJ ou nº do processo" value="${esc(filtro.q)}" autocomplete="off">
-    <select id="rfMun"><option value="">Todos os municípios</option>${muns.map(([id, n]) => `<option value="${id}" ${filtro.mun === id ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select>
     <select id="rfCat">${opt(CATEGORIAS, filtro.cat, 'Todas as categorias')}</select>
     <select id="rfSit">${opt(SITUACOES, filtro.sit, 'Todas as situações')}</select>
     <select id="rfConf">${opt(CONFIANCA, filtro.conf, 'Qualquer confiança')}</select>
     <label>De<input id="rfDe" type="date" value="${filtro.de}"></label><label>Até<input id="rfAte" type="date" value="${filtro.ate}"></label>
-    ${Object.values(filtro).some(Boolean) ? '<button type="button" class="linkbtn" id="rfLimpa">Limpar filtros</button>' : ''}</div>`;
+    ${Object.entries(filtro).some(([k, v]) => v && k !== 'mun') ? '<button type="button" class="linkbtn" id="rfLimpa">Limpar filtros</button>' : ''}</div>`;
 }
 function ligarFiltros(el, redesenhar) {
   const set = (id, k, ev = 'change') => { const i = $(id); if (i) i.addEventListener(ev, () => { filtro[k] = i.value.trim(); redesenhar(); }); };
-  set('rfMun', 'mun'); set('rfCat', 'cat'); set('rfSit', 'sit'); set('rfConf', 'conf'); set('rfDe', 'de'); set('rfAte', 'ate');
+  set('rfCat', 'cat'); set('rfSit', 'sit'); set('rfConf', 'conf'); set('rfDe', 'de'); set('rfAte', 'ate');
   const q = $('rfQ'); if (q) q.addEventListener('input', () => { filtro.q = q.value; clearTimeout(q.t); q.t = setTimeout(redesenhar, 250); });
-  const l = $('rfLimpa'); if (l) l.onclick = () => { Object.keys(filtro).forEach(k => filtro[k] = ''); desenhar(); };
+  const l = $('rfLimpa'); if (l) l.onclick = () => { Object.keys(filtro).forEach(k => { if (k !== 'mun') filtro[k] = ''; }); desenhar(); };
 }
 
 function vLista(el) {
@@ -216,7 +235,7 @@ async function vDocs(el) {
   el.innerHTML = '<p class="hint">Carregando os documentos mais recentes…</p>';
   try {
     const s = await F.getDocs(F.query(F.collection(db, 'radar_documentos'), F.orderBy('coletado', 'desc'), F.limit(400)));
-    const ds = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(daUF).slice(0, 100);
+    const ds = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => daUF(d) && daCidade(d)).slice(0, 100);
     el.innerHTML = ds.length ? `<div class="crmlist">${ds.map(d => `<div class="crmrow rddoc"><span><b>${esc(d.titulo || d.fonteNome || d.fonte)}</b><small>${esc(d.fonteNome || d.fonte)} · publicado em ${fmtD(d.dataPublicacao)} · coletado em ${quando(d.coletado)}</small><small class="rdtrecho">${esc(String(d.trecho || '').slice(0, 280))}…</small></span>
       <span><small>${esc(EVENTOS[d.evento] || '')}</small><small>${esc(d.municipio || '')}</small></span><span><span class="pill rdconf ${esc(d.confianca || '')}">${esc(CONFIANCA[d.confianca] || '')}</span>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Abrir original</a>` : ''}${d.eid ? `<button type="button" class="linkbtn" data-eid="${esc(d.eid)}">Ver empreendimento</button>` : ''}</span></div>`).join('')}</div>` : vazio();
     ligarLinhas(el);
@@ -268,7 +287,7 @@ async function detalhe(eid) {
       <dt>Confiança</dt><dd><span class="pill rdconf ${esc(e.confianca || '')}">${esc(CONFIANCA[e.confianca] || '')}</span></dd>
       <dt>Na base da ANP</dt><dd>${e.anp ? `Sim, posto autorizado${e.anp.bandeira ? ' · ' + esc(e.anp.bandeira) : ''}${e.anp.autorizacao ? ' · autorização ' + esc(e.anp.autorizacao) : ''}` : (e.cnpj ? 'Não: o CNPJ ainda não aparece como posto autorizado' : 'Sem CNPJ para conferir')}</dd>
       <dt>Identificado pelo robô</dt><dd>${quando(e.identificado)}</dd></dl></div>
-    <div class="crmbloco"><h4>Processos</h4>${(e.processos || []).length ? `<div class="crmlist">${e.processos.map(p => `<div class="crmrow"><span><b>${p.numero ? 'Processo ' + esc(p.numero) : 'Número do processo ' + PEND}</b><small>${esc(p.orgao || 'Órgão pendente')}${p.protocolo ? ' · protocolo da publicação ' + esc(p.protocolo) : ''}</small></span><span><small>${esc(EVENTOS[p.evento] || '')}</small></span><span><small>${fmtD(p.data)}</small></span></div>`).join('')}</div>` : '<p class="hint">Nenhum processo identificado.</p>'}</div>
+    <div class="crmbloco"><h4>Processos</h4>${(e.processos || []).length ? `<div class="crmlist">${e.processos.map(p => `<div class="crmrow"><span><b>${p.numero ? 'Processo ' + esc(p.numero) : (p.licencas || []).length ? 'Licença ' + p.licencas.map(l => esc(l.tipo) + ' nº ' + esc(l.numero)).join(', ') : 'Número do processo ' + PEND}</b>${!p.numero && (p.licencas || []).length ? `<small>Número do processo ${PEND}</small>` : ''}<small>${esc(p.orgao || 'Órgão pendente')}${p.protocolo ? ' · protocolo da publicação ' + esc(p.protocolo) : ''}</small></span><span><small>${esc(EVENTOS[p.evento] || '')}</small></span><span><small>${fmtD(p.data)}</small></span></div>`).join('')}</div>` : '<p class="hint">Nenhum processo identificado.</p>'}</div>
     <div class="crmbloco"><h4>Documentos e evidências</h4><div id="rdDlgDocs" class="crmlist"><p class="hint">Carregando…</p></div></div>
     <div class="crmbloco"><h4>Histórico</h4><div id="rdDlgHist" class="crmlist"><p class="hint">Carregando…</p></div></div>
     <div class="crmbloco"><h4>Revisão</h4><p class="hint" style="margin:0">${rev.status && rev.status !== 'pendente' ? `${rev.status === 'confirmado' ? 'Confirmado' : 'Descartado'} por ${esc(rev.por || '')} em ${quando(rev.em)}${rev.nota ? ': ' + esc(rev.nota) : ''}` : 'Aguardando revisão de um administrador.'}</p>

@@ -10,6 +10,12 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 197, data: '2026-11-22', titulo: 'Postos em construção no Paraná e filtro de Cidade', itens: [
+    'Telemetria → Postos em construção: o Paraná (PR) já pode ser escolhido no filtro de Estado.',
+    'No PR o Radar lê as licenças ambientais de posto que o IAT (Instituto Água e Terra) concede e publica no Diário Oficial do Estado: Licença Prévia, de Instalação, de Operação, ampliações e renovações, com empresa, endereço, município e número da licença.',
+    'Novo filtro de Cidade ao lado do Estado. Ele vale para a visão geral, a lista, o mapa, os documentos e os alertas.',
+    'O Diário Oficial não traz o CNPJ: quando o Radar acha o posto na base da ANP, o CNPJ aparece marcado como vindo de lá. O que não aparece no documento fica como "pendente de confirmação".'
+  ] },
   { v: 196, data: '2026-11-22', titulo: 'Postos em construção em Santa Catarina', itens: [
     'Telemetria → Postos em construção: Santa Catarina (SC) já pode ser escolhida no filtro de Estado.',
     'Em SC o Radar lê os pedidos de licença ambiental feitos às prefeituras (consulta pública do CIGA SINFAT), as licenças publicadas no Diário Oficial dos Municípios (DOM/SC) e os diários próprios das cidades (Querido Diário).',

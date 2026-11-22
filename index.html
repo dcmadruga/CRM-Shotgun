@@ -404,7 +404,7 @@ table.users{min-width:640px}
 .pmini .pill{justify-self:start;font-size:10px}
 .pcol .vazio{font-size:12px;color:var(--muted);padding:4px}
 /* Telemetria */
-.telefiltro{max-width:280px}
+.telefiltro{max-width:280px}.telefiltro[hidden]{display:none}#teleCid{min-width:220px}
 .teleembreve{border:1px dashed var(--line);border-radius:10px;padding:18px;background:var(--field);display:grid;gap:6px;justify-items:start}
 .teleembreve b{font-family:var(--display);font-size:15px}.teleembreve small{color:var(--muted);font-size:13px;line-height:1.45}
 .teleembreve .pill{font-size:10.5px;background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);border-color:transparent}
@@ -930,9 +930,9 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div id="tanpArea" class="tanparea"></div>
   </div></section>
   <section class="sec" data-telepainel="obras" hidden><h2>Telemetria · Monitoramento de postos em construção</h2><div class="body">
-    <p class="hint" style="margin:0">As pesquisas são feitas por Estado. Escolha o Estado para começar.</p>
-    <div class="tools"><label class="telefiltro">Estado<select id="teleUf"><option value="">Escolha o Estado…</option></select></label></div>
-    <div id="teleArea" class="teleembreve"><span class="pill">Em construção</span><b>Escolha um Estado</b><small>Já monitorados: Mato Grosso (MT), Rio Grande do Sul (RS) e Santa Catarina (SC). Os outros Estados entram depois.</small></div>
+    <p class="hint" style="margin:0">As pesquisas são feitas por Estado. Escolha o Estado para começar e, se quiser, a Cidade.</p>
+    <div class="tools"><label class="telefiltro">Estado<select id="teleUf"><option value="">Escolha o Estado…</option></select></label><label class="telefiltro" id="teleCidWrap" hidden>Cidade<select id="teleCid"><option value="">Todas as cidades</option></select></label></div>
+    <div id="teleArea" class="teleembreve"><span class="pill">Em construção</span><b>Escolha um Estado</b><small>Já monitorados: Mato Grosso (MT), Rio Grande do Sul (RS), Santa Catarina (SC) e Paraná (PR). Os outros Estados entram depois.</small></div>
   </div></section>
 </main>
 
