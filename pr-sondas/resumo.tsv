@@ -1,5 +1,2 @@
-dioe-homejs	200	18895	https://www.dioe.pr.gov.br/theme/Parana2/js/home.js
-dioe-busca-post	200	11883	https://www.dioe.pr.gov.br/buscanova/
-dioe-busca-get	200	11883	https://www.dioe.pr.gov.br/buscanova/?q=%22posto%20de%20combust%C3%ADveis%22
-dioe-listagem	200	24143	https://www.dioe.pr.gov.br/listagem
-qd-curitiba	503	20	https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-05-01&size=5&territory_ids=4106902&excerpt_size=500
+dioe-appjs	200	49393	https://www.dioe.pr.gov.br/buscanova/assets/javascripts/application.b15ebb8e.js
+dioe-ultimas	200	45823	https://www.dioe.pr.gov.br/apifront/portal/edicoes/ultimas_edicoes.json
