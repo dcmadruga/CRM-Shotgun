@@ -333,12 +333,15 @@ async function iniciar() {
   function limparRefazer() { refazer = null; mostrarRefazer(); }
   $('btnNova').addEventListener('click', limparRefazer);
   document.addEventListener('click', e => { if (e.target.id === 'refazCancel') { limparRefazer(); msg('Atualização cancelada. Se enviar agora, sai como uma proposta nova.'); } });
+  // Pendente de envio: a proposta nasce como as outras (status 'enviada', que as regras do Firestore aceitam)
+  // e ganha a marca pendenteEnvio, que sai quando o vendedor envia pelo WhatsApp ou pelo link
+  const ehPend = p => !!p && p.pendenteEnvio === true && p.status !== 'aprovada';
   // enviar = false: "Salvar proposta" guarda como pendente de envio (o vendedor envia depois)
   async function salvarProposta(n, enviar = true) {
     const assin = JSON.stringify(S);
     if (ultimo && ultimo.assin === assin) {
       if (n && n !== ultimo.meta.waCli) { ultimo.meta.waCli = n; F.updateDoc(F.doc(db, 'propostas', ultimo.id), { waCli: n }).catch(() => {}); }
-      if (enviar && ultimo.meta.status === 'pendente') await marcarEnviada(ultimo.id).then(() => { ultimo.meta.status = 'enviada'; });
+      if (enviar && ehPend(ultimo.meta)) await marcarEnviada(ultimo.id).then(() => { ultimo.meta.pendenteEnvio = false; });
       return ultimo;
     }
     const b64 = buildPdf().output('datauristring').split(',')[1];
@@ -347,7 +350,7 @@ async function iniciar() {
     const rf = refazer, versao = rf ? rf.versao + 1 : 1;
     const numero = rf ? String(rf.numero || '').replace(/-R\d+$/, '') + '-R' + versao : hojeIso().replace(/-/g, '').slice(2) + '-' + ref.id.slice(0, 4).toUpperCase();
     const meta = {
-      numero, status: enviar ? 'enviada' : 'pendente', owner: perfil.uid, vendedor: perfil.nome || '', vendedorFone: dig(perfil.fone),
+      numero, status: 'enviada', owner: perfil.uid, vendedor: perfil.nome || '', vendedorFone: dig(perfil.fone),
       cliente: String(S.cliente || '').trim(), cnpj: S.cnpj || '', contato: String(S.contato || '').trim(), cidade: S.cidade || '',
       waCli: n, data: S.data || hojeIso(), validade: S.validade || '',
       totLic: sumRows(S.lic), totMen: sumRows(S.men), totDes: deslocamento(), implantacao: S.implantacao === 'Remota' || S.implantacao === 'Combustível' ? S.implantacao : 'Presencial', arquivo: fileName(),
@@ -359,6 +362,10 @@ async function iniciar() {
     lote.set(ref, meta);
     lote.set(F.doc(db, 'propostas', ref.id, 'arquivo', 'pdf'), { b64, nome: fileName() });
     await lote.commit();
+    if (!enviar) {
+      try { await F.updateDoc(ref, { pendenteEnvio: true }); meta.pendenteEnvio = true; }
+      catch (e) { meta.erroPend = e.code || 'erro'; }
+    }
     if (rf) {
       try { await F.updateDoc(F.doc(db, 'propostas', rf.id), { status: 'substituida', substituidaPor: ref.id, substituidaEm: F.serverTimestamp() }); }
       catch (e) { pMsg('A nova versão foi salva, mas não consegui marcar a nº ' + rf.numero + ' como substituída (' + (e.code || 'erro') + ').'); }
@@ -368,7 +375,7 @@ async function iniciar() {
     return ultimo;
   }
   // Proposta salva como pendente: ao sair pelo WhatsApp ou pelo link, passa a "enviada" (aguardando aprovação)
-  const marcarEnviada = id => F.updateDoc(F.doc(db, 'propostas', id), { status: 'enviada', enviadaEm: F.serverTimestamp() });
+  const marcarEnviada = id => F.updateDoc(F.doc(db, 'propostas', id), { pendenteEnvio: false, enviadaEm: F.serverTimestamp() });
   function validarEnvio() {
     if (!perfil) return null;
     if (!String(S.cliente || '').trim()) { $('cliente').focus(); aprovMsg('Preencha o cliente antes de enviar.'); return null; }
@@ -407,7 +414,7 @@ async function iniciar() {
     const btn = $('btnAprovSalvar'); btn.disabled = true; aprovMsg('Salvando a proposta…');
     try {
       const r = await salvarProposta(v.n, false);
-      aprovMsg(r.meta.status === 'pendente' ? `Proposta nº ${r.meta.numero} salva como pendente de envio. Ela fica na aba Propostas: envie quando quiser, por aqui ou por lá.` : `A proposta nº ${r.meta.numero} já foi salva e enviada sem mudanças desde então.`);
+      aprovMsg(r.meta.erroPend ? `Proposta nº ${r.meta.numero} salva, mas não consegui marcá-la como pendente de envio (${r.meta.erroPend}). Ela aparece como Aguardando aprovação.` : ehPend(r.meta) ? `Proposta nº ${r.meta.numero} salva como pendente de envio. Ela fica na aba Propostas: envie quando quiser, por aqui ou por lá.` : `A proposta nº ${r.meta.numero} já foi salva e enviada sem mudanças desde então.`);
     } catch (e) { aprovMsg('Não foi possível salvar: ' + (e.code || e.message) + '.'); }
     finally { btn.disabled = false; }
   });
@@ -435,7 +442,7 @@ async function iniciar() {
   const fmtTs = ts => ts && ts.toDate ? ts.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
   function statusDe(p) {
     if (p.status === 'aprovada') return { cls: 'ok', txt: 'APROVADA' };
-    if (p.status === 'pendente') return { cls: 'salva', txt: 'Pendente de envio' };
+    if (ehPend(p)) return { cls: 'salva', txt: 'Pendente de envio' };
     if (p.validade && p.validade < hojeIso()) return { cls: 'exp', txt: 'Vencida' };
     return { cls: 'wait', txt: 'Aguardando aprovação' };
   }
@@ -459,7 +466,7 @@ async function iniciar() {
   const COLS = ['Proposta', 'Dados Primários', 'Contrato', 'Pré TASK', 'No TASK'];
   function miniStatus(p) {
     const c = passoAtual(p), ven = p.status !== 'aprovada' && p.validade && p.validade < hojeIso();
-    return [p.status === 'pendente' ? ['salva', 'pendente de envio'] : ven ? ['exp', 'vencida'] : ['wait', 'aguardando aprovação'], ['wait', 'aguardando dados'], p.ctEm ? ['wait', 'aguardando aceite'] : ['', 'gerar contrato'], ['', 'com o vendedor'], ['ok', 'no TASK']][c];
+    return [ehPend(p) ? ['salva', 'pendente de envio'] : ven ? ['exp', 'vencida'] : ['wait', 'aguardando aprovação'], ['wait', 'aguardando dados'], p.ctEm ? ['wait', 'aguardando aceite'] : ['', 'gerar contrato'], ['', 'com o vendedor'], ['ok', 'no TASK']][c];
   }
   function desenharQuadro(vis) {
     $('pBoard').innerHTML = COLS.map((t, ci) => {
@@ -484,7 +491,7 @@ async function iniciar() {
   function pendencia(p) {
     if (duvNova(p)) return { t: 'Cliente enviou uma dúvida', d: `Recebida em ${fmtTs(p.duvidaEm)}. Leia e responda o cliente.`, passo: 0, b: 'Ver dúvida' };
     const ven = p.validade && p.validade < hojeIso();
-    if (p.status === 'pendente') return { t: 'Enviar a proposta ao cliente', d: `Salva em ${fmtTs(p.criado) || fmtD(p.data)} e ainda não enviada.${ven ? ' A validade já passou: revise antes de enviar.' : ''}`, passo: 0, b: 'Enviar proposta' };
+    if (ehPend(p)) return { t: 'Enviar a proposta ao cliente', d: `Salva em ${fmtTs(p.criado) || fmtD(p.data)} e ainda não enviada.${ven ? ' A validade já passou: revise antes de enviar.' : ''}`, passo: 0, b: 'Enviar proposta' };
     if (p.status !== 'aprovada') return ven ? { t: 'Proposta vencida', d: `Válida até ${fmtD(p.validade)}. Revise e reenvie ao cliente.`, passo: 0, b: 'Abrir proposta' }
       : { t: 'Aguardando o cliente aprovar', d: `Enviada em ${fmtTs(p.criado) || fmtD(p.data)}. Se demorar, reenvie o link.`, passo: 0, b: 'Ver proposta', cli: true };
     if (!p.e2Em) return { t: 'Enviar o formulário dos Dados Primários', d: `Aprovada em ${fmtTs(p.aprovadoEm)}. Envie o link ao cliente ou preencha por ele.`, passo: 1, b: 'Enviar dados' };
@@ -517,17 +524,17 @@ async function iniciar() {
   $('hMinhas').addEventListener('change', desenharHoje);
   function desenharPropostas() {
     const busca = $('pBusca').value.trim().toLowerCase(), filtro = $('pFiltro').value;
-    const passa = p => !filtro || (filtro === 'ctok' ? !!p.ctAceitoEm : filtro === 'ctenv' ? (!!p.ctEm && !p.ctAceitoEm) : p.status === filtro);
+    const passa = p => !filtro || (filtro === 'ctok' ? !!p.ctAceitoEm : filtro === 'ctenv' ? (!!p.ctEm && !p.ctAceitoEm) : filtro === 'pendente' ? ehPend(p) : filtro === 'enviada' ? p.status === 'enviada' && !ehPend(p) : p.status === filtro);
     const vis = props.filter(p => passa(p) &&
       (!busca || [p.cliente, p.cnpj, p.numero, p.cidade, p.vendedor].join(' ').toLowerCase().includes(busca)));
-    const ap = props.filter(p => p.status === 'aprovada').length, pe = props.filter(p => p.status === 'pendente').length;
+    const ap = props.filter(p => p.status === 'aprovada').length, pe = props.filter(p => ehPend(p)).length;
     $('pCount').textContent = `${props.length} no total · ${ap} aprovada${ap === 1 ? '' : 's'}${pe ? ` · ${pe} pendente${pe === 1 ? '' : 's'} de envio` : ''}`;
     desenharHoje(); aplicarModo2();
     if (modoQuadro) desenharQuadro(vis);
     const lista = modoQuadro ? vis.filter(p => p.id === foco) : vis;
     if (modoQuadro && !lista.length) { $('pList').innerHTML = vis.length ? '<p class="hint">Clique em um card do quadro para abrir os passos da proposta.</p>' : `<p class="hint">${props.length ? 'Nenhuma proposta encontrada com esse filtro.' : 'Nenhuma proposta enviada ainda. Use "+ Nova proposta".'}</p>`; return; }
     $('pList').innerHTML = lista.length ? lista.map(p => {
-      const st = statusDe(p), ok = p.status === 'aprovada', pend = p.status === 'pendente';
+      const st = statusDe(p), ok = p.status === 'aprovada', pend = ehPend(p);
       const sel = passoSel[p.id] != null ? passoSel[p.id] : passoAtual(p), oc = i => i === sel ? '' : ' hidden';
       return `<div class="pcard" data-id="${esc(p.id)}">
         <div class="top"><div><b>${esc(p.cliente)}</b><div class="meta">Nº ${esc(p.numero)} · ${esc(p.cidade || '')}${fb.admin ? ' · ' + esc(p.vendedor) : ''}</div></div>
@@ -859,7 +866,7 @@ async function iniciar() {
     if (a === 'e4salvar') return salvarE4(p, card, bt);
     if (a === 'e4cancelar') { card.querySelector('.e4box').hidden = true; return; }
     if (a === 'reenviar' || a === 'copiar') {
-      const era = p.status === 'pendente';
+      const era = ehPend(p);
       if (a === 'reenviar') { abrirWa(p.waCli, textoAprov(p)); pMsg(era ? `WhatsApp aberto com o link. A proposta nº ${p.numero} passa para Aguardando aprovação.` : 'WhatsApp aberto com o link da proposta.'); }
       else { try { await navigator.clipboard.writeText(linkAprov(p.id)); pMsg('Link da proposta nº ' + p.numero + ' copiado.' + (era ? ' Ela passa para Aguardando aprovação.' : '')); } catch (_) { pMsg('Link: ' + linkAprov(p.id)); } }
       if (era) marcarEnviada(p.id).catch(err => pMsg('O link saiu, mas não consegui marcar a proposta como enviada (' + (err.code || 'erro') + ').'));
@@ -869,11 +876,11 @@ async function iniciar() {
       $('waAprov').value = p.waCli ? String(p.waCli).replace(/^55/, '') : '';
       ultimo = null;
       // Pendente de envio: abrir e enviar sem mudanças usa a mesma proposta; se mudar algo, a nova versão entra no lugar dela
-      if (a === 'refazer' || p.status === 'pendente') { refazer = { id: p.id, numero: p.numero, owner: p.owner, vendedor: p.vendedor, vendedorFone: p.vendedorFone, leadId: p.leadId || '', versao: p.versao || 1, pend: a !== 'refazer' }; mostrarRefazer(); }
+      if (a === 'refazer' || ehPend(p)) { refazer = { id: p.id, numero: p.numero, owner: p.owner, vendedor: p.vendedor, vendedorFone: p.vendedorFone, leadId: p.leadId || '', versao: p.versao || 1, pend: a !== 'refazer' }; mostrarRefazer(); }
       else limparRefazer();
-      if (p.status === 'pendente') ultimo = { id: p.id, meta: { ...p }, assin: JSON.stringify(S) };
+      if (ehPend(p)) ultimo = { id: p.id, meta: { ...p }, assin: JSON.stringify(S) };
       showTab(false); abrirAba('tabProp');
-      if (p.status === 'pendente') { msg(`Proposta nº ${p.numero} (pendente de envio) carregada. Envie pelo WhatsApp ou copie o link no fim da página.`); return; }
+      if (ehPend(p)) { msg(`Proposta nº ${p.numero} (pendente de envio) carregada. Envie pelo WhatsApp ou copie o link no fim da página.`); return; }
       msg(a === 'refazer' ? `Proposta nº ${p.numero} aberta para atualizar. Ajuste o que precisar e envie: a nova versão substitui esta.` : `Proposta nº ${p.numero} carregada. Se mudar algo, envie de novo para aprovação.`);
     }
     if (a === 'pdf' || a === 'pdfant') {

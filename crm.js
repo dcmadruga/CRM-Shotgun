@@ -68,7 +68,7 @@ const estadosDe = uid => (uid === perfil.uid && Array.isArray(perfil.estados) ? 
 const meu = x => (!fUser || x.owner === fUser) && (!fUf || ufDe(x) === fUf);
 const leads = () => docs.filter(d => d.tipo === 'lead' && meu(d));
 const notasCli = () => docs.filter(d => d.tipo === 'cliente');
-const etapaProp = p => p.crmPerdida ? 'perdido' : p.ctAceitoEm ? 'contrato' : p.status === 'aprovada' ? 'aprovada' : p.status === 'pendente' ? 'salva' : 'enviada';
+const etapaProp = p => p.crmPerdida ? 'perdido' : p.ctAceitoEm ? 'contrato' : p.status === 'aprovada' ? 'aprovada' : p.pendenteEnvio === true ? 'salva' : 'enviada';
 // Proposta que nasceu do lead (pelo vínculo gravado, pelo CNPJ ou pelo nome)
 function propDoLead(l) {
   const k = chave(l.cnpj, l.empresa);
