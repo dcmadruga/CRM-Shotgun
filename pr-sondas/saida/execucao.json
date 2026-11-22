@@ -1,0 +1,51 @@
+{
+ "inicio": "2026-11-22T13:35:20.493Z",
+ "fim": "2026-11-22T13:44:00.844Z",
+ "status": "erro",
+ "gatilho": "push",
+ "pedidoPor": "",
+ "periodo": {
+  "de": "2025-11-22",
+  "ate": "2026-11-22"
+ },
+ "porFonte": {
+  "dioe-pr": {
+   "ok": true,
+   "uf": "PR",
+   "consultas": 97,
+   "lidos": 732,
+   "docs": 732,
+   "de": "2025-11-22",
+   "novos": 732
+  },
+  "amp-pr": {
+   "ok": true,
+   "uf": "PR",
+   "consultas": 26,
+   "lidos": 14,
+   "docs": 4,
+   "de": "2025-11-22",
+   "novos": 4
+  },
+  "querido-pr": {
+   "ok": false,
+   "uf": "PR",
+   "erro": "Querido Diário: HTTP 503 (https://api.queridodiario.org.br/gazettes?querystring=%22posto+de+combust%C3%ADveis%22&published_since=2025-11-22&published_until=2026-11-22&excerpt_size=1500&n)",
+   "de": "2025-11-22"
+  },
+  "anp-PR": {
+   "ok": true,
+   "uf": "PR",
+   "docs": 0,
+   "postos": 2962,
+   "novos": 0
+  }
+ },
+ "documentos": 736,
+ "novos": 662,
+ "atualizados": 0,
+ "novosDocumentos": 736,
+ "alertas": 3,
+ "teste": true,
+ "duracaoSeg": 520
+}
