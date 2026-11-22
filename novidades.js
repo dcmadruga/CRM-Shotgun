@@ -13,6 +13,9 @@ window.SHOTGUN_NOVIDADES = [
   { v: 191, data: '2026-11-22', titulo: 'Sino de notificações volta a abrir', itens: [
     'Tocar no sino mostra de novo a lista de notificações, no computador e no celular, no tema claro e no escuro.'
   ] },
+  { v: 190, data: '2026-11-22', titulo: 'Endereço do estabelecimento no responsável legal', itens: [
+    'Nos dados complementares, a seção do responsável legal tem o botão "Usar endereço do estabelecimento". Um toque busca na Receita o endereço do CNPJ da proposta e preenche endereço, número, complemento, bairro, cidade e estado. Depois é só conferir.'
+  ] },
   { v: 189, data: '2026-11-22', titulo: 'Slogan no cabeçalho do celular', itens: [
     'No celular, o slogan "O cliente na mira, do primeiro contato ao pós-venda." voltou a aparecer no cabeçalho, logo abaixo da logomarca.'
   ] },
