@@ -2,7 +2,9 @@
 // Dados: crm/{id} com tipo 'lead' (contatos antes da proposta) ou 'cliente' (anotações da ficha do cliente).
 // O funil e a lista de clientes também usam as propostas (coleção propostas), sem copiar os dados delas.
 let F, db, perfil, admin = false, temTask = false, unsubC = null, unsubP = null;
-let docs = [], props = [], tasksCache = null, aba = 'funil', soMinhas = false;
+let docs = [], props = [], tasksCache = null, aba = 'funil';
+// Filtros da lista: usuário responsável (só ADM vê de todos) e estado (UF da cidade do lead ou da proposta)
+let fUser = '', fUf = '', usuarios = {};
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const dig = v => String(v || '').replace(/\D/g, '');
@@ -29,7 +31,7 @@ const MOTIVOS = ['Preço', 'Escolheu concorrente', 'Sem interesse no momento', '
 const TIPOS_NOTA = ['Ligação', 'WhatsApp', 'Visita', 'E-mail', 'Reunião', 'Anotação'];
 
 window.addEventListener('shotgun-crm', e => { ({ F, db, perfil, admin, temTask } = e.detail); iniciar(); });
-window.addEventListener('argo-sair', () => { if (unsubC) unsubC(); if (unsubP) unsubP(); unsubC = unsubP = null; docs = []; props = []; tasksCache = null; });
+window.addEventListener('argo-sair', () => { if (unsubC) unsubC(); if (unsubP) unsubP(); unsubC = unsubP = null; docs = []; props = []; tasksCache = null; fUser = fUf = ''; usuarios = {}; });
 
 function iniciar() {
   // Logos das Bandeiras publicados pelo ADM: usados no cartão da ANP e na lista de leads
@@ -47,12 +49,22 @@ function iniciar() {
   unsubP = F.onSnapshot(admin ? F.query(pc, F.orderBy('criado', 'desc'), F.limit(500)) : F.query(pc, F.where('owner', '==', perfil.uid)), qs => {
     props = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.status !== 'substituida').sort((a, b) => (b.criado?.seconds || 9e9) - (a.criado?.seconds || 9e9)); desenhar();
   }, () => {});
-  $('crmMinhas').closest('label').hidden = !admin;
+  $('crmUsuario').hidden = !admin;
+  fUser = fUf = ''; usuarios = {};
+  // ADM: nomes e estados de atuação dos usuários para o filtro (se a leitura falhar, usa os nomes gravados nos leads)
+  if (admin) F.getDocs(F.collection(db, 'usuarios')).then(qs => {
+    qs.forEach(d => { const u = d.data(); usuarios[d.id] = { nome: u.nome || u.email || '', estados: Array.isArray(u.estados) ? u.estados : [], papeis: Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel || 'vendedor'], ativo: u.ativo !== false }; });
+    desenhar();
+  }).catch(() => {});
   desenhar();
 }
 
 /* ---------- Dados derivados ---------- */
-const meu = x => !soMinhas || x.owner === perfil.uid;
+const UF_NOMES = { AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PA: 'Pará', PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SP: 'São Paulo', SE: 'Sergipe', TO: 'Tocantins' };
+// UF do lead/proposta: fim da cidade ("Nova Mutum - MT") ou a UF da ANP
+const ufDe = x => { const m = String(x.cidade || '').trim().match(/[-\/,]\s*([A-Za-z]{2})$/); const uf = (m ? m[1] : x.anp?.uf || x.uf || '').toUpperCase(); return UF_NOMES[uf] ? uf : ''; };
+const estadosDe = uid => (uid === perfil.uid && Array.isArray(perfil.estados) ? perfil.estados : usuarios[uid]?.estados) || [];
+const meu = x => (!fUser || x.owner === fUser) && (!fUf || ufDe(x) === fUf);
 const leads = () => docs.filter(d => d.tipo === 'lead' && meu(d));
 const notasCli = () => docs.filter(d => d.tipo === 'cliente');
 const etapaProp = p => p.crmPerdida ? 'perdido' : p.ctAceitoEm ? 'contrato' : p.status === 'aprovada' ? 'aprovada' : 'enviada';
@@ -84,9 +96,48 @@ function clientes() {
   }).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
 }
 
+/* ---------- Filtros por usuário e estado ---------- */
+function montarFiltros() {
+  const todos = [...docs.filter(d => d.tipo === 'lead'), ...props];
+  // Usuários: os cadastrados como vendedor ou ADM e quem já tem lead/proposta. Com um estado escolhido, só quem atua nele ou tem algo lá.
+  if (admin) {
+    const us = new Map();
+    Object.entries(usuarios).forEach(([uid, u]) => { if (u.ativo && (u.papeis.includes('vendedor') || u.papeis.includes('adm'))) us.set(uid, u.nome); });
+    todos.forEach(x => { if (x.owner && !us.has(x.owner)) us.set(x.owner, usuarios[x.owner]?.nome || x.vendedor || 'Sem nome'); });
+    us.delete(perfil.uid);
+    let lista = [...us.entries()];
+    if (fUf) lista = lista.filter(([uid]) => uid === fUser || estadosDe(uid).includes(fUf) || todos.some(x => x.owner === uid && ufDe(x) === fUf));
+    lista.sort((a, b) => String(a[1]).localeCompare(String(b[1]), 'pt-BR'));
+    if (fUser && fUser !== perfil.uid && !lista.some(([uid]) => uid === fUser)) fUser = '';
+    const ufsTxt = uid => { const e = estadosDe(uid); return e.length ? ' · ' + (e.length > 4 ? e.slice(0, 4).join(', ') + '…' : e.join(', ')) : ''; };
+    const sel = $('crmUsuario');
+    sel.innerHTML = `<option value="">Todos os usuários</option><option value="${esc(perfil.uid)}">Só os meus${esc(ufsTxt(perfil.uid))}</option>` + lista.map(([uid, nome]) => `<option value="${esc(uid)}">${esc(nome + ufsTxt(uid))}</option>`).join('');
+    sel.value = fUser; sel.classList.toggle('on', !!fUser);
+  }
+  // Estados: os vinculados ao usuário escolhido (para o vendedor, os dele) aparecem primeiro; depois os que têm lead/proposta
+  const dono = admin ? fUser : perfil.uid, vinc = dono ? estadosDe(dono).filter(u => UF_NOMES[u]) : [];
+  const comDados = new Set(todos.filter(x => !admin || !fUser || x.owner === fUser).map(ufDe).filter(Boolean));
+  if (admin && !fUser) Object.values(usuarios).forEach(u => u.estados.forEach(e => UF_NOMES[e] && comDados.add(e)));
+  if (fUf) comDados.add(fUf);
+  const outros = [...comDados].filter(u => !vinc.includes(u)).sort();
+  const opt = u => `<option value="${u}">${u} · ${UF_NOMES[u]}</option>`;
+  const nomeDono = !dono ? '' : dono === perfil.uid ? (admin ? 'Seus estados' : 'Seus estados de atuação') : 'Estados de ' + String(usuarios[dono]?.nome || 'usuário').split(' ')[0];
+  const sel = $('crmUf');
+  sel.innerHTML = '<option value="">Todos os estados</option>' + (vinc.length ? `<optgroup label="${esc(nomeDono)}">${vinc.slice().sort().map(opt).join('')}</optgroup>${outros.length ? `<optgroup label="Outros estados">${outros.map(opt).join('')}</optgroup>` : ''}` : outros.map(opt).join(''));
+  sel.value = fUf; sel.classList.toggle('on', !!fUf);
+  // Resumo do filtro ativo, com atalho para limpar
+  const partes = [];
+  if (fUser) partes.push(fUser === perfil.uid ? 'só os seus' : 'de ' + (usuarios[fUser]?.nome || todos.find(x => x.owner === fUser)?.vendedor || 'usuário'));
+  if (fUf) partes.push('em ' + UF_NOMES[fUf] + ' (' + fUf + ')');
+  const box = $('crmFiltro');
+  box.hidden = !partes.length;
+  box.innerHTML = partes.length ? `<span>Mostrando ${esc(partes.join(', '))}.</span><button type="button" data-a="limparfiltro">Limpar filtros</button>` : '';
+}
+
 /* ---------- Telas ---------- */
 function desenhar() {
   if (!$('viewCrm') || !perfil) return;
+  montarFiltros();
   document.querySelectorAll('#crmNav button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.aba === aba)));
   ['funil', 'leads', 'clientes'].forEach(a => { $('crm-' + a).hidden = a !== aba; });
   $('crmBusca').hidden = aba === 'funil';
@@ -122,7 +173,7 @@ function desenharLeads() {
       <span><b>${l.anp?.bandeira && window.anpSeloBandeira ? window.anpSeloBandeira(l.anp.bandeira, false, true) : ''}${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.contato, l.fone, l.cidade, l.anp?.bandeira, l.anp?.porte && 'Porte ' + l.anp.porte].filter(Boolean).join(' · '))}</small></span>
       <span><small>${esc(l.origem || '')}</small>${admin && l.vendedor ? `<small>${esc(l.vendedor)}</small>` : ''}</span>
       <span><small>${l.prox ? 'Próx.: ' + fmtD(l.prox) : 'Sem próximo contato'}</small><span class="pill">${esc(et)}</span></span>
-    </button>`; }).join('')}</div>` : `<p class="hint">${q ? 'Nenhum lead encontrado.' : 'Nenhum lead ainda. Clique em "+ Novo lead" para cadastrar o primeiro contato.'}</p>`;
+    </button>`; }).join('')}</div>` : `<p class="hint">${q ? 'Nenhum lead encontrado.' : fUser || fUf ? 'Nenhum lead com esses filtros.' : 'Nenhum lead ainda. Clique em "+ Novo lead" para cadastrar o primeiro contato.'}</p>`;
 }
 
 function desenharClientes() {
@@ -134,7 +185,7 @@ function desenharClientes() {
       <span><b>${esc(c.nome)}</b><small>${esc([fmtCnpj(c.cnpj), c.cidade].filter(Boolean).join(' · '))}</small></span>
       <span><small>${brl(c.men)}/mês</small>${admin && c.vendedor ? `<small>${esc(c.vendedor)}</small>` : ''}</span>
       <span><small>${ult ? esc(ult.tipo) + ' em ' + fmtTs(ult.em) : c.desde ? 'Cliente desde ' + c.desde.toLocaleDateString('pt-BR') : ''}</small><span class="pill">${c.props.length} proposta${c.props.length === 1 ? '' : 's'}</span></span>
-    </button>`; }).join('')}</div>` : `<p class="hint">${q ? 'Nenhum cliente encontrado.' : 'Os clientes aparecem aqui quando o contrato de uma proposta é aceito.'}</p>`;
+    </button>`; }).join('')}</div>` : `<p class="hint">${q ? 'Nenhum cliente encontrado.' : fUser || fUf ? 'Nenhum cliente com esses filtros.' : 'Os clientes aparecem aqui quando o contrato de uma proposta é aceito.'}</p>`;
 }
 
 /* ---------- Ditado: gravar a fala e transcrever no campo ---------- */
@@ -476,7 +527,9 @@ function ligar() {
   if (!$('viewCrm')) return;
   $('crmNav').addEventListener('click', e => { const b = e.target.closest('button[data-aba]'); if (!b) return; aba = b.dataset.aba; $('crmBusca').value = ''; desenhar(); });
   $('crmBusca').addEventListener('input', desenhar);
-  $('crmMinhas').addEventListener('change', e => { soMinhas = e.target.checked; desenhar(); });
+  $('crmUsuario').addEventListener('change', e => { fUser = e.target.value; desenhar(); });
+  $('crmUf').addEventListener('change', e => { fUf = e.target.value; desenhar(); });
+  $('crmFiltro').addEventListener('click', e => { if (e.target.closest('[data-a=limparfiltro]')) { fUser = fUf = ''; desenhar(); } });
   $('crmNovo').addEventListener('click', () => formLead());
   // Telemetria ANP: abre o Novo lead com o CNPJ do posto e já busca os dados (Receita e ANP)
   window.crmLeadDoPosto = cnpj => {
