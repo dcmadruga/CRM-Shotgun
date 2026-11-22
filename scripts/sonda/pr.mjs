@@ -13,9 +13,10 @@ async function pega(nome, url, opts = {}) {
 }
 const AMP = 'https://www.diariomunicipal.com.br/amp/';
 const q = (t) => `${AMP}pesquisar?busca_avancada%5Btexto%5D=${encodeURIComponent(t)}&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-21&busca_avancada%5Bpagina%5D=1`;
-const D = 'https://www.dioe.pr.gov.br';
-const app = await pega('dioe-appjs', D + '/buscanova/assets/javascripts/application.b15ebb8e.js');
-const urls = [...new Set((app.match(/["'][^"'\s]*(?:apifront|busca|search)[^"'\s]*["']/gi) || []))].slice(0, 80);
-await writeFile('pr-sondas/dioe-app-urls.txt', urls.join('\n'));
-await pega('dioe-ultimas', D + '/apifront/portal/edicoes/ultimas_edicoes.json');
+const D = 'https://dioe.pr.gov.br';
+const B = (q, pag = 0) => `${D}/busca/busca/buscar/query/${pag}/di:2026-08-01/df:2026-11-21/?1=1&q=${encodeURIComponent(q)}`;
+await pega('dioe-q1', B('"posto de combustíveis"'));
+await pega('dioe-q2', B('"comércio varejista de combustíveis"'));
+await pega('dioe-q3', B('"Instituto Água e Terra" licença posto'));
+await pega('dioe-q1p2', B('"posto de combustíveis"', 1));
 await writeFile('pr-sondas/resumo.tsv', resumo.join('\n') + '\n');
