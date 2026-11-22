@@ -53,3 +53,6 @@ export async function coletar(de, ate, log = console.log, ctx = {}) {
   log(`Querido Diário: ${achados} trechos em diários de ${cidades.size} cidade(s); ${docs.length} falam de licenciamento`);
   return { docs, consultas, amostra: { encontradas: docs.slice(0, 200).map(d => ({ data: d.data, titulo: d.local, entidade: d.entidade, trecho: d.trecho })), docs: docs.slice(0, 60) } };
 }
+
+// a mesma fonte para outro Estado (os municípios vêm do ctx.mun da rodada)
+export const paraUF = (uf, nome) => ({ info: { ...info, id: 'querido-' + uf.toLowerCase(), uf, nome: `Querido Diário (diários próprios das cidades de ${nome || uf})` }, coletar });

@@ -4,7 +4,7 @@ const UA = { 'user-agent': 'shotgun-radar/1.0' };
 export const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const chaveMun = s => semAcento(s).replace(/[’'`´]/g, '').replace(/\bnossa\s+s(ra)?\.?\s/g, 'nossa senhora ').replace(/\bsto\.?\s/g, 'santo ').replace(/\bsta\.?\s/g, 'santa ').replace(/\bs\.\s?(?=jose|felix|pedro)/g, 'sao ').replace(/\bd\s?oeste\b/g, 'doeste').replace(/[^a-z0-9]+/g, ' ').trim();
 
-export const UFS = { MT: { cod: 51, nome: 'mato grosso', min: 140 }, RS: { cod: 43, nome: 'rio grande do sul', min: 490 } };
+export const UFS = { MT: { cod: 51, nome: 'mato grosso', min: 140 }, RS: { cod: 43, nome: 'rio grande do sul', min: 490 }, SC: { cod: 42, nome: 'santa catarina', min: 290 } };
 export const municipiosMT = listaPronta => municipiosUF('MT', listaPronta);
 
 export async function municipiosUF(uf, listaPronta) {
