@@ -23,5 +23,6 @@
 
     match /fotos/{uid} {
       // cada pessoa lê e grava só a própria foto (inclusive quem ainda aguarda liberação)
-      allow read, write: if cadSou(uid);
+      allow read: if cadSou(uid);
+      allow create, update: if cadSou(uid) && request.resource.data.b64 is string && request.resource.data.b64.size() < 400000;
     }
