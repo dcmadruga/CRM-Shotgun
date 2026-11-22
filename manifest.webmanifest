@@ -3,6 +3,7 @@
   "short_name": "Shotgun",
   "description": "Shotgun: o cliente na mira, do primeiro contato ao pós-venda.",
   "lang": "pt-BR",
+  "id": "shotgun-v2",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
