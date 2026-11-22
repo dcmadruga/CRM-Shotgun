@@ -1,9 +1,0 @@
-doe-main	200	application/javascript	7682329	https://www.diariooficial.rs.gov.br/main-WOM4SM2S.js
-doe-rss	200	text/html	2685	https://www.diariooficial.rs.gov.br/doe/materias/feed/rss.xml
-famurs-lp	200	text/html; charset=UTF-8	165936	https://www.diariomunicipal.com.br/famurs/pesquisar?busca_avancada%5Btexto%5D=licen%C3%A7a%20combust%C3%ADveis&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-22&busca_avancada%5Bpagina%5D=1
-famurs-posto-lic	200	text/html; charset=UTF-8	164290	https://www.diariomunicipal.com.br/famurs/pesquisar?busca_avancada%5Btexto%5D=posto%20licen%C3%A7a%20instala%C3%A7%C3%A3o&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-22&busca_avancada%5Bpagina%5D=1
-famurs-materia	200	text/html; charset=UTF-8	56085	https://www.diariomunicipal.com.br/famurs/materia/3FC78255
-fepam-consproc	200	text/html	140155	https://ww3.fepam.rs.gov.br/licenciamento/Area1/default.asp
-fepam-placa	200	text/html	34846	https://ww3.fepam.rs.gov.br/LICENCIAMENTO/area4/11_01.asp
-qd2-cidades	200	application/json	708954	https://api.queridodiario.org.br/cities?levenshtein_distance=0&city_name=
-qd2-busca	200	application/json	34	https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-06-01&size=20&excerpt_size=600&number_of_excerpts=3&territory_ids=4314902
