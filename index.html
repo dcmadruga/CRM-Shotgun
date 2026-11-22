@@ -667,6 +667,13 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .pcard .ctinfo{font-size:12.5px;color:var(--ok-text);font-weight:600}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 /* Central de notificações (notificacoes.js) */
+/* O cabeçalho do tema (tema.css) usa overflow:hidden para os traços; aqui ele fica visível para o painel do sino não ser cortado */
+body header.top{overflow:visible}
+body header.top:has(.sgnpainel:not([hidden])){z-index:40}
+/* o painel fica dentro do cabeçalho: não herda o estilo do slogan (itálico, opacidade, ordem no celular) */
+body header.top .sgnpainel p{font-style:normal;opacity:1;order:0;flex-basis:auto;letter-spacing:normal;line-height:1.45}
+body header.top .sgnpainel .sgnescopo{margin:0;font-size:12px}
+body header.top .sgnpainel .sgncorpo p{margin:2px 0 0;font-size:12.5px}
 header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-width:0}
 .sgnbtn{position:relative;display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:12px;background:transparent;border:1px solid rgba(255,255,255,.14);color:var(--ink-fg)}
 .sgnbtn:hover,.sgnbtn[aria-expanded="true"]{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.28)}
@@ -705,7 +712,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
 .sgnenviar{background:var(--sg-disparo);border-color:var(--sg-disparo);color:var(--sg-ink);border-radius:12px;min-height:40px}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .sgnlink,:root:not([data-theme="light"]) .sgnnova summary{color:var(--accent-text)}}
 :root[data-theme="dark"] .sgnlink,:root[data-theme="dark"] .sgnnova summary{color:var(--accent-text)}
-@media (max-width:560px){.sgnpainel{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 76px);width:auto;max-height:calc(100dvh - 100px)}}
+@media (max-width:560px){.sgnpainel{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 76px);width:auto;max-height:calc(100dvh - 140px)}}
 </style>
 <link rel="stylesheet" href="tema.css">
 </head><body class="sg-app">
