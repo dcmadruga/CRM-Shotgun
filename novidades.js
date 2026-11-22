@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 190, data: '2026-11-22', titulo: 'Endereço do estabelecimento no responsável legal', itens: [
+    'Nos dados complementares, a seção do responsável legal tem o botão "Usar endereço do estabelecimento". Um toque busca na Receita o endereço do CNPJ da proposta e preenche endereço, número, complemento, bairro, cidade e estado. Depois é só conferir.'
+  ] },
   { v: 189, data: '2026-11-22', titulo: 'Slogan no cabeçalho do celular', itens: [
     'No celular, o slogan "O cliente na mira, do primeiro contato ao pós-venda." voltou a aparecer no cabeçalho, logo abaixo da logomarca.'
   ] },
