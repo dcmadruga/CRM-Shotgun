@@ -10,6 +10,13 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 198, data: '2026-11-22', titulo: 'Dados Primários só com o que o contrato precisa', itens: [
+    'O link dos Dados Primários ficou mais curto: o cliente informa só o que entra no contrato (CNPJ, razão social, dados e endereço do responsável legal e o contrato social).',
+    'Os demais dados (nome fantasia, inscrição estadual, telefone comercial, regime tributário, contabilidade, financeiro, dados bancários e observações) passaram para a Pré TASK, no novo item "Dados complementares", e o vendedor completa ali.',
+    'Bandeira, sistema atual, certificado digital e logo saíram do link do cliente porque a Pré TASK já pede esses dados.',
+    'Processos que já existem não perdem nada: o que o cliente já tinha enviado aparece preenchido nos Dados complementares.',
+    'Administração → Parâmetros Dados Primários: nova coluna "Pré TASK" para escolher, campo a campo, o que o cliente preenche e o que fica para o vendedor.'
+  ] },
   { v: 197, data: '2026-11-22', titulo: 'Postos em construção no Paraná e filtro de Cidade', itens: [
     'Telemetria → Postos em construção: o Paraná (PR) já pode ser escolhido no filtro de Estado.',
     'No PR o Radar lê as licenças ambientais de posto que o IAT (Instituto Água e Terra) concede e publica no Diário Oficial do Estado: Licença Prévia, de Instalação, de Operação, ampliações e renovações, com empresa, endereço, município e número da licença.',

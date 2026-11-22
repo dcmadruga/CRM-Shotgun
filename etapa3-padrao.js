@@ -3,7 +3,7 @@
 // de gerar o contrato. Linha começando com "# " vira título.
 window.ETAPA3_PADRAO = {
   titulo: 'Contrato de Licenciamento de Uso de Programa de Informática e de Prestação de Serviços de Instalação e Manutenção do Sistema por Prazo Determinado',
-  msgEnvio: 'Olá {contato}! Recebemos os dados complementares da proposta nº {numero}. Segue o contrato para você ler e dar o aceite:\n{link}\n\n{vendedor} - Argo',
+  msgEnvio: 'Olá {contato}! Recebemos os dados da proposta nº {numero}. Segue o contrato para você ler e dar o aceite:\n{link}\n\n{vendedor} - Argo',
   textoAceite: 'Li o contrato e concordo com todas as cláusulas, em nome da empresa contratante.',
   final: 'Contrato aceito. Obrigado! Seu consultor já foi avisado e vai combinar a implantação.',
   argo: { razao: 'ARGO SISTEMAS LTDA.', cnpj: '24.961.335/0001-34', endereco: 'Rua Domingos Oliva dos Santos, 90, Oitavo andar, CEP 95012-320, Bairro Sanvitto, Caxias do Sul/RS', representante: 'Rodrigo Grillo Policastro', foro: 'Caxias do Sul/RS' },
