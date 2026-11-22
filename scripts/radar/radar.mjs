@@ -199,6 +199,13 @@ if (db) {
   await writeFile(new URL('alertas.json', saida), JSON.stringify(alertas, null, 1));
   // amostra do que cada fonte devolveu, para conferir a extração
   for (const [id, a] of Object.entries(amostras)) await writeFile(new URL(`amostra-${id}.json`, saida), JSON.stringify(a, null, 1));
+  if (process.env.RADAR_AMOSTRA_LOG) for (const [id, a] of Object.entries(amostras)) {
+    const c = s => String(s || '').replace(/\s+/g, ' ').trim();
+    log(`\n=== AMOSTRA ${id}: ${a.encontradas.length} encontradas, ${a.docs.length} lidas ===`);
+    if (a.pagina1) { const h = a.pagina1, i = Math.max(0, h.search(/materia-card|Mostrando|resultado|Nenhum/i)); log('PAGINA1 ' + c(h.slice(i, i + 2500))); }
+    for (const e of a.encontradas.slice(0, 80)) log(`E ${e.data} | ${c(e.tipoMateria || e.titulo)} | ${c(e.entidade)} | ${c(e.trecho).slice(0, 200)}`);
+    for (const d of a.docs) log(`D ${d.id} | ${c(d.titulo)} | ${c(d.entidade)} | ${c(d.texto).slice(0, 900)}`);
+  }
   const linhas = [...emps.values()].filter(e => ['novo', 'ampliacao', 'tanques'].includes(e.categoria)).sort((a, b) => b.ultimaData.localeCompare(a.ultimaData));
   log(`\nNovos/ampliações/tanques (${linhas.length}):`);
   for (const e of linhas) log(`  ${e.uf} · ${e.ultimaData} · ${NOMES_CAT[e.categoria]} · ${NOMES_EVENTO[e.ultimoEvento]} · ${e.razao || '?'} · ${e.cnpj || 'sem CNPJ'} · ${e.municipio || '?'} · ${e.confianca}${e.anp ? ' · já na ANP' : ''}`);
