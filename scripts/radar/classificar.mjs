@@ -24,8 +24,8 @@ export const cnpjValido = c => {
 // Coordenadas em graus/minutos/segundos ("15°4’1.20”S e 57° 10’43.10”O") ou decimais negativas
 function coordenadas(t) {
   const dms = [...t.matchAll(/(\d{1,2})\s*[°º]\s*(\d{1,2})\s*['’′]\s*([\d.,]+)\s*(?:["”″]|['’′]{2})?\s*([NSOWL])/gi)].map(m => { const v = +m[1] + +m[2] / 60 + parseFloat(m[3].replace(',', '.')) / 3600; return /[SOW]/i.test(m[4]) ? -v : v; });
-  if (dms.length >= 2) { const [a, b] = dms; const lat = Math.abs(a) < Math.abs(b) ? a : b, lng = lat === a ? b : a; if ((lat < -6 && lat > -19 && lng < -50 && lng > -62) || (lat < -27 && lat > -34 && lng < -49 && lng > -58)) return [+lat.toFixed(6), +lng.toFixed(6)]; }
-  const dec = t.match(/(-1[0-8]|-[6-9]|-2[7-9]|-3[0-3])[.,](\d{3,})\D{1,20}(-49|-5\d|-6[01])[.,](\d{3,})/);
+  if (dms.length >= 2) { const [a, b] = dms; const lat = Math.abs(a) < Math.abs(b) ? a : b, lng = lat === a ? b : a; if ((lat < -6 && lat > -19 && lng < -50 && lng > -62) || (lat < -25.5 && lat > -34 && lng < -48 && lng > -58)) return [+lat.toFixed(6), +lng.toFixed(6)]; }
+  const dec = t.match(/(-1[0-8]|-[6-9]|-2[5-9]|-3[0-3])[.,](\d{3,})\D{1,20}(-4[89]|-5\d|-6[01])[.,](\d{3,})/);
   if (dec) return [+(dec[1] + '.' + dec[2]), +(dec[3] + '.' + dec[4])];
   return null;
 }
@@ -65,6 +65,7 @@ function orgao(t, mun, uf = 'MT') {
   const sig = t.match(/\b(SMADESS?|SMURB|SEMMA|SEMMEA|SEMAM|SMMA|SAMA|SMAMA|SEMAGRI)\b/) || t.match(/(Secretaria\s+(?:Municipal\s+)?de\s+Agricultura[^,.;]{0,60}Meio\s+Ambiente|Prefeitura\s+(?:Municipal\s+)?de\s+[A-ZÀ-Ú][A-Za-zÀ-ú' ]{2,30}|Coordenadoria\s+de\s+Meio\s+Ambiente[^,.;]{0,50})/);
   if (m || sig) return { orgao: limpa((m ? m[1] || m[0] : sig[1]).replace(/\s+-\s*$/, '')) + (mun ? ` (${mun.nome})` : ''), esfera: 'municipal' };
   if (uf === 'RS' && /\bFEPAM\b|Funda[cç][aã]o\s+Estadual\s+de\s+Prote[cç][aã]o\s+Ambiental/i.test(t)) return { orgao: 'FEPAM (Fundação Estadual de Proteção Ambiental)', esfera: 'estadual' };
+  if (uf === 'SC' && /\bIMA\b|Instituto\s+do\s+Meio\s+Ambiente\s+de\s+Santa\s+Catarina/i.test(t)) return { orgao: 'IMA (Instituto do Meio Ambiente de SC)', esfera: 'estadual' };
   if (/\bSEMA\b|Secretaria\s+(de\s+Estado|Estadual)\s+d[eo]\s+Meio\s+Ambiente/i.test(t)) return { orgao: `SEMA-${uf} (Secretaria de Estado de Meio Ambiente)`, esfera: 'estadual' };
   return { orgao: '', esfera: '' };
 }
@@ -121,7 +122,7 @@ function empresa(t) {
 }
 
 function endereco(t) {
-  const m = t.match(/(?:localizad[oa]|situad[oa]|sito|sita|instalad[oa]|endere[cç]o:?|a\s+ser\s+localizad[oa])\s*(?:na|no|à|a|em)?\s*:?\s*((?:Av|Avenida|Rua|R\.|Rod|Rodovia|BR|MT|RS|ERS|Estrada|Travessa|Tv|Alameda|Lote|Quadra|Fazenda|S[ií]tio|Ent\.)[^]{5,170}?)(?=,?\s*(?:no\s+)?munic[ií]pio|\s*-\s*[A-ZÀ-Ú][\wÀ-ú' ]+\/?\s*-?\s*(?:MT|RS)\b|,\s*CEP|\.\s|,?\s*coordenadas|$)/i);
+  const m = t.match(/(?:localizad[oa]|situad[oa]|sito|sita|instalad[oa]|endere[cç]o:?|a\s+ser\s+localizad[oa])\s*(?:na|no|à|a|em)?\s*:?\s*((?:Av|Avenida|Rua|R\.|Rod|Rodovia|BR|MT|RS|ERS|SC|Estrada|Travessa|Tv|Alameda|Lote|Quadra|Fazenda|S[ií]tio|Ent\.)[^]{5,170}?)(?=,?\s*(?:no\s+)?munic[ií]pio|\s*-\s*[A-ZÀ-Ú][\wÀ-ú' ]+\/?\s*-?\s*(?:MT|RS|SC)\b|,\s*CEP|\.\s|,?\s*coordenadas|$)/i);
   return m ? limpa(m[1]).replace(/[,.\s]+$/, '') : '';
 }
 

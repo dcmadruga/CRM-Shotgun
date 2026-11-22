@@ -12,6 +12,8 @@ import * as iomat from './fontes/iomat.mjs';
 import * as famurs from './fontes/famurs.mjs';
 import * as doers from './fontes/doers.mjs';
 import * as querido from './fontes/querido.mjs';
+import * as sinfat from './fontes/sinfat.mjs';
+import * as domsc from './fontes/domsc.mjs';
 import * as anpFonte from './fontes/anp.mjs';
 
 const inicio = new Date();
@@ -22,8 +24,8 @@ const teste = process.env.RADAR_TESTE === 'true';
 const db = teste ? null : firestore();
 const gatilhoBase = process.env.RADAR_GATILHO || 'agendado';
 // Fontes de diário oficial integradas, por Estado. RADAR_FONTES (ex.: "famurs,doe-rs") limita a rodada.
-const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }, { mod: querido, uf: 'RS' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
-const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL' };
+const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }, { mod: querido, uf: 'RS' }, { mod: sinfat, uf: 'SC' }, { mod: domsc, uf: 'SC' }, { mod: querido.paraUF('SC', 'SC'), uf: 'SC' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
+const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA' };
 
 const PRIOR_CAT = ['novo', 'tanques', 'ampliacao', 'reforma', 'renovacao', 'titularidade', 'ponto_proprio', 'outro'];
 const PRIOR_CONF = ['confirmado', 'possivel', 'analise', 'nao_confirmado'];
@@ -74,10 +76,18 @@ for (const { mod, uf } of FONTES) {
     } else {
       // uma matéria por documento: licença emitida (prefeitura/FEPAM) ou aviso de requerimento
       const r = await mod.coletar(deF, ate, log, { mun: mun[uf] }); consultas = r.consultas; lidos = r.docs.length; if (r.amostra) amostras[id] = r.amostra;
+      // registros já estruturados pela fonte (consulta de licenciamento): não passam pelo classificador de texto
+      for (const x of r.registros || []) {
+        const { id: rid, data, url, pdf, local, dataDoc, ...campos } = x;
+        avisos.push({ ...campos, uf, fonte: id, fonteNome: mod.info.nome, dataPublicacao: data, url, pdf, local, docId: `${id}-${rid}` }); n++;
+      }
+      lidos += (r.registros || []).length;
       for (const d of r.docs) {
         const lic = analisarLicenca(d.texto, mun[uf], { titulo: d.titulo, uf, entidade: d.entidade });
         const rs = lic ? [lic] : avisosDaPagina(d.texto).map(a => analisarAviso(a.texto, mun[uf], uf)).filter(Boolean);
         for (const x of rs) {
+          // publicação de lista do órgão (ex.: "licenças concedidas pela Fundação X"): o nome achado é o do órgão, não o da empresa
+          if (x.razao && (/^(funda[cç][aã]o|prefeitura|munic[ií]pio|instituto|secretaria|departamento)\b/i.test(x.razao) || (d.entidade && slug(d.entidade).includes(slug(x.razao))))) { x.razao = ''; x.confianca = 'analise'; }
           if (!x.municipio && d.entidade) { const m = mun[uf].achar(d.entidade + ' ' + uf); if (m) { x.municipio = m.nome; x.ibge = m.ibge; } }
           avisos.push({ ...x, uf, fonte: id, fonteNome: mod.info.nome, dataPublicacao: d.data, url: d.url, pdf: d.pdf, local: d.local, docId: `${id}-${d.id}-${hash(x.trecho)}` }); n++;
         }
@@ -160,7 +170,7 @@ for (const a of unicos.sort((x, y) => String(x.dataPublicacao).localeCompare(Str
     if (relevante && a.dataPublicacao >= recente) {
       const tit = (novoEmp && e.categoria === 'novo' ? 'NOVO POSTO IDENTIFICADO EM ' : 'MOVIMENTAÇÃO DE POSTO EM ') + NOME_UF[a.uf];
       alertas.push({ eid, uf: a.uf, doc: a.docId, titulo: tit, criado: inicio, lidoPor: [], canal: 'app',
-        texto: [`Empresa: ${e.razao || 'pendente de confirmação'}`, `CNPJ: ${e.cnpj ? e.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') + (e.campoFonte?.cnpj ? ' (pela base da ANP, não confirmado)' : '') : 'pendente de confirmação'}`, `Município: ${e.municipio ? e.municipio + ' – ' + a.uf : 'pendente de confirmação'}`, `Processo: ${a.processo || 'pendente de confirmação'}`, `Atividade: ${NOMES_CAT[e.categoria] || ''}`, `Licença: ${NOMES_EVENTO[a.evento] || ''}`, `Fonte: ${a.fonteNome}, ${a.local}`, `Data da identificação: ${inicio.toLocaleString('pt-BR', { timeZone: a.uf === 'RS' ? 'America/Sao_Paulo' : 'America/Cuiaba' })}`, `Documento: ${a.url}`].join('\n') });
+        texto: [`Empresa: ${e.razao || 'pendente de confirmação'}`, `CNPJ: ${e.cnpj ? e.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') + (e.campoFonte?.cnpj ? ' (pela base da ANP, não confirmado)' : '') : 'pendente de confirmação'}`, `Município: ${e.municipio ? e.municipio + ' – ' + a.uf : 'pendente de confirmação'}`, `Processo: ${a.processo || 'pendente de confirmação'}`, `Atividade: ${NOMES_CAT[e.categoria] || ''}`, `Licença: ${NOMES_EVENTO[a.evento] || ''}`, `Fonte: ${a.fonteNome}, ${a.local}`, `Data da identificação: ${inicio.toLocaleString('pt-BR', { timeZone: a.uf === 'MT' ? 'America/Cuiaba' : 'America/Sao_Paulo' })}`, `Documento: ${a.url}`].join('\n') });
     }
   }
 }

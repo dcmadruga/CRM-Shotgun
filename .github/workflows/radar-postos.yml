@@ -1,4 +1,4 @@
-name: Radar de novos postos (MT e RS)
+name: Radar de novos postos (MT, RS e SC)
 
 # Robô do Radar de Novos Postos – MT (aba Telemetria). Confere a cada 15 minutos; só pesquisa quando passou o
 # tempo configurado no app (padrão: 24 h) ou quando um administrador usa "Pesquisar agora".
