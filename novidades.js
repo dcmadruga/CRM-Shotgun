@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 189, data: '2026-11-22', titulo: 'Slogan no cabeçalho do celular', itens: [
+    'No celular, o slogan "O cliente na mira, do primeiro contato ao pós-venda." voltou a aparecer no cabeçalho, logo abaixo da logomarca.'
+  ] },
   { v: 188, data: '2026-11-22', titulo: 'Shotgun de cara nova', itens: [
     'Nova identidade visual em todo o app: logomarca com o S estilizado, cores grafite e laranja e a fonte Montserrat. O slogan agora é "O cliente na mira, do primeiro contato ao pós-venda."',
     'O app abre no tema escuro. Para usar o claro, toque no botão de sol no cabeçalho (ao lado do sino). A escolha fica salva no aparelho.',
