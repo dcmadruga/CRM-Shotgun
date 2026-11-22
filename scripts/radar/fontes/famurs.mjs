@@ -8,7 +8,7 @@ const ent = s => s.replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(p
 const texto = h => limpa(ent(h.replace(/<(script|style)[^]*?<\/\1>/gi, ' ').replace(/<br\s*\/?>|<\/(p|div|tr|li|h\d)>/gi, '\n').replace(/<[^>]+>/g, ' ')));
 
 export const info = { id: 'famurs', uf: 'RS', nome: 'Diário Oficial dos Municípios do RS (FAMURS)', url: BASE, tipo: 'diario_oficial' };
-export const TERMOS = ['"posto de combustíveis"', '"posto de combustível"', '"comércio varejista de combustíveis"', '"posto de abastecimento"', '"revenda de combustíveis"', '"auto posto"', '"tanques subterrâneos"', '"armazenamento de combustíveis"'];
+export const TERMOS = ['"posto de combustíveis"', '"posto de combustível"', '"comércio varejista de combustíveis"', '"posto de abastecimento"', '"revenda de combustíveis"', '"auto posto"', '"tanques subterrâneos"', '"armazenamento de combustíveis"', '"licença de operação" combustíveis', '"licença de instalação" combustíveis', '"licença prévia" combustíveis', '"licença ambiental" combustíveis'];
 // Matérias que certamente não são licença nem aviso de licenciamento
 const FORA = /licita|preg[aã]o|contrat|dispensa|inexigib|aditivo|ata\s+de\s+registro|credenciamento|homolog|adjudica|chamamento|concurso|processo\s+seletivo|gabarito|nomea|exonera|di[aá]rias|empenho|or[cç]amento|tomada\s+de\s+pre[cç]o|leil[aã]o|edital\s+n|cotação/i;
 const SINAL = /licen[cç]a|ambiental|meio\s+ambiente|torna\s+p[uú]blic|requer|\bL[PIO]C?\b/i;
@@ -56,11 +56,11 @@ function corpoMateria(h) {
 export async function coletar(de, ate, log = console.log) {
   const vistos = new Map(); let consultas = 0, pagina1 = '';
   for (const termo of TERMOS) {
-    let total = 0;
+    let total = 0, cont = 0;
     for (let p = 1; p <= 40; p++) {
       const u = `${BASE}pesquisar?busca_avancada%5Btexto%5D=${encodeURIComponent(termo)}&busca_avancada%5BdataInicio%5D=${de}&busca_avancada%5BdataFim%5D=${ate}&busca_avancada%5Bpagina%5D=${p}`;
       const h = await pega(u); if (!pagina1) pagina1 = h.slice(0, 60000);
-      const { out, total: t } = cartoes(h); consultas++; total = t;
+      const { out, total: t } = cartoes(h); consultas++; cont += out.length; total = t || cont;
       for (const c of out) if (!vistos.has(c.cod)) vistos.set(c.cod, c);
       if (!out.length || p * 25 >= t) break;
       await espera(1000);
