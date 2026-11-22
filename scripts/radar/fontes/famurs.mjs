@@ -44,12 +44,13 @@ function cartoes(html) {
 
 // Devolve as matérias candidatas com o texto completo
 export async function coletar(de, ate, log = console.log) {
-  const vistos = new Map(); let consultas = 0;
+  const vistos = new Map(); let consultas = 0, pagina1 = '';
   for (const termo of TERMOS) {
     let total = 0;
     for (let p = 1; p <= 40; p++) {
       const u = `${BASE}pesquisar?busca_avancada%5Btexto%5D=${encodeURIComponent(termo)}&busca_avancada%5BdataInicio%5D=${de}&busca_avancada%5BdataFim%5D=${ate}&busca_avancada%5Bpagina%5D=${p}`;
-      const { out, total: t } = cartoes(await pega(u)); consultas++; total = t;
+      const h = await pega(u); if (!pagina1) pagina1 = h.slice(0, 60000);
+      const { out, total: t } = cartoes(h); consultas++; total = t;
       for (const c of out) if (!vistos.has(c.cod)) vistos.set(c.cod, c);
       if (!out.length || p * 25 >= t) break;
       await espera(1000);
@@ -68,5 +69,5 @@ export async function coletar(de, ate, log = console.log) {
     await espera(700);
   }
   log(`FAMURS: ${vistos.size} matérias encontradas, ${candidatas.length} candidatas lidas por inteiro`);
-  return { docs, consultas };
+  return { docs, consultas, amostra: { pagina1, encontradas: [...vistos.values()], docs: docs.map(d => ({ ...d, texto: d.texto.slice(0, 4000) })) } };
 }

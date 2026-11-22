@@ -42,12 +42,12 @@ export async function coletar(de, ate, log = console.log) {
     try {
       const m = await json(`${API}public/materias/${c.id}`); consultas++;
       if (!docs.length) log('DOE-RS: campos da matéria: ' + Object.keys(m).join(', '));
-      const titulo = limpa(m.titulo || m.assunto || m.nome || '');
-      const entidade = limpa(m.entidade?.nome || m.nomeEntidade || m.entidade || '');
-      docs.push({ ...c, titulo, entidade: typeof entidade === 'string' ? entidade : '', texto: semTags(maiorTexto(m)), url: `https://www.diariooficial.rs.gov.br/materia?id=${c.id}`, pdf: '', local: `Matéria ${c.id}${c.tipoMateria ? ' · ' + c.tipoMateria : ''}` });
+      const titulo = limpa([m.nomeTipoMateria, m.nomeAssunto].filter(Boolean).join(' · ') || m.titulo || '');
+      const entidade = limpa(m.nomeEntidadeCliente || m.nomeEntidade || '');
+      docs.push({ ...c, titulo, entidade: typeof entidade === 'string' ? entidade : '', texto: semTags(m.conteudo || maiorTexto(m)), pdf0: m.pdf, url: `https://www.diariooficial.rs.gov.br/materia?id=${c.id}`, pdf: '', local: `Matéria ${c.id}${c.tipoMateria ? ' · ' + c.tipoMateria : ''}` });
     } catch (e) { log('DOE-RS matéria ' + c.id + ': ' + e.message); }
     await espera(600);
   }
   log(`DOE-RS: ${vistos.size} matérias encontradas, ${candidatas.length} candidatas lidas por inteiro`);
-  return { docs, consultas };
+  return { docs, consultas, amostra: { encontradas: [...vistos.values()].slice(0, 300), docs: docs.map(d => ({ ...d, texto: d.texto.slice(0, 4000) })) } };
 }

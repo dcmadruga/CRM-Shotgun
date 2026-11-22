@@ -59,7 +59,7 @@ for (const uf of UFS_ATIVAS) {
   log(`Municípios de ${uf}: ${mun[uf].lista.length} · postos de ${uf} na base da ANP: ${anp[uf].total}`);
 }
 
-const porFonte = {}, avisos = [];
+const porFonte = {}, avisos = [], amostras = {};
 for (const { mod, uf } of FONTES) {
   const id = mod.info.id, deF = periodo(id);
   try {
@@ -72,7 +72,7 @@ for (const { mod, uf } of FONTES) {
       }
     } else {
       // uma matéria por documento: licença emitida (prefeitura/FEPAM) ou aviso de requerimento
-      const r = await mod.coletar(deF, ate, log); consultas = r.consultas; lidos = r.docs.length;
+      const r = await mod.coletar(deF, ate, log); consultas = r.consultas; lidos = r.docs.length; if (r.amostra) amostras[id] = r.amostra;
       for (const d of r.docs) {
         const lic = analisarLicenca(d.texto, mun[uf], { titulo: d.titulo, uf, entidade: d.entidade });
         const rs = lic ? [lic] : avisosDaPagina(d.texto).map(a => analisarAviso(a.texto, mun[uf], uf)).filter(Boolean);
@@ -197,6 +197,8 @@ if (db) {
   await writeFile(new URL('empreendimentos.json', saida), JSON.stringify([...emps.values()], null, 1));
   await writeFile(new URL('documentos.json', saida), JSON.stringify(novosDocs, null, 1));
   await writeFile(new URL('alertas.json', saida), JSON.stringify(alertas, null, 1));
+  // amostra do que cada fonte devolveu, para conferir a extração
+  for (const [id, a] of Object.entries(amostras)) await writeFile(new URL(`amostra-${id}.json`, saida), JSON.stringify(a, null, 1));
   const linhas = [...emps.values()].filter(e => ['novo', 'ampliacao', 'tanques'].includes(e.categoria)).sort((a, b) => b.ultimaData.localeCompare(a.ultimaData));
   log(`\nNovos/ampliações/tanques (${linhas.length}):`);
   for (const e of linhas) log(`  ${e.uf} · ${e.ultimaData} · ${NOMES_CAT[e.categoria]} · ${NOMES_EVENTO[e.ultimoEvento]} · ${e.razao || '?'} · ${e.cnpj || 'sem CNPJ'} · ${e.municipio || '?'} · ${e.confianca}${e.anp ? ' · já na ANP' : ''}`);
