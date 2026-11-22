@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
       - run: node scripts/radar/radar.mjs
-        env: { RADAR_TESTE: 'true', RADAR_FONTES: 'dioe-pr,amp-pr,querido-pr', RADAR_DIAS: '365', RADAR_GATILHO: 'push' }
+        env: { RADAR_TESTE: 'true', RADAR_FONTES: 'dioe-pr,querido-pr', RADAR_DIAS: '365', RADAR_GATILHO: 'push' }
       - run: mkdir -p pr-sondas && rm -rf pr-sondas/saida && cp -r radar-saida pr-sondas/saida
         if: always()
       - if: always()

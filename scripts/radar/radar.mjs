@@ -26,7 +26,7 @@ const db = teste ? null : firestore();
 const gatilhoBase = process.env.RADAR_GATILHO || 'agendado';
 // Fontes de diário oficial integradas, por Estado. RADAR_FONTES (ex.: "famurs,doe-rs") limita a rodada.
 const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }, { mod: querido, uf: 'RS' }, { mod: sinfat, uf: 'SC' }, { mod: domsc, uf: 'SC' }, { mod: querido.paraUF('SC', 'SC'), uf: 'SC' },
-  { mod: dioepr, uf: 'PR' }, { mod: famurs.paraSigpub('amp', 'PR', 'amp-pr', 'Diário Oficial dos Municípios do Paraná (AMP)', 'AMP'), uf: 'PR' }, { mod: querido.paraUF('PR', 'PR'), uf: 'PR' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
+  { mod: dioepr, uf: 'PR' }, { mod: querido.paraUF('PR', 'PR'), uf: 'PR' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
 const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ' };
 
 const PRIOR_CAT = ['novo', 'tanques', 'ampliacao', 'reforma', 'renovacao', 'titularidade', 'ponto_proprio', 'outro'];

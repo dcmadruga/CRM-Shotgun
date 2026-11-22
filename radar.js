@@ -1,4 +1,4 @@
-// Radar de Novos Postos – MT, RS e SC (aba Telemetria → Postos em construção). Lê o que o robô diário grava no Firestore (coleções radar_*)
+// Radar de Novos Postos – MT, RS, SC e PR (aba Telemetria → Postos em construção). Lê o que o robô diário grava no Firestore (coleções radar_*)
 // e deixa o administrador revisar, configurar fontes e pedir uma pesquisa na hora.
 // O robô é scripts/radar/radar.mjs, rodado pelo GitHub Actions (.github/workflows/radar-postos.yml).
 let F, db, perfil, admin = false, temTask = false, unsub = [], uf = 'MT';
@@ -23,8 +23,8 @@ export const CONFIANCA = { confirmado: 'Processo confirmado', possivel: 'Possív
 // Registro antigo, sem Estado, é de MT (o Radar começou por lá)
 const ufDe = x => x?.uf || 'MT';
 const daUF = x => ufDe(x) === uf;
-const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina' };
-const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7] };
+const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', PR: 'Paraná' };
+const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7], PR: [[-24.6, -51.4], 7] };
 const FONTES_RS = [
   { id: 'famurs', nome: 'Diário Oficial dos Municípios do RS (FAMURS)', url: 'https://www.diariomunicipal.com.br/famurs/' },
   { id: 'doe-rs', nome: 'Diário Oficial do Estado do RS (DOE-RS)', url: 'https://www.diariooficial.rs.gov.br/' },
@@ -39,6 +39,13 @@ const FONTES_SC = [
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
   { id: 'ima-sc', nome: 'IMA-SC: consulta e relatórios de licenciamento', url: 'https://consultas.ima.sc.gov.br/', obs: 'Exige reCAPTCHA: não monitorada' },
   { id: 'doe-sc', nome: 'Diário Oficial do Estado de SC (DOE-SC)', url: 'https://portal.doe.sea.sc.gov.br/', obs: 'Não integrada nesta entrega' }
+];
+const FONTES_PR = [
+  { id: 'dioe-pr', nome: 'Diário Oficial do Estado do PR (DIOE): licenças do IAT', url: 'https://dioe.pr.gov.br/' },
+  { id: 'querido-pr', nome: 'Querido Diário (diários próprios das cidades do PR)', url: 'https://queridodiario.ok.org.br/' },
+  { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
+  { id: 'sga-iat', nome: 'IAT: consulta de processos no SGA', url: 'https://www.sga.pr.gov.br/', obs: 'Exige CAPTCHA: não monitorada' },
+  { id: 'amp-pr', nome: 'Diário Oficial dos Municípios do Paraná (AMP)', url: 'https://www.diariomunicipal.com.br/amp/', obs: 'Testada: só trouxe compras de combustível e leis, nenhuma licença de posto. Não monitorada' }
 ];
 const FONTES_PREVISTAS_MT = [
   { id: 'iomat', nome: 'Diário Oficial de MT (IOMAT)', url: 'https://iomat.mt.gov.br/' },
@@ -71,7 +78,7 @@ const ativos = () => doUF().filter(e => !filtro.mun || e.ibge === filtro.mun);
 const daCidade = x => !filtro.mun || x.ibge === filtro.mun || (x.eid && ativos().some(e => e.id === x.eid));
 const alertasUF = () => alertas.filter(a => daUF(a) && daCidade(a));
 const naoLidos = () => alertasUF().filter(a => !(a.lidoPor || []).includes(perfil?.uid));
-const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : FONTES_PREVISTAS_MT;
+const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : uf === 'PR' ? FONTES_PR : FONTES_PREVISTAS_MT;
 const fontesUF = () => fontes.filter(f => f.id === 'anp' ? true : f.uf ? f.uf === uf : uf === 'MT');
 const ultimaExec = () => execs[0];
 
@@ -280,7 +287,7 @@ async function detalhe(eid) {
       <dt>Confiança</dt><dd><span class="pill rdconf ${esc(e.confianca || '')}">${esc(CONFIANCA[e.confianca] || '')}</span></dd>
       <dt>Na base da ANP</dt><dd>${e.anp ? `Sim, posto autorizado${e.anp.bandeira ? ' · ' + esc(e.anp.bandeira) : ''}${e.anp.autorizacao ? ' · autorização ' + esc(e.anp.autorizacao) : ''}` : (e.cnpj ? 'Não: o CNPJ ainda não aparece como posto autorizado' : 'Sem CNPJ para conferir')}</dd>
       <dt>Identificado pelo robô</dt><dd>${quando(e.identificado)}</dd></dl></div>
-    <div class="crmbloco"><h4>Processos</h4>${(e.processos || []).length ? `<div class="crmlist">${e.processos.map(p => `<div class="crmrow"><span><b>${p.numero ? 'Processo ' + esc(p.numero) : 'Número do processo ' + PEND}</b><small>${esc(p.orgao || 'Órgão pendente')}${p.protocolo ? ' · protocolo da publicação ' + esc(p.protocolo) : ''}</small></span><span><small>${esc(EVENTOS[p.evento] || '')}</small></span><span><small>${fmtD(p.data)}</small></span></div>`).join('')}</div>` : '<p class="hint">Nenhum processo identificado.</p>'}</div>
+    <div class="crmbloco"><h4>Processos</h4>${(e.processos || []).length ? `<div class="crmlist">${e.processos.map(p => `<div class="crmrow"><span><b>${p.numero ? 'Processo ' + esc(p.numero) : (p.licencas || []).length ? 'Licença ' + p.licencas.map(l => esc(l.tipo) + ' nº ' + esc(l.numero)).join(', ') : 'Número do processo ' + PEND}</b>${!p.numero && (p.licencas || []).length ? `<small>Número do processo ${PEND}</small>` : ''}<small>${esc(p.orgao || 'Órgão pendente')}${p.protocolo ? ' · protocolo da publicação ' + esc(p.protocolo) : ''}</small></span><span><small>${esc(EVENTOS[p.evento] || '')}</small></span><span><small>${fmtD(p.data)}</small></span></div>`).join('')}</div>` : '<p class="hint">Nenhum processo identificado.</p>'}</div>
     <div class="crmbloco"><h4>Documentos e evidências</h4><div id="rdDlgDocs" class="crmlist"><p class="hint">Carregando…</p></div></div>
     <div class="crmbloco"><h4>Histórico</h4><div id="rdDlgHist" class="crmlist"><p class="hint">Carregando…</p></div></div>
     <div class="crmbloco"><h4>Revisão</h4><p class="hint" style="margin:0">${rev.status && rev.status !== 'pendente' ? `${rev.status === 'confirmado' ? 'Confirmado' : 'Descartado'} por ${esc(rev.por || '')} em ${quando(rev.em)}${rev.nota ? ': ' + esc(rev.nota) : ''}` : 'Aguardando revisão de um administrador.'}</p>

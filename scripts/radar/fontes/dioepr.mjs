@@ -31,8 +31,13 @@ async function json(u) {
 // transforma a súmula num registro do Radar (mesmos campos do classificador)
 export function registro(m, municipios) {
   // o número de protocolo que vem depois da súmula fica de fora: com as duas colunas, ele pode ser o da vizinha
-  const [, razao, tipoTxt, sigla, numero, validade, atividade, fase, endereco, munNome] = m;
+  let [, razao, tipoTxt, sigla, numero, validade, atividade, fase, endereco, munNome] = m;
   if (!ATIV.test(atividade)) return null;
+  // a captura pode ter começado numa súmula vizinha que não fechou: fica só com a empresa da última
+  const viz = [...razao.matchAll(/torna\s+p[úu]blico\s+que\s+concedeu\s+(?:[àa]o?|ao)\s+/gi)].pop();
+  if (viz) razao = razao.slice(viz.index + viz[0].length);
+  if (/S[ÚU]MULA|Instituto\s+[ÁA]gua/i.test(razao)) return null;
+  endereco = endereco.replace(/^Endere[cç]o\s*:\s*/i, '');
   const t = `${tipoTxt} ${sigla}`;
   const renov = /^R/.test(sigla) || /renova/i.test(tipoTxt);
   const ampl = /-A$/.test(sigla) || /amplia/i.test(tipoTxt);
