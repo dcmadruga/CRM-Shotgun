@@ -4,14 +4,14 @@ access-control-allow-origin: *
 access-control-expose-headers: Content-Length,Content-Range
 alt-svc: h3=":443"; ma=86400
 cf-cache-status: DYNAMIC
-cf-ray: a5e847ea0bcaefcf-MSP
+cf-ray: a5e84945c978e2ca-IAD
 connection: keep-alive
 content-length: 20
 content-type: text/plain; charset=utf-8
-date: Sun, 22 Nov 2026 13:29:04 GMT
+date: Sun, 22 Nov 2026 13:30:00 GMT
 nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
 referrer-policy: strict-origin-when-cross-origin
-report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=5DmW4cPyKA%2Fm3z%2FhhNr9soBuP2g%2FT8L%2FrxMCUSmRsLGmTYW4yzDwCg9nCIO%2BLhQsrBLDU%2BLX0eqM28MbVFyvBBi75W0Y1Qmvbbxlcsy1LWmb9I4Enm4Y6V%2BS1XhhmEGZhQ6Og1mLSzU%2BMlY%3D"}]}
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=%2BdVR%2FJSX4dAyJCWa7%2BRjIRHc0rsSRBGOL3PKh%2FDOyvbYswqitYm%2BOdnziSBjNZ25IuX%2FYoV05TRVfVHH3GNZXxewNcF%2FE6kJH8Bt9skpdPAQ3r4cZzs5voTfn%2Fpz0goHisKRSoDoYms7gVw%3D"}]}
 server: cloudflare
 strict-transport-security: max-age=31536000; includeSubDomains; preload
 vary: Accept-Encoding

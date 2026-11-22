@@ -1,0 +1,534 @@
+200 https://www.dioe.pr.gov.br/listagem
+access-control-allow-origin: *
+content-length: 24201
+content-type: text/html; charset=UTF-8
+date: Sun, 22 Nov 2026 13:29:59 GMT
+server: Apache/2.4.52 (Ubuntu)
+set-cookie: CAKEPHP=848im3gr69363b4b7ptktcptk0; expires=Sun, 22-Nov-2026 19:29:59 GMT; Max-Age=21600; path=/; HttpOnly
+
+
+    <!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Diário Oficial  / Listagem</title>
+
+    <meta name="description" content="">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&display=swap" rel="stylesheet">
+    <link href="/theme/Parana2/favicon.ico" type="image/x-icon" rel="icon"/><link href="/theme/Parana2/favicon.ico" type="image/x-icon" rel="shortcut icon"/>
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css"/>
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap-theme.min.css"/>
+	<link rel="stylesheet" type="text/css" href="/assets/bootstrap-datepicker/css/datepicker.css"/>
+	<link rel="stylesheet" type="text/css" href="/css/fontawesomeIcon.css"/>
+	<link rel="stylesheet" type="text/css" href="/theme/Parana2/css/style.css"/>
+	<link rel="stylesheet" type="text/css" href="/theme/Parana2/css/layout.css"/>
+	<link rel="stylesheet" type="text/css" href="/theme/Parana2/css/modal-autenticidade.css"/>
+
+	<script type="text/javascript" src="/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/assets/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+	<script type="text/javascript" src="/assets/bootstrap-datepicker/js/locales/bootstrap-datepicker.pt-BR.js"></script>
+<link rel="stylesheet" type="text/css" href="/theme/Parana2/css/listagem.css"/><script type="text/javascript" src="/util/js/clock.js"></script>
+    <script type="text/javascript">
+        var BASE_URL    = '';
+        var PLUGIN_URL  = '/portal/display';
+        var CURRENT_URL = '/portal/pages/display';
+        var CDN_URL     = '';
+        var SUBTEMA     = false;
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+            $("#dialog-message").modal();
+        });
+    </script>
+
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0M8WTG8KKL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-0M8WTG8KKL');
+</script>
+</head>
+
+
+<body>
+    
+    <!-- =============================================
+         HEADER BRANCO
+         ============================================= -->
+    <header class="dn-header-top">
+                <a href="/" class="dn-header-logo">
+            <img src="/theme/Parana2/img/BrasaoParana.svg" alt="Logo" style="height:44px;"/>            <div class="dn-header-logo-divider"></div>
+            <div class="dn-header-logo-text">
+                <span>CONSULTAS</span>
+                <span>Diário Oficial</span>
+            </div>
+        </a>
+
+        <div class="dn-header-right">
+                        <a href="/cadastro" class="dn-btn-publicador">
+                <span class="dn-btn-publicador-icon">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </span>
+                <span class="dn-btn-publicador-texto">Área do publicador</span>
+                <span class="dn-btn-publicador-texto-mobile"><span>Área do</span><span>publicador</span></span>
+            </a>
+                    </div>
+    </header>
+
+    <!-- =============================================
+         BARRA INFO ESCURA
+         ============================================= -->
+    <div class="dn-header-info">
+        <div class="dn-header-info-left">
+            <span>
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Domingo, 22 de novembro de 2026            </span>
+        </div>
+        <a href="#" class="dn-btn-autenticidade" id="btn-abrir-autenticidade">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Verificar autenticidade
+        </a>
+    </div>
+
+    <!-- =============================================
+         MENU NAV
+         ============================================= -->
+    <nav class="dn-navbar">
+        <div class="container">
+            <ul>
+                            </ul>
+        </div>
+    </nav>
+
+    <div class="main-container ">
+        
+
+<div class="edicoes-page">
+
+    <!-- Breadcrumb -->
+    <div class="edicoes-breadcrumb">
+        <a href="/">← Início</a>
+    </div>
+
+    <!-- Título -->
+    <div class="edicoes-titulo">
+        <h1>Todas as edições</h1>
+        <p>Navegue pelo acervo completo do Diário Oficial do Estado do Paraná.</p>
+    </div>
+
+    <!-- Toolbar: filtros + busca -->
+    <div class="edicoes-toolbar">
+        <div class="edicoes-filtros" id="filtros-tipo">
+            <!-- tabs geradas dinamicamente via JS após carregar as edições -->
+        </div>
+
+        <div class="edicoes-busca">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" id="busca-edicao" placeholder="Buscar por número ou data..." autocomplete="off">
+        </div>
+    </div>
+
+    <!-- Tabela -->
+    <table class="edicoes-table" id="tabela-edicoes">
+        <thead>
+            <tr>
+                <th>Edição</th>
+                <th>Data</th>
+                <th class="col-tipo">Tipo</th>
+                <th class="col-paginas">Páginas</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="tbody-edicoes">
+            <!-- preenchido via JS -->
+        </tbody>
+    </table>
+
+    <!-- Cards mobile (ocultos no desktop via CSS) -->
+    <div class="edicoes-cards" id="cards-edicoes"></div>
+
+    <!-- Empty state (oculto por padrão) -->
+    <div class="edicoes-empty" id="empty-state" style="display:none;">
+        Nenhuma edição encontrada para o filtro selecionado.
+    </div>
+
+    <!-- Paginação -->
+    <div class="edicoes-paginacao" id="paginacao"></div>
+
+</div>
+
+<script>
+(function () {
+
+    var POR_PAGINA   = 15;
+    var paginaAtual  = 1;
+    var tipoAtivo    = '';   // valor de tipo_edicao_nome, '' = todos
+    var termoBusca   = '';
+    var todasEdicoes = [];
+
+    /* -------------------------------------------------------
+       BUSCA NA API — carrega tudo de uma vez
+    ------------------------------------------------------- */
+    function carregarEdicoes() {
+        var tbody = document.getElementById('tbody-edicoes');
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#a8b8d8;">Carregando...</td></tr>';
+        document.getElementById('empty-state').style.display = 'none';
+
+        var url = BASE_URL + '/apifront/portal/edicoes/ultimas_edicoes.json?sem_limite=1&todos=1&listagem=1&t=1795354199';
+
+        $.ajax({ url: url }).done(function (data) {
+            if (data.erro || !data.itens) {
+                todasEdicoes = [];
+            } else {
+                todasEdicoes = data.itens;
+            }
+            gerarTabs();
+            paginaAtual = 1;
+            renderizar();
+        }).fail(function () {
+            todasEdicoes = [];
+            gerarTabs();
+            renderizar();
+        });
+    }
+
+    /* -------------------------------------------------------
+       GERA TABS DINAMICAMENTE A PARTIR DOS TIPOS REAIS
+    ------------------------------------------------------- */
+    function gerarTabs() {
+        var tipos = [];
+        todasEdicoes.forEach(function (ed) {
+            var t = ed.tipo_edicao_nome || '';
+            if (t && tipos.indexOf(t) === -1) tipos.push(t);
+        });
+
+        var container = document.getElementById('filtros-tipo');
+        var html = '<button class="filtro-btn active" data-tipo="" type="button">Todos</button>';
+        tipos.forEach(function (t) {
+            html += '<button class="filtro-btn" data-tipo="' + t.replace(/"/g, '&quot;') + '" type="button">' + t + '</button>';
+        });
+        container.innerHTML = html;
+
+        container.querySelectorAll('.filtro-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                container.querySelectorAll('.filtro-btn').forEach(function (b) { b.classList.remove('active'); });
+                btn.classList.add('active');
+                tipoAtivo  = btn.dataset.tipo;
+                termoBusca = '';
+                document.getElementById('busca-edicao').value = '';
+                paginaAtual = 1;
+                renderizar();
+            });
+        });
+    }
+
+    /* -------------------------------------------------------
+       RENDERIZA TABELA (com filtro de tipo + busca + paginação)
+    ------------------------------------------------------- */
+    function renderizar() {
+        var filtradas = todasEdicoes.filter(function (ed) {
+            if (tipoAtivo && (ed.tipo_edicao_nome || '') !== tipoAtivo) return false;
+            if (!termoBusca) return true;
+            var haystack = (ed.numero + ' ' + ed.data + ' ' + ed.tipo_edicao_nome).toLowerCase();
+            return haystack.indexOf(termoBusca) !== -1;
+        });
+
+        var total    = filtradas.length;
+        var inicio   = (paginaAtual - 1) * POR_PAGINA;
+        var pagina   = filtradas.slice(inicio, inicio + POR_PAGINA);
+
+        var tbody = document.getElementById('tbody-edicoes');
+
+        if (pagina.length === 0) {
+            tbody.innerHTML = '';
+            var cardsEl = document.getElementById('cards-edicoes');
+            if (cardsEl) cardsEl.innerHTML = '';
+            document.getElementById('empty-state').style.display = '';
+            document.getElementById('paginacao').innerHTML = '';
+            return;
+        }
+
+        document.getElementById('empty-state').style.display = 'none';
+
+        var html = '';
+        pagina.forEach(function (ed) {
+            var urlAcesso = BASE_URL + '/ver-html/' + ed.id;
+            var urlPdf    = (CDN_URL || BASE_URL) + '/portal/edicoes/download/' + ed.id;
+            var supl      = ed.suplemento == 1 ? ' <small style="color:#e8a000;font-weight:700;">SUPL</small>' : '';
+
+            html += '<tr data-busca="' + ed.numero + ' ' + ed.data + ' ' + ed.tipo_edicao_nome + '">';
+            html += '<td><div class="ed-cell">';
+            html += '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>';
+            html += '<span class="ed-nome">Edição Nº ' + ed.numero + supl + '</span>';
+            html += '</div></td>';
+            html += '<td class="ed-data">' + ed.data + '</td>';
+            html += '<td class="col-tipo"><span class="ed-badge">' + ed.tipo_edicao_nome + '</span></td>';
+            html += '<td class="col-paginas ed-paginas">' + (ed.paginas ? ed.paginas + ' págs.' : '—') + '</td>';
+            html += '<td><div class="ed-acoes">';
+            html += '<a href="' + urlAcesso + '" class="ed-btn-acessar"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> ACESSAR</a>';
+            html += '<a href="' + urlPdf + '" class="ed-btn-pdf"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF</a>';
+            html += '</div></td></tr>';
+        });
+
+        tbody.innerHTML = html;
+
+        /* --- cards mobile --- */
+        var isMobile = window.innerWidth <= 768;
+        var cards = document.getElementById('cards-edicoes');
+        if (isMobile && cards) {
+            var htmlCards = '';
+            pagina.forEach(function (ed) {
+                var urlAcesso = BASE_URL + '/ver-html/' + ed.id;
+                var urlPdf    = (CDN_URL || BASE_URL) + '/portal/edicoes/download/' + ed.id;
+                var supl      = ed.suplemento == 1 ? ' <small style="color:#e8a000;font-weight:700;">SUPL</small>' : '';
+                var badgeClass = (ed.tipo_edicao_nome || '').toLowerCase().replace(/\s+/g, '-');
+                var thumb = '<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>';
+                htmlCards += '<div class="ed-card">';
+                htmlCards += '<div class="ed-card-top">';
+                htmlCards += '<div class="ed-card-left">' + thumb + '<span class="ed-card-nome">Edição Nº ' + ed.numero + supl + '</span></div>';
+                htmlCards += '<span class="ed-badge ' + badgeClass + '">' + ed.tipo_edicao_nome + '</span>';
+                htmlCards += '</div>';
+                htmlCards += '<div class="ed-card-data">' + ed.data + '</div>';
+                htmlCards += '<div class="ed-card-acoes">';
+                htmlCards += '<a href="' + urlAcesso + '" class="ed-btn-acessar"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Acessar</a>';
+                htmlCards += '<a href="' + urlPdf + '" class="ed-btn-pdf"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> PDF</a>';
+                htmlCards += '</div></div>';
+            });
+            cards.innerHTML = htmlCards;
+        }
+
+        renderizarPaginacao(total);
+    }
+
+    /* -------------------------------------------------------
+       PAGINAÇÃO
+    ------------------------------------------------------- */
+    function renderizarPaginacao(total) {
+        var totalPaginas = Math.ceil(total / POR_PAGINA);
+        var pag = document.getElementById('paginacao');
+
+        if (totalPaginas <= 1) { pag.innerHTML = ''; return; }
+
+        var html = '';
+
+        html += '<button class="pag-btn" id="pag-prev" ' + (paginaAtual === 1 ? 'disabled' : '') + '><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>';
+
+        for (var i = 1; i <= totalPaginas; i++) {
+            if (totalPaginas > 7 && i > 3 && i < totalPaginas - 1 && Math.abs(i - paginaAtual) > 1) {
+                if (i === 4 || i === totalPaginas - 2) html += '<span class="pag-btn" style="cursor:default;">…</span>';
+                continue;
+            }
+            html += '<button class="pag-btn' + (i === paginaAtual ? ' active' : '') + '" data-pg="' + i + '">' + i + '</button>';
+        }
+
+        html += '<button class="pag-btn" id="pag-next" ' + (paginaAtual === totalPaginas ? 'disabled' : '') + '><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>';
+
+        pag.innerHTML = html;
+
+        document.getElementById('pag-prev').addEventListener('click', function () {
+            if (paginaAtual > 1) { paginaAtual--; renderizar(); }
+        });
+        document.getElementById('pag-next').addEventListener('click', function () {
+            if (paginaAtual < totalPaginas) { paginaAtual++; renderizar(); }
+        });
+        pag.querySelectorAll('[data-pg]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                paginaAtual = parseInt(btn.dataset.pg);
+                renderizar();
+            });
+        });
+    }
+
+    /* -------------------------------------------------------
+       EVENTOS
+    ------------------------------------------------------- */
+    document.getElementById('busca-edicao').addEventListener('input', function () {
+        termoBusca  = this.value.toLowerCase().trim();
+        paginaAtual = 1;
+        renderizar();
+    });
+
+    /* -------------------------------------------------------
+       INIT — carrega todas as edições e gera tabs
+    ------------------------------------------------------- */
+    carregarEdicoes();
+
+})();
+</script>
+    </div>
+    <!-- #main-container -->
+
+    <footer class="dn-footer">
+        Powered by IONEWS
+    </footer>
+
+    
+    <!-- =============================================
+         MODAL — VERIFICAR AUTENTICIDADE
+         ============================================= -->
+
+    <div class="aut-overlay" id="modalAutenticidade">
+        <div class="aut-modal" role="dialog" aria-modal="true" aria-labelledby="aut-titulo">
+            <div class="aut-modal-header">
+                <h3 id="aut-titulo">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                    Verificar autenticidade
+                </h3>
+                <button class="aut-modal-close" id="btn-fechar-autenticidade" aria-label="Fechar">&times;</button>
+            </div>
+            <div class="aut-modal-body">
+                <p class="aut-hint">Informe o código verificador encontrado no rodapé das páginas do Diário Oficial.</p>
+                <div class="aut-input-row">
+                    <input type="text" class="aut-input" id="aut-input-hash" placeholder="Cole ou digite o código verificador" autocomplete="off">
+                    <button class="aut-btn-consultar" id="aut-btn-consultar">Consultar</button>
+                </div>
+                <div class="aut-resultado" id="aut-resultado"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        var overlay  = document.getElementById('modalAutenticidade');
+        var btnAbrir = document.getElementById('btn-abrir-autenticidade');
+        var btnFechar = document.getElementById('btn-fechar-autenticidade');
+        var inputHash = document.getElementById('aut-input-hash');
+        var btnConsultar = document.getElementById('aut-btn-consultar');
+        var resultado = document.getElementById('aut-resultado');
+
+        /* Move o overlay para filho direto do body ao iniciar,
+           evitando que transform/backdrop-filter de elementos pai
+           quebrem o position:fixed no mobile */
+        document.body.appendChild(overlay);
+
+        /* Salva posição do scroll para restaurar ao fechar (fix iOS) */
+        var scrollY = 0;
+
+        function abrir() {
+            scrollY = window.scrollY || window.pageYOffset;
+            overlay.classList.add('aberto');
+            /* trava scroll em todos os browsers incluindo iOS Safari */
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+            inputHash.value = '';
+            resultado.style.display = 'none';
+            resultado.innerHTML = '';
+            setTimeout(function () { inputHash.focus(); }, 100);
+        }
+
+        function fechar() {
+            overlay.classList.remove('aberto');
+            document.documentElement.style.overflow = '';
+            document.body.style.overflow = '';
+            window.scrollTo(0, scrollY);
+        }
+
+        btnAbrir.addEventListener('click', function (e) { e.preventDefault(); abrir(); });
+        btnFechar.addEventListener('click', fechar);
+        overlay.addEventListener('click', function (e) { if (e.target === overlay) fechar(); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fechar(); });
+
+        function consultar() {
+            var hash = inputHash.value.trim();
+            if (!hash) { inputHash.focus(); return; }
+
+            btnConsultar.disabled = true;
+            btnConsultar.textContent = 'Consultando...';
+            resultado.style.display = 'none';
+            resultado.innerHTML = '';
+
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: BASE_URL + '/portal/edicoes/consulta_autenticidade',
+                data: { hash: hash }
+            }).done(function (res) {
+                mostrarResultado(res);
+            }).fail(function (e) {
+                mostrarErro(e.responseJSON.message);
+            }).always(function () {
+                btnConsultar.disabled = false;
+                btnConsultar.textContent = 'Consultar';
+            });
+        }
+
+        function mostrarResultado(res) {
+            resultado.style.display = 'block';
+
+            if (res.error) {
+                mostrarErro(res.msg || 'Código não encontrado.');
+                return;
+            }
+
+            var edicaoId = res.data.Edicao && res.data.Edicao.id ? res.data.Edicao.id : null;
+            var urlVer   = edicaoId
+                ? BASE_URL + '/ver-html/' + edicaoId + '/#e:' + edicaoId
+                : null;
+            var urlPdf   = edicaoId
+                ? BASE_URL + '/portal/edicoes/download/' + edicaoId
+                : null;
+
+            var html = '<div class="aut-resultado-ok">';
+            html += '<div class="aut-resultado-ok-header">';
+            html += '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+            html += 'Autenticidade confirmada';
+            html += '</div>';
+            html += '<div class="aut-resultado-ok-body">';
+            html += res.msg || '';
+
+            if (urlPdf) {
+                html += '<a href="' + urlPdf + '" class="aut-btn-ver">';
+                html += '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+                html += 'PDF</a>&nbsp;';
+            }
+
+            if (urlVer) {
+                html += '<a href="' + urlVer + '" class="aut-btn-ver">';
+                html += '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>';
+                html += 'Visualizar edição</a>';
+            }
+            html += '</div></div>';
+
+            resultado.innerHTML = html;
+        }
+
+        function mostrarErro(msg) {
+            resultado.style.display = 'block';
+            resultado.innerHTML = '<div class="aut-resultado-erro">'
+                + '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+                + '<span>' + msg + '</span>'
+                + '</div>';
+        }
+
+        btnConsultar.addEventListener('click', consultar);
+        inputHash.addEventListener('keydown', function (e) { if (e.key === 'Enter') consultar(); });
+
+        var params = new URLSearchParams(window.location.search);
+        var hash = params.get('hash');
+
+        if (hash != null && hash.length > 0) {
+            abrir();
+            $("#aut-input-hash").val(hash);
+            consultar();
+        }
+
+    })();
+    </script>
+</body>
+</html>

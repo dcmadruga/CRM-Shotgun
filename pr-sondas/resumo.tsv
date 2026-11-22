@@ -1,11 +1,5 @@
-noticia-dioe-nova	200	104818	https://www.parana.pr.gov.br/aen/Noticia/Estado-moderniza-Diario-Oficial-com-nova-plataforma-digital-e-amplia-transparencia
-servico-dioe	200	70828	https://www.parana.pr.gov.br/servicos/Administracao/Transparencia/Consultar-o-Diario-Oficial-do-Estado-DIOE-Epol8QoB
-dioe-http	ERRO	fetch failed	http://www.documentos.dioe.pr.gov.br/
-dioe-raiz	200	28299	https://www.dioe.pr.gov.br/
-dioe-raiz2	200	28299	https://dioe.pr.gov.br/
-diariooficial-pr	ERRO	fetch failed	https://www.diariooficial.pr.gov.br/
+dioe-homejs	200	18895	https://www.dioe.pr.gov.br/theme/Parana2/js/home.js
+dioe-busca-post	200	11883	https://www.dioe.pr.gov.br/buscanova/
+dioe-busca-get	200	11883	https://www.dioe.pr.gov.br/buscanova/?q=%22posto%20de%20combust%C3%ADveis%22
+dioe-listagem	200	24143	https://www.dioe.pr.gov.br/listagem
 qd-curitiba	503	20	https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-05-01&size=5&territory_ids=4106902&excerpt_size=500
-qd-pr-cidades	503	20	https://api.queridodiario.org.br/cities?levels=3
-amp-licenca	200	146667	https://www.diariomunicipal.com.br/amp/pesquisar?busca_avancada%5Btexto%5D=%22licen%C3%A7a%20pr%C3%A9via%22%20posto&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-21&busca_avancada%5Bpagina%5D=1
-amp-licenca2	200	66149	https://www.diariomunicipal.com.br/amp/pesquisar?busca_avancada%5Btexto%5D=%22licen%C3%A7a%20de%20instala%C3%A7%C3%A3o%22%20combust%C3%ADveis&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-21&busca_avancada%5Bpagina%5D=1
-amp-meio	200	73950	https://www.diariomunicipal.com.br/amp/pesquisar?busca_avancada%5Btexto%5D=%22meio%20ambiente%22%20%22posto%20de%20combust%C3%ADveis%22%20licen%C3%A7a&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-21&busca_avancada%5Bpagina%5D=1
