@@ -201,6 +201,12 @@ async function iniciar() {
   // Pede o cadastro quando falta nome completo, estado de atuação ou foto
   const cadastroIncompleto = (p, foto) => foto === '' || !nomeCompleto(p.nome) || !(Array.isArray(p.estados) && p.estados.length);
 
+  // Rodapé do menu: nome e, logo abaixo, o e-mail de quem está logado
+  function mostrarUsuario() {
+    const tu = $('tabUser'); tu.textContent = perfil.nome || perfil.email || '';
+    if (perfil.nome && perfil.email) { const m = document.createElement('small'); m.className = 'tabmail'; m.textContent = perfil.email; tu.append(m); }
+    tu.title = [perfil.nome, perfil.email].filter(Boolean).join(' · ');
+  }
   A.onAuthStateChanged(auth, async user => {
     perfil = null; fb.admin = false; fb.task = false; fb.temTask = false; body.classList.remove('is-admin', 'is-task', 'tem-task'); window.dispatchEvent(new Event('argo-sair'));
     if (!user) { sbox.hidden = true; trocaOk = null; fbox.hidden = true; fotoOk = null; cadCtx = null; pararCam(); }
@@ -234,14 +240,14 @@ async function iniciar() {
     body.classList.toggle('is-task', fb.task); body.classList.toggle('tem-task', fb.temTask);
     if (fb.task) {
       box.hidden = true; body.classList.remove('locked');
-      $('tabUser').textContent = perfil.nome || perfil.email;
+      mostrarUsuario();
       aplicarModo(); abrirAba('tabTask');
       window.dispatchEvent(new CustomEvent('shotgun-entrou', { detail: { uid: user.uid } }));
       window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: false } })); return;
     }
     if (fb.admin || fb.temTask) window.dispatchEvent(new CustomEvent('argo-perfil', { detail: { F, db, perfil, admin: fb.admin } }));
     box.hidden = true; body.classList.remove('locked');
-    $('tabUser').textContent = perfil.nome || perfil.email;
+    mostrarUsuario();
     aplicarPerfil();
     window.dispatchEvent(new CustomEvent('shotgun-entrou', { detail: { uid: user.uid } })); // abre as Novidades se a versão é nova
     aplicarModo();

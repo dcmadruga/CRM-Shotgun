@@ -10,9 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 192, data: '2026-11-22', titulo: 'Ícone novo do app instalado', itens: [
+  { v: 192, data: '2026-11-22', titulo: 'Ícone novo do app e e-mail no menu', itens: [
     'O ícone do app instalado (atalho do computador, menu Iniciar e tela inicial do celular) passa a ser o S da nova marca.',
-    'No computador, o Chrome ou o Edge pode pedir para confirmar a troca do ícone: aceite. Se o ícone antigo continuar depois de fechar e abrir o app, desinstale o Shotgun e instale de novo (os dados ficam salvos na conta).'
+    'No computador, o Chrome ou o Edge pode pedir para confirmar a troca do ícone: aceite. Se o ícone antigo continuar depois de fechar e abrir o app, desinstale o Shotgun e instale de novo (os dados ficam salvos na conta).',
+    'No computador, o pé do menu lateral mostra o seu e-mail logo abaixo do nome.'
   ] },
   { v: 191, data: '2026-11-22', titulo: 'Sino de notificações volta a abrir', itens: [
     'Tocar no sino mostra de novo a lista de notificações, no computador e no celular, no tema claro e no escuro.'

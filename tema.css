@@ -264,6 +264,7 @@ header.top .versao { align-self: center; }
   .tabs .subtabs [role=tab][aria-selected="true"] .sgic { color: #FF8A3D; }
   .tabs .tabuser { order: 3; margin: auto 10px 0; padding: 14px 12px 6px; border-top: 1px solid var(--ink-line); white-space: normal; overflow-wrap: anywhere; text-align: left; font-size: 12px; max-width: none; align-self: stretch; }
   .tabs #btnSair { order: 4; font-size: 13.5px; }
+  .tabs .tabuser .tabmail { display: block; margin-top: 2px; font-size: 11.5px; opacity: .75; overflow-wrap: anywhere; }
   /* Recolhido: só os ícones */
   body.sb-mini .tabs .lbl, body.sb-mini .tabs .chev, body.sb-mini .tabs .tabuser, body.sb-mini .sbtopo .sbfull { display: none; }
   body.sb-mini .sbtopo { flex-direction: column; padding: 14px 8px; gap: 10px; }
@@ -282,6 +283,7 @@ header.top .versao { align-self: center; }
   header.top::after { background: repeating-linear-gradient(115deg, transparent 0 22px, rgba(255, 255, 255, .025) 22px 23px); } /* sem traço laranja sobre o slogan */
 }
 @media (max-width: 1099.98px) {
+  .tabs .tabuser .tabmail { display: none; } /* no celular a barra de abas mostra só o nome */
   .tabs .wrap { gap: 2px; }
   .tabs button .sgic { width: 16px; height: 16px; }
 }
