@@ -1,2 +1,0 @@
-500 https://doe-backend.pro.rs.gov.br/public/materias/?page=1&tipoDiario=DOE&queryString=FEPAM%20licen%C3%A7a%20posto&dataIni=01-08-2026&dataFim=22-11-2026
-[{"id":"jakarta.ws.rs.NotFoundException","message":"Ocorreu um erro inesperado ao processar esta requisição.","field":null,"detail":"jakarta.ws.rs.NotFoundException: RESTEASY003870: Unable to extract parameter from http request: jakarta.ws.rs.QueryParam(\"dataFim\") value is '22-11-2026'"}]
