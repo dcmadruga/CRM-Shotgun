@@ -19,7 +19,7 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 
 - `tema.css` concentra os design tokens (cores, Montserrat, espaçamentos, raios, sombras e tempos de animação) e a camada visual compartilhada: cabeçalho, menu lateral recolhível no computador, login, tela de carregamento, botões e cards. Telas novas devem usar as variáveis de lá (`--bg`, `--surface`, `--fg`, `--muted`, `--line`, `--accent`, `--accent-fg`, `--accent-text`, `--danger`, `--ok-text`...) em vez de cores fixas.
 - Tema escuro é o inicial; o botão de sol/lua no cabeçalho troca para o claro e grava a escolha no aparelho (`sg-tema`).
-- Logos em `icons/`: `shotgun-logo.png` (fundos claros), `shotgun-logo-negativo.png` (fundos escuros) e `shotgun-simbolo-negativo.png` (o S, na tela de carregamento e no menu recolhido). Ícones do app e favicon usam só o S.
+- Logos em `icons/`: `shotgun-logo.png` (fundos claros), `shotgun-logo-negativo.png` (fundos escuros) e `shotgun-simbolo-negativo.png` (o S, na tela de carregamento e no menu recolhido). Ícones do app e favicon usam só o S (`icons/shotgun-s-*.png`). Ao trocar um ícone, troque também o nome do arquivo: o Chrome e o Edge só atualizam o ícone do app instalado quando o endereço no manifest muda.
 - As páginas que o cliente abre (`aprovar.html`, `contrato.html`, `dados.html`) seguem com a marca Argo.
 
 ## Cadastro no primeiro acesso
