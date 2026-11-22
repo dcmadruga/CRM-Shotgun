@@ -86,6 +86,8 @@ for (const { mod, uf } of FONTES) {
         const lic = analisarLicenca(d.texto, mun[uf], { titulo: d.titulo, uf, entidade: d.entidade });
         const rs = lic ? [lic] : avisosDaPagina(d.texto).map(a => analisarAviso(a.texto, mun[uf], uf)).filter(Boolean);
         for (const x of rs) {
+          // publicação de lista do órgão (ex.: "licenças concedidas pela Fundação X"): o nome achado é o do órgão, não o da empresa
+          if (x.razao && (/^(funda[cç][aã]o|prefeitura|munic[ií]pio|instituto|secretaria|departamento)\b/i.test(x.razao) || (d.entidade && slug(d.entidade).includes(slug(x.razao))))) { x.razao = ''; x.confianca = 'analise'; }
           if (!x.municipio && d.entidade) { const m = mun[uf].achar(d.entidade + ' ' + uf); if (m) { x.municipio = m.nome; x.ibge = m.ibge; } }
           avisos.push({ ...x, uf, fonte: id, fonteNome: mod.info.nome, dataPublicacao: d.data, url: d.url, pdf: d.pdf, local: d.local, docId: `${id}-${d.id}-${hash(x.trecho)}` }); n++;
         }

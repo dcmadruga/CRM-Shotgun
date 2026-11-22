@@ -1,4 +1,4 @@
-// Radar de Novos Postos – MT e RS (aba Telemetria → Postos em construção). Lê o que o robô diário grava no Firestore (coleções radar_*)
+// Radar de Novos Postos – MT, RS e SC (aba Telemetria → Postos em construção). Lê o que o robô diário grava no Firestore (coleções radar_*)
 // e deixa o administrador revisar, configurar fontes e pedir uma pesquisa na hora.
 // O robô é scripts/radar/radar.mjs, rodado pelo GitHub Actions (.github/workflows/radar-postos.yml).
 let F, db, perfil, admin = false, temTask = false, unsub = [], uf = 'MT';
@@ -23,14 +23,22 @@ export const CONFIANCA = { confirmado: 'Processo confirmado', possivel: 'Possív
 // Registro antigo, sem Estado, é de MT (o Radar começou por lá)
 const ufDe = x => x?.uf || 'MT';
 const daUF = x => ufDe(x) === uf;
-const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul' };
-const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6] };
+const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina' };
+const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7] };
 const FONTES_RS = [
   { id: 'famurs', nome: 'Diário Oficial dos Municípios do RS (FAMURS)', url: 'https://www.diariomunicipal.com.br/famurs/' },
   { id: 'doe-rs', nome: 'Diário Oficial do Estado do RS (DOE-RS)', url: 'https://www.diariooficial.rs.gov.br/' },
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
   { id: 'fepam', nome: 'FEPAM: consulta de licenças e SOL', url: 'https://www.fepam.rs.gov.br/', obs: 'A consulta pública antiga saiu do ar e o SOL exige login: não monitorada' },
   { id: 'querido-rs', nome: 'Querido Diário (diários próprios das cidades do RS)', url: 'https://queridodiario.ok.org.br/' }
+];
+const FONTES_SC = [
+  { id: 'sinfat-sc', nome: 'CIGA SINFAT: licenciamento das prefeituras de SC', url: 'https://sinfatmunicipal.ciga.sc.gov.br/consulta' },
+  { id: 'dom-sc', nome: 'Diário Oficial dos Municípios de SC (DOM/SC)', url: 'https://diariomunicipal.sc.gov.br/' },
+  { id: 'querido-sc', nome: 'Querido Diário (diários próprios das cidades de SC)', url: 'https://queridodiario.ok.org.br/' },
+  { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
+  { id: 'ima-sc', nome: 'IMA-SC: consulta e relatórios de licenciamento', url: 'https://consultas.ima.sc.gov.br/', obs: 'Exige reCAPTCHA: não monitorada' },
+  { id: 'doe-sc', nome: 'Diário Oficial do Estado de SC (DOE-SC)', url: 'https://portal.doe.sea.sc.gov.br/', obs: 'Não integrada nesta entrega' }
 ];
 const FONTES_PREVISTAS_MT = [
   { id: 'iomat', nome: 'Diário Oficial de MT (IOMAT)', url: 'https://iomat.mt.gov.br/' },
@@ -60,7 +68,7 @@ function ouvir() {
 const ativos = () => emps.filter(e => daUF(e) && e.revisao?.status !== 'descartado');
 const alertasUF = () => alertas.filter(daUF);
 const naoLidos = () => alertasUF().filter(a => !(a.lidoPor || []).includes(perfil?.uid));
-const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : FONTES_PREVISTAS_MT;
+const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : FONTES_PREVISTAS_MT;
 const fontesUF = () => fontes.filter(f => f.id === 'anp' ? true : f.uf ? f.uf === uf : uf === 'MT');
 const ultimaExec = () => execs[0];
 

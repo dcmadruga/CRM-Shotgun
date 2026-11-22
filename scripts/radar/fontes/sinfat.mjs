@@ -52,7 +52,7 @@ function detalhe(html, req) {
 
 // transforma o requerimento num registro do Radar (mesmos campos do classificador)
 export function registro(d, municipios) {
-  const ativ = d.atividades.find(a => a.codigo.startsWith('42.32'));
+  const ativ = d.atividades.filter(a => a.codigo.startsWith('42.32')).sort((a, b) => a.codigo.localeCompare(b.codigo))[0];
   if (!ativ) return null;
   const t = d.tipoLic;
   const tipos = [/pr[eé]via/i.test(t) && 'LP', /instala/i.test(t) && 'LI', /opera/i.test(t) && 'LO'].filter(Boolean);
@@ -66,8 +66,8 @@ export function registro(d, municipios) {
   else if (renov) evento = 'req_renov';
   else evento = { LP: 'req_lp', LI: 'req_li', LO: 'req_lo', 'LP+LI': 'req_lp_li', 'LP+LI+LO': 'req_lp_li_lo' }[tipos.join('+')] || 'req_outro';
   const codigo = ativ.codigo;
-  const categoria = codigo === '42.32.30' ? 'tanques' : (codigo === '42.32.20' || codigo === '42.32.40') ? 'ponto_proprio'
-    : renov ? 'renovacao' : (t0 === 'LP' || t0 === 'LI') ? 'novo' : 'outro';
+  const categoria = (codigo === '42.32.20' || codigo === '42.32.40') ? 'ponto_proprio' : renov ? 'renovacao'
+    : codigo === '42.32.30' ? 'tanques' : (t0 === 'LP' || t0 === 'LI') ? 'novo' : 'outro';
   const nomeOrgao = d.orgao.replace(/\(.*?\)/g, ' ').replace(/^munic[ií]pio\s+de\s+/i, '');
   const mun = /^ciga$/i.test(limpa(nomeOrgao)) ? null : municipios.achar('municipio de ' + nomeOrgao + ' sc');
   const cnpj = d.doc.length === 14 ? d.doc : '';
