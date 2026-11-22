@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,follow">
+  <title>Página não encontrada | FEPAM</title>
+  <style>
+    body { margin: 0; font: 1rem/1.5 Arial, sans-serif; color: #183426; background: #f5f8f5; }
+    main { box-sizing: border-box; max-width: 42rem; margin: 12vh auto 2rem; padding: 2rem; background: #fff; border-top: 0.35rem solid #35734d; }
+    .logo { display: block; width: 11rem; max-width: 100%; height: auto; margin: 0 auto 1.5rem; }
+    h1 { margin: 0 0 1rem; font-size: 2rem; line-height: 1.2; }
+    p { margin: 0 0 1.5rem; }
+    a { display: inline-block; padding: 0.7rem 1rem; color: #fff; background: #286341; text-decoration: none; }
+    a:focus, a:hover { background: #174b2d; text-decoration: underline; }
+    @media (max-width: 46rem) { main { margin: 1rem; padding: 1.5rem; } }
+  </style>
+</head>
+<body>
+  <main>
+    <img class="logo" src="/images/Fepam_HD_pq.png" alt="FEPAM" width="404" height="359">
+    <h1>Página não encontrada</h1>
+    <p>Este endereço não está disponível no site antigo da FEPAM.</p>
+    <a href="https://www.fepam.rs.gov.br/">Acessar o site atual da FEPAM</a>
+  </main>
+</body>
+</html>

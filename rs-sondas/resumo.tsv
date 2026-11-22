@@ -1,0 +1,12 @@
+doe-home	200	text/html	2685	https://www.diariooficial.rs.gov.br/
+doe-busca	200	text/html	2685	https://www.diariooficial.rs.gov.br/busca?td=&pc=posto%20de%20combust%C3%ADveis
+famurs-home	200	text/html; charset=UTF-8	49499	https://www.diariomunicipal.com.br/famurs/
+famurs-busca	200	text/html; charset=UTF-8	120823	https://www.diariomunicipal.com.br/famurs/pesquisar?busca_avancada%5Btexto%5D=%22posto%20de%20combust%C3%ADveis%22&busca_avancada%5BdataInicio%5D=2026-08-01&busca_avancada%5BdataFim%5D=2026-11-22&busca_avancada%5Bpagina%5D=1
+famurs-busca2	200	text/html; charset=UTF-8	90358	https://www.diariomunicipal.com.br/famurs/pesquisar?busca_avancada%5Btexto%5D=com%C3%A9rcio%20varejista%20de%20combust%C3%ADveis&busca_avancada%5BdataInicio%5D=2026-08-01&busca_avancada%5BdataFim%5D=2026-11-22&busca_avancada%5Bpagina%5D=1
+qd-cidades	ERRO	fetch failed ERR_SSL_SSLV3_ALERT_HANDSHAKE_FAILURE		https://api.queridodiario.ok.org.br/cities?levenshtein_distance=0&city_name=
+qd-busca	ERRO	fetch failed ERR_SSL_SSLV3_ALERT_HANDSHAKE_FAILURE		https://api.queridodiario.ok.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-08-01&size=20&excerpt_size=600&number_of_excerpts=3&territory_ids=4314902
+fepam-home	200	text/html; charset=UTF-8	95573	https://www.fepam.rs.gov.br/inicial
+fepam-ww3	200	text/html	1271	http://ww3.fepam.rs.gov.br/nao_encontrada.asp
+fepam-licencas	200	text/html; charset=UTF-8	71827	https://fepam.rs.gov.br/licenciamento-ambiental
+sol-home	200	text/html;charset=UTF-8	10214	https://secweb.procergs.com.br/sra/
+sol-publico	404	text/html;charset=UTF-8	5080	https://secweb.procergs.com.br/sra/public/consultaLicencas.xhtml

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head id="j_idt2">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+        <link rel="shortcut icon" type="image/x-icon" href="/sra/javax.faces.resource/images/favicon_32x32.png.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59" />
+		<link rel="icon" href="data:;base64,iVBORw0KGgo=" /><link type="text/css" rel="stylesheet" href="/sra/javax.faces.resource/theme.css.xhtml?ln=primefaces-rio" /><script type="text/javascript" src="/sra/javax.faces.resource/jquery/jquery.js.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=primefaces&amp;v=6.2.30"></script><script type="text/javascript" src="/sra/javax.faces.resource/jquery/jquery-plugins.js.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=primefaces&amp;v=6.2.30"></script><script type="text/javascript" src="/sra/javax.faces.resource/core.js.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=primefaces&amp;v=6.2.30"></script><script type="text/javascript" src="/sra/javax.faces.resource/components.js.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=primefaces&amp;v=6.2.30"></script><link type="text/css" rel="stylesheet" href="/sra/javax.faces.resource/components.css.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=primefaces&amp;v=6.2.30" /><link type="text/css" rel="stylesheet" href="/sra/javax.faces.resource/css/core-layout.css.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=rio-layout" /><link type="text/css" rel="stylesheet" href="/sra/javax.faces.resource/css/animate.css.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=rio-layout" /><link type="text/css" rel="stylesheet" href="/sra/javax.faces.resource/css/rio-font.css.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=rio-layout" /><link type="text/css" rel="stylesheet" href="/sra/javax.faces.resource/css/ripple-effect.css.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=rio-layout" /><link type="text/css" rel="stylesheet" href="/sra/javax.faces.resource/css/font-awesome.css.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=rio-layout" /><link type="text/css" rel="stylesheet" href="/sra/javax.faces.resource/css/rio-layout.css.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=rio-layout" /><script type="text/javascript">if(window.PrimeFaces){PrimeFaces.settings.locale='pt';}</script>
+	<title>SOL - Sistema Online de Licenciamento Ambiental</title><script type="text/javascript" src="/sra/javax.faces.resource/js/ripple-effect.js.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=rio-layout"></script><script type="text/javascript" src="/sra/javax.faces.resource/js/perfect-scrollbar.js.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=rio-layout"></script><script type="text/javascript" src="/sra/javax.faces.resource/js/layout.js.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=rio-layout"></script><script type="text/javascript" src="/sra/javax.faces.resource/js/applib.js.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59?ln=rio-layout"></script>
+	<link rel="icon" href="data:;base64,iVBORw0KGgo=" /></head><body id="bodyView" class="loginbodygreen">
+
+		<div class="Wid90 DispBlock MarAuto MarTopPerc5 TexAlCenter">
+			<div class="Wid33 MarAuto WidAutoOnMobile"><img src="/sra/javax.faces.resource/images/logo_sol_horizontal-cor.svg.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59" style="width:60%; max-width:400px;" />
+				<div class="EmptyBox30"></div>
+				<div class="Card ShadowEffect">
+
+					<div class="EmptyBox20"></div>
+					<div class="Wid100 OvHidden BigTopic Fs20">
+						<i class="icon-users Fs36"></i>Empreendedor / Solicitante<br />Identifique-se com o seu login gov.br
+					</div>
+<form id="j_idt17" name="j_idt17" method="post" action="/sra/index.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59" enctype="application/x-www-form-urlencoded">
+<input type="hidden" name="j_idt17" value="j_idt17" />
+
+						<h2><a id="j_idt17:contato" href="#" class="ui-commandlink ui-widget" onclick="PF('widgetContato').show(); return false;PrimeFaces.ab({s:&quot;j_idt17:contato&quot;,ps:true});return false;">Contatos</a>  
+						</h2><div id="j_idt17:contatoPainel" class="ui-dialog ui-widget ui-widget-content ui-corner-all ui-shadow ui-hidden-container"><div class="ui-dialog-titlebar ui-widget-header ui-helper-clearfix ui-corner-top"><span id="j_idt17:contatoPainel_title" class="ui-dialog-title">Contato - Central de Atendimento</span><a href="#" class="ui-dialog-titlebar-icon ui-dialog-titlebar-close ui-corner-all" aria-label="Close"><span class="ui-icon ui-icon-closethick"></span></a></div><div class="ui-dialog-content ui-widget-content">
+        					<p>Av. Borges de Medeiros, 261 - 1º andar</p>
+                           	<p>Horários de atendimento:</p>
+                           	<p>De Segunda a Sexta-feira, 9h às 12h e das 14h às 17h.</p>
+                           	<br />
+
+   							<table width="100%" style="">   							
+   								<tr>
+   									<th><td width="5%"></td></th>
+   									<th witdh="45%" style="border: 1px solid black">
+   										<h3><p>Assuntos relacionados ao <br />licenciamento ambiental</p></h3>
+   									</th>
+   									<th witdh="45%" style="border: 1px solid black">
+   										<h3><p>Assuntos relacionados aos <br />autos de infração</p></h3>
+   									</th>
+   									<th><td width="5%"></td></th>
+   								</tr>
+   								<tr>
+   									<th><td width="5%"></td></th>
+   									<td style="border: 1px solid black; padding: 10px;">
+										<p>Fones: (51) 3288-9451 - 3288-9544</p>
+										<p>Email: <a href="mailto:atendimento-sol@sema.rs.gov.br?Subject=Atendimento%20Sistema%20SOL" target="_top">atendimento-sol@sema.rs.gov.br</a></p>
+   									</td>
+   									<td style="border: 1px solid black; padding: 10px;"> 
+										<p><h4>Dúvidas sobre a lavratura do Auto de Infração</h4></p>
+										<p>Fone: (51) 3288-9445</p>
+			                            <p>E-mail: <a href="mailto:auto-constatacao@fepam.rs.gov.br?Subject=Atendimento%20Sistema%20SOL%20Auto%20Infracao" target="_top">auto-constatacao@fepam.rs.gov.br</a></p>
+										<br />										
+										<p><h4>Dúvidas sobre o procedimento de defesa</h4></p>
+										<p>Fones: (51) 3288.7417 e 3288.7418</p>
+										<p>Email: <a href="mailto:jjia@sema.rs.gov.br?Subject=Atendimento%20Sistema%20SOL%20Auto%20Infracao" target="_top">jjia@sema.rs.gov.br</a></p>
+   									</td>
+   									<th><td width="5%"></td></th>
+   								</tr>
+   							</table>    
+							
+							<br /><button id="j_idt17:j_idt21" name="j_idt17:j_idt21" type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only" onclick="PF('widgetContato').hide(); return false;window.open('\/sra\/index.xhtml;jsessionid=e-fBu2VqRjts3Tl2ifk77iNDnxNK2PPuAT4YDzlG.EAP74-SRA59','_self')"><span class="ui-button-text ui-c">Ok</span></button><script id="j_idt17:j_idt21_s" type="text/javascript">PrimeFaces.cw("Button","widget_j_idt17_j_idt21",{id:"j_idt17:j_idt21"});</script></div></div><script id="j_idt17:contatoPainel_s" type="text/javascript">$(function(){PrimeFaces.cw("Dialog","widgetContato",{id:"j_idt17:contatoPainel",resizable:false,modal:true,position:"center center",closeOnEscape:true});});</script>
+
+						<br />
+						<div>
+							<a href="public/docs/sol_manual_empreendedor.pdf" target="_blank" download="sol_manual_empreendedor.pdf"><i class="fa fa-download Fs20 Red"></i> Manual do Sistema</a> 
+							<br />
+							<a href="public/docs/sol_manual_juntada_auto_infracao.pdf" target="_blank" download="sol_manual_juntada_auto_infracao.pdf"><i class="fa fa-download Fs20 Red"></i> Manual Juntada aos Autos de Infração</a> 
+							<br />
+							<a href="public/docs/sol_manual_denuncias.pdf" target="_blank" download="sol_manual_denuncias.pdf"><i class="fa fa-download Fs20 Red"></i> Manual Denuncias</a> 
+							<br />
+							<a href="public/docs/portaria322018sol.pdf" target="_blank" download="portaria322018sol.pdf"><i class="fa fa-download Fs20 Red"></i> Portaria do Sistema</a> 
+							<br /> 
+							<a href="public/docs/portaria20200505sol.pdf" target="_blank" download="portaria20200505sol.pdf"><i class="fa fa-download Fs20 Red"></i> Portaria para Alteração de Titularidade Ambiental</a>
+						</div>
+
+
+						<div class="EmptyBox30"></div>
+						<div class="Wid100"><button id="j_idt17:j_idt23" name="j_idt17:j_idt23" type="button" class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon-left Wid60 Fs18 White RaisedButton" onclick="window.open('\/sra\/public\/loginCidadao','_self')"><span class="ui-button-icon-left ui-icon ui-c fa fa-user"></span><span class="ui-button-text ui-c">Entrar com gov.br</span></button><script id="j_idt17:j_idt23_s" type="text/javascript">PrimeFaces.cw("Button","widget_j_idt17_j_idt23",{id:"j_idt17:j_idt23"});</script>
+							<div class="EmptyBox5"> 
+							</div>
+						</div>
+						
+						<div class="Wid100">
+							<a href="/sra/openid/connect/soe">Acessar como Central de Atendimento SEMA / FEPAM</a>
+						</div><input type="hidden" name="javax.faces.ViewState" id="j_id1:javax.faces.ViewState:0" value="-799385083024235712:-2629940176849861951" autocomplete="off" />
+</form>
+				</div>
+			</div>
+		</div>
+
+		<script type="text/javascript">
+        
+		  function popupwindow(url, title, w, h) {
+			  var left = (screen.width/2)-(w/2);
+			  var top = (screen.height/2)-(h/2);
+			  return window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width='+w+', height='+h+', top='+top+', left='+left);
+			} 
+
+        
+		</script></body>
+
+</html>
