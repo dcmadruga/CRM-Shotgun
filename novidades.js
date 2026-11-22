@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 202, data: '2026-11-22', titulo: 'Correção: menus e usuário sumindo depois de uma atualização', itens: [
+    'Logo depois de uma atualização, o app às vezes abria sem o usuário e só com Nova proposta e Administração. Corrigido: se algum arquivo não chegar, o app usa a cópia guardada no aparelho.',
+    'Se mesmo assim o app não carregar por completo, aparece um aviso com o botão Recarregar o app.'
+  ] },
   { v: 201, data: '2026-11-22', titulo: 'Correção: Salvar proposta', itens: [
     'O botão Salvar proposta dava "permission-denied". Agora a proposta é salva e fica como Pendente de envio.'
   ] },
