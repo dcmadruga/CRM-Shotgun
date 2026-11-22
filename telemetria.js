@@ -9,6 +9,7 @@
   sel.insertAdjacentHTML('beforeend', ord.map(u => ATIVOS.includes(u) ? `<option value="${u}">${u}</option>` : `<option value="${u}" disabled>${u} (em breve)</option>`).join(''));
   sel.addEventListener('change', () => {
     const uf = sel.value;
+    const cid = document.getElementById('teleCidWrap'); if (cid && !ATIVOS.includes(uf)) cid.hidden = true; // o filtro de Cidade é preenchido pelo Radar
     if (ATIVOS.includes(uf) && window.radarMT) return window.radarMT.mostrar(area, uf); // Radar de Novos Postos (radar.js)
     area.className = 'teleembreve';
     area.innerHTML = uf

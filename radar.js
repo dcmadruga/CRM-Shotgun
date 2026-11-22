@@ -65,8 +65,11 @@ function ouvir() {
   unsub.push(F.onSnapshot(F.doc(db, 'radar_config', 'geral'), s => { config = s.exists() ? s.data() : {}; desenhar(); }, falha));
 }
 
-const ativos = () => emps.filter(e => daUF(e) && e.revisao?.status !== 'descartado');
-const alertasUF = () => alertas.filter(daUF);
+const doUF = () => emps.filter(e => daUF(e) && e.revisao?.status !== 'descartado');
+// filtro de Cidade (ao lado do Estado): vale para todas as partes do Radar
+const ativos = () => doUF().filter(e => !filtro.mun || e.ibge === filtro.mun);
+const daCidade = x => !filtro.mun || x.ibge === filtro.mun || (x.eid && ativos().some(e => e.id === x.eid));
+const alertasUF = () => alertas.filter(a => daUF(a) && daCidade(a));
 const naoLidos = () => alertasUF().filter(a => !(a.lidoPor || []).includes(perfil?.uid));
 const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : FONTES_PREVISTAS_MT;
 const fontesUF = () => fontes.filter(f => f.id === 'anp' ? true : f.uf ? f.uf === uf : uf === 'MT');
@@ -93,6 +96,7 @@ function filtrados() {
 
 function desenhar() {
   if (!area || !area.isConnected || !perfil) return;
+  cidades();
   if (erroLeitura) { area.innerHTML = cab() + `<p class="crmmsg">${esc(erroLeitura)}</p>`; ligarCab(); return; }
   const abas = [['geral', 'Visão geral'], ['lista', `Empreendimentos (${ativos().length})`], ['mapa', 'Mapa'], ['docs', 'Documentos'], ['fontes', 'Fontes e execuções'], ['alertas', `Alertas${naoLidos().length ? ' (' + naoLidos().length + ')' : ''}`]];
   if (admin) abas.push(['config', 'Configuração']);
@@ -102,6 +106,16 @@ function desenhar() {
   area.querySelectorAll('[data-raba]').forEach(b => b.onclick = () => { aba = b.dataset.raba; desenhar(); });
   const corpo = $('rdCorpo');
   ({ geral: vGeral, lista: vLista, mapa: vMapa, docs: vDocs, fontes: vFontes, alertas: vAlertas, config: vConfig })[aba](corpo);
+}
+
+// preenche o filtro de Cidade com os municípios que têm empreendimento no Estado
+function cidades() {
+  const sel = $('teleCid'), wrap = $('teleCidWrap'); if (!sel) return;
+  const muns = [...new Map(doUF().filter(e => e.ibge).map(e => [e.ibge, e.municipio])).entries()].sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'));
+  if (filtro.mun && !muns.some(([id]) => id === filtro.mun)) filtro.mun = '';
+  sel.innerHTML = '<option value="">Todas as cidades</option>' + muns.map(([id, n]) => `<option value="${esc(id)}" ${filtro.mun === id ? 'selected' : ''}>${esc(n)}</option>`).join('');
+  if (wrap) wrap.hidden = false;
+  if (!sel.ligado) { sel.ligado = true; sel.addEventListener('change', () => { filtro.mun = sel.value; desenhar(); }); }
 }
 
 function cab() {
@@ -161,22 +175,20 @@ function vGeral(el) {
 }
 
 function filtrosHtml() {
-  const muns = [...new Map(ativos().filter(e => e.ibge).map(e => [e.ibge, e.municipio])).entries()].sort((a, b) => a[1].localeCompare(b[1]));
   const opt = (obj, cur, todos) => `<option value="">${todos}</option>` + Object.entries(obj).map(([k, n]) => `<option value="${k}" ${cur === k ? 'selected' : ''}>${esc(n)}</option>`).join('');
   return `<div class="tools rdfiltros">
     <input id="rfQ" type="search" placeholder="Empresa, CNPJ ou nº do processo" value="${esc(filtro.q)}" autocomplete="off">
-    <select id="rfMun"><option value="">Todos os municípios</option>${muns.map(([id, n]) => `<option value="${id}" ${filtro.mun === id ? 'selected' : ''}>${esc(n)}</option>`).join('')}</select>
     <select id="rfCat">${opt(CATEGORIAS, filtro.cat, 'Todas as categorias')}</select>
     <select id="rfSit">${opt(SITUACOES, filtro.sit, 'Todas as situações')}</select>
     <select id="rfConf">${opt(CONFIANCA, filtro.conf, 'Qualquer confiança')}</select>
     <label>De<input id="rfDe" type="date" value="${filtro.de}"></label><label>Até<input id="rfAte" type="date" value="${filtro.ate}"></label>
-    ${Object.values(filtro).some(Boolean) ? '<button type="button" class="linkbtn" id="rfLimpa">Limpar filtros</button>' : ''}</div>`;
+    ${Object.entries(filtro).some(([k, v]) => v && k !== 'mun') ? '<button type="button" class="linkbtn" id="rfLimpa">Limpar filtros</button>' : ''}</div>`;
 }
 function ligarFiltros(el, redesenhar) {
   const set = (id, k, ev = 'change') => { const i = $(id); if (i) i.addEventListener(ev, () => { filtro[k] = i.value.trim(); redesenhar(); }); };
-  set('rfMun', 'mun'); set('rfCat', 'cat'); set('rfSit', 'sit'); set('rfConf', 'conf'); set('rfDe', 'de'); set('rfAte', 'ate');
+  set('rfCat', 'cat'); set('rfSit', 'sit'); set('rfConf', 'conf'); set('rfDe', 'de'); set('rfAte', 'ate');
   const q = $('rfQ'); if (q) q.addEventListener('input', () => { filtro.q = q.value; clearTimeout(q.t); q.t = setTimeout(redesenhar, 250); });
-  const l = $('rfLimpa'); if (l) l.onclick = () => { Object.keys(filtro).forEach(k => filtro[k] = ''); desenhar(); };
+  const l = $('rfLimpa'); if (l) l.onclick = () => { Object.keys(filtro).forEach(k => { if (k !== 'mun') filtro[k] = ''; }); desenhar(); };
 }
 
 function vLista(el) {
@@ -216,7 +228,7 @@ async function vDocs(el) {
   el.innerHTML = '<p class="hint">Carregando os documentos mais recentes…</p>';
   try {
     const s = await F.getDocs(F.query(F.collection(db, 'radar_documentos'), F.orderBy('coletado', 'desc'), F.limit(400)));
-    const ds = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(daUF).slice(0, 100);
+    const ds = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => daUF(d) && daCidade(d)).slice(0, 100);
     el.innerHTML = ds.length ? `<div class="crmlist">${ds.map(d => `<div class="crmrow rddoc"><span><b>${esc(d.titulo || d.fonteNome || d.fonte)}</b><small>${esc(d.fonteNome || d.fonte)} · publicado em ${fmtD(d.dataPublicacao)} · coletado em ${quando(d.coletado)}</small><small class="rdtrecho">${esc(String(d.trecho || '').slice(0, 280))}…</small></span>
       <span><small>${esc(EVENTOS[d.evento] || '')}</small><small>${esc(d.municipio || '')}</small></span><span><span class="pill rdconf ${esc(d.confianca || '')}">${esc(CONFIANCA[d.confianca] || '')}</span>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Abrir original</a>` : ''}${d.eid ? `<button type="button" class="linkbtn" data-eid="${esc(d.eid)}">Ver empreendimento</button>` : ''}</span></div>`).join('')}</div>` : vazio();
     ligarLinhas(el);
