@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 185, data: '2026-11-22', titulo: 'Proposta mais fácil de preencher no celular', itens: [
+    'Nova proposta no celular: em Licenças e Mensalidades, cada item mostra a descrição em cima, Qtd. e Preço unitário lado a lado em campos grandes, e as opções Isento, Ocultar e Não constar em contrato embaixo, sem nada cortado na lateral.'
+  ] },
   { v: 184, data: '2026-11-22', titulo: 'Pedidos de acesso no sino', itens: [
     'Administrador: quando alguém se cadastra pelo "Me cadastrar" e fica aguardando liberação, o pedido aparece no sino de notificações. Tocar no aviso abre a tela Usuários.'
   ] },
