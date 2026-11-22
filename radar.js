@@ -30,7 +30,7 @@ const FONTES_RS = [
   { id: 'doe-rs', nome: 'Diário Oficial do Estado do RS (DOE-RS)', url: 'https://www.diariooficial.rs.gov.br/' },
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
   { id: 'fepam', nome: 'FEPAM: consulta de licenças e SOL', url: 'https://www.fepam.rs.gov.br/', obs: 'A consulta pública antiga saiu do ar e o SOL exige login: não monitorada' },
-  { id: 'querido-rs', nome: 'Querido Diário (cidades do RS)', url: 'https://queridodiario.ok.org.br/', obs: 'Cobre poucas cidades do RS: prevista' }
+  { id: 'querido-rs', nome: 'Querido Diário (diários próprios das cidades do RS)', url: 'https://queridodiario.ok.org.br/' }
 ];
 const FONTES_PREVISTAS_MT = [
   { id: 'iomat', nome: 'Diário Oficial de MT (IOMAT)', url: 'https://iomat.mt.gov.br/' },
