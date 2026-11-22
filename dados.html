@@ -261,8 +261,9 @@ function montar(){
   CAMPOS=[];
   const cs=CFG.contratoSocial!==false && !PEND; $('#secContrato').hidden=!cs; f.elements.contratoSocial.disabled=!cs; f.elements.contratoSocial.required=cs;
   if(cs) CAMPOS.push({k:'contratoSocial', label:'Contrato social', tipo:'arquivo', req:true, secao:'Contrato social'});
+  // Campos marcados "Pré TASK" nos Parâmetros não aparecem para o cliente: o vendedor completa na Pré TASK
   $('#secoes').innerHTML=(CFG.secoes||[]).map(s=>{
-    const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||'')) && (!PEND || (c.tipo==='arquivo' && PEND.includes(c.label)))); if(!cs.length) return '';
+    const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(c.pretask&&!c.fixo) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||'')) && (!PEND || (c.tipo==='arquivo' && PEND.includes(c.label)))); if(!cs.length) return '';
     cs.forEach(c=>CAMPOS.push({...c, secao:s.titulo}));
     // Sim/Não que abre os campos seguintes da seção (padrão quando é o primeiro campo)
     // Cada Sim/Não que abre vira uma linha: a pergunta à esquerda e os campos dela ao lado, até o próximo Sim/Não que abre

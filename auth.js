@@ -469,7 +469,7 @@ async function iniciar() {
     const ven = p.validade && p.validade < hojeIso();
     if (p.status !== 'aprovada') return ven ? { t: 'Proposta vencida', d: `Válida até ${fmtD(p.validade)}. Revise e reenvie ao cliente.`, passo: 0, b: 'Abrir proposta' }
       : { t: 'Aguardando o cliente aprovar', d: `Enviada em ${fmtTs(p.criado) || fmtD(p.data)}. Se demorar, reenvie o link.`, passo: 0, b: 'Ver proposta', cli: true };
-    if (!p.e2Em) return { t: 'Enviar o formulário de dados complementares', d: `Aprovada em ${fmtTs(p.aprovadoEm)}. Envie o link ao cliente ou preencha por ele.`, passo: 1, b: 'Enviar dados' };
+    if (!p.e2Em) return { t: 'Enviar o formulário dos Dados Primários', d: `Aprovada em ${fmtTs(p.aprovadoEm)}. Envie o link ao cliente ou preencha por ele.`, passo: 1, b: 'Enviar dados' };
     if (!p.ctEm) return { t: 'Gerar e enviar o contrato', d: `Dados recebidos em ${fmtTs(p.e2Em)}.`, passo: 2, b: 'Gerar contrato' };
     if (!p.ctAceitoEm) return { t: 'Aguardando o aceite do contrato', d: `Contrato gerado em ${fmtTs(p.ctEm)}. Se demorar, reenvie o link.`, passo: 2, b: 'Ver contrato', cli: true };
     if (!p.e4Em) return { t: 'Preencher o Pré TASK', d: `Contrato aceito em ${fmtTs(p.ctAceitoEm)}. Ao salvar, o card vai para o TASK.`, passo: 3, b: 'Preencher agora' };
@@ -539,7 +539,7 @@ async function iniciar() {
         <div class="etapa${p.e2Em ? '' : ' bloq'}" data-passo="2"${oc(2)}><div class="etit">Passo 3 · Contrato ${p.ctAceitoEm ? '<span class="pill ok">CONTRATO ACEITO</span>' : p.ctEm ? '<span class="pill wait">Aguardando aceite</span>' : ''}</div>
           ${p.ctAceitoEm ? `<div class="ctinfo">Aceito por ${esc(p.ctAceitoNome)}${p.ctAceitoCargo ? ' (' + esc(p.ctAceitoCargo) + ')' : ''}, CPF ${esc(p.ctAceitoCpf || '')}, em ${esc(fmtTs(p.ctAceitoEm))}</div>` : p.ctEm ? `<div class="meta">Contrato gerado em ${esc(fmtTs(p.ctEm))}</div>` : ''}
           <div class="acts">
-            ${!p.e2Em ? '<button type="button" disabled>Gerar e enviar pelo WhatsApp</button><button type="button" disabled>Copiar link do contrato</button><span class="hint">Libera quando o cliente enviar os dados complementares.</span>'
+            ${!p.e2Em ? '<button type="button" disabled>Gerar e enviar pelo WhatsApp</button><button type="button" disabled>Copiar link do contrato</button><span class="hint">Libera quando o cliente enviar os Dados Primários.</span>'
               : p.ctAceitoEm ? '<button type="button" class="primary" data-a="ctpdf">Ver contrato aceito (PDF)</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>'
               : `<button type="button" class="primary" data-a="ctenviar">${p.ctEm ? 'Gerar de novo e enviar pelo WhatsApp' : 'Gerar e enviar pelo WhatsApp'}</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>${p.ctEm ? '<button type="button" data-a="ctpdf">Ver contrato (PDF)</button>' : ''}`}
           </div></div>
@@ -893,7 +893,7 @@ async function iniciar() {
     }
     if (a === 'e2cobrar') {
       const pend = p.e2Pendentes || []; if (!pend.length) return;
-      abrirWa(p.waCli, `Olá${p.contato ? ' ' + p.contato : ''}! Recebemos os dados complementares da proposta nº ${p.numero}. Ficou faltando enviar: ${pend.join(', ')}.\n\nQuando tiver em mãos, é só abrir o mesmo link e anexar:\n${linkEtapa2(p)}\n\n${perfil.nome || p.vendedor || ''} - Argo`);
+      abrirWa(p.waCli, `Olá${p.contato ? ' ' + p.contato : ''}! Recebemos os dados da proposta nº ${p.numero}. Ficou faltando enviar: ${pend.join(', ')}.\n\nQuando tiver em mãos, é só abrir o mesmo link e anexar:\n${linkEtapa2(p)}\n\n${perfil.nome || p.vendedor || ''} - Argo`);
       pMsg('WhatsApp aberto com a cobrança do documento pendente.'); return;
     }
     if (a === 'etapa2vend') { window.open(linkEtapa2(p) + '&vend=1', '_blank'); pMsg('Formulário da Etapa 2 aberto em outra aba para você preencher.'); return; }
@@ -1030,9 +1030,34 @@ async function iniciar() {
       E2 = snap.exists() && snap.data().json ? JSON.parse(snap.data().json) : copia(window.ETAPA2_PADRAO);
       e2Status(snap.exists() ? (snap.data().por ? 'Publicado por ' + snap.data().por + (snap.data().em ? ' em ' + fmtQuando(snap.data().em) : '') + '.' : '') : 'Usando o formulário padrão. Ajuste e publique.');
     } catch (e) { E2 = copia(window.ETAPA2_PADRAO); e2Status('Não foi possível carregar o formulário publicado; mostrando o padrão.'); }
+    // o modelo do contrato publicado decide o que precisa ficar com o cliente
+    if (E2 && !E2.divisaoPretask && !E3) try { const s3 = await F.getDoc(F.doc(db, 'publico', 'etapa3')); if (s3.exists() && s3.data().json && !E3) E3PUB = JSON.parse(s3.data().json); } catch (e) {}
+    if (dividirE2(E2)) { marcarE2(); e2Status('Divisão nova aplicada: os campos que não entram no contrato passaram para a Pré TASK (coluna "Pré TASK"). Confira e toque em Publicar para valer no link do cliente.'); }
     desenharE2();
   }
   function marcarE2() { e2Sujo = true; e2Status('Alterações ainda não publicadas.'); }
+  // Dados Primários só com o que o contrato usa: o resto passa para a Pré TASK (aplicado uma vez no formulário publicado)
+  // pretask = o vendedor completa na Pré TASK; oculto = a Pré TASK já tem campo próprio (bandeira, sistema atual, certificado, logo)
+  const MARCADORES_CT = () => new Set((String(cfgE3().modelo || '').match(/\{([A-Za-z0-9_]+)\}/g) || []).map(x => x.slice(1, -1)));
+  function dividirE2(cfg) {
+    if (!cfg || cfg.divisaoPretask) return false;
+    const usados = MARCADORES_CT(), lab = c => String(c.label || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    const oculto = c => /^bandeira$|sistema atual|certificad|^logo/.test(lab(c));
+    // seção do responsável legal: a mesma que o contrato usa para montar o endereço do responsável
+    const secR = (cfg.secoes || []).find(s => /respons/i.test(s.titulo || '') || s.id === 'responsavel');
+    const doContrato = (s, c) => c.fixo || usados.has(c.k) || c.tipo === 'rg' || /contrato social/.test(lab(c)) || (s === secR && /^(nome|cpf|rg|endere|n[u]mero|complemento|bairro|cidade|estado|uf)/.test(lab(c)));
+    (cfg.secoes || []).forEach(s => (s.campos || []).forEach(c => {
+      if (doContrato(s, c)) { delete c.pretask; return; }
+      if (oculto(c)) { c.show = false; delete c.pretask; return; }
+      c.pretask = true;
+    }));
+    // textos do link ainda no padrão antigo ("dados complementares para a implantação") passam a falar do contrato
+    if (cfg.titulo === 'Dados complementares obrigatórios') cfg.titulo = 'Dados para o contrato';
+    if (cfg.intro === 'Obrigado por aprovar a proposta! Preencha os dados abaixo para darmos início à implantação. Ao terminar, toque em Enviar pelo WhatsApp.') cfg.intro = 'Obrigado por aprovar a proposta! Preencha os dados abaixo para elaborarmos o seu contrato. Ao terminar, toque em Enviar pelo WhatsApp.';
+    if (typeof cfg.msgEnvio === 'string') cfg.msgEnvio = cfg.msgEnvio.replace('Para iniciarmos a implantação, preencha os dados complementares obrigatórios neste link:', 'Para elaborarmos o seu contrato, preencha os dados neste link:');
+    cfg.divisaoPretask = 1;
+    return true;
+  }
   // padrão: um Sim/Não no topo da seção controla os campos de baixo
   function abreSim(s, ci) { const c = s.campos[ci]; return c.abre != null ? c.abre : ci === 0; }
   function desenharE2() {
@@ -1047,22 +1072,23 @@ async function iniciar() {
   const TIPOSCOND = { texto: 'Texto', textolongo: 'Texto longo', numero: 'Número', data: 'Data', cnpj: 'CNPJ', telefone: 'Telefone', email: 'E-mail', filiais: 'Filiais (quantidade + F1, F2… com Posto/Loja e CNPJ)' };
   function condEditor(c, ci) {
     const ops = String(c.opcoes || '').split(/[,;\n]/).map(o => o.trim()).filter(Boolean);
-    return `<tr data-ci="${ci}" class="condrow"><td colspan="6">${ops.length ? ops.map(op => `<div class="condop" data-op="${esc(op)}"><b>Ao escolher “${esc(op)}”:</b>${((c.cond || {})[op] || []).map((x, xi) => `<div class="condx" data-xi="${xi}"><input data-cf="label" value="${esc(x.label)}" placeholder="Descrição do campo" aria-label="Descrição do campo"><select data-cf="tipo" aria-label="Tipo">${Object.entries(TIPOSCOND).map(([k, t]) => `<option value="${k}"${x.tipo === k ? ' selected' : ''}>${t}</option>`).join('')}</select><label class="chk"><input type="checkbox" data-cf="req"${x.req ? ' checked' : ''}> Obrigatório</label><button type="button" data-cx="del" aria-label="Excluir campo">✕</button></div>`).join('') || '<span class="hint">Nenhum campo adicional.</span>'}<button type="button" data-cx="add">+ Campo</button></div>`).join('') : '<span class="hint">Digite as opções acima para configurar os campos de cada uma.</span>'}</td></tr>`;
+    return `<tr data-ci="${ci}" class="condrow"><td colspan="7">${ops.length ? ops.map(op => `<div class="condop" data-op="${esc(op)}"><b>Ao escolher “${esc(op)}”:</b>${((c.cond || {})[op] || []).map((x, xi) => `<div class="condx" data-xi="${xi}"><input data-cf="label" value="${esc(x.label)}" placeholder="Descrição do campo" aria-label="Descrição do campo"><select data-cf="tipo" aria-label="Tipo">${Object.entries(TIPOSCOND).map(([k, t]) => `<option value="${k}"${x.tipo === k ? ' selected' : ''}>${t}</option>`).join('')}</select><label class="chk"><input type="checkbox" data-cf="req"${x.req ? ' checked' : ''}> Obrigatório</label><button type="button" data-cx="del" aria-label="Excluir campo">✕</button></div>`).join('') || '<span class="hint">Nenhum campo adicional.</span>'}<button type="button" data-cx="add">+ Campo</button></div>`).join('') : '<span class="hint">Digite as opções acima para configurar os campos de cada uma.</span>'}</td></tr>`;
   }
   function htmlSecoes(CFGX, TIP, quem) {
-    const E2 = CFGX;
+    const E2 = CFGX, ctUsa = quem === 'o cliente' ? MARCADORES_CT() : new Set();
     return E2.secoes.map((s, si) => `
-      <section class="sec" data-si="${si}"><h2>Seção ${si + 1} <span>${s.campos.filter(c => c.show !== false || c.fixo).length} campos visíveis</span></h2><div class="body">
+      <section class="sec" data-si="${si}"><h2>Seção ${si + 1} <span>${s.campos.filter(c => c.show !== false || c.fixo).length} campos visíveis${quem === 'o cliente' && s.campos.some(c => c.pretask && !c.fixo && c.show !== false) ? ` · ${s.campos.filter(c => c.pretask && !c.fixo && c.show !== false).length} na Pré TASK` : ''}</span></h2><div class="body">
         <div class="e2head"><input data-s="titulo" value="${esc(s.titulo)}" aria-label="Título da seção">
           <button type="button" data-sa="up" ${si === 0 ? 'disabled' : ''} aria-label="Subir seção">↑</button>
           <button type="button" data-sa="down" ${si === E2.secoes.length - 1 ? 'disabled' : ''} aria-label="Descer seção">↓</button>
           ${s.campos.some(c => c.fixo) ? '' : '<button type="button" data-sa="del">Remover seção</button>'}</div>
-        <div class="refwrap"><table class="e2tab"><thead><tr><th>Campo (como ${quem} vê)</th><th>Tipo</th><th class="c">Mostrar</th><th class="c">Obrigatório</th><th>Opções / exemplo</th><th><span class="sr">Ações</span></th></tr></thead><tbody>
+        <div class="refwrap"><table class="e2tab"><thead><tr><th>Campo (como ${quem} vê)</th><th>Tipo</th><th class="c">Mostrar</th><th class="c">Obrigatório</th>${quem === 'o cliente' ? '<th class="c" title="O cliente não vê o campo: o vendedor completa na Pré TASK">Pré TASK</th>' : ''}<th>Opções / exemplo</th><th><span class="sr">Ações</span></th></tr></thead><tbody>
         ${s.campos.map((c, ci) => `<tr data-ci="${ci}" class="${c.show === false && !c.fixo ? 'off' : ''}">
           <td><input data-f="label" value="${esc(c.label)}" aria-label="Nome do campo"></td>
           <td class="t"><select data-f="tipo" ${c.custom ? '' : 'disabled'} aria-label="Tipo">${Object.entries(TIP).map(([k, v]) => `<option value="${k}"${c.tipo === k ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
           <td class="c"><input type="checkbox" data-f="show" ${c.show !== false || c.fixo ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Mostrar"></td>
           <td class="c"><input type="checkbox" data-f="req" ${c.req ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Obrigatório"></td>
+          ${quem === 'o cliente' ? `<td class="c"><input type="checkbox" data-f="pretask" ${c.pretask && !c.fixo ? 'checked' : ''} ${c.fixo ? 'disabled' : ''} aria-label="Pedir na Pré TASK" title="O cliente não vê o campo: o vendedor completa na Pré TASK">${c.pretask && !c.fixo && ctUsa.has(c.k) ? '<span class="hint" style="display:block;color:var(--danger)">usado no contrato</span>' : ''}</td>` : ''}
           <td class="o">${c.tipo === 'simnao' ? `<label class="chk"><input type="checkbox" data-f="abre" ${abreSim(s, ci) ? 'checked' : ''}> Só mostrar os campos abaixo desta seção se responder Sim</label>` : c.tipo === 'multicond' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><span class="hint">Configure abaixo os campos de cada opção.</span>` : c.tipo === 'opcoes' ? `<input data-f="opcoes" value="${esc(c.opcoes || '')}" placeholder="Separe por vírgula" aria-label="Opções"><label class="chk"><input type="checkbox" data-f="outros" ${c.outros ? 'checked' : ''}> Incluir "Outros" com campo "Qual?"</label>${quem === 'o vendedor' ? `<input data-f="detalhe" value="${esc(c.detalhe || '')}" placeholder="Ao escolher, abrir texto longo com esta descrição (vazio = não abre)" aria-label="Descrição do texto longo">${c.filiaisOp ? `<input data-f="filiaisOp" value="${esc(c.filiaisOp)}" placeholder="Opção que pede filiais" aria-label="Opção que pede filiais">` : ''}` : ''}` : `<input data-f="ph" value="${esc(c.ph || '')}" placeholder="Texto de exemplo" aria-label="Exemplo">`}${c.tipo !== 'simnao' && s.campos.slice(0, ci).some((x, xi) => x.tipo === 'simnao' && abreSim(s, xi)) ? `<label class="chk"><input type="checkbox" data-f="solto" ${c.solto ? 'checked' : ''}> Fora do Sim/Não acima (sempre visível)</label>` : ''}</td>
           <td class="a"><button type="button" data-ca="up" ${ci === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-ca="down" ${ci === s.campos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button>${c.fixo ? '' : '<button type="button" data-ca="del" aria-label="Excluir campo" title="Excluir campo">✕</button>'}</td>
         </tr>${c.tipo === 'multicond' ? condEditor(c, ci) : ''}`).join('')}
@@ -1352,7 +1378,7 @@ async function iniciar() {
       const doc = window.contratoPdf({ titulo: E3.titulo, texto, numero: V.numero, logo: logoAtual(), logoW: CFG.logoW, logoH: CFG.logoH });
       const url = URL.createObjectURL(doc.output('blob'));
       if (janela && !janela.closed) janela.location.href = url; else { const l = document.createElement('a'); l.href = url; l.download = 'Contrato exemplo.pdf'; l.click(); }
-      e3Status(ex ? 'Exemplo gerado com os dados da proposta nº ' + ex.numero + ' (nada foi enviado).' : 'Exemplo gerado sem dados: nenhuma proposta com dados complementares recebidos ainda.');
+      e3Status(ex ? 'Exemplo gerado com os dados da proposta nº ' + ex.numero + ' (nada foi enviado).' : 'Exemplo gerado sem dados: nenhuma proposta com Dados Primários recebidos ainda.');
     };
     gerar().catch(err => { if (janela) janela.close(); e3Status('Não foi possível gerar o exemplo (' + (err.code || err.message) + ').'); });
   });
