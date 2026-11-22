@@ -10,27 +10,14 @@ async function pega(nome, url, opts = {}) {
     resumo.push(`${nome}\t${r.status}\t${t.length}\t${url}`); return t;
   } catch (e) { resumo.push(`${nome}\tERRO\t${e.message}\t${url}`); return ''; }
 }
-const CK = 'https://dados.ciga.sc.gov.br/api/3/action/';
-const ps = await pega('ckan-pkg', CK + 'package_show?id=domsc-publicacoes-de-10-2026');
-await pega('ckan-search', CK + 'package_search?q=domsc-publicacoes&rows=3&sort=metadata_modified%20desc');
-try {
-  const res = JSON.parse(ps).result.resources;
-  for (const [i, r] of res.entries()) {
-    if (r.datastore_active) {
-      await pega('ckan-ds-' + i, CK + 'datastore_search?resource_id=' + r.id + '&limit=2');
-      await pega('ckan-dsq-' + i, CK + 'datastore_search?resource_id=' + r.id + '&q=' + encodeURIComponent('posto de combustíveis') + '&limit=5');
-    }
-  }
-} catch (e) { resumo.push('ckan-parse\tERRO\t' + e.message); }
-await pega('dom-home', 'https://diariomunicipal.sc.gov.br/');
-await pega('dom-integracao', 'https://diariomunicipal.sc.gov.br/?r=site%2Fpage&view=integracao');
-await pega('dom-busca', 'https://diariomunicipal.sc.gov.br/?r=site/index&q=' + encodeURIComponent('"posto de combustíveis"'));
-await pega('doe-home', 'https://portal.doe.sea.sc.gov.br/');
-await pega('doe-busca', 'https://portal.doe.sea.sc.gov.br/apis/consultar?termo=posto');
-await pega('ima-consultas', 'https://consultas.ima.sc.gov.br/');
-await pega('ima-home', 'https://www.ima.sc.gov.br/');
-await pega('sinfatmun', 'https://sinfatmunicipal.ciga.sc.gov.br/');
-const q = new URLSearchParams({ querystring: '"posto de combustíveis"', published_since: '2025-11-22', size: '5', excerpt_size: '400', number_of_excerpts: '2' });
-for (const c of ['4205407', '4209102', '4204202', '4202404', '4211900']) q.append('territory_ids', c);
-await pega('qd-sc', 'https://api.queridodiario.org.br/gazettes?' + q);
+const D = 'https://diariomunicipal.sc.gov.br/';
+await pega('dom-lic', D + '?r=site/index&q=' + encodeURIComponent('combustíveis') + '&categoria=' + encodeURIComponent('Licenciamento ambiental') + '&dataInicial=01/08/2026&dataFinal=22/11/2026');
+await pega('dom-lic2', D + '?r=site/index&q=' + encodeURIComponent('"posto de combustíveis"') + '&categoria=' + encodeURIComponent('Licenciamento ambiental'));
+await pega('dom-ato', D + 'atos/8947782');
+await pega('ima-consulta', 'https://consultas.ima.sc.gov.br/consulta');
+await pega('ima-relatorio', 'https://consultas.ima.sc.gov.br/relatorio');
+await pega('gaia-processos', 'https://gaia.ima.sc.gov.br/web/processos');
+await pega('sinfat-consulta', 'https://sinfatmunicipal.ciga.sc.gov.br/consulta');
+await pega('sinfat-municipios', 'https://sinfatmunicipal.ciga.sc.gov.br/municipios');
+await pega('doe-v2', 'https://portal.doe.sea.sc.gov.br/v2.46.00/');
 await writeFile('sc-sondas/resumo.tsv', resumo.join('\n') + '\n');
