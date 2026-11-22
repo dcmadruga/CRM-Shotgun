@@ -42,6 +42,16 @@ function cartoes(html) {
   return { out, total };
 }
 
+// Corpo da matéria: do div#materia até o fim do documento (a matéria tem divs aninhadas, então não dá para
+// parar no primeiro </div>)
+function corpoMateria(h) {
+  const i = h.search(/<div[^>]*id="materia"/); if (i < 0) return '';
+  let t = h.slice(i);
+  const fim = t.slice(1).search(/<footer|<\/article>|<\/main>|class="documento__rodape|C[oó]digo\s+Identificador/i);
+  if (fim > 0) t = t.slice(0, fim + 1 + (/^C/i.test(t.slice(fim + 1)) ? 60 : 0));
+  return t.slice(0, 200000);
+}
+
 // Devolve as matérias candidatas com o texto completo
 export async function coletar(de, ate, log = console.log) {
   const vistos = new Map(); let consultas = 0, pagina1 = '';
@@ -63,7 +73,7 @@ export async function coletar(de, ate, log = console.log) {
   for (const c of candidatas) {
     try {
       const h = await pega(BASE + 'materia/' + c.cod); consultas++;
-      const corpo = (h.match(/<div id="materia"[^>]*>([^]*?)<\/div>\s*(?:<\/article>|<footer|<div class="documento__rodape)/) || h.match(/<div id="materia"[^>]*>([^]*)<\/article>/) || [])[1] || '';
+      const corpo = corpoMateria(h);
       docs.push({ ...c, id: c.cod, texto: texto(corpo), url: BASE + 'materia/' + c.cod, pdf: BASE + 'download/edicao/' + c.cod, local: `Edição ${c.edicao}, matéria ${c.cod} · ${c.entidade}` });
     } catch (e) { log('FAMURS matéria ' + c.cod + ': ' + e.message); }
     await espera(700);
