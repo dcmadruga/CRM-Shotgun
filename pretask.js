@@ -534,8 +534,9 @@
       fils.map((f, j) => `<div class="ptsec" data-ptfp="${j}"${j === at ? '' : ' hidden'}><h5>${esc(s.titulo)}<small>${esc([f.cod, f.razao].filter(Boolean).join(' · '))}</small></h5><div class="ptgrid">${j ? `<div class="ptbtns full"><button type="button" data-ptcopia="${j}" data-sec="${i}">Copiar dados da ${esc(fils[0].cod)}</button></div>` : ''}${camposHtml(s.campos, 'f' + j + '__', C.v, C.anx)}</div></div>`).join(''));
   }
   function painelAnexos() {
-    const an = C.an;
-    return painel('anexos', 'Anexos', 'todos os arquivos recebidos nesta proposta', an.length ? `<div class="ptanx"><div class="lista">${an.map(a => `<button type="button" class="it" data-ptanexo="${esc(a.id)}" data-nome="${esc(a.nome)}">⬇ ${esc(a.nome)} <small>${esc(a.campo || '')} · ${Math.max(1, Math.round((a.tamanho || 0) / 1024))} KB</small></button>`).join('')}</div></div>` : '<p class="ptnote">Nenhum anexo.</p>');
+    const an = C.an, pend = (C.p && C.p.e2Pendentes) || (C.e2 && C.e2.pendentes) || [];
+    const avisoPend = pend.length ? `<p class="ptnote" style="color:var(--danger);font-weight:600;margin-bottom:6px">Pendente: ${esc(pend.join(', '))}. O cliente vai enviar depois pelo link da Etapa 2.</p>` : '';
+    return painel('anexos', 'Anexos', 'todos os arquivos recebidos nesta proposta', avisoPend + (an.length ? `<div class="ptanx"><div class="lista">${an.map(a => `<button type="button" class="it" data-ptanexo="${esc(a.id)}" data-nome="${esc(a.nome)}">⬇ ${esc(a.nome)} <small>${esc(a.campo || '')} · ${Math.max(1, Math.round((a.tamanho || 0) / 1024))} KB</small></button>`).join('')}</div></div>` : '<p class="ptnote">Nenhum anexo.</p>'));
   }
   // Campos que faltam ficam destacados em amarelo
   function destacarFaltas() {

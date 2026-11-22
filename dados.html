@@ -75,6 +75,11 @@ input[readonly]{opacity:.8}
 .anxi .cst{font-size:12.5px;color:var(--muted)}.anxi .cst.ok{color:#2f9e5b}.anxi .cst.bad{color:var(--danger)}.anxi .cst.venc{display:block;flex-basis:100%;background:#fff3c4;color:#6b4e00;border-left:4px solid #e0a800;border-radius:4px;padding:6px 10px}
 .anxi.grande{border-color:var(--danger)}
 .outro{margin-top:6px}
+label.pendo{margin-top:-6px;padding:9px 12px;border:1px dashed var(--line);border-radius:8px;background:var(--field)}label.pendo:has(input:checked){border-style:solid;border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
+label.pendo input{width:18px;height:18px;flex:none;accent-color:var(--purple)}
+.pendmsg{margin-top:-6px;font-size:13px;color:var(--purple);font-weight:500}
+label.pend input[type=file]{opacity:.45}label.pend>.hint:not(.files){text-decoration:line-through}
+.pendtopo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px;padding:12px 14px;margin:0 0 4px}.pendtopo b{font-family:var(--display);font-weight:600}
 label.mesmo{flex-direction:row;align-items:center;gap:8px;margin-top:6px;font-size:14px;font-weight:500;color:var(--fg);letter-spacing:0;cursor:pointer}
 label.mesmo input{width:auto;margin:0}
 .cnpjrow{display:flex;gap:8px}
@@ -173,6 +178,20 @@ async function carregarConfig(){
 }
 
 let CFG=null, CAMPOS=[];
+// Documentos que o cliente marcou "mando mais tarde": quando o link é aberto de novo, a página mostra só eles (null = formulário completo)
+let PEND=null;
+const PEND_TXT='Pendente: o cliente vai enviar depois';
+async function carregarPendentes(){
+  const C=window.FIREBASE_CONFIG||{}; if(!L.p||!C.apiKey||!C.projectId) return null;
+  try{
+    const r=await tempo(fetch(`https://firestore.googleapis.com/v1/projects/${C.projectId}/databases/(default)/documents/propostas/${encodeURIComponent(L.p)}?key=${C.apiKey}&mask.fieldPaths=e2Pendentes&mask.fieldPaths=e2Em`),8000);
+    if(!r.ok) return null; const fl=(await r.json()).fields||{};
+    const l=(((fl.e2Pendentes||{}).arrayValue||{}).values||[]).map(v=>v.stringValue).filter(Boolean);
+    return fl.e2Em&&l.length?l:null;
+  }catch(e){ return null }
+}
+const elPend=el=>!!(el&&!el.disabled&&el.dataset.pend==='1');
+const pendentes=()=>CAMPOS.filter(c=>c.tipo==='arquivo'&&elPend(f.elements[c.k])).map(c=>c.label);
 const ehOutro=v=>/^outr[oa]s?(\b|$)/i.test(String(v||'').trim());
 function valoresFinais(o){ const r={...o}; Object.keys(r).filter(k=>k.endsWith('__outro')).forEach(k=>{ const base=k.slice(0,-7); if(ehOutro(r[base]) && r[k]) r[base]=r[base]+': '+r[k]; delete r[k] }); return r }
 const MAXF=10*1024*1024;
@@ -239,10 +258,10 @@ function montar(){
   $('#intro').innerHTML=esc(CFG.intro||'')+' Os campos com <b style="color:var(--danger)">*</b> são obrigatórios.';
   $('#finalTxt').textContent=CFG.final||'Pronto! O WhatsApp abriu com os seus dados. Confira e toque em enviar.';
   CAMPOS=[];
-  const cs=CFG.contratoSocial!==false; $('#secContrato').hidden=!cs; f.elements.contratoSocial.disabled=!cs; f.elements.contratoSocial.required=cs;
+  const cs=CFG.contratoSocial!==false && !PEND; $('#secContrato').hidden=!cs; f.elements.contratoSocial.disabled=!cs; f.elements.contratoSocial.required=cs;
   if(cs) CAMPOS.push({k:'contratoSocial', label:'Contrato social', tipo:'arquivo', req:true, secao:'Contrato social'});
   $('#secoes').innerHTML=(CFG.secoes||[]).map(s=>{
-    const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||''))); if(!cs.length) return '';
+    const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||'')) && (!PEND || (c.tipo==='arquivo' && PEND.includes(c.label)))); if(!cs.length) return '';
     cs.forEach(c=>CAMPOS.push({...c, secao:s.titulo}));
     // Sim/Não que abre os campos seguintes da seção (padrão quando é o primeiro campo)
     // Cada Sim/Não que abre vira uma linha: a pergunta à esquerda e os campos dela ao lado, até o próximo Sim/Não que abre
@@ -259,6 +278,11 @@ function montar(){
     fecha();
     return `<section class="sec"><h2>${esc(s.titulo)}</h2><div class="body">${html.join('')}</div></section>`;
   }).join('');
+  if(PEND){
+    if(!CAMPOS.length){ PEND=null; return montar() } // documento renomeado nos Parâmetros: volta ao formulário completo
+    $('#intro').innerHTML=`<span class="pendtopo" style="display:block"><b>${CAMPOS.length>1?'Faltam só estes documentos':'Falta só este documento'}.</b><br>Os seus dados já foram recebidos. Escolha ${CAMPOS.length>1?'os arquivos que ficaram':'o arquivo que ficou'} para depois e toque em <b>Enviar documentos</b>.</span>`;
+    $('#btnEnviar').textContent='Enviar documentos';
+  }
   // Rótulo numa linha só: o texto completo aparece ao passar o mouse
   f.querySelectorAll('.body label>span:first-child').forEach(sp=>{ if(!sp.title) sp.title=sp.textContent.replace(/\s*\*\s*$/,'') });
 }
@@ -543,12 +567,27 @@ function ligarAuto(){
   f.querySelectorAll('[data-v=arquivo]').forEach(el=>el.addEventListener('change',()=>{
     // Cada nova escolha soma aos arquivos já escolhidos (o contrato social continua substituindo, porque é lido na hora)
     if(el.name!=='contratoSocial'){
+      if(el._pendCb&&el._pendCb.checked&&el.files.length){ el._pendCb.checked=false; el._pendSync() }
       const novos=[...el.files], lista=(el._lista||[]).slice();
       novos.forEach(x=>{ if(!lista.some(y=>y.name===x.name&&y.size===x.size)) lista.push(x) });
       setArquivos(el,lista); return;
     }
     desenharArquivos(el);
   }));
+
+  // Anexo obrigatório: "Não tenho em mãos, mando mais tarde" libera o envio sem o arquivo (fica pendente na proposta)
+  f.querySelectorAll('#secoes [data-v=arquivo]').forEach(el=>{
+    if(!el.required) return; const lab=el.closest('label');
+    const box=document.createElement('label'); box.className='mesmo pendo full';
+    box.innerHTML='<input type="checkbox"> <span>Não tenho em mãos, mando mais tarde</span>';
+    const aviso=document.createElement('p'); aviso.className='pendmsg full'; aviso.hidden=true;
+    aviso.textContent=L.p?'Tudo bem. Depois é só abrir este mesmo link e enviar o arquivo.':'Tudo bem. Envie o arquivo depois para o seu consultor.';
+    lab.after(box); box.after(aviso);
+    const cb=box.querySelector('input'); el._pendCb=cb;
+    el._pendSync=()=>{ const on=cb.checked; el.dataset.pend=on?'1':''; el.required=!on; lab.classList.toggle('pend',on); aviso.hidden=!on;
+      if(on&&arqs(el).length) setArquivos(el,[]); valida(el) };
+    cb.addEventListener('change',el._pendSync);
+  });
 
   f.querySelectorAll('select').forEach(sel=>{
     const out=f.elements[sel.name+'__outro']; if(!out) return;
@@ -682,12 +721,12 @@ f.addEventListener('change',e=>{ if(e.target.name==='contratoSocial') lerContrat
 /* Mensagem */
 const fmtData=iso=>{ if(!iso) return ''; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y };
 function montarTexto(o){
-  const linhas=['*'+(CFG.titulo||'Dados complementares obrigatórios')+' - Argo*'];
+  const linhas=['*'+(PEND?'Documentos que ficaram para depois':(CFG.titulo||'Dados complementares obrigatórios'))+' - Argo*'];
   if(L.n) linhas.push('Proposta nº '+L.n);
   let sec=null;
   CAMPOS.forEach(c=>{
     let v=o[c.k];
-    if(c.tipo==='arquivo'){ const el=f.elements[c.k]; const fs=el&&!el.disabled?arqs(el):[]; if(!fs.length) return; v=fs.map(x=>x.name).join(', ')+(L.p?' (anexado no sistema)':'') }
+    if(c.tipo==='arquivo'){ const el=f.elements[c.k]; const fs=el&&!el.disabled?arqs(el):[]; if(elPend(el)) v='vou enviar depois'; else { if(!fs.length) return; v=fs.map(x=>x.name).join(', ')+(L.p?' (anexado no sistema)':'') } }
     if(!v) return;
     if(c.tipo==='data') v=fmtData(v);
     if(c.k==='uf') v=v.toUpperCase();
@@ -699,7 +738,7 @@ function montarTexto(o){
 }
 
 (async()=>{
-  CFG=await carregarConfig();
+  [CFG,PEND]=await Promise.all([carregarConfig(),carregarPendentes()]);
   montar();
   let draft={}; try{ draft=JSON.parse(localStorage.getItem(DRAFT)||'{}')||{} }catch(e){}
   if(draft.cnpj && L.c && dig(draft.cnpj)!==dig(L.c)) draft={};
@@ -708,7 +747,7 @@ function montarTexto(o){
   ligarAuto(); sincronizarSenhaCert(); ligarBandeira();
   $('#carregando').hidden=true; f.hidden=false; ajustarRotulos();
 })();
-f.addEventListener('input',()=>{ try{ localStorage.setItem(DRAFT,JSON.stringify(lerForm())) }catch(e){} });
+f.addEventListener('input',()=>{ if(PEND) return; try{ localStorage.setItem(DRAFT,JSON.stringify(lerForm())) }catch(e){} });
 
 let FS=null;
 async function firestore(){
@@ -733,25 +772,39 @@ async function comprimir(file){
 async function salvarNoSistema(o, texto){
   const {F,db}=await firestore();
   const pref=['propostas',L.p];
-  const anexos=[];
+  const anexos=[], pend=pendentes();
   const arquivos=CAMPOS.filter(c=>c.tipo==='arquivo'&&!f.elements[c.k]?.disabled).flatMap(c=>arqs(f.elements[c.k]).map(file=>({c,file})));
   let n=0;
   for(const {c,file} of arquivos){
     n++; $('#msg').textContent=`Enviando anexo ${n} de ${arquivos.length}…`;
     const z=await comprimir(file); const b64=await lerB64(z.blob);
     // Logo: nome padrão CNPJ_RAZÃO_Logo (mesma regra dos anexos da implantação)
-    if(/logo/i.test(c.label||'')){ const ext=(String(z.nome).match(/\.[^.]+$/)||[''])[0]; const lp=x=>String(x||'').replace(/[\\/:*?"<>|]+/g,'-').trim(); z.nome=[String(o.cnpj||'').replace(/\D/g,''), o.razao].map(lp).filter(Boolean).concat('Logo').join('_')+ext; }
+    if(/logo/i.test(c.label||'')){ const ext=(String(z.nome).match(/\.[^.]+$/)||[''])[0]; const lp=x=>String(x||'').replace(/[\\/:*?"<>|]+/g,'-').trim(); z.nome=[String(o.cnpj||L.c||'').replace(/\D/g,''), o.razao||L.r].map(lp).filter(Boolean).concat('Logo').join('_')+ext; }
     const ref=F.doc(F.collection(db,...pref,'anexos')); const PART=700000, partes=Math.ceil(b64.length/PART);
     for(let i=0;i<partes;i++) await F.setDoc(F.doc(db,...pref,'anexos',ref.id,'partes',String(i).padStart(3,'0')),{d:b64.slice(i*PART,(i+1)*PART)});
     await F.setDoc(ref,{nome:z.nome, tipo:z.tipo||'application/octet-stream', tamanho:z.blob.size, campo:c.label, partes, em:F.serverTimestamp()});
     anexos.push({id:ref.id, nome:z.nome, campo:c.label});
   }
   $('#msg').textContent='Salvando os dados…';
+  // Pendências: ficam na proposta (o vendedor vê e cobra) e na resposta. Gravadas à parte para nunca travar o envio principal
+  const marcarPendentes=async()=>{ try{ await F.updateDoc(F.doc(db,...pref),{e2Pendentes:pend}) }catch(e){} if(pend.length||PEND) try{ await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{pendentes:pend},{merge:true}) }catch(e){} };
+  if(PEND){
+    // Envio dos documentos que ficaram para depois: soma aos dados já recebidos, sem apagar nada
+    const campos={}; CAMPOS.forEach(c=>{ if(pend.includes(c.label)) campos[c.label]=PEND_TXT; else { const n=anexos.filter(a=>a.campo===c.label).map(a=>a.nome); if(n.length) campos[c.label]=n.join(', ')+' (enviado depois)' } });
+    // Senha do certificado: o campo dos Parâmetros não aparece nesta tela, então vai direto para a resposta
+    const valores={}, cs=certsEscolhidos().filter(c=>c.senha), sc=(CFG.secoes||[]).flatMap(x=>x.campos||[]).find(c=>/senha/i.test(c.label||'')&&/certificado|pfx|p12/i.test(c.label||''));
+    if(cs.length){ const sv=cs.length===1?cs[0].senha:cs.map(c=>c.x.name+': '+c.senha).join(' | '); campos[sc?sc.label:'Senha do certificado']=sv; if(sc) valores[sc.k]=sv }
+    await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{campos, ...(sc&&cs.length?{valores}:{}), anexos:F.arrayUnion(...anexos)},{merge:true});
+    await F.updateDoc(F.doc(db,...pref),{e2Anexos:F.increment(anexos.length)});
+    await marcarPendentes(); return;
+  }
   const campos={}, valores={}; CAMPOS.forEach(c=>{ if(c.tipo!=='arquivo' && o[c.k]){ campos[c.label]=o[c.k]; valores[c.k]=o[c.k] } });
+  pend.forEach(l=>{ campos[l]=PEND_TXT });
   const socios=SOCIOS.map(({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas})=>Object.fromEntries(Object.entries({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas}).filter(([k,v])=>v!=null&&v!=='')));
   if(socios.length) campos['Sócios no contrato social']=socios.map(x=>x.nome).join('; ');
   await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{campos, valores, texto, anexos, socios, em:F.serverTimestamp()});
   await F.updateDoc(F.doc(db,...pref),{e2Em:F.serverTimestamp(), e2Anexos:anexos.length});
+  await marcarPendentes();
 }
 
 f.addEventListener('submit',async e=>{
@@ -767,13 +820,15 @@ f.addEventListener('submit',async e=>{
     prim.focus(); prim.scrollIntoView({block:'center'}); return;
   }
   const pc=problemaCert(); if(pc){ $('#msg').textContent=pc; const c=[...f.querySelectorAll('.anxs input')].find(i=>!i.value||i.classList.contains('bad')); if(c){ c.focus(); c.scrollIntoView({block:'center'}) } return }
+  if(PEND && !CAMPOS.some(c=>c.tipo==='arquivo'&&arqs(f.elements[c.k]).length)){ $('#msg').textContent='Escolha pelo menos um arquivo para enviar.'; return }
+  if(PEND && !L.p){ $('#msg').textContent='Este link não aceita anexos. Peça ao seu consultor um link novo da Etapa 2.'; return }
   const temArquivos=CAMPOS.some(c=>c.tipo==='arquivo'&&f.elements[c.k]&&!f.elements[c.k].disabled&&arqs(f.elements[c.k]).length);
   if(temArquivos && !L.p){ $('#msg').textContent='Este link não aceita anexos. Peça ao seu consultor um link novo da Etapa 2.'; return }
   const o=valoresFinais(lerForm()), texto=montarTexto(o);
   if(VEND){
     const btn=$('#btnEnviar'); btn.disabled=true; $('#msg').textContent='Salvando…';
     try{ await salvarNoSistema(o, texto) } catch(err){ btn.disabled=false; $('#msg').textContent='Não foi possível salvar. Verifique a internet e tente de novo.'; return }
-    btn.disabled=false; $('#msg').textContent=''; $('#done').innerHTML='Dados complementares salvos no sistema. Pode fechar esta aba e voltar para a proposta.'; $('#done').hidden=false; $('#done').scrollIntoView({block:'center'}); return;
+    btn.disabled=false; $('#msg').textContent=''; $('#done').innerHTML=(PEND?'Documentos salvos na proposta.':'Dados complementares salvos no sistema.')+(pendentes().length?' Ainda falta: '+esc(pendentes().join(', '))+'. Envie depois por este mesmo link.':'')+' Pode fechar esta aba e voltar para a proposta.'; $('#done').hidden=false; $('#done').scrollIntoView({block:'center'}); return;
   }
   const num = destino ? (destino.length<=11 ? '55'+destino : destino) : '';
   const url='https://wa.me/'+num+'?text='+encodeURIComponent(texto);
@@ -791,6 +846,7 @@ f.addEventListener('submit',async e=>{
     btn.disabled=false;
   }
   $('#msg').textContent='';
+  const pf=pendentes(); if(pf.length && L.p) $('#finalTxt').textContent=(CFG.final||'Pronto! O WhatsApp abriu com os seus dados. Confira e toque em enviar.')+' Quando tiver '+(pf.length>1?'os documentos que faltam':'o documento que falta')+' ('+pf.join(', ')+'), abra este mesmo link para enviar.';
   $('#waLink').href=url; $('#done').hidden=false;
   if(janela && !janela.closed) janela.location.href=url; else (window.open(url,'_blank') || (location.href=url));
 });

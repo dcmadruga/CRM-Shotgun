@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 187, data: '2026-11-22', titulo: 'Documento pode ficar para depois', itens: [
+    'Nos dados complementares, cada anexo obrigatório (como Certificado Digital e Logo) tem a opção "Não tenho em mãos, mando mais tarde". O cliente salva os dados sem o arquivo.',
+    'A proposta mostra DOCUMENTO PENDENTE no Passo 2, com o que falta, e o botão Cobrar documento pelo WhatsApp. O Pré TASK também avisa na aba Anexos.',
+    'Para enviar depois, o cliente abre o mesmo link da Etapa 2: a página mostra só os documentos que faltam.'
+  ] },
   { v: 186, data: '2026-11-22', titulo: 'Proposta aceita no sino', itens: [
     'Quando o cliente aprova a proposta, o sino de notificações avisa o vendedor dono da proposta e o administrador, com o cliente, os valores e quem aprovou. Tocar no aviso abre a proposta.'
   ] },
