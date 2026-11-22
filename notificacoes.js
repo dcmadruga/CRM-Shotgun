@@ -77,8 +77,17 @@
 
   function abrir(on) {
     aberto = on; $('sgnPainel').hidden = !on; $('sgnBtn').setAttribute('aria-expanded', String(on));
+    if (on) posicionar();
     if (on) desenhar();
   }
+
+  // No celular o painel é fixo na tela: fica logo abaixo do sino, qualquer que seja a altura do cabeçalho
+  function posicionar() {
+    const p = $('sgnPainel'); p.style.top = '';
+    if (!window.matchMedia('(max-width:560px)').matches) return;
+    const r = $('sgnBtn').getBoundingClientRect(); p.style.top = Math.max(8, Math.round(r.bottom + 10)) + 'px';
+  }
+  window.addEventListener('resize', () => { if (aberto) posicionar(); });
 
   function desenhar() {
     if (!$('sgNotif')) return;
