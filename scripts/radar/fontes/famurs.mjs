@@ -15,19 +15,19 @@ const SINAL = /licen[cç]a|ambiental|meio\s+ambiente|torna\s+p[uú]blic|requer|\
 
 const br2iso = d => { const m = String(d).match(/(\d{2})\/(\d{2})\/(\d{4})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ''; };
 
-async function pega(u) {
+async function pega(u, rotulo = 'FAMURS') {
   let erro;
   for (let t = 1; t <= 4; t++) {
     try { const r = await fetch(u, { headers: UA, signal: AbortSignal.timeout(60000) }); if (!r.ok) throw new Error('HTTP ' + r.status); return await r.text(); }
     catch (e) { erro = e; await espera(t * 4000); }
   }
-  throw new Error(`FAMURS: ${erro.message} (${u})`);
+  throw new Error(`${rotulo}: ${erro.message} (${u})`);
 }
 
 function cartoes(html) {
   const out = [];
   for (const li of html.split('<li class="materia-card">').slice(1)) {
-    const cod = (li.match(/\/famurs\/materia\/([0-9A-F]{6,12})/) || [])[1]; if (!cod) continue;
+    const cod = (li.match(/\/[a-z]+\/materia\/([0-9A-F]{6,12})/) || [])[1]; if (!cod) continue;
     out.push({
       cod,
       titulo: texto((li.match(/materia-card__titulo">([^]*?)<\/h2>/) || [])[1] || ''),
@@ -53,31 +53,38 @@ function corpoMateria(h) {
 }
 
 // Devolve as matérias candidatas com o texto completo
-export async function coletar(de, ate, log = console.log) {
+export const coletar = (de, ate, log = console.log) => coletarEm(BASE, 'FAMURS', de, ate, log);
+async function coletarEm(BASE, rotulo, de, ate, log) {
   const vistos = new Map(); let consultas = 0, pagina1 = '';
   for (const termo of TERMOS) {
     let total = 0, cont = 0;
     for (let p = 1; p <= 40; p++) {
       const u = `${BASE}pesquisar?busca_avancada%5Btexto%5D=${encodeURIComponent(termo)}&busca_avancada%5BdataInicio%5D=${de}&busca_avancada%5BdataFim%5D=${ate}&busca_avancada%5Bpagina%5D=${p}`;
-      const h = await pega(u); if (!pagina1) pagina1 = h.slice(0, 60000);
+      const h = await pega(u, rotulo); if (!pagina1) pagina1 = h.slice(0, 60000);
       const { out, total: t } = cartoes(h); consultas++; cont += out.length; total = t || cont;
       for (const c of out) if (!vistos.has(c.cod)) vistos.set(c.cod, c);
       if (!out.length || p * 25 >= t) break;
       await espera(1000);
     }
-    log(`FAMURS ${termo}: ${total} matéria(s) no período`);
+    log(`${rotulo} ${termo}: ${total} matéria(s) no período`);
     await espera(1000);
   }
   const candidatas = [...vistos.values()].filter(c => !FORA.test(c.titulo) && SINAL.test(`${c.titulo} ${c.orgao} ${c.trecho}`));
   const docs = [];
   for (const c of candidatas) {
     try {
-      const h = await pega(BASE + 'materia/' + c.cod); consultas++;
+      const h = await pega(BASE + 'materia/' + c.cod, rotulo); consultas++;
       const corpo = corpoMateria(h);
       docs.push({ ...c, id: c.cod, texto: texto(corpo), url: BASE + 'materia/' + c.cod, pdf: BASE + 'download/edicao/' + c.cod, local: `Edição ${c.edicao}, matéria ${c.cod} · ${c.entidade}` });
-    } catch (e) { log('FAMURS matéria ' + c.cod + ': ' + e.message); }
+    } catch (e) { log(rotulo + ' matéria ' + c.cod + ': ' + e.message); }
     await espera(700);
   }
-  log(`FAMURS: ${vistos.size} matérias encontradas, ${candidatas.length} candidatas lidas por inteiro`);
+  log(`${rotulo}: ${vistos.size} matérias encontradas, ${candidatas.length} candidatas lidas por inteiro`);
   return { docs, consultas, amostra: { pagina1, encontradas: [...vistos.values()], docs: docs.map(d => ({ ...d, texto: d.texto.slice(0, 4000) })) } };
 }
+
+// o mesmo sistema (SIGPub) em outro Estado: ex. AMP, Diário Oficial dos Municípios do Paraná
+export const paraSigpub = (slug, uf, id, nome, rotulo) => {
+  const base = `https://www.diariomunicipal.com.br/${slug}/`;
+  return { info: { ...info, id, uf, nome, url: base }, coletar: (de, ate, log = console.log) => coletarEm(base, rotulo, de, ate, log) };
+};
