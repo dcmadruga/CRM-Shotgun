@@ -6,13 +6,13 @@ import { slug } from '../classificar.mjs';
 
 export const info = { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/v1/combustivel', tipo: 'base_cruzamento' };
 
-export async function carregarANP() {
+export async function carregarANP(uf = 'MT') {
   const dir = new URL('../../../anp/postos/', import.meta.url);
   const porCnpj = new Map(), porNome = new Map();
   for (const f of (await readdir(dir)).filter(f => f.endsWith('.json'))) {
     const j = JSON.parse(await readFile(new URL(f, dir), 'utf8'));
     for (const [cnpj, o] of Object.entries(j)) {
-      if (o.uf !== 'MT') continue;
+      if (o.uf !== uf) continue;
       porCnpj.set(cnpj, o);
       const k = slug(o.r) + '|' + slug(o.m);
       porNome.set(k, porNome.has(k) ? null : cnpj); // nome repetido na mesma cidade = ambíguo

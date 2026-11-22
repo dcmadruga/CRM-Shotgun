@@ -10,6 +10,12 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 195, data: '2026-11-22', titulo: 'Postos em construção no Rio Grande do Sul', itens: [
+    'Telemetria → Postos em construção: o Rio Grande do Sul (RS) já pode ser escolhido no filtro de Estado.',
+    'O Radar do RS procura licenças de postos publicadas no Diário Oficial dos Municípios (FAMURS), no Diário Oficial do Estado e nos diários próprios das cidades (Querido Diário), cruza com a base da ANP e mostra empreendimentos, mapa, documentos e alertas, como no MT.',
+    'No RS os pedidos de licença de posto quase não saem nos diários oficiais, então a lista deve começar pequena. Em Fontes e execuções dá para ver o que cada fonte trouxe.',
+    'Cada registro traz o link do documento original. O que não aparece no documento fica como "pendente de confirmação".'
+  ] },
   { v: 194, data: '2026-11-22', titulo: 'Menu em nova ordem', itens: [
     'O menu (lateral no computador e abas no celular) agora segue a ordem: Hoje, CRM, Propostas, TASK, Telemetria e Administração.'
   ] },

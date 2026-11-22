@@ -1,7 +1,7 @@
-// Radar de Novos Postos – MT (aba Telemetria). Lê o que o robô diário grava no Firestore (coleções radar_*)
+// Radar de Novos Postos – MT e RS (aba Telemetria → Postos em construção). Lê o que o robô diário grava no Firestore (coleções radar_*)
 // e deixa o administrador revisar, configurar fontes e pedir uma pesquisa na hora.
 // O robô é scripts/radar/radar.mjs, rodado pelo GitHub Actions (.github/workflows/radar-postos.yml).
-let F, db, perfil, admin = false, temTask = false, unsub = [];
+let F, db, perfil, admin = false, temTask = false, unsub = [], uf = 'MT';
 let emps = [], alertas = [], execs = [], fontes = [], config = {}, erroLeitura = '', aba = 'geral', area = null, mapa = null, camada = null;
 const filtro = { q: '', mun: '', cat: '', sit: '', conf: '', de: '', ate: '' };
 const $ = id => document.getElementById(id);
@@ -20,7 +20,19 @@ export const EVENTOS = { req_lp: 'Solicitação de Licença Prévia', req_li: 'S
 export const SITUACOES = { solicitado: 'Solicitado (protocolo)', analise: 'Em análise', aprovado: 'Aprovado / licença emitida', indeferido: 'Indeferido ou arquivado', autorizado_anp: 'Autorizado pela ANP' };
 export const CONFIANCA = { confirmado: 'Processo confirmado', possivel: 'Possível novo empreendimento', analise: 'Documento aguardando análise', nao_confirmado: 'Informação não confirmada' };
 // Fontes previstas: só aparecem como "monitoradas" depois de uma execução real com sucesso (radar_fontes)
-const FONTES_PREVISTAS = [
+// Registro antigo, sem Estado, é de MT (o Radar começou por lá)
+const ufDe = x => x?.uf || 'MT';
+const daUF = x => ufDe(x) === uf;
+const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul' };
+const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6] };
+const FONTES_RS = [
+  { id: 'famurs', nome: 'Diário Oficial dos Municípios do RS (FAMURS)', url: 'https://www.diariomunicipal.com.br/famurs/' },
+  { id: 'doe-rs', nome: 'Diário Oficial do Estado do RS (DOE-RS)', url: 'https://www.diariooficial.rs.gov.br/' },
+  { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
+  { id: 'fepam', nome: 'FEPAM: consulta de licenças e SOL', url: 'https://www.fepam.rs.gov.br/', obs: 'A consulta pública antiga saiu do ar e o SOL exige login: não monitorada' },
+  { id: 'querido-rs', nome: 'Querido Diário (diários próprios das cidades do RS)', url: 'https://queridodiario.ok.org.br/' }
+];
+const FONTES_PREVISTAS_MT = [
   { id: 'iomat', nome: 'Diário Oficial de MT (IOMAT)', url: 'https://iomat.mt.gov.br/' },
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
   { id: 'amm', nome: 'Jornal Oficial dos Municípios (AMM-MT)', url: 'https://amm.diariomunicipal.org/', obs: 'Entrega 2' },
@@ -32,7 +44,7 @@ const FONTES_PREVISTAS = [
 
 window.addEventListener('shotgun-crm', e => { ({ F, db, perfil, admin, temTask } = e.detail); ouvir(); });
 window.addEventListener('argo-sair', () => { unsub.forEach(u => u()); unsub = []; emps = []; alertas = []; execs = []; fontes = []; config = {}; });
-window.radarMT = { mostrar(el) { area = el; area.className = 'radar'; desenhar(); } };
+window.radarMT = { mostrar(el, u = 'MT') { if (u !== uf) { uf = u; filtro.mun = ''; if (mapa) { mapa.remove(); mapa = null; } } area = el; area.className = 'radar'; desenhar(); } };
 
 function ouvir() {
   unsub.forEach(u => u()); unsub = []; erroLeitura = '';
@@ -45,8 +57,11 @@ function ouvir() {
   unsub.push(F.onSnapshot(F.doc(db, 'radar_config', 'geral'), s => { config = s.exists() ? s.data() : {}; desenhar(); }, falha));
 }
 
-const ativos = () => emps.filter(e => e.revisao?.status !== 'descartado');
-const naoLidos = () => alertas.filter(a => !(a.lidoPor || []).includes(perfil?.uid));
+const ativos = () => emps.filter(e => daUF(e) && e.revisao?.status !== 'descartado');
+const alertasUF = () => alertas.filter(daUF);
+const naoLidos = () => alertasUF().filter(a => !(a.lidoPor || []).includes(perfil?.uid));
+const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : FONTES_PREVISTAS_MT;
+const fontesUF = () => fontes.filter(f => f.id === 'anp' ? true : f.uf ? f.uf === uf : uf === 'MT');
 const ultimaExec = () => execs[0];
 
 function filtrados() {
@@ -83,7 +98,7 @@ function desenhar() {
 
 function cab() {
   const u = ultimaExec(), ped = config.pedido && !config.pedido.atendido;
-  return `<div class="rdcab"><div><b class="rdtit">Radar de Novos Postos – MT</b><small>${u ? `Última execução: ${quando(u.inicio)} · ${u.status === 'ok' ? 'concluída' : u.status === 'erro' ? 'com erro' : esc(u.status || '')}${u.teste ? ' (teste, sem gravar)' : ''}` : 'O robô ainda não gravou nenhuma execução.'}</small></div>
+  return `<div class="rdcab"><div><b class="rdtit">Radar de Novos Postos – ${uf}</b><small>${u ? `Última execução: ${quando(u.inicio)} · ${u.status === 'ok' ? 'concluída' : u.status === 'erro' ? 'com erro' : esc(u.status || '')}${u.teste ? ' (teste, sem gravar)' : ''}` : 'O robô ainda não gravou nenhuma execução.'}</small></div>
     ${admin ? `<button type="button" id="rdAgora" ${ped ? 'disabled' : ''}>${ped ? 'Pesquisa pedida, aguardando o robô…' : 'Pesquisar agora'}</button>` : ''}</div><p id="rdMsg" class="crmmsg" role="status" hidden></p>`;
 }
 function ligarCab() {
@@ -105,7 +120,7 @@ function kpis() {
     ['LP solicitadas', a.filter(e => temEv(e, /^req_lp/)).length],
     ['LI solicitadas', a.filter(e => temEv(e, /^req_(li|lp_li)/)).length],
     ['Em análise', a.filter(e => e.situacao === 'solicitado' || e.situacao === 'analise').length],
-    ['Fontes monitoradas', fontes.filter(f => f.situacao === 'integrada' && f.ativa !== false).length],
+    ['Fontes monitoradas', fontesUF().filter(f => f.situacao === 'integrada' && f.ativa !== false).length],
     ['Alertas pendentes', naoLidos().length],
     ['Aguardando revisão', a.filter(e => !e.revisao || e.revisao.status === 'pendente').length]
   ];
@@ -166,7 +181,7 @@ function vMapa(el) {
   el.innerHTML = filtrosHtml() + '<div id="rdMapa" class="rdmapa"></div><p class="hint">Ponto cheio: endereço exato (base da ANP ou documento). Ponto vazado: centro do município, localização aproximada.</p>';
   carregarLeaflet().then(L => {
     if (mapa) { mapa.remove(); mapa = null; }
-    mapa = L.map('rdMapa', { scrollWheelZoom: false }).setView([-12.9, -55.9], 6);
+    mapa = L.map('rdMapa', { scrollWheelZoom: false }).setView(...CENTRO_UF[uf]);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' }).addTo(mapa);
     const pinta = () => {
       if (camada) camada.remove(); camada = L.layerGroup().addTo(mapa);
@@ -175,7 +190,7 @@ function vMapa(el) {
         const exato = e.coordFonte && e.coordFonte !== 'municipio';
         const p = (e.processos || [])[0] || {}, d = (e.docs || [])[0] || {};
         L.circleMarker([e.lat, e.lng], { radius: exato ? 7 : 6, color: cor, weight: 2, fillColor: cor, fillOpacity: exato ? .85 : .15 }).addTo(camada)
-          .bindPopup(`<b>${esc(e.razao || '(empresa não identificada)')}</b><br>${esc(e.municipio || '')} – MT<br>${e.endereco ? esc(e.endereco) + '<br>' : ''}Processo: ${esc(p.numero || 'pendente')}<br>Licença: ${esc(EVENTOS[e.ultimoEvento] || '')}<br>Situação: ${esc(SITUACOES[e.situacao] || '')}<br>Identificado em ${quando(e.identificado)}${d.url ? `<br><a href="${esc(d.url)}" target="_blank" rel="noopener">Documento original</a>` : ''}`);
+          .bindPopup(`<b>${esc(e.razao || '(empresa não identificada)')}</b><br>${esc(e.municipio || '')} – ${uf}<br>${e.endereco ? esc(e.endereco) + '<br>' : ''}Processo: ${esc(p.numero || 'pendente')}<br>Licença: ${esc(EVENTOS[e.ultimoEvento] || '')}<br>Situação: ${esc(SITUACOES[e.situacao] || '')}<br>Identificado em ${quando(e.identificado)}${d.url ? `<br><a href="${esc(d.url)}" target="_blank" rel="noopener">Documento original</a>` : ''}`);
       });
     };
     ligarFiltros(el, pinta); pinta();
@@ -192,8 +207,8 @@ function carregarLeaflet() {
 async function vDocs(el) {
   el.innerHTML = '<p class="hint">Carregando os documentos mais recentes…</p>';
   try {
-    const s = await F.getDocs(F.query(F.collection(db, 'radar_documentos'), F.orderBy('coletado', 'desc'), F.limit(100)));
-    const ds = s.docs.map(d => ({ id: d.id, ...d.data() }));
+    const s = await F.getDocs(F.query(F.collection(db, 'radar_documentos'), F.orderBy('coletado', 'desc'), F.limit(400)));
+    const ds = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(daUF).slice(0, 100);
     el.innerHTML = ds.length ? `<div class="crmlist">${ds.map(d => `<div class="crmrow rddoc"><span><b>${esc(d.titulo || d.fonteNome || d.fonte)}</b><small>${esc(d.fonteNome || d.fonte)} · publicado em ${fmtD(d.dataPublicacao)} · coletado em ${quando(d.coletado)}</small><small class="rdtrecho">${esc(String(d.trecho || '').slice(0, 280))}…</small></span>
       <span><small>${esc(EVENTOS[d.evento] || '')}</small><small>${esc(d.municipio || '')}</small></span><span><span class="pill rdconf ${esc(d.confianca || '')}">${esc(CONFIANCA[d.confianca] || '')}</span>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Abrir original</a>` : ''}${d.eid ? `<button type="button" class="linkbtn" data-eid="${esc(d.eid)}">Ver empreendimento</button>` : ''}</span></div>`).join('')}</div>` : vazio();
     ligarLinhas(el);
@@ -201,14 +216,15 @@ async function vDocs(el) {
 }
 
 function vFontes(el) {
-  const porId = Object.fromEntries(fontes.map(f => [f.id, f]));
-  const todas = [...FONTES_PREVISTAS, ...fontes.filter(f => !FONTES_PREVISTAS.some(p => p.id === f.id))];
+  const porId = Object.fromEntries(fontesUF().map(f => [f.id, f]));
+  const todas = [...FONTES_PREVISTAS_UF(), ...fontesUF().filter(f => !FONTES_PREVISTAS_UF().some(p => p.id === f.id))];
   const sit = f => { const r = porId[f.id]; if (!r || r.situacao !== 'integrada') return `<span class="pill">Não integrada</span>${f.obs ? `<small>${esc(f.obs)}</small>` : ''}`; if (r.ativa === false) return '<span class="pill">Desligada</span>'; return `<span class="pill rdconf ${r.ultimoErro ? 'nao_confirmado' : 'confirmado'}">${r.ultimoErro ? 'Com erro na última coleta' : 'Monitorada'}</span><small>Última coleta ok: ${quando(r.ultimaOk) || '—'}</small>${r.ultimoErro ? `<small class="rderro">${esc(r.ultimoErro)}</small>` : ''}`; };
   el.innerHTML = `<div class="crmbloco"><h4>Fontes</h4><div class="crmlist">${todas.map(f => `<div class="crmrow"><span><b>${esc(porId[f.id]?.nome || f.nome)}</b><small><a href="${esc(porId[f.id]?.url || f.url)}" target="_blank" rel="noopener">${esc(porId[f.id]?.url || f.url)}</a></small></span><span></span><span>${sit(f)}</span></div>`).join('')}</div></div>
   <div class="crmbloco"><h4>Execuções do robô</h4>${execs.length ? `<div class="crmlist">${execs.map(x => `<div class="crmrow"><span><b>${quando(x.inicio)}${x.teste ? ' · teste' : ''}</b><small>${esc(x.gatilho === 'manual' ? 'Pedido manual' + (x.pedidoPor ? ' de ' + x.pedidoPor : '') : 'Agendada')} · ${x.duracaoSeg ? x.duracaoSeg + ' s' : ''}</small><small>${Object.entries(x.porFonte || {}).map(([k, v]) => `${esc(k)}: ${v.docs ?? 0} doc., ${v.novos ?? 0} novos${v.erro ? ' · erro: ' + esc(v.erro) : ''}`).join(' · ')}</small></span><span><small>${x.novos ?? 0} novos · ${x.atualizados ?? 0} atualizados</small></span><span><span class="pill rdconf ${x.status === 'ok' ? 'confirmado' : 'nao_confirmado'}">${x.status === 'ok' ? 'Concluída' : esc(x.status || '')}</span></span></div>`).join('')}</div>` : '<p class="hint">Nenhuma execução gravada ainda.</p>'}</div>`;
 }
 
 function vAlertas(el) {
+  const alertas = alertasUF();
   if (!alertas.length) { el.innerHTML = '<p class="hint">Nenhum alerta ainda. O robô cria um alerta quando acha um empreendimento novo ou uma mudança relevante.</p>'; return; }
   const nl = naoLidos();
   el.innerHTML = (nl.length ? '<div class="tools"><button type="button" id="rdLerTodos">Marcar todos como lidos</button></div>' : '') + `<div class="crmlist">${alertas.map(a => { const lido = (a.lidoPor || []).includes(perfil.uid); return `<div class="crmrow rdalerta ${lido ? 'lido' : ''}"><span><b>${esc(a.titulo)}</b><small class="rdpre">${esc(a.texto)}</small></span><span><small>${quando(a.criado)}</small></span><span>${a.eid ? `<button type="button" class="linkbtn" data-eid="${esc(a.eid)}">Ver</button>` : ''}${lido ? '' : `<button type="button" class="linkbtn" data-ler="${esc(a.id)}">Marcar lido</button>`}</span></div>`; }).join('')}</div>`;
@@ -219,7 +235,7 @@ function vAlertas(el) {
 }
 
 function vConfig(el) {
-  const freq = config.frequenciaHoras || 24, porId = Object.fromEntries(fontes.map(f => [f.id, f]));
+  const fontes = fontesUF(), freq = config.frequenciaHoras || 24, porId = Object.fromEntries(fontes.map(f => [f.id, f]));
   el.innerHTML = `<div class="crmbloco"><h4>Frequência do robô</h4><label>Pesquisar a cada<select id="rcFreq">${[6, 12, 24, 48, 72].map(h => `<option value="${h}" ${h === freq ? 'selected' : ''}>${h} horas</option>`).join('')}</select></label><small class="hint">O robô confere a cada 15 minutos e só pesquisa quando passou esse tempo desde a última pesquisa completa, ou quando alguém usa "Pesquisar agora".</small></div>
   <div class="crmbloco"><h4>Fontes ligadas</h4>${fontes.length ? fontes.map(f => `<label class="chk"><input type="checkbox" data-fonte="${esc(f.id)}" ${f.ativa !== false ? 'checked' : ''}> ${esc(f.nome || f.id)}</label>`).join('') : '<p class="hint">As fontes aparecem aqui depois da primeira execução do robô.</p>'}</div>
   <div class="crmbloco"><h4>Alertas</h4><label class="chk"><input type="checkbox" checked disabled> Dentro do app (aba Alertas)</label><label class="chk"><input type="checkbox" disabled> E-mail (Entrega 3: depende de uma conta de envio)</label><label class="chk"><input type="checkbox" disabled> WhatsApp (depende da API oficial da Meta)</label></div>`;
@@ -238,7 +254,7 @@ async function detalhe(eid) {
   $('rdDlgBody').innerHTML = `<div class="crmleadf">
     <div class="crmbloco"><h4>Empresa</h4><dl class="rddl">
       <dt>Razão social</dt><dd>${val(e.razao)}</dd><dt>Nome fantasia</dt><dd>${val(e.fantasia)}</dd><dt>CNPJ</dt><dd>${e.cnpj ? fmtCnpj(e.cnpj) : PEND}</dd>
-      <dt>Município</dt><dd>${e.municipio ? esc(e.municipio) + ' – MT' : PEND}</dd><dt>Endereço</dt><dd>${val(e.endereco)}</dd>
+      <dt>Município</dt><dd>${e.municipio ? esc(e.municipio) + ' – ' + ufDe(e) : PEND}</dd><dt>Endereço</dt><dd>${val(e.endereco)}</dd>
       <dt>Coordenadas</dt><dd>${e.lat ? `${e.lat}, ${e.lng} <small>(${e.coordFonte === 'anp' ? 'base da ANP' : e.coordFonte === 'documento' ? 'documento' : 'centro do município, aproximado'})</small>` : PEND}</dd>
       <dt>Categoria</dt><dd>${esc(CATEGORIAS[e.categoria] || '')}</dd><dt>Situação</dt><dd>${esc(SITUACOES[e.situacao] || '')}</dd>
       <dt>Confiança</dt><dd><span class="pill rdconf ${esc(e.confianca || '')}">${esc(CONFIANCA[e.confianca] || '')}</span></dd>
@@ -263,7 +279,7 @@ async function detalhe(eid) {
   bc.onclick = async () => {
     bc.disabled = true;
     try {
-      const ref = await F.addDoc(F.collection(db, 'crm'), { tipo: 'lead', empresa: e.razao || e.fantasia || '', cnpj: dig(e.cnpj), cidade: e.municipio ? e.municipio + ' - MT' : '', etapa: 'lead', origem: 'Prospecção ativa', contato: '', fone: '', email: '', contatos: [], prox: '', motivo: '', obs: `Radar de Novos Postos: ${EVENTOS[e.ultimoEvento] || ''} (${fmtD(e.ultimaData)})`, radar: eid, notas: [], owner: perfil.uid, vendedor: perfil.nome || perfil.email || '', criado: F.serverTimestamp() });
+      const ref = await F.addDoc(F.collection(db, 'crm'), { tipo: 'lead', empresa: e.razao || e.fantasia || '', cnpj: dig(e.cnpj), cidade: e.municipio ? e.municipio + ' - ' + ufDe(e) : '', etapa: 'lead', origem: 'Prospecção ativa', contato: '', fone: '', email: '', contatos: [], prox: '', motivo: '', obs: `Radar de Novos Postos: ${EVENTOS[e.ultimoEvento] || ''} (${fmtD(e.ultimaData)})`, radar: eid, notas: [], owner: perfil.uid, vendedor: perfil.nome || perfil.email || '', criado: F.serverTimestamp() });
       await F.updateDoc(F.doc(db, 'radar_empreendimentos', eid), { leadId: ref.id }).catch(() => {});
       $('rdDlgMsg').textContent = 'Lead criado no CRM.'; bc.textContent = 'Já está no CRM';
     } catch (x) { bc.disabled = false; $('rdDlgMsg').textContent = 'Não consegui criar o lead: ' + x.message; }
