@@ -86,6 +86,7 @@ label.mesmo input{width:auto;margin:0}
 .cnpjrow input{flex:1}
 button.busca{padding:8px 14px;font-size:14px;background:var(--surface);color:var(--purple);flex:none}
 button.busca:disabled{opacity:.6;cursor:progress}
+.endestab{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.endestab .hint{flex:1;min-width:200px}.endestab .hint.erro{color:var(--danger)}
 .err{color:var(--danger);font-size:12px;font-weight:500;min-height:0}
 .radios{display:flex;gap:16px;padding-top:6px;font-size:15px;font-weight:500;color:var(--fg)}
 .radios label{flex-direction:row;align-items:center;gap:6px;font-size:15px;color:var(--fg)}
@@ -337,7 +338,10 @@ async function pegaIe(d,uf,vivo){
   }
   return null;
 }
-async function consultarCnpj(d){
+// Guarda a consulta de cada CNPJ: o botão "Usar endereço do estabelecimento" reaproveita sem consultar de novo
+const CNPJ_CACHE={};
+function consultarCnpj(d){ if(!CNPJ_CACHE[d]) CNPJ_CACHE[d]=consultarCnpjBase(d).then(j=>{ if(!j) delete CNPJ_CACHE[d]; return j },e=>{ delete CNPJ_CACHE[d]; throw e }); return CNPJ_CACHE[d] }
+async function consultarCnpjBase(d){
   const [ba,ws]=await Promise.allSettled([pegaJson('https://brasilapi.com.br/api/cnpj/v1/'+d), pegaJson('https://publica.cnpj.ws/cnpj/'+d)]);
   const B=ba.status==='fulfilled'&&!ba.value.naoAchou?ba.value:null, W=ws.status==='fulfilled'&&!ws.value.naoAchou?ws.value:null;
   let base=B;
@@ -525,6 +529,66 @@ function problemaCert(){
   }
   return '';
 }
+/* Responsável legal: botão que copia o endereço do estabelecimento (CNPJ da proposta, consultado na Receita) */
+const rotulo=l=>(l.querySelector('span')?.textContent||'').replace(/\s*\*\s*$/,'').trim().toLowerCase();
+function camposEndereco(sec){
+  const r={};
+  sec.querySelectorAll('.body label').forEach(l=>{
+    const inp=l.querySelector('input:not([type=radio]):not([type=file]):not([type=checkbox]),select,textarea'); if(!inp||l.hidden) return;
+    const t=rotulo(l), tipo=inp.dataset.v;
+    if(tipo==='cep'||/\bcep\b/.test(t)) r.cep=r.cep||inp;
+    else if(/complemento/.test(t)) r.complemento=r.complemento||inp;
+    else if(/n[uú]mero|^n[º°o]\.?$/.test(t)) r.numero=r.numero||inp;
+    else if(/bairro/.test(t)) r.bairro=r.bairro||inp;
+    else if(/cidade|munic/.test(t)) r.cidade=r.cidade||inp;
+    else if(/^(estado|uf)\b/.test(t)&&!/civil/.test(t)) r.uf=r.uf||inp;
+    else if(/endere|logradouro|\brua\b|resid/.test(t)&&!/e-?mail/.test(t)&&tipo!=='email') r.rua=r.rua||inp;
+  });
+  return r;
+}
+function enderecoDoFormulario(){
+  // Sem resposta da Receita: usa o endereço que já está na seção da empresa
+  const v=k=>tem(k)&&f.elements[k].value?String(f.elements[k].value).trim():'';
+  const e={rua:v('logradouro'), numero:v('numero'), complemento:v('complemento'), bairro:v('bairro'), cidade:v('cidade'), uf:v('uf').toUpperCase(), cep:v('cep')};
+  return e.rua||e.cidade?e:null;
+}
+function ligarEnderecoEstab(){
+  const s=secResp(); if(!s) return;
+  const sec=[...f.querySelectorAll('#secoes .sec')].find(x=>x.querySelector('h2')?.textContent===s.titulo); if(!sec||sec.querySelector('.endestab')) return;
+  const C=camposEndereco(sec); if(!C.rua&&!C.cidade) return;
+  const primeiro=[C.cep,C.rua,C.numero,C.complemento,C.bairro,C.cidade,C.uf].filter(Boolean).map(x=>x.closest('.body>label,.body>.linha')).filter(Boolean)
+    .sort((a,b)=>a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING?-1:1)[0]; if(!primeiro) return;
+  const box=document.createElement('div'); box.className='endestab full';
+  box.innerHTML='<button type="button" class="busca">Usar endereço do estabelecimento</button><span class="hint" role="status"></span>';
+  primeiro.before(box);
+  const bt=box.querySelector('button'), msg=box.querySelector('.hint'), aviso=(t,bad)=>{ msg.textContent=t||''; msg.classList.toggle('erro',!!bad) };
+  bt.addEventListener('click',async()=>{
+    const d=dig((tem('cnpj')&&f.elements.cnpj.value)||L.c);
+    let e=null, razao='';
+    if(cnpjOk(d)){
+      bt.disabled=true; aviso('Buscando o endereço do CNPJ '+fmtCnpj(d)+' na Receita…');
+      try{ const j=await consultarCnpj(d);
+        if(j&&!j.naoAchou){ razao=j.razao_social||''; e={rua:[j.descricao_tipo_de_logradouro,j.logradouro].filter(Boolean).join(' '), numero:j.numero, complemento:j.complemento, bairro:j.bairro, cidade:j.municipio, uf:j.uf, cep:j.cep&&String(j.cep).padStart(8,'0').replace(/^(\d{5})(\d{3})$/,'$1-$2')} }
+      }catch(_){}
+      bt.disabled=false;
+    }
+    if(!e) e=enderecoDoFormulario();
+    if(!e){ aviso(cnpjOk(d)?'Não foi possível buscar o endereço agora. Preencha à mão.':'Informe o CNPJ do estabelecimento para buscar o endereço.',true); return }
+    const cap=x=>/[a-zà-ú]/.test(x)?x:String(x).toLowerCase().replace(/(^|[\s\/(-])(\S)/g,(m,a,b)=>a+b.toUpperCase()).replace(/\s(D[aeo]s?|E|De)\s/g,m=>m.toLowerCase());
+    const num=String(e.numero||'').trim(), semNum=!num||/^s\/?n$/i.test(num)?'S/N':num;
+    const val={rua:e.rua&&cap(e.rua), numero:semNum, complemento:e.complemento&&cap(String(e.complemento).trim()), bairro:e.bairro&&cap(e.bairro), cidade:e.cidade&&((acharCidade(e.cidade,String(e.uf||'').toUpperCase())||{}).n||cap(e.cidade)), uf:e.uf&&String(e.uf).toUpperCase(), cep:e.cep};
+    // Sem campo de número (ou de cidade) separado, junta tudo no campo de endereço
+    if(val.rua && !C.numero) val.rua+=', '+semNum;
+    if(val.rua && !C.complemento && val.complemento) val.rua+=', '+val.complemento;
+    if(val.rua && !C.bairro && val.bairro) val.rua+=', '+val.bairro;
+    if(val.rua && !C.cidade && val.cidade) val.rua+=', '+val.cidade+(val.uf&&!C.uf?'-'+val.uf:'');
+    let n=0;
+    Object.entries(C).forEach(([k,inp])=>{ const v=val[k]; if(inp.tagName==='SELECT'){ const op=v&&[...inp.options].find(o=>o.value&&(o.value.toUpperCase()===String(v).toUpperCase()||o.text.toUpperCase()===String(v).toUpperCase())); inp.value=op?op.value:''; }
+      else inp.value=v||''; if(inp.value) n++; if(inp.classList.contains('bad')||inp.value) valida(inp) });
+    f.dispatchEvent(new Event('input'));
+    aviso(n?'Endereço '+(razao?'de '+nomeBonito(razao)+' ':'do estabelecimento ')+'preenchido. Confira e ajuste se o responsável morar em outro lugar.':'Não encontramos o endereço deste CNPJ. Preencha à mão.',!n);
+  });
+}
 function ligarAuto(){
   // CRC: link para a consulta oficial do CFC (não há busca automática); copia o nome do contador para facilitar
   f.querySelectorAll('#secoes label').forEach(l=>{
@@ -533,6 +597,7 @@ function ligarAuto(){
     a.addEventListener('click',()=>{ const sec=l.closest('.sec'); const nome=[...sec.querySelectorAll('label')].find(x=>/nome/i.test(x.textContent)&&/contador|respons/i.test(x.textContent))?.querySelector('input')?.value; if(nome&&navigator.clipboard) navigator.clipboard.writeText(nome).catch(()=>{}); });
     const h=document.createElement('small'); h.className='cfchint'; h.textContent='Busque pelo nome do contador (já copiado) e cole o número aqui.'; l.append(a,h);
   });
+  ligarEnderecoEstab();
   f.querySelectorAll('[data-v=cnpj]').forEach(el=>{ el.addEventListener('input',()=>buscarCnpj(el)); el.addEventListener('blur',()=>buscarCnpj(el)); el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); buscarCnpj(el,true) } }); if(el.value && el.name==='cnpj') buscarCnpj(el) });
   // Campos que só aparecem quando o Sim/Não de cima é Sim
   f.querySelectorAll('[data-abre]').forEach(lab=>{
