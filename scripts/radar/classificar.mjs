@@ -24,8 +24,8 @@ export const cnpjValido = c => {
 // Coordenadas em graus/minutos/segundos ("15°4’1.20”S e 57° 10’43.10”O") ou decimais negativas
 function coordenadas(t) {
   const dms = [...t.matchAll(/(\d{1,2})\s*[°º]\s*(\d{1,2})\s*['’′]\s*([\d.,]+)\s*(?:["”″]|['’′]{2})?\s*([NSOWL])/gi)].map(m => { const v = +m[1] + +m[2] / 60 + parseFloat(m[3].replace(',', '.')) / 3600; return /[SOW]/i.test(m[4]) ? -v : v; });
-  if (dms.length >= 2) { const [a, b] = dms; const lat = Math.abs(a) < Math.abs(b) ? a : b, lng = lat === a ? b : a; if (lat < -6 && lat > -19 && lng < -50 && lng > -62) return [+lat.toFixed(6), +lng.toFixed(6)]; }
-  const dec = t.match(/(-1[0-8]|-[6-9])[.,](\d{3,})\D{1,20}(-5\d|-6[01])[.,](\d{3,})/);
+  if (dms.length >= 2) { const [a, b] = dms; const lat = Math.abs(a) < Math.abs(b) ? a : b, lng = lat === a ? b : a; if ((lat < -6 && lat > -19 && lng < -50 && lng > -62) || (lat < -27 && lat > -34 && lng < -49 && lng > -58)) return [+lat.toFixed(6), +lng.toFixed(6)]; }
+  const dec = t.match(/(-1[0-8]|-[6-9]|-2[7-9]|-3[0-3])[.,](\d{3,})\D{1,20}(-49|-5\d|-6[01])[.,](\d{3,})/);
   if (dec) return [+(dec[1] + '.' + dec[2]), +(dec[3] + '.' + dec[4])];
   return null;
 }
@@ -60,11 +60,12 @@ export function avisosDaPagina(texto) {
   return out;
 }
 
-function orgao(t, mun) {
-  const m = t.match(/(Secretaria\s+Municipal[^,.;]{0,90}?)(?:\s*[-–(]\s*[A-Z]{3,8}|,|\.|\s+a\s+|\s+o\s+)/i) || t.match(/Prefeitura\s+Municipal\s+de\s+[A-ZÀ-Úa-zà-ú' ]{3,40}/);
+function orgao(t, mun, uf = 'MT') {
+  const m = t.match(/((?:Secretaria|Departamento|Diretoria)\s+Municipal[^,.;]{0,90}?)(?:\s*[-–(]\s*[A-Z]{3,8}|,|\.|\s+a\s+|\s+o\s+)/i) || t.match(/Prefeitura\s+Municipal\s+de\s+[A-ZÀ-Úa-zà-ú' ]{3,40}/);
   const sig = t.match(/\b(SMADESS?|SMURB|SEMMA|SEMMEA|SEMAM|SMMA|SAMA|SMAMA|SEMAGRI)\b/) || t.match(/(Secretaria\s+(?:Municipal\s+)?de\s+Agricultura[^,.;]{0,60}Meio\s+Ambiente|Prefeitura\s+(?:Municipal\s+)?de\s+[A-ZÀ-Ú][A-Za-zÀ-ú' ]{2,30}|Coordenadoria\s+de\s+Meio\s+Ambiente[^,.;]{0,50})/);
   if (m || sig) return { orgao: limpa((m ? m[1] || m[0] : sig[1]).replace(/\s+-\s*$/, '')) + (mun ? ` (${mun.nome})` : ''), esfera: 'municipal' };
-  if (/\bSEMA\b|Secretaria\s+(de\s+Estado|Estadual)\s+d[eo]\s+Meio\s+Ambiente/i.test(t)) return { orgao: 'SEMA-MT (Secretaria de Estado de Meio Ambiente)', esfera: 'estadual' };
+  if (uf === 'RS' && /\bFEPAM\b|Funda[cç][aã]o\s+Estadual\s+de\s+Prote[cç][aã]o\s+Ambiental/i.test(t)) return { orgao: 'FEPAM (Fundação Estadual de Proteção Ambiental)', esfera: 'estadual' };
+  if (/\bSEMA\b|Secretaria\s+(de\s+Estado|Estadual)\s+d[eo]\s+Meio\s+Ambiente/i.test(t)) return { orgao: `SEMA-${uf} (Secretaria de Estado de Meio Ambiente)`, esfera: 'estadual' };
   return { orgao: '', esfera: '' };
 }
 
@@ -120,12 +121,12 @@ function empresa(t) {
 }
 
 function endereco(t) {
-  const m = t.match(/(?:localizad[oa]|situad[oa]|sito|sita|instalad[oa]|endere[cç]o:?|a\s+ser\s+localizad[oa])\s*(?:na|no|à|a|em)?\s*:?\s*((?:Av|Avenida|Rua|R\.|Rod|Rodovia|BR|MT|Estrada|Travessa|Tv|Alameda|Lote|Quadra|Fazenda|S[ií]tio|Ent\.)[^]{5,170}?)(?=,?\s*(?:no\s+)?munic[ií]pio|\s*-\s*[A-ZÀ-Ú][\wÀ-ú' ]+\/?\s*-?\s*MT\b|,\s*CEP|\.\s|,?\s*coordenadas|$)/i);
+  const m = t.match(/(?:localizad[oa]|situad[oa]|sito|sita|instalad[oa]|endere[cç]o:?|a\s+ser\s+localizad[oa])\s*(?:na|no|à|a|em)?\s*:?\s*((?:Av|Avenida|Rua|R\.|Rod|Rodovia|BR|MT|RS|ERS|Estrada|Travessa|Tv|Alameda|Lote|Quadra|Fazenda|S[ií]tio|Ent\.)[^]{5,170}?)(?=,?\s*(?:no\s+)?munic[ií]pio|\s*-\s*[A-ZÀ-Ú][\wÀ-ú' ]+\/?\s*-?\s*(?:MT|RS)\b|,\s*CEP|\.\s|,?\s*coordenadas|$)/i);
   return m ? limpa(m[1]).replace(/[,.\s]+$/, '') : '';
 }
 
 // Um aviso de requerimento (o empreendedor publica que pediu a licença)
-export function analisarAviso(texto, municipios) {
+export function analisarAviso(texto, municipios, uf = municipios.uf || 'MT') {
   if (!POSTO.test(texto) || NAO_POSTO.test(texto.slice(0, 400))) return null;
   if (!REQUER.test(texto)) return null;
   const mun = municipios.achar(texto);
@@ -133,7 +134,7 @@ export function analisarAviso(texto, municipios) {
   const { razao, fantasia } = empresa(texto);
   const proc = (texto.match(/processo\s*(?:SEMA\s*)?(?:n[º°o.]*|n[uú]mero)?\s*:?\s*(\d{1,7}\s*\/\s*\d{4})/i) || [])[1];
   const { evento, categoria, agua } = INDEFERE.test(texto) ? { evento: 'indeferido', categoria: 'outro', agua: false } : licencasPedidas(texto);
-  const og = orgao(texto, mun);
+  const og = orgao(texto, mun, uf);
   const coord = coordenadas(texto);
   const forte = /com[eé]rcio\s+(a\s+)?varej|posto\s+(de\s+)?combust|posto\s+revendedor/i.test(texto);
   let confianca = 'possivel';
@@ -176,4 +177,39 @@ export function analisarEmitidas(texto, municipios) {
     });
   }
   return out;
+}
+
+// Licença emitida publicada como matéria própria (prefeituras do RS no Diário dos Municípios, FEPAM no DOE-RS):
+// "LICENÇA DE INSTALAÇÃO Nº 12/2026 ... concede a presente licença a FULANO LTDA, CNPJ ..., para a atividade de
+// comércio varejista de combustíveis". Só vale se o texto disser que a licença foi emitida e a atividade for de posto.
+const TIPO_LIC = [['LP', /licen[cç]a\s+pr[eé]via|\bLP\s*(?:n[º°.]|\d)/i], ['LI', /licen[cç]a\s+(?:de\s+)?instala[cç][aã]o|\bLI\s*(?:n[º°.]|\d)/i], ['LO', /licen[cç]a\s+(?:de\s+)?opera[cç][aã]o|\bLOC?\s*(?:n[º°.]|\d)/i]];
+const EMITE = /\b(expede|concede|emite|outorga|licencia|fica\s+licenciad|presente\s+licen[cç]a|v[aá]lid[ao]\s+at[eé]|prazo\s+de\s+validade|validade\s*:|com\s+base\s+nos\s+autos)/i;
+export function analisarLicenca(texto, municipios, { titulo = '', uf = municipios.uf || 'MT', entidade = '' } = {}) {
+  const cab = titulo + ' ' + texto.slice(0, 700);
+  if (!POSTO.test(texto) || NAO_POSTO.test(titulo) || !EMITE.test(texto)) return null;
+  const tipos = TIPO_LIC.filter(([, re]) => re.test(titulo)).map(([t]) => t);
+  if (!tipos.length) TIPO_LIC.forEach(([t, re]) => { if (re.test(texto.slice(0, 700))) tipos.push(t); });
+  if (!tipos.length) return null;
+  if (/renova/i.test(cab)) tipos.push('renov');
+  const mun = (entidade && municipios.achar(entidade + ' ' + uf)) || municipios.achar(texto);
+  const cnpjs = [...texto.matchAll(/\b\d{2}\.?\d{3}\.?\d{3}\s?\/\s?\d{4}\s?-?\s?\d{2}\b/g)].map(m => m[0].replace(/\D/g, '')).filter(cnpjValido);
+  const rot = texto.match(/(?:empreendedor|raz[aã]o\s+social|interessad[oa]|requerente|titular|nome)\s*:\s*([^:\n]{3,120}?)\s*(?:[,;–-]\s*)?(?:CNPJ|CPF|C\.N\.P\.J|endere[cç]o|ativ)/i);
+  const { razao: r2, fantasia } = empresa(texto.replace(/^[^]*?\b(?:a|à)\s+(?=[A-ZÀ-Ú][A-ZÀ-Ú0-9 .&-]{3,}\s*,?\s*(?:inscrit|CNPJ))/, ''));
+  const razao = limpa(rot ? rot[1] : r2).replace(/^(a\s+empresa|empresa)\s+/i, '');
+  const numero = (cab.match(/\b(?:L[PIO]C?|licen[cç]a[^\dº°]{0,40})\s*n?[º°.]*\s*(\d{1,6}\s*\/\s*\d{2,4})/i) || [])[1];
+  const proc = (texto.match(/processo\s*(?:administrativo\s*)?(?:n[º°o.]*|n[uú]mero)?\s*:?\s*([\d.\-]{3,20}\s*\/\s*\d{2,4}(?:-\d)?)/i) || [])[1];
+  const t0 = tipos.find(x => x !== 'renov');
+  const evento = t0 === 'LP' ? 'emitida_lp' : t0 === 'LI' ? 'emitida_li' : 'emitida_lo';
+  const proprio = /ponto\s+de\s+abastecimento|consumo\s+pr[oó]prio|abastecimento\s+pr[oó]prio|tanques?\s+a[eé]reos?/i.test(texto) && !/com[eé]rcio\s+(a\s+)?varej/i.test(texto);
+  const categoria = proprio ? 'ponto_proprio' : tipos.includes('renov') ? 'renovacao' : (t0 === 'LP' || t0 === 'LI') ? (/amplia/i.test(cab) ? 'ampliacao' : /reforma|readequa/i.test(cab) ? 'reforma' : 'novo') : 'outro';
+  const og = orgao(entidade + ' ' + texto.slice(0, 900), mun, uf);
+  const forte = /com[eé]rcio\s+(a\s+)?varej|posto\s+(de\s+)?combust|posto\s+revendedor|posto\s+de\s+gasolina/i.test(texto);
+  const legivel = razao.length >= 4 && razao.length < 140;
+  return {
+    tipoDoc: 'licenca_emitida', evento, categoria, situacao: 'aprovado', razao: legivel ? razao : '', fantasia, cnpj: cnpjs[0] || '', municipio: mun?.nome || '', ibge: mun?.ibge || '',
+    endereco: endereco(texto), coord: coordenadas(texto), processo: limpa(proc || '').replace(/\s/g, ''), licencas: numero ? [{ tipo: t0, numero: numero.replace(/\s/g, '') }] : [],
+    atividade: (texto.match(/(com[eé]rcio\s+(?:a\s+)?varej[^.;\n]{0,120}|posto\s+de\s+(?:combust|abastecimento)[^.;\n]{0,100})/i) || [])[1] || '',
+    orgao: og.orgao, esfera: og.esfera || (entidade ? 'municipal' : ''),
+    confianca: forte && legivel && (cnpjs.length || numero) && !proprio ? 'confirmado' : forte ? 'possivel' : 'analise', trecho: limpa(texto).slice(0, 1500)
+  };
 }

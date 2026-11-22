@@ -1,4 +1,4 @@
-// Robô do Radar de Novos Postos – MT. Roda no GitHub Actions (.github/workflows/radar-postos.yml).
+// Robô do Radar de Novos Postos (MT e RS). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
 // 1) decide se é hora de pesquisar (frequência e "Pesquisar agora" ficam em radar_config/geral);
 // 2) coleta as fontes integradas; 3) separa e classifica os avisos; 4) cruza com a ANP;
 // 5) deduplica e grava empreendimentos, processos, documentos, histórico, alertas e a execução.
@@ -6,9 +6,11 @@
 // de verdade, mas não grava nada no Firestore; o resultado vai para radar-saida/ (artefato da execução).
 import { mkdir, writeFile } from 'node:fs/promises';
 import { firestore } from './firestore.mjs';
-import { municipiosMT } from './municipios.mjs';
-import { avisosDaPagina, analisarAviso, analisarEmitidas, hash, slug } from './classificar.mjs';
+import { municipiosUF } from './municipios.mjs';
+import { avisosDaPagina, analisarAviso, analisarEmitidas, analisarLicenca, hash, slug } from './classificar.mjs';
 import * as iomat from './fontes/iomat.mjs';
+import * as famurs from './fontes/famurs.mjs';
+import * as doers from './fontes/doers.mjs';
 import * as anpFonte from './fontes/anp.mjs';
 
 const inicio = new Date();
@@ -18,6 +20,9 @@ const log = (...a) => console.log(...a);
 const teste = process.env.RADAR_TESTE === 'true';
 const db = teste ? null : firestore();
 const gatilhoBase = process.env.RADAR_GATILHO || 'agendado';
+// Fontes de diário oficial integradas, por Estado. RADAR_FONTES (ex.: "famurs,doe-rs") limita a rodada.
+const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
+const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL' };
 
 const PRIOR_CAT = ['novo', 'tanques', 'ampliacao', 'reforma', 'renovacao', 'titularidade', 'ponto_proprio', 'outro'];
 const PRIOR_CONF = ['confirmado', 'possivel', 'analise', 'nao_confirmado'];
@@ -32,7 +37,8 @@ if (db) {
   for (const f of await db.lista('radar_fontes')) fontesDb[f.id] = f;
   const ped = config.pedido && !config.pedido.atendido;
   const freqH = Number(config.frequenciaHoras) || 24;
-  const ultimaOk = fontesDb.iomat?.ultimaOk ? new Date(fontesDb.iomat.ultimaOk).getTime() : 0;
+  // a fonte mais atrasada manda: uma fonte nova (sem coleta) faz a rodada acontecer já
+  const ultimaOk = Math.min(...FONTES.map(f => fontesDb[f.mod.info.id]?.ultimaOk ? new Date(fontesDb[f.mod.info.id].ultimaOk).getTime() : 0));
   if (ped) { gatilho = 'manual'; pedidoPor = config.pedido.por || ''; }
   else if (gatilhoBase === 'agendado' && Date.now() - ultimaOk < freqH * 36e5 - 10 * 6e4) { log(`Última pesquisa completa há ${((Date.now() - ultimaOk) / 36e5).toFixed(1)} h (frequência: ${freqH} h). Nada a fazer agora.`); process.exit(0); }
 } else {
@@ -42,25 +48,45 @@ if (db) {
 
 // ---------- 2) coleta ----------
 const ate = dia(inicio);
-const cursor = fontesDb.iomat?.cursor;
-const de = process.env.RADAR_DESDE || (cursor ? somaDias(cursor, -5) : somaDias(ate, -(Number(process.env.RADAR_DIAS) || 365)));
-log(`Período pesquisado: ${de} a ${ate} · gatilho: ${gatilho}`);
+const periodo = id => process.env.RADAR_DESDE || (fontesDb[id]?.cursor ? somaDias(fontesDb[id].cursor, -5) : somaDias(ate, -(Number(process.env.RADAR_DIAS) || 365)));
+const de = FONTES.map(f => periodo(f.mod.info.id)).sort()[0] || ate;
+log(`Gatilho: ${gatilho} · fontes: ${FONTES.map(f => `${f.mod.info.id} (${periodo(f.mod.info.id)} a ${ate})`).join(', ')}`);
 
-const [mun, anp] = await Promise.all([municipiosMT(), anpFonte.carregarANP()]);
-log(`Municípios de MT: ${mun.lista.length} · postos de MT na base da ANP: ${anp.total}`);
+const UFS_ATIVAS = [...new Set(FONTES.map(f => f.uf))];
+const mun = {}, anp = {};
+for (const uf of UFS_ATIVAS) {
+  [mun[uf], anp[uf]] = await Promise.all([municipiosUF(uf), anpFonte.carregarANP(uf)]);
+  log(`Municípios de ${uf}: ${mun[uf].lista.length} · postos de ${uf} na base da ANP: ${anp[uf].total}`);
+}
 
 const porFonte = {}, avisos = [];
-try {
-  const { paginas, consultas } = await iomat.coletar(de, ate, log);
-  let n = 0;
-  for (const pg of paginas) for (const a of avisosDaPagina(pg.texto)) {
-    const rs = a.tipo === 'emitidas' ? analisarEmitidas(a.texto, mun) : [analisarAviso(a.texto, mun)].filter(Boolean);
-    for (const r of rs) { avisos.push({ ...r, fonte: 'iomat', fonteNome: iomat.info.nome, dataPublicacao: pg.data, url: pg.url, pdf: pg.pdf, local: `Edição ${pg.diario}, página ${pg.pagina}`, docId: `iomat-${pg.diario}-${pg.pagina}-${hash(r.trecho)}` }); n++; }
-  }
-  porFonte.iomat = { ok: true, consultas, paginas: paginas.length, docs: n };
-  log(`IOMAT: ${consultas} consultas, ${paginas.length} páginas, ${n} avisos de posto`);
-} catch (e) { porFonte.iomat = { ok: false, erro: e.message }; console.error(e); }
-porFonte.anp = { ok: true, docs: 0, postosMT: anp.total };
+for (const { mod, uf } of FONTES) {
+  const id = mod.info.id, deF = periodo(id);
+  try {
+    let n = 0, consultas = 0, lidos = 0;
+    if (id === 'iomat') {
+      const r = await mod.coletar(deF, ate, log); consultas = r.consultas; lidos = r.paginas.length;
+      for (const pg of r.paginas) for (const a of avisosDaPagina(pg.texto)) {
+        const rs = a.tipo === 'emitidas' ? analisarEmitidas(a.texto, mun.MT) : [analisarAviso(a.texto, mun.MT, 'MT')].filter(Boolean);
+        for (const x of rs) { avisos.push({ ...x, uf, fonte: id, fonteNome: mod.info.nome, dataPublicacao: pg.data, url: pg.url, pdf: pg.pdf, local: `Edição ${pg.diario}, página ${pg.pagina}`, docId: `iomat-${pg.diario}-${pg.pagina}-${hash(x.trecho)}` }); n++; }
+      }
+    } else {
+      // uma matéria por documento: licença emitida (prefeitura/FEPAM) ou aviso de requerimento
+      const r = await mod.coletar(deF, ate, log); consultas = r.consultas; lidos = r.docs.length;
+      for (const d of r.docs) {
+        const lic = analisarLicenca(d.texto, mun[uf], { titulo: d.titulo, uf, entidade: d.entidade });
+        const rs = lic ? [lic] : avisosDaPagina(d.texto).map(a => analisarAviso(a.texto, mun[uf], uf)).filter(Boolean);
+        for (const x of rs) {
+          if (!x.municipio && d.entidade) { const m = mun[uf].achar(d.entidade + ' ' + uf); if (m) { x.municipio = m.nome; x.ibge = m.ibge; } }
+          avisos.push({ ...x, uf, fonte: id, fonteNome: mod.info.nome, dataPublicacao: d.data, url: d.url, pdf: d.pdf, local: d.local, docId: `${id}-${d.id}-${hash(x.trecho)}` }); n++;
+        }
+      }
+    }
+    porFonte[id] = { ok: true, uf, consultas, lidos, docs: n, de: deF };
+    log(`${mod.info.nome}: ${consultas} consultas, ${lidos} páginas/matérias lidas, ${n} documentos de posto`);
+  } catch (e) { porFonte[id] = { ok: false, uf, erro: e.message, de: deF }; console.error(e); }
+}
+for (const uf of UFS_ATIVAS) porFonte['anp-' + uf] = { ok: true, uf, docs: 0, postos: anp[uf].total };
 
 // ---------- 3) deduplicação dos avisos (a mesma página aparece em várias buscas) ----------
 const unicos = [...new Map(avisos.map(a => [a.docId, a])).values()];
@@ -76,13 +102,15 @@ const recente = somaDias(ate, -10);
 for (const a of unicos.sort((x, y) => String(x.dataPublicacao).localeCompare(String(y.dataPublicacao)))) {
   const campoFonte = {};
   // ANP: confirma o CNPJ, ou acha pelo nome + município (marcado como não confirmado)
-  let ap = a.cnpj ? anp.cnpj(a.cnpj) : null;
-  if (!a.cnpj && a.razao && a.municipio) { const m = anp.nome(a.razao, a.municipio); if (m) { a.cnpj = m.cnpj; campoFonte.cnpj = 'anp_nome'; ap = m; } }
+  const A = anp[a.uf], M = mun[a.uf];
+  let ap = a.cnpj ? A.cnpj(a.cnpj) : null;
+  if (!a.cnpj && a.razao && a.municipio) { const m = A.nome(a.razao, a.municipio); if (m) { a.cnpj = m.cnpj; campoFonte.cnpj = 'anp_nome'; ap = m; } }
   let eid = a.cnpj || porNomeMun.get(slug(a.razao) + '|' + (a.ibge || ''));
-  if (!eid) eid = a.razao ? `n-${slug(a.razao)}-${a.ibge || 'mt'}` : `d-${a.docId}`;
+  if (!eid) eid = a.razao ? `n-${slug(a.razao)}-${a.ibge || a.uf.toLowerCase()}` : `d-${a.docId}`;
   if (a.razao) porNomeMun.set(slug(a.razao) + '|' + (a.ibge || ''), eid);
   const novoEmp = !emps.has(eid);
-  const e = emps.get(eid) || { id: eid, identificado: inicio, eventos: [], docs: [], processos: [] };
+  const e = emps.get(eid) || { id: eid, uf: a.uf, identificado: inicio, eventos: [], docs: [], processos: [] };
+  if (!e.uf) e.uf = a.uf;
   const docNovo = !docsExist.has(a.docId);
 
   // campos: o que já existe só é trocado por um valor vindo de documento (nunca apagado)
@@ -91,7 +119,7 @@ for (const a of unicos.sort((x, y) => String(x.dataPublicacao).localeCompare(Str
   if (ap) { e.anp = { bandeira: ap.b || '', autorizacao: ap.a || '', vinculada: ap.dv || '' }; if (!e.razao) { e.razao = ap.r; e.campoFonte = { ...(e.campoFonte || {}), razao: 'anp' }; } }
   if (a.coord && (!e.lat || e.coordFonte === 'municipio')) { [e.lat, e.lng] = a.coord; e.coordFonte = 'documento'; }
   if (ap?.la && ap?.lo && (!e.lat || e.coordFonte === 'municipio')) { e.lat = ap.la; e.lng = ap.lo; e.coordFonte = 'anp'; }
-  if (!e.lat && a.ibge) { const m = mun.lista.find(x => x.ibge === a.ibge); if (m?.centro) { [e.lat, e.lng] = m.centro; e.coordFonte = 'municipio'; } }
+  if (!e.lat && a.ibge) { const m = M.lista.find(x => x.ibge === a.ibge); if (m?.centro) { [e.lat, e.lng] = m.centro; e.coordFonte = 'municipio'; } }
 
   const antes = { situacao: e.situacao, categoria: e.categoria };
   if (!e.eventos.includes(a.evento)) e.eventos.push(a.evento);
@@ -110,8 +138,8 @@ for (const a of unicos.sort((x, y) => String(x.dataPublicacao).localeCompare(Str
   e.pendentes = ['razao', 'cnpj', 'municipio', 'endereco'].filter(k => !e[k]);
 
   // processo: pelo número (órgão + número) ou, sem número, pelo evento na data
-  const pid = a.processo ? `${a.esfera === 'municipal' ? 'mun-' + (a.ibge || 'mt') : 'sema'}-${a.processo.replace(/\D+/g, '-')}` : `${eid}-${a.evento}-${a.dataPublicacao}`;
-  const p = processos.get(pid) || { id: pid, eid, numero: a.processo || '', orgao: a.orgao || '', esfera: a.esfera || '', eventos: [], docs: [], licencas: [], dataAbertura: '' };
+  const pid = a.processo ? `${a.esfera === 'municipal' ? 'mun-' + (a.ibge || a.uf.toLowerCase()) : a.uf === 'MT' ? 'sema' : 'est-' + a.uf.toLowerCase()}-${a.processo.replace(/\D+/g, '-')}` : `${eid}-${a.evento}-${a.dataPublicacao}`;
+  const p = processos.get(pid) || { id: pid, eid, uf: a.uf, numero: a.processo || '', orgao: a.orgao || '', esfera: a.esfera || '', eventos: [], docs: [], licencas: [], dataAbertura: '' };
   if (!p.eventos.some(x => x.evento === a.evento && x.data === a.dataPublicacao)) p.eventos.push({ evento: a.evento, data: a.dataPublicacao, doc: a.docId });
   if (!p.docs.includes(a.docId)) p.docs.push(a.docId);
   (a.licencas || []).forEach(l => { if (!p.licencas.some(x => x.numero === l.numero)) p.licencas.push(l); });
@@ -125,13 +153,13 @@ for (const a of unicos.sort((x, y) => String(x.dataPublicacao).localeCompare(Str
 
   if (docNovo) {
     docsExist.add(a.docId);
-    novosDocs.push({ id: a.docId, eid, pid, fonte: a.fonte, fonteNome: a.fonteNome, url: a.url, pdf: a.pdf, local: a.local, titulo: `${NOMES_EVENTO[a.evento] || 'Aviso'} · ${a.razao || 'empresa não identificada'}`, dataPublicacao: a.dataPublicacao, coletado: inicio, tipoDoc: a.tipoDoc, evento: a.evento, categoria: a.categoria, confianca: a.confianca, municipio: a.municipio || '', razao: a.razao || '', cnpj: a.cnpj || '', processo: a.processo || '', orgao: a.orgao || '', atividade: a.atividade || '', trecho: a.trecho });
-    historico.push({ eid, pid, tipo: novoEmp ? 'identificado' : 'novo_documento', descricao: `${novoEmp ? 'Identificado' : 'Novo documento'}: ${NOMES_EVENTO[a.evento] || a.evento} (${a.fonteNome}, ${a.dataPublicacao.split('-').reverse().join('/')})`, de: antes.situacao || '', para: e.situacao || '', doc: a.docId, por: 'robô', em: inicio });
+    novosDocs.push({ id: a.docId, eid, pid, uf: a.uf, fonte: a.fonte, fonteNome: a.fonteNome, url: a.url, pdf: a.pdf, local: a.local, titulo: `${NOMES_EVENTO[a.evento] || 'Aviso'} · ${a.razao || 'empresa não identificada'}`, dataPublicacao: a.dataPublicacao, coletado: inicio, tipoDoc: a.tipoDoc, evento: a.evento, categoria: a.categoria, confianca: a.confianca, municipio: a.municipio || '', razao: a.razao || '', cnpj: a.cnpj || '', processo: a.processo || '', orgao: a.orgao || '', atividade: a.atividade || '', trecho: a.trecho });
+    historico.push({ eid, pid, uf: a.uf, tipo: novoEmp ? 'identificado' : 'novo_documento', descricao: `${novoEmp ? 'Identificado' : 'Novo documento'}: ${NOMES_EVENTO[a.evento] || a.evento} (${a.fonteNome}, ${a.dataPublicacao.split('-').reverse().join('/')})`, de: antes.situacao || '', para: e.situacao || '', doc: a.docId, por: 'robô', em: inicio });
     const relevante = (novoEmp && ['novo', 'ampliacao', 'tanques', 'reforma'].includes(e.categoria)) || (!novoEmp && RELEVANTES.test(a.evento));
     if (relevante && a.dataPublicacao >= recente) {
-      const tit = novoEmp && e.categoria === 'novo' ? 'NOVO POSTO IDENTIFICADO EM MATO GROSSO' : 'MOVIMENTAÇÃO DE POSTO EM MATO GROSSO';
-      alertas.push({ eid, doc: a.docId, titulo: tit, criado: inicio, lidoPor: [], canal: 'app',
-        texto: [`Empresa: ${e.razao || 'pendente de confirmação'}`, `CNPJ: ${e.cnpj ? e.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') + (e.campoFonte?.cnpj ? ' (pela base da ANP, não confirmado)' : '') : 'pendente de confirmação'}`, `Município: ${e.municipio ? e.municipio + ' – MT' : 'pendente de confirmação'}`, `Processo: ${a.processo || 'pendente de confirmação'}`, `Atividade: ${NOMES_CAT[e.categoria] || ''}`, `Licença: ${NOMES_EVENTO[a.evento] || ''}`, `Fonte: ${a.fonteNome}, ${a.local}`, `Data da identificação: ${inicio.toLocaleString('pt-BR', { timeZone: 'America/Cuiaba' })}`, `Documento: ${a.url}`].join('\n') });
+      const tit = (novoEmp && e.categoria === 'novo' ? 'NOVO POSTO IDENTIFICADO EM ' : 'MOVIMENTAÇÃO DE POSTO EM ') + NOME_UF[a.uf];
+      alertas.push({ eid, uf: a.uf, doc: a.docId, titulo: tit, criado: inicio, lidoPor: [], canal: 'app',
+        texto: [`Empresa: ${e.razao || 'pendente de confirmação'}`, `CNPJ: ${e.cnpj ? e.cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') + (e.campoFonte?.cnpj ? ' (pela base da ANP, não confirmado)' : '') : 'pendente de confirmação'}`, `Município: ${e.municipio ? e.municipio + ' – ' + a.uf : 'pendente de confirmação'}`, `Processo: ${a.processo || 'pendente de confirmação'}`, `Atividade: ${NOMES_CAT[e.categoria] || ''}`, `Licença: ${NOMES_EVENTO[a.evento] || ''}`, `Fonte: ${a.fonteNome}, ${a.local}`, `Data da identificação: ${inicio.toLocaleString('pt-BR', { timeZone: a.uf === 'RS' ? 'America/Sao_Paulo' : 'America/Cuiaba' })}`, `Documento: ${a.url}`].join('\n') });
     }
   }
 }
@@ -140,7 +168,7 @@ const tocados = [...new Set(novosDocs.map(d => d.eid))];
 const okGeral = Object.values(porFonte).every(f => f.ok);
 const exec = { inicio, fim: new Date(), status: okGeral ? 'ok' : 'erro', gatilho, pedidoPor, periodo: { de, ate }, porFonte, documentos: unicos.length, novos: tocados.filter(id => !existentes.some(e => e.id === id)).length, atualizados: tocados.filter(id => existentes.some(e => e.id === id)).length, novosDocumentos: novosDocs.length, alertas: alertas.length, teste: !db };
 exec.duracaoSeg = Math.round((exec.fim - inicio) / 1000);
-porFonte.iomat && (porFonte.iomat.novos = novosDocs.length);
+for (const id of Object.keys(porFonte)) if (porFonte[id].ok && porFonte[id].docs !== undefined) porFonte[id].novos = novosDocs.filter(d => d.fonte === id).length;
 log(`Resultado: ${unicos.length} avisos únicos · ${emps.size} empreendimentos · ${exec.novos} novos · ${exec.atualizados} atualizados · ${novosDocs.length} documentos novos · ${alertas.length} alertas`);
 
 // ---------- 5) gravação ----------
@@ -153,9 +181,11 @@ if (db) {
   const auto = () => inicio.getTime().toString(36) + Math.random().toString(36).slice(2, 8);
   for (const h of historico) itens.push({ caminho: `radar_historico/${auto()}`, dados: h });
   for (const a of alertas) itens.push({ caminho: `radar_alertas/${auto()}`, dados: a });
-  const iom = porFonte.iomat;
-  itens.push({ caminho: 'radar_fontes/iomat', mesclar: true, dados: { ...iomat.info, situacao: iom.ok ? 'integrada' : (fontesDb.iomat?.situacao || 'nao_integrada'), ultimaColeta: inicio, ...(iom.ok ? { ultimaOk: inicio, cursor: ate, ultimoErro: '' } : { ultimoErro: iom.erro }) } });
-  itens.push({ caminho: 'radar_fontes/anp', mesclar: true, dados: { ...anpFonte.info, situacao: 'integrada', ultimaColeta: inicio, ultimaOk: inicio, ultimoErro: '' } });
+  for (const { mod, uf } of FONTES) {
+    const id = mod.info.id, f = porFonte[id];
+    itens.push({ caminho: `radar_fontes/${id}`, mesclar: true, dados: { ...mod.info, uf, situacao: f.ok ? 'integrada' : (fontesDb[id]?.situacao || 'nao_integrada'), ultimaColeta: inicio, ...(f.ok ? { ultimaOk: inicio, cursor: ate, ultimoErro: '' } : { ultimoErro: f.erro }) } });
+  }
+  itens.push({ caminho: 'radar_fontes/anp', mesclar: true, dados: { ...anpFonte.info, ufs: UFS_ATIVAS, situacao: 'integrada', ultimaColeta: inicio, ultimaOk: inicio, ultimoErro: '' } });
   itens.push({ caminho: `radar_execucoes/${auto()}`, dados: exec });
   if (gatilho === 'manual') itens.push({ caminho: 'radar_config/geral', mesclar: true, dados: { pedido: { ...config.pedido, atendido: true, atendidoEm: inicio } } });
   await db.gravar(itens);
@@ -169,6 +199,6 @@ if (db) {
   await writeFile(new URL('alertas.json', saida), JSON.stringify(alertas, null, 1));
   const linhas = [...emps.values()].filter(e => ['novo', 'ampliacao', 'tanques'].includes(e.categoria)).sort((a, b) => b.ultimaData.localeCompare(a.ultimaData));
   log(`\nNovos/ampliações/tanques (${linhas.length}):`);
-  for (const e of linhas) log(`  ${e.ultimaData} · ${NOMES_CAT[e.categoria]} · ${NOMES_EVENTO[e.ultimoEvento]} · ${e.razao || '?'} · ${e.cnpj || 'sem CNPJ'} · ${e.municipio || '?'} · ${e.confianca}${e.anp ? ' · já na ANP' : ''}`);
+  for (const e of linhas) log(`  ${e.uf} · ${e.ultimaData} · ${NOMES_CAT[e.categoria]} · ${NOMES_EVENTO[e.ultimoEvento]} · ${e.razao || '?'} · ${e.cnpj || 'sem CNPJ'} · ${e.municipio || '?'} · ${e.confianca}${e.anp ? ' · já na ANP' : ''}`);
 }
 if (!okGeral) process.exitCode = 1;
