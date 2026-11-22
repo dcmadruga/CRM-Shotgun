@@ -1,0 +1,19 @@
+name: Sonda fontes PR (temporária)
+on:
+  push:
+    branches: [claude/project-thread-wpu830]
+    paths: ['scripts/sonda/**', '.github/workflows/sonda-pr.yml']
+permissions:
+  contents: write
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: node scripts/sonda/pr.mjs
+      - run: |
+          git config user.name "sonda-bot"; git config user.email "sonda-bot@users.noreply.github.com"
+          git add pr-sondas && git commit -m "sonda PR: respostas" && git pull --no-rebase --no-edit && git push
