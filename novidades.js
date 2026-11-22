@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 196, data: '2026-11-22', titulo: 'Postos em construção em Santa Catarina', itens: [
+    'Telemetria → Postos em construção: Santa Catarina (SC) já pode ser escolhida no filtro de Estado.',
+    'Em SC o Radar lê os pedidos de licença ambiental feitos às prefeituras (consulta pública do CIGA SINFAT), as licenças publicadas no Diário Oficial dos Municípios (DOM/SC) e os diários próprios das cidades (Querido Diário).',
+    'Os pedidos aparecem ainda no protocolo, com empresa, CNPJ, endereço, número do processo e fase. Cada registro leva o link da consulta ou da publicação original.'
+  ] },
   { v: 195, data: '2026-11-22', titulo: 'Postos em construção no Rio Grande do Sul', itens: [
     'Telemetria → Postos em construção: o Rio Grande do Sul (RS) já pode ser escolhido no filtro de Estado.',
     'O Radar do RS procura licenças de postos publicadas no Diário Oficial dos Municípios (FAMURS), no Diário Oficial do Estado e nos diários próprios das cidades (Querido Diário), cruza com a base da ANP e mostra empreendimentos, mapa, documentos e alertas, como no MT.',
