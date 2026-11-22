@@ -46,7 +46,8 @@ export function registro(m, municipios) {
   const evento = { LP: 'emitida_lp', LI: 'emitida_li', LO: 'emitida_lo' }[tipo] || 'emitida';
   const proprio = /consumo\s+pr[óo]prio|ponto\s+de\s+abastecimento|frota|uso\s+pr[óo]prio/i.test(atividade);
   const categoria = proprio ? 'ponto_proprio' : renov ? 'renovacao' : ampl ? 'ampliacao' : regul ? 'outro' : (tipo === 'LP' || tipo === 'LI') ? 'novo' : 'outro';
-  const mun = municipios.achar(`municipio de ${munNome} pr`);
+  // o IAT escreve "Itapejara do Oeste" onde o IBGE tem "Itapejara d'Oeste"
+  const mun = municipios.achar(`municipio de ${munNome} pr`) || municipios.achar(`municipio de ${munNome.replace(/\s+d[eo]\s+oeste\b/i, " d'Oeste")} pr`);
   const nomeLic = limpa(`${tipoTxt} - ${sigla} nº ${numero}`);
   return {
     tipoDoc: 'licenca_emitida', evento, categoria, situacao: 'aprovado',
