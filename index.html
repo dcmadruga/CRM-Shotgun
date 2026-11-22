@@ -505,8 +505,12 @@ table.users{min-width:640px}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .teleabas button[aria-selected="true"]{background:#eef1f4;color:#0F1419}:root:not([data-theme="light"]) .tanpkpi.destaque b{color:#FF5A1F}}
 :root[data-theme="dark"] .teleabas button[aria-selected="true"]{background:#eef1f4;color:#0F1419}:root[data-theme="dark"] .tanpkpi.destaque b{color:#FF5A1F}
 /* CRM */
-.crmtools #crmBusca{flex:1;min-width:200px}
+.crmtools #crmBusca{flex:1 1 180px;min-width:160px}
 .crmtools #crmNovo{margin-left:auto}
+.crmtools .crmfil{max-width:190px}.crmtools .crmfil.on{border-color:var(--sg-comercial,#2E6BFF);box-shadow:0 0 0 1px var(--sg-comercial,#2E6BFF) inset}
+.crmfiltro{margin:0;font-size:12.5px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}.crmfiltro[hidden]{display:none}
+.crmfiltro button{font:inherit;font-size:12.5px;border:0;background:none;color:var(--sg-comercial,#2E6BFF);padding:0;cursor:pointer;text-decoration:underline}
+@media (max-width:600px){.crmtools .crmfil{flex:1 1 140px;max-width:none}}
 /* Com login, a Nova proposta sai do menu principal e abre pelo CRM */
 body.fb #tabProp{display:none!important}
 .crmmsg{margin:0;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--accent) 12%,transparent);font-size:13px}
@@ -944,11 +948,13 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div class="tools crmtools">
       <span class="pmodo" role="group" aria-label="Parte do CRM" id="crmNav"><button type="button" data-aba="funil" aria-pressed="true">Funil de vendas</button><button type="button" data-aba="leads" aria-pressed="false">Leads</button><button type="button" data-aba="clientes" aria-pressed="false">Clientes</button></span>
       <input id="crmBusca" hidden autocomplete="off">
-      <label class="chk" hidden><input type="checkbox" id="crmMinhas"> Só os meus</label>
+      <select id="crmUsuario" class="crmfil" aria-label="Filtrar por usuário" title="Filtrar por usuário" hidden><option value="">Todos os usuários</option></select>
+      <select id="crmUf" class="crmfil" aria-label="Filtrar por estado" title="Filtrar por estado"><option value="">Todos os estados</option></select>
       <button type="button" id="crmNovo">+ Novo lead</button>
       <button type="button" class="primary" id="crmProp">+ Nova proposta</button>
     </div>
     <p id="crmMsg" class="crmmsg" role="status" hidden></p>
+    <p id="crmFiltro" class="crmfiltro" hidden></p>
     <div id="crm-funil" class="crmboard"></div>
     <div id="crm-leads" hidden></div>
     <div id="crm-clientes" hidden></div>

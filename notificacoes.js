@@ -3,6 +3,8 @@
 // e as enviadas só para ela (setor 'pessoal' + para = uid). O ADM vê e recebe todas, de todos os setores.
 // Dados: notificacoes/{id} { titulo, texto, setor, para, aba, criado, por, porUid }
 //        notifLidas/{uid}  { ate, ids }  (lidas até a data "ate", mais as lidas uma a uma em "ids")
+// Pedidos de acesso: o ADM recebe um aviso automático para cada cadastro "Aguardando liberação" (lido da coleção usuarios,
+// sem gravar nada); o aviso some quando a pessoa é liberada ou o cadastro é excluído. Tocar abre a tela Usuários.
 // Para criar uma notificação em qualquer parte do app: window.shotgunNotificar({ titulo, texto, setor, para, aba })
 // Regras do Firestore: docs/notificacoes-firestore.rules
 (() => {
@@ -21,7 +23,7 @@
 
   // Setores = módulos principais do TASK (mesma lista da tela Usuários)
   const setoresTop = () => ((MODS || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai);
-  const nomeSetor = id => id === 'todos' ? 'Todos' : id === 'pessoal' ? 'Para você' : (setoresTop().find(m => m.id === id) || {}).titulo || id;
+  const nomeSetor = id => id === 'todos' ? 'Todos' : id === 'pessoal' ? 'Para você' : id === 'usuarios' ? 'Usuários' : (setoresTop().find(m => m.id === id) || {}).titulo || id;
   const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
   // Quem pode ver (o Firestore aplica a mesma regra no servidor)
   const podeVer = n => admin || n.setor === 'todos' || (n.setor === 'pessoal' && n.para === uid) || meusSetores().includes(n.setor);
@@ -89,7 +91,7 @@
         <span class="sgnponto" aria-hidden="true"></span>
         <div class="sgncorpo"><b>${esc(n.titulo)}</b>${n.texto ? `<p>${esc(n.texto)}</p>` : ''}
           <span class="sgnmeta"><span class="sgnsetor">${esc(nomeSetor(n.setor))}</span>${esc(quando(n.t))}${n.por ? ' · ' + esc(n.por) : ''}</span></div>
-        ${admin ? `<button type="button" class="sgndel" data-del="${esc(n.id)}" aria-label="Apagar notificação" title="Apagar"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}
+        ${admin && !n.auto ? `<button type="button" class="sgndel" data-del="${esc(n.id)}" aria-label="Apagar notificação" title="Apagar"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}
       </div>`).join('') : `<div class="sgnvazio">${SINO}<b>Nenhuma notificação por aqui.</b><span>${admin ? 'Quando qualquer setor receber um aviso, ele aparece aqui.' : 'Os avisos do seu setor aparecem aqui.'}</span></div>`;
     $('sgnNova').hidden = !admin;
     if (admin) {
@@ -132,12 +134,23 @@
     }, e => { console.warn('notificações (' + chave + ')', e.code || e); porQuery[chave] = []; desenhar(); }));
   }
 
+  // ADM: cadastros aguardando liberação viram avisos (id fixo por pessoa, para lembrar se já foi lido)
+  function ouvirCadastros() {
+    unsubs.push(F.onSnapshot(F.query(F.collection(db, 'usuarios'), F.where('pendente', '==', true)), s => {
+      porQuery.cad = s.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => u.ativo !== true && !u.excluido).map(u => {
+        const uf = Array.isArray(u.estados) && u.estados.length ? ' · ' + u.estados.join(', ') : '';
+        return { id: 'cad:' + u.uid, auto: true, titulo: 'Pedido de acesso: ' + (u.nome || u.email || 'novo usuário'), texto: (u.email || '') + uf + '\nAguardando liberação em Usuários.', setor: 'usuarios', aba: 'tabUsers', t: ms(u.cadastroEm) || ms(u.criado) };
+      });
+      desenhar();
+    }, e => { console.warn('notificações (cadastros)', e.code || e); porQuery.cad = []; desenhar(); }));
+  }
+
   function iniciar(det) {
     if (det.perfil && det.perfil.uid === uid) { admin = !!det.admin || admin; desenhar(); return; } // o mesmo login avisa por dois eventos
     parar(); ({ F, db, perfil } = det); admin = !!det.admin; uid = perfil.uid;
     montar(); $('sgNotif').hidden = false;
     const col = F.collection(db, 'notificacoes');
-    if (admin) ouvir('adm', F.query(col, F.orderBy('criado', 'desc'), F.limit(100)));
+    if (admin) { ouvir('adm', F.query(col, F.orderBy('criado', 'desc'), F.limit(100))); ouvirCadastros(); }
     else {
       // Uma consulta por setor (o Firestore só libera consultas que a regra consegue provar)
       ['todos', ...meusSetores()].forEach(s => ouvir('s:' + s, F.query(col, F.where('setor', '==', s))));
