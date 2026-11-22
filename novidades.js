@@ -13,6 +13,11 @@ window.SHOTGUN_NOVIDADES = [
   { v: 184, data: '2026-11-22', titulo: 'Pedidos de acesso no sino', itens: [
     'Administrador: quando alguém se cadastra pelo "Me cadastrar" e fica aguardando liberação, o pedido aparece no sino de notificações. Tocar no aviso abre a tela Usuários.'
   ] },
+  { v: 183, data: '2026-11-22', titulo: 'Filtros por usuário e estado no CRM', itens: [
+    'CRM: filtre o Funil, os Leads e os Clientes por estado. O estado vem da cidade do lead ou da proposta.',
+    'Os seus estados de atuação aparecem primeiro na lista de estados.',
+    'Administrador: o novo filtro de usuário (no lugar de "Só os meus") mostra os leads de cada vendedor, com os estados de atuação ao lado do nome. Escolhendo um estado, a lista mostra só quem atua nele.'
+  ] },
   { v: 182, data: '2026-11-21', titulo: 'Nova senha em português e correção no cadastro', itens: [
     'Esqueci minha senha: o e-mail e a página para criar a nova senha agora vêm em português, com a cara do Shotgun.',
     'Login: se você começou o cadastro antes e não terminou, "Me cadastrar" com o mesmo e-mail e a mesma senha agora entra e leva você de volta para terminar o cadastro.'
