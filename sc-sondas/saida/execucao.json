@@ -1,0 +1,54 @@
+{
+ "inicio": "2026-11-22T04:44:51.283Z",
+ "fim": "2026-11-22T04:50:35.816Z",
+ "status": "ok",
+ "gatilho": "push",
+ "pedidoPor": "",
+ "periodo": {
+  "de": "2025-11-22",
+  "ate": "2026-11-22"
+ },
+ "porFonte": {
+  "sinfat-sc": {
+   "ok": true,
+   "uf": "SC",
+   "consultas": 352,
+   "lidos": 247,
+   "docs": 247,
+   "de": "2025-11-22",
+   "novos": 247
+  },
+  "dom-sc": {
+   "ok": true,
+   "uf": "SC",
+   "consultas": 39,
+   "lidos": 55,
+   "docs": 4,
+   "de": "2025-11-22",
+   "novos": 4
+  },
+  "querido-sc": {
+   "ok": true,
+   "uf": "SC",
+   "consultas": 18,
+   "lidos": 15,
+   "docs": 7,
+   "de": "2025-11-22",
+   "novos": 7
+  },
+  "anp-SC": {
+   "ok": true,
+   "uf": "SC",
+   "docs": 0,
+   "postos": 2097,
+   "novos": 0
+  }
+ },
+ "documentos": 258,
+ "novos": 250,
+ "atualizados": 0,
+ "novosDocumentos": 258,
+ "alertas": 0,
+ "teste": true,
+ "duracaoSeg": 345
+}
