@@ -1,6 +1,6 @@
 # Shotgun
 
-> Cada cliente na mira, do primeiro contato ao pós-venda.
+> O cliente na mira, do primeiro contato ao pós-venda.
 
 Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no computador.
 
@@ -14,6 +14,13 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 - Atualizada todo dia às 5h (Brasília) pela tarefa `.github/workflows/anp-postos.yml`, a partir da API pública `revendedoresapi.anp.gov.br`. Para atualizar na hora: Actions > Base de postos da ANP > Run workflow.
 - As faixas de porte (Pequeno, Médio, Grande) ficam em Parâmetros Proposta > Valores de base.
 - `anp/novos.json` alimenta a tela Telemetria > Telemetria ANP (postos novos dos últimos 15 dias, com destaque para os que entraram hoje). Gerado na mesma tarefa diária por `scripts/anp-novos.mjs`: entra o posto cuja autorização na ANP é recente ou cujo CNPJ apareceu pela primeira vez na base naquele dia.
+
+## Identidade visual
+
+- `tema.css` concentra os design tokens (cores, Montserrat, espaçamentos, raios, sombras e tempos de animação) e a camada visual compartilhada: cabeçalho, menu lateral recolhível no computador, login, tela de carregamento, botões e cards. Telas novas devem usar as variáveis de lá (`--bg`, `--surface`, `--fg`, `--muted`, `--line`, `--accent`, `--accent-fg`, `--accent-text`, `--danger`, `--ok-text`...) em vez de cores fixas.
+- Tema escuro é o inicial; o botão de sol/lua no cabeçalho troca para o claro e grava a escolha no aparelho (`sg-tema`).
+- Logos em `icons/`: `shotgun-logo.png` (fundos claros), `shotgun-logo-negativo.png` (fundos escuros) e `shotgun-simbolo-negativo.png` (o S, na tela de carregamento e no menu recolhido). Ícones do app e favicon usam só o S.
+- As páginas que o cliente abre (`aprovar.html`, `contrato.html`, `dados.html`) seguem com a marca Argo.
 
 ## Cadastro no primeiro acesso
 
