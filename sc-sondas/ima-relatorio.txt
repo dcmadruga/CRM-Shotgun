@@ -1,0 +1,1003 @@
+200 https://consultas.ima.sc.gov.br/relatorio
+cache-control: no-store, no-cache, must-revalidate
+connection: keep-alive
+content-encoding: gzip
+content-type: text/html; charset=UTF-8
+date: Sun, 22 Nov 2026 04:28:28 GMT
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+pragma: no-cache
+referrer-policy: strict-origin-when-cross-origin
+server: nginx
+set-cookie: ci_session=7b19bdf678d4ec9cd2e6688b21059a31; expires=Sun, 22 Nov 2026 06:28:28 GMT; Max-Age=7200; path=/; HttpOnly; SameSite=Lax
+transfer-encoding: chunked
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultas IMA</title>
+
+    <link rel="icon" type="image/png" href="https://consultas.ima.sc.gov.br/image/logos/ima-icon.png?v=2">
+    <link rel="shortcut icon" href="https://consultas.ima.sc.gov.br/favicon.ico?v=2">
+    <link rel="apple-touch-icon" href="https://consultas.ima.sc.gov.br/image/logos/ima-icon.png?v=2">
+
+    <link href="https://consultas.ima.sc.gov.br/lib/bootstrap-5.3.8/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://consultas.ima.sc.gov.br/lib/fontawesome/css/all.min.css" rel="stylesheet">
+
+    <link href="https://consultas.ima.sc.gov.br/lib/dataTables/datatables.min.css" rel="stylesheet">
+
+    <link href="https://consultas.ima.sc.gov.br/lib/select2/select2.min.css" rel="stylesheet">
+    <link href="https://consultas.ima.sc.gov.br/lib/select2/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://consultas.ima.sc.gov.br/css/base.css">
+</head>    <style>
+    /* Estilos para DataTables com botões de exportação */
+    .dt-buttons .btn {
+        margin-right: 5px;
+    }
+    #tblResultado thead th {
+    background-color: #212529; /* Cor exata do 'bg-dark' do Bootstrap */
+    color: #fff;
+    border-color: #454d55; /* Cor de borda que combina com o fundo escuro */
+}
+</style>
+
+</head>
+
+<body>
+        <nav class="navbar navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <a href="https://www.ima.sc.gov.br/" style="text-decoration: none;"><img src="https://consultas.ima.sc.gov.br/image/logos/ima.png" height="60" class="d-inline-block align-top" /> </a>
+            <a href="https://www.sc.gov.br/" style="text-decoration: none;"><img src="https://consultas.ima.sc.gov.br/image/logos/logo-sc.png" height="40" class="d-inline-block align-top" /> </a>
+        </div>
+    </nav>
+
+    <div class="content-wrapper">
+
+        
+<div class="content">
+    <div class="container-fluid">
+        <div class="container-header pt-4">
+            <div class="page-title-bar">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="https://consultas.ima.sc.gov.br/">Início</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Relatórios de Licenciamento Ambiental</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        
+        <div class="row">
+            <div class="col-12">
+                <div class="card card-default">
+
+                    <div class="card-body">
+                        <form id="form-pesquisa">
+                            <div class="row">
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <label for="campoTipo" class="form-label">Tipo de FCE</label>
+                                    <select class="form-select" id="campoTipo" name="tipo">
+                                        <option value="LICENCIAMENTO">Licenciamento</option>
+                                        <option value="CERTIDAO">Certidão</option>
+                                        <option value="EXPLORACAO_FLORESTAL">Exploração Florestal</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <label for="campoEmitidasRequeridas" class="form-label">Emitidas/Requeridas</label>
+                                    <select class="form-select" id="campoEmitidasRequeridas" name="requeridaEmitidas">
+                                        <option value="false">Requeridas</option>
+                                        <option value="true">Emitidas</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <label for="campoMes" class="form-label">Mês</label>
+                                    <select class="form-select" id="campoMes" name="mes">
+                                        <option value="0">Todos</option>
+                                        <option value="01">Janeiro</option>
+                                        <option value="02">Fevereiro</option>
+                                        <option value="03">Março</option>
+                                        <option value="04">Abril</option>
+                                        <option value="05">Maio</option>
+                                        <option value="06">Junho</option>
+                                        <option value="07">Julho</option>
+                                        <option value="08">Agosto</option>
+                                        <option value="09">Setembro</option>
+                                        <option value="10">Outubro</option>
+                                        <option value="11">Novembro</option>
+                                        <option value="12">Dezembro</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <label for="campoAno" class="form-label">Ano</label>
+                                    <select class="form-select" id="campoAno" name="ano">
+                                                                                    <option value="2026">2026</option>
+                                                                                    <option value="2025">2025</option>
+                                                                                    <option value="2024">2024</option>
+                                                                                    <option value="2023">2023</option>
+                                                                                    <option value="2022">2022</option>
+                                                                                    <option value="2021">2021</option>
+                                                                                    <option value="2020">2020</option>
+                                                                                    <option value="2019">2019</option>
+                                                                                    <option value="2018">2018</option>
+                                                                                    <option value="2017">2017</option>
+                                                                                    <option value="2016">2016</option>
+                                                                                    <option value="2015">2015</option>
+                                                                                    <option value="2014">2014</option>
+                                                                            </select>
+                                </div>
+                                <div class="col-lg-4 col-md-12 mb-3">
+                                    <label for="campoAtividade" class="form-label">Atividade</label>
+                                    <select class="form-select" id="campoAtividade" name="atividade">
+                                        <option value="0">Selecione uma atividade</option>
+                                                                                    <option value="00.10.00">00.10.00 - LAVRA A CÉU ABERTO COM DESMONTE POR EXPLOSIVO</option>
+                                                                                    <option value="00.10.01">00.10.01 - LAVRA A CÉU ABERTO COM DESMONTE POR EXPLOSIVO, SE MINERAL TÍPICO DE EMPREGO NA CONSTRUÇÃO CIVIL, INDEPENDENTE DE SEU USO</option>
+                                                                                    <option value="00.11.00">00.11.00 - LAVRA A CÉU ABERTO COM DESMONTE HIDRÁULICO</option>
+                                                                                    <option value="00.11.01">00.11.01 - LAVRA A CÉU ABERTO COM DESMONTE HIDRÁULICO, SE MINERAL TÍPICO DE EMPREGO NA CONSTRUÇÃO CIVIL, INDEPENDENTE DE SEU USO</option>
+                                                                                    <option value="00.12.00">00.12.00 - LAVRA A CÉU ABERTO POR ESCAVAÇÃO</option>
+                                                                                    <option value="00.12.01">00.12.01 - LAVRA A CÉU ABERTO POR ESCAVAÇÃO DE CARVÃO MINERAL</option>
+                                                                                    <option value="00.12.02">00.12.02 - LAVRA A CÉU ABERTO POR ESCAVAÇÃO, SE MINERAL TÍPICO DE EMPREGO NA CONSTRUÇÃO CIVIL, INDEPENDENTE DE SEU USO</option>
+                                                                                    <option value="00.12.03">00.12.03 - LAVRA A CÉU ABERTO POR ESCAVAÇÃO E USINAS DE BRITAGEM QUE NÃO POSSUAM A FINALIDADE DE COMERCIALIZAÇÃO, REQUERIDA DIRETAMENTE POR ÓRGÃOS DA ADMINISTRAÇÃO DIRETA E AUTÁRQUICA DA UNIÃO, DO ESTADO E DOS MUNICÍPIOS, E QUE SEJA DESTINADA À MANUTENÇÃO E MELHORIAS DA MALHA VIÁRIA MUNICIPAL.</option>
+                                                                                    <option value="00.13.00">00.13.00 - LAVRA A CÉU ABERTO POR DRAGAGEM</option>
+                                                                                    <option value="00.13.02">00.13.02 - LAVRA A CÉU ABERTO POR DRAGAGEM, SE MINERAL TÍPICO DE EMPREGO NA CONSTRUÇÃO CIVIL, INDEPENDENTE DE SEU USO</option>
+                                                                                    <option value="00.20.00">00.20.00 - LAVRA DO SUBSOLO COM DESMONTE POR EXPLOSIVO</option>
+                                                                                    <option value="00.30.00">00.30.00 - LAVRA POR OUTROS MÉTODOS</option>
+                                                                                    <option value="00.30.01">00.30.01 - LAVRA POR OUTROS MÉTODOS, SE MINERAL TÍPICO DE EMPREGO NA CONSTRUÇÃO CIVIL, INDEPENDENTE DE SEU USO.</option>
+                                                                                    <option value="00.30.02">00.30.02 - LAVRA POR OUTROS MÉTODOS DE ÁGUA MINERAL</option>
+                                                                                    <option value="00.30.03">00.30.03 - LAVRA A CÉU ABERTO DE PEDRAS APARENTES, COM APARELHAMENTO NO LOCAL, PARA EMPREGO DIRETO NA CONSTRUÇÃO CIVIL</option>
+                                                                                    <option value="01.40.00">01.40.00 - ATIVIDADE AGRÍCOLA IRRIGADA POR INUNDAÇÃO, COM EXCEÇÃO NAS ÁREAS CONSOLIDADAS DAS PEQUENAS PROPRIEDADES RURAIS, ASSIM DEFINIDAS NO CÓDIGO ESTADUAL DO MEIO AMBIENTE DE SANTA CATARINA</option>
+                                                                                    <option value="01.51.00">01.51.00 - CRIAÇÃO DE ANIMAIS CONFINADOS DE GRANDE PORTE (BOVINOS, EQUINOS, BUBALINOS, MUARES, ETC)</option>
+                                                                                    <option value="01.52.00">01.52.00 - CRIAÇÃO DE ANIMAIS CONFINADOS DE MÉDIO PORTE (OVINOS, CAPRINOS, ETC)</option>
+                                                                                    <option value="01.54.00">01.54.00 - GRANJA DE SUÍNOS - TERMINAÇÃO</option>
+                                                                                    <option value="01.54.01">01.54.01 - UNIDADES DE PRODUÇÃO DE LEITÃO - UPL</option>
+                                                                                    <option value="01.54.02">01.54.02 - GRANJA DE SUÍNOS - CRECHE</option>
+                                                                                    <option value="01.54.03">01.54.03 - GRANJA DE SUÍNOS DE CICLO COMPLETO</option>
+                                                                                    <option value="01.54.04">01.54.04 - GRANJA DE SUÍNOS - “WEAN TO FINISH”</option>
+                                                                                    <option value="01.54.05">01.54.05 - GRANJA DE SUÍNOS - UNIDADE DE PRODUÇÃO DE DESMAMADOS</option>
+                                                                                    <option value="01.70.00">01.70.00 - CRIAÇÃO DE ANIMAIS CONFINADOS DE PEQUENO PORTE (AVICULTURA)</option>
+                                                                                    <option value="01.70.02">01.70.02 - USO MÚLTIPLO DA PEQUENA PROPRIEDADE RURAL (CONTENDO MAIS DE UMA ATIVIDADE PASSÍVEL DE LICENCIAMENTO AMBIENTAL)</option>
+                                                                                    <option value="01.70.10">01.70.10 - CRIAÇÃO DE ANIMAIS CONFINADOS DE PEQUENO PORTE</option>
+                                                                                    <option value="01.80.00">01.80.00 - CRIAÇÃO DE ANIMAIS CONFINADOS DE PEQUENO PORTE (RANICULTURA)</option>
+                                                                                    <option value="03.31.04">03.31.04 - Sistema I: Unidade de produção de peixes em viveiros</option>
+                                                                                    <option value="03.31.05">03.31.05 - Sistema II: Truticultura</option>
+                                                                                    <option value="03.31.06">03.31.06 - Sistema III: Unidade de produção de peixes em tanques-rede</option>
+                                                                                    <option value="03.32.00">03.32.00 - CARCINICULTURA - UNIDADE DE PRODUÇÃO DE CAMARÕES EM MONOCULTIVO OU EM CONSÓRCIO COM OUTRAS ESPÉCIES</option>
+                                                                                    <option value="03.33.00">03.33.00 - MALACOCULTURA</option>
+                                                                                    <option value="03.33.01">03.33.01 - Algicultura e Equinodermocultura</option>
+                                                                                    <option value="03.34.00">03.34.00 - LABORATÓRIO DE PRODUÇÃO DE PÓS-LARVA</option>
+                                                                                    <option value="03.34.01">03.34.01 - LABORATÓRIO DE PRODUÇÃO DE ALEVINOS</option>
+                                                                                    <option value="03.34.02">03.34.02 - LABORATÓRIO DE PRODUÇÃO DE SEMENTES</option>
+                                                                                    <option value="03.35.00">03.35.00 - UNIDADES DE BENEFICIAMENTO DE MOLUSCOS BIVALVES</option>
+                                                                                    <option value="10.10.00">10.10.00 - APARELHAMENTO DE PEDRAS PARA CONSTRUÇÃO E EXECUÇÃO DE TRABALHOS EM MÁRMORES, ARDÓSIA, GRANITO E OUTRAS PEDRAS</option>
+                                                                                    <option value="10.20.00">10.20.00 - BENEFICIAMENTO DE MINERAIS COM COMINUIÇÃO</option>
+                                                                                    <option value="10.20.10">10.20.10 - BENEFICIAMENTO DE MINERAIS COM CLASSIFICAÇÃO OU CONCENTRAÇÃO FÍSICA</option>
+                                                                                    <option value="10.20.20">10.20.20 - BENEFICIAMENTO DE MINERAIS COM FLOTAÇÃO</option>
+                                                                                    <option value="10.30.00">10.30.00 - FABRICAÇÃO DE CAL VIRGEM, HIDRATADA OU EXTINTA</option>
+                                                                                    <option value="10.40.10">10.40.10 - FABRICAÇÃO DE TELHAS, TIJOLOS E OUTROS ARTIGOS DE BARRO COZIDO - EXCETO DE CER MICA ESMALTADA</option>
+                                                                                    <option value="10.40.20">10.40.20 - FABRICAÇÃO DE MATERIAL CERÂMICO ESMALTADO</option>
+                                                                                    <option value="10.50.00">10.50.00 - FABRICAÇÃO DE CIMENTO</option>
+                                                                                    <option value="10.50.10">10.50.10 - FABRICAÇÃO DE PEÇAS, ORNATOS E ESTRUTURAS DE CIMENTO E GESSO</option>
+                                                                                    <option value="10.50.20">10.50.20 - FABRICAÇÃO DE PEÇAS, ORNATOS E ESTRUTURAS DE AMIANTO</option>
+                                                                                    <option value="10.60.00">10.60.00 - FABRICAÇÃO DE VIDRO E CRISTAL</option>
+                                                                                    <option value="10.70.00">10.70.00 - BENEFICIAMENTO E PREPARAÇÃO DE CARVÃO MINERAL, NÃO ASSOCIADO À EXTRAÇÃO</option>
+                                                                                    <option value="11.00.01">11.00.01 - SIDERURGIA E ELABORAÇÃO DE PRODUTOS SIDERÚRGICOS COM REDUÇÃO DE MINÉRIOS - INCLUSIVE FERRO-GUSA</option>
+                                                                                    <option value="11.00.02">11.00.02 - PRODUÇÃO DE FERRO E AÇO E SUAS LIGAS EM QUALQUER FORMA, SEM REDUÇÃO DE MINÉRIO, COM FUSÃO</option>
+                                                                                    <option value="11.00.03">11.00.03 - PRODUÇÃO DE LAMINADOS DE AÇO - INCLUSIVE FERRO-LIGAS, A QUENTE, SEM FUSÃO</option>
+                                                                                    <option value="11.00.04">11.00.04 - PRODUÇÃO DE LAMINADOS DE AÇO - INCLUSIVE FERRO-LIGAS, A FRIO, SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.05">11.00.05 - PRODUÇÃO DE LAMINADOS DE AÇO - INCLUSIVE FERRO-LIGAS, A FRIO, COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.06">11.00.06 - PRODUÇÃO DE CANOS E TUBOS DE FERRO E AÇO, COM FUSÃO E TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.07">11.00.07 - PRODUÇÃO DE CANOS E TUBOS DE FERRO E AÇO, SEM FUSÃO, COM TRATAMENTO QUÍMICO SUPERFICIAL E/OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.08">11.00.08 - PRODUÇÃO DE CANOS E TUBOS DE FERRO E AÇO, SEM FUSÃO E SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.09">11.00.09 - PRODUÇÃO DE FUNDIDOS DE FERRO E AÇO EM FORNO CUBILOT, SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.10">11.00.10 - PRODUÇÃO DE FUNDIDOS DE FERRO E AÇO EM FORNO CUBILOT, COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.11">11.00.11 - PRODUÇÃO DE FUNDIDOS DE FERRO E AÇO, EXCETO EM FORNO CUBILOT, SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.12">11.00.12 - PRODUÇÃO DE FUNDIDOS DE FERRO E AÇO, EXCETO EM FORNO CUBILOT, COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.13">11.00.13 - PRODUÇÃO DE FORJADOS, ARAMES E RELAMINADOS DE METAIS FERROSOS E NÃO FERROSOS, A QUENTE, COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.14">11.00.14 - PRODUÇÃO DE FORJADOS, ARAMES E RELAMINADOS DE METAIS FERROSOS E NÃO FERROSOS, A FRIO, COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.00.15">11.00.15 - PRODUÇÃO DE FORJADOS, ARAMES E RELAMINADOS DE METAIS FERROSOS E NÃO FERROSOS, A FRIO, SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.08.03">11.08.03 -  Indústrias de acabamento de superfícies, sem tratamento químico superficial ou galvanotécnico.</option>
+                                                                                    <option value="11.10.00">11.10.00 - METALURGIA DOS METAIS NÃO-FERROSOS EM FORMAS PRIMÁRIAS - INCLUSIVE METAIS PRECIOSOS</option>
+                                                                                    <option value="11.11.01">11.11.01 - PRODUÇÃO DE LIGAS DE METAIS NÃO-FERROSOS EM FORMAS PRIMÁRIAS - INCLUSIVE METAIS PRECIOSOS</option>
+                                                                                    <option value="11.11.02">11.11.02 - PRODUÇÃO DE LAMINADOS DE METAIS E DE LIGAS DE METAIS NÃO-FERROSOS (PLACAS, DISCOS, CHAPAS LISAS OU CORRUGADAS, BOBINAS, TIRAS E FITAS, PERFIS, BARRAS REDONDAS, CHATAS OU QUADRADAS, VERGALHÕES), COM FUSÃO - EXCETO CANOS, TUBOS E ARAMES</option>
+                                                                                    <option value="11.11.03">11.11.03 - PRODUÇÃO DE LAMINADOS DE METAIS E DE LIGAS DE METAIS NÃO-FERROSOS (PLACAS, DISCOS, CHAPAS LISAS OU CORRUGADAS, BOBINAS, TIRAS E FITAS, PERFIS, BARRAS REDONDAS, CHATAS OU QUADRADAS, VERGALHÕES), SEM FUSÃO - EXCETO CANOS, TUBOS E ARAMES</option>
+                                                                                    <option value="11.11.04">11.11.04 - PRODUÇÃO DE CANOS E TUBOS DE METAIS NÃO-FERROSOS - INCLUSIVE LIGAS, COM FUSÃO E COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.11.05">11.11.05 - PRODUÇÃO DE CANOS E TUBOS DE METAIS NÃO-FERROSOS - INCLUSIVE LIGAS, COM FUSÃO E SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.11.06">11.11.06 - PRODUÇÃO DE CANOS E TUBOS DE METAIS NÃO-FERROSOS - INCLUSIVE LIGAS, SEM FUSÃO E COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.11.07">11.11.07 - PRODUÇÃO DE CANOS E TUBOS DE METAIS NÃO-FERROSOS - INCLUSIVE LIGAS, SEM FUSÃO E SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.11.08">11.11.08 - PRODUÇÃO DE FORMAS, MOLDES E PEÇAS FUNDIDAS DE METAIS NÃO-FERROSOS – INCLUSIVE LIGAS, EM FORNO CUBILOT COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.11.09">11.11.09 - PRODUÇÃO DE FORMAS, MOLDES E PEÇAS FUNDIDAS DE METAIS NÃO-FERROSOS - INCLUSIVE LIGAS, EM FORNO CUBILOT SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.11.10">11.11.10 - PRODUÇÃO EXCETO EM FORNO CUBILOT, DE FORMAS, MOLDES E PEÇAS FUNDIDAS DE METAIS NÃO-FERROSOS - INCLUSIVE LIGAS, COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.11.11">11.11.11 - PRODUÇÃO EXCETO EM FORNO CUBILOT, DE FORMAS, MOLDES E PEÇAS FUNDIDAS DE METAIS NÃO-FERROSOS - INCLUSIVE LIGAS, SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO</option>
+                                                                                    <option value="11.11.12">11.11.12 - PRODUÇÃO DE FIOS E ARAMES DE METAIS E DE LIGAS DE METAIS NÃO-FERROSOS - INCLUSIVE FIOS, CABOS E CONDUTORES ELÉTRICOS, COM FUSÃO</option>
+                                                                                    <option value="11.11.14">11.11.14 - RELAMINAÇÃO DE METAIS NÃO-FERROSOS - INCLUSIVE LIGAS</option>
+                                                                                    <option value="11.11.15">11.11.15 - PRODUÇÃO DE SOLDAS E ÂNODOS</option>
+                                                                                    <option value="11.20.00">11.20.00 - METALURGIA DO PÓ - INCLUSIVE PEÇAS MOLDADAS</option>
+                                                                                    <option value="11.30.01">11.30.01 - FABRICAÇÃO DE ESTRUTURAS METÁLICAS, COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU PINTURA POR ASPERSÃO, OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="11.30.02">11.30.02 - Fabricação de estruturas metálicas, sem tratamento químico superficial ou galvanotécnico ou pintura por aspersão, ou esmaltação ou imersão</option>
+                                                                                    <option value="11.40.01">11.40.01 - FABRICAÇÃO DE ARTEFATOS DE TREFILADOS DE FERRO E AÇO E DE METAIS NÃO-FERROSOS - EXCETO MÓVEIS, COM TRATAMENTO QUÍMICO-SUPERFICIAL OU GALVANOTÉCNICO OU PINTURA POR ASPERSÃO, OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="11.40.02">11.40.02 - Fabricação de artefatos de trefilados de ferro e aço e de metais não-ferrosos - exceto móveis, sem tratamento químico-superficial ou galvanotécnico ou pintura por aspersão, ou esmaltação ou imersão</option>
+                                                                                    <option value="11.50.01">11.50.01 - ESTAMPARIA E FUNILARIA INDUSTRIAL, COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU PINTURA POR ASPERSÃO, OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="11.50.02">11.50.02 - ESTAMPARIA, FUNILARIA E LATOARIA, SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU PINTURA POR ASPERSÃO OU ESMALTAÇÃO OU IMERSÃO.</option>
+                                                                                    <option value="11.60.01">11.60.01 - SERRALHERIA, FABRICAÇÃO DE TANQUES, RESERVATÓRIOS E OUTROS RECIPIENTES METÁLICOS E DE ARTIGOS DE CALDEIREIRO COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU PINTURA POR ASPERSÃO OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="11.60.02">11.60.02 - SERRALHERIA, FABRICAÇÃO DE TANQUES, RESERVATÓRIOS E OUTROS RECIPIENTES METÁLICOS E DE ARTIGOS DE CALDEIREIRO SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU PINTURA POR ASPERSÃO OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="11.70.01">11.70.01 - FABRICAÇÃO DE ARTIGOS DE CUTELARIA, ARMAS, FERRAMENTAS MANUAIS E FABRICAÇÃO DE ARTIGOS DE METAL PARA ESCRITÓRIO, USOS PESSOAL E DOMÉSTICO, COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU PINTURA POR ASPERSÃO OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="11.70.02">11.70.02 - FABRICAÇÃO DE ARTIGOS DE CUTELARIA, ARMAS, FERRAMENTAS MANUAIS E FABRICAÇÃO DE ARTIGOS DE METAL PARA ESCRITÓRIO, USOS PESSOAL E DOMÉSTICO - EXCETO FERRAMENTAS PARA MÁQUINAS, SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU PINTURA POR ASPERSÃO OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="11.80.02">11.80.02 - SERVIÇOS GALVANOTÉCNICOS</option>
+                                                                                    <option value="11.80.03">11.80.03 - SERVIÇOS DE TÊMPERA E DE CEMENTAÇÃO DE AÇO</option>
+                                                                                    <option value="11.90.01">11.90.01 - FABRICAÇÃO DE OUTROS ARTIGOS DE METAL, NÃO ESPECIFICADOS EM OUTROS CÓDIGOS, COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU PINTURA POR ASPERSÃO, OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="11.90.02">11.90.02 - FABRICAÇÃO DE OUTROS ARTIGOS DE METAL, NÃO ESPECIFICADOS EM OUTROS CÓDIGOS, SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU PINTURA POR ASPERSÃO, OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="12.10.00">12.10.00 - FABRICAÇÃO DE MÁQUINAS, APARELHOS, PEÇAS E ACESSÓRIOS COM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU FUNDIÇÃO OU PINTURA POR ASPERSÃO, OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="12.11.00">12.11.00 - FABRICAÇÃO DE MÁQUINAS, APARELHOS, PEÇAS E ACESSÓRIOS COM PINTURA POR ASPERSÃO, OU ESMALTAÇÃO OU IMERSÃO.</option>
+                                                                                    <option value="12.20.00">12.20.00 - FABRICAÇÃO DE MÁQUINAS, APARELHOS, PEÇAS E ACESSÓRIOS SEM TRATAMENTO QUÍMICO SUPERFICIAL OU GALVANOTÉCNICO OU FUNDIÇÃO OU PINTURA POR ASPERSÃO, OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="12.80.00">12.80.00 - SERVIÇO INDUSTRIAL DE USINAGEM, SOLDAS E SEMELHANTES</option>
+                                                                                    <option value="12.80.10">12.80.10 - SERVIÇO INDUSTRIAL DE USINAGEM, SOLDAS E SEMELHANTES, COM PINTURA POR ASPERSÃO, OU ESMALTAÇÃO OU IMERSÃO</option>
+                                                                                    <option value="13.10.00">13.10.00 - Fabricação ou recondicionamento de pilhas, baterias e acumuladores.</option>
+                                                                                    <option value="13.20.00">13.20.00 - FABRICAÇÃO DE MATERIAL, EQUIPAMENTOS E APARELHOS ELÉTRICOS</option>
+                                                                                    <option value="13.60.00">13.60.00 - FABRICAÇÃO DE MÁQUINAS, APARELHOS, COMPONENTES E EQUIPAMENTOS ELETRÔNICOS</option>
+                                                                                    <option value="13.70.00">13.70.00 - FABRICAÇÃO DE INSTRUMENTOS ÓPTICOS, PEÇAS E ACESSÓRIOS</option>
+                                                                                    <option value="13.90.00">13.90.00 - MONTAGEM, REPARAÇÃO OU MANUTENÇÃO DE MÁQUINAS, APARELHOS E EQUIPAMENTOS INDUSTRIAIS E COMERCIAIS, E ELÉTRICOS E ELETRÔNICOS</option>
+                                                                                    <option value="14.10.00">14.10.00 - MONTAGEM E REPARAÇÃO DE EMBARCAÇÕES E ESTRUTURAS FLUTUANTES, REPARAÇÃO DE CALDEIRAS, MÁQUINAS, TURBINAS E MOTORES</option>
+                                                                                    <option value="14.30.00">14.30.00 - FABRICAÇÃO OU MONTAGEM DE VEÍCULOS RODOVIÁRIOS, AEROVIÁRIOS E NAVAIS</option>
+                                                                                    <option value="15.10.00">15.10.00 - SERRARIAS E BENEFICIAMENTO PRIMÁRIO DA MADEIRA, EXCETO QUANDO REALIZADO SOMENTE POR EQUIPAMENTO MÓVEL</option>
+                                                                                    <option value="15.11.00">15.11.00 - DESDOBRAMENTO SECUNDÁRIO DE MADEIRAS</option>
+                                                                                    <option value="15.12.00">15.12.00 - UNIDADE DE TRATAMENTO DE MADEIRA</option>
+                                                                                    <option value="15.13.00">15.13.00 - UNIDADE DE COMINUIÇÃO DE MADEIRA, INCLUSIVE AS CONSIDERADAS COMO RESÍDUOS SÓLIDOS</option>
+                                                                                    <option value="15.31.00">15.31.00 - FABRICAÇÃO DE CHAPAS E PLACAS DE MADEIRA AGLOMERADA, PRENSADA OU COMPENSADA, REVESTIDA OU NÃO COM MATERIAL PLÁSTICO, COM OU SEM COGERAÇÃO DE ENERGIA ELÉTRICA</option>
+                                                                                    <option value="15.55.00">15.55.00 - FABRICAÇÃO DE MOLDURAS, ESQUADRIAS E CASAS PRÉ-FABRICADAS</option>
+                                                                                    <option value="16.10.00">16.10.00 - FABRICAÇÃO DE MÓVEIS DE MADEIRA, VIME E JUNCO</option>
+                                                                                    <option value="16.20.00">16.20.00 - FABRICAÇÃO DE MÓVEIS DE METAL OU COM PREDOMINÂNCIA DE METAL, REVESTIDOS OU NÃO COM LÂMINAS PLÁSTICAS - INCLUSIVE ESTOFADOS</option>
+                                                                                    <option value="16.50.00">16.50.00 - FABRICAÇÃO E ACABAMENTO DE ARTIGOS DIVERSOS DO MOBILIÁRIO</option>
+                                                                                    <option value="17.11.00">17.11.00 - FABRICAÇÃO DE CELULOSE</option>
+                                                                                    <option value="17.12.00">17.12.00 - FABRICAÇÃO DE PASTA MECÂNICA</option>
+                                                                                    <option value="17.21.00">17.21.00 - FABRICAÇÃO DE PAPEL</option>
+                                                                                    <option value="17.22.00">17.22.00 - FABRICAÇÃO DE PAPELÃO, CARTOLINA E CARTÃO</option>
+                                                                                    <option value="17.40.00">17.40.00 - Fabricação de papel, papelão, cartolina e cartão, não associada à produção de papel, cartolina e cartão, com geração de resíduos perigosos ou com geração de efluentes líquidos industriais ou com emissões atmosféricas</option>
+                                                                                    <option value="17.60.00">17.60.00 - FABRICAÇÃO DE ARTIGOS DIVERSOS DE FIBRA PRENSADA OU ISOLANTE - INCLUSIVE PEÇAS E ACESSÓRIOS PARA MÁQUINAS E VEÍCULOS</option>
+                                                                                    <option value="18.10.00">18.10.00 - BENEFICIAMENTO DE BORRACHA NATURAL</option>
+                                                                                    <option value="18.20.00">18.20.00 - FABRICAÇÃO E RECONDICIONAMENTO DE PNEUMÁTICOS E CÂMARAS-DE-AR E FABRICAÇÃO DE MATERIAL PARA RECONDICIONAMENTO DE PNEUMÁTICOS</option>
+                                                                                    <option value="18.50.00">18.50.00 - FABRICAÇÃO DE ARTEFATOS DE BORRACHA (PEÇAS E ACESSÓRIOS PARA VEÍCULOS, MÁQUINAS, APARELHOS, CORREIAS, CANOS, TUBOS, ARTIGOS PARA USO DOMÉSTICO, GALOCHAS E BOTAS) EXCETO ARTIGOS DE VESTUÁRIO</option>
+                                                                                    <option value="19.11.00">19.11.00 - SECAGEM E SALGA DE COUROS E PELES</option>
+                                                                                    <option value="19.12.00">19.12.00 - CURTIMENTO E OUTRAS PREPARAÇÕES DE COUROS E PELES</option>
+                                                                                    <option value="19.90.00">19.90.00 - FABRICAÇÃO DE CALÇADOS E OU OUTROS ARTIGOS DE COUROS E PELES</option>
+                                                                                    <option value="20.00.00">20.00.00 - PRODUÇÃO DE ELEMENTOS QUÍMICOS E PRODUTOS QUÍMICOS INORGÂNICOS, ORGÂNICOS, ORGANO-INORGÂNICOS - EXCETO PRODUTOS DERIVADOS DO PROCESSAMENTO DO PETRÓLEO, DE ROCHAS OLEIGENAS, DO CARVÃO MINERAL E DE MADEIRA</option>
+                                                                                    <option value="20.10.00">20.10.00 - FABRICAÇÃO DE PRODUTOS DERIVADOS DO PROCESSAMENTO DO PETRÓLEO, DE ROCHAS OLEIGENAS E DO CARVÃO MINERAL</option>
+                                                                                    <option value="20.20.00">20.20.00 - FABRICAÇÃO DE RESINAS E DE FIBRAS E FIOS ARTIFICIAIS E SINTÉTICOS E DE BORRACHA E LÁTEX SINTÉTICOS</option>
+                                                                                    <option value="20.30.00">20.30.00 - FABRICAÇÃO DE ADUBOS, FERTILIZANTES E CORRETIVOS DE SOLO</option>
+                                                                                    <option value="20.40.00">20.40.00 - FABRICAÇÃO DE PÓLVORA, EXPLOSIVOS, DETONANTES, MUNIÇÃO PARA CAÇA E DESPORTO, FÓSFORO DE SEGURANÇA E ARTIGOS PIROTÉCNICOS</option>
+                                                                                    <option value="20.50.00">20.50.00 - FABRICAÇÃO DE CORANTES E PIGMENTOS</option>
+                                                                                    <option value="20.60.00">20.60.00 - FABRICAÇÃO DE TINTAS, ESMALTES, LACAS, VERNIZES, IMPERMEABILIZANTES, SOLVENTES E SECANTES</option>
+                                                                                    <option value="20.70.00">20.70.00 - PRODUÇÃO DE ÓLEOS, GORDURAS E CERAS VEGETAIS E ANIMAIS, EM BRUTO, DE ÓLEOS DE ESSÊNCIAS VEGETAIS E OUTROS PRODUTOS DE DESTILAÇÃO DA MADEIRA - EXCETO REFINAÇÃO DE PRODUTOS ALIMENTARES</option>
+                                                                                    <option value="20.70.10">20.70.10 - RECUPERAÇÃO E REFINO DE SOLVENTES, ÓLEOS MINERAIS, VEGETAIS E ANIMAIS</option>
+                                                                                    <option value="20.72.00">20.72.00 - FABRICAÇÃO DE CONCENTRADOS AROMÁTICOS NATURAIS, ARTIFICIAIS E SINTÉTICOS - INCLUSIVE MESCLA</option>
+                                                                                    <option value="20.81.00">20.81.00 - FABRICAÇÃO DE SABÃO, DETERGENTES, DESINFETANTES, GLICERINA, PREPARADOS PARA LIMPEZA E VELAS</option>
+                                                                                    <option value="20.82.00">20.82.00 - FABRICAÇÃO DE INSETICIDAS, GERMICIDAS, FUNGICIDAS E AGROTÓXICOS</option>
+                                                                                    <option value="20.83.00">20.83.00 - FRACIONAMENTO DE PRODUTOS QUÍMICOS</option>
+                                                                                    <option value="20.85.00">20.85.00 - FABRICAÇÃO DE PRODUTOS DE PERFUMARIA E COSMÉTICO</option>
+                                                                                    <option value="21.10.00">21.10.00 - TODAS AS ATIVIDADES INDUSTRIAIS DEDICADAS À FABRICAÇÃO DE PRODUTOS FARMACÊUTICOS E VETERINÁRIOS - EXCETO DE MANIPULAÇÃO</option>
+                                                                                    <option value="22.21.00">22.21.00 - REFINO DO PETRÓLEO E PRODUÇÃO DE ÁLCOOL POR PROCESSAMENTO DE CANA DE AÇÚCAR, MANDIOCA, MADEIRA E OUTROS VEGETAIS</option>
+                                                                                    <option value="23.10.00">23.10.00 - FABRICAÇÃO DE LAMINADOS PLÁSTICOS</option>
+                                                                                    <option value="23.21.00">23.21.00 - FABRICAÇÃO DE ARTIGOS DE MATERIAL PLÁSTICO</option>
+                                                                                    <option value="23.22.00">23.22.00 - FABRICAÇÃO DE FLOCOS E GRÃOS (PELLETS) DE MATERIAL PLÁSTICO</option>
+                                                                                    <option value="24.11.00">24.11.00 - FIAÇÃO OU TECELAGEM DE FIBRAS TÊXTEIS VEGETAIS</option>
+                                                                                    <option value="24.12.00">24.12.00 - FIAÇÃO OU TECELAGEM DE FIBRAS TÊXTEIS ARTIFICIAIS E SINTÉTICAS</option>
+                                                                                    <option value="24.13.00">24.13.00 - FIAÇÃO OU TECELAGEM DE MATERIAIS TÊXTEIS DE ORIGEM ANIMAL</option>
+                                                                                    <option value="24.14.00">24.14.00 - FIAÇÃO OU TECELAGEM DE FIBRAS TÊXTEIS COM BENEFICIAMENTO</option>
+                                                                                    <option value="24.70.00">24.70.00 - BENEFICIAMENTO DE FIOS OU TECIDOS, EXCETO ESTAMPARIA POR SUBLIMAÇÃO OU DIGITAL, DESDE QUE SEM LAVAGEM</option>
+                                                                                    <option value="24.80.00">24.80.00 - SERVIÇOS INDUSTRIAIS DE TINTURARIA, DE ESTAMPARIA (EXCETO POR SUBLIMAÇÃO OU DIGITAL, DESDE QUE SEM LAVAGEM), DE LAVANDERIA OU DE OUTROS PROCESSOS DE ACABAMENTOS</option>
+                                                                                    <option value="25.20.00">25.20.00 - FACÇÃO OU CONFECÇÃO DE ROUPAS E ARTEFATOS TÊXTEIS COM TINTURARIA, OU COM ESTAMPARIA (EXCETO POR SUBLIMAÇÃO OU DIGITAL, DESDE QUE SEM LAVAGEM), OU COM LAVANDERIA OU COM OUTROS PROCESSOS DE ACABAMENTO</option>
+                                                                                    <option value="26.00.00">26.00.00 - BENEFICIAMENTO, MOAGEM, TORREFAÇÃO E FABRICAÇÃO DE PRODUTOS ALIMENTARES</option>
+                                                                                    <option value="26.05.00">26.05.00 - FABRICAÇÃO DE FÉCULA, AMIDOS E SEUS DERIVADOS</option>
+                                                                                    <option value="26.10.00">26.10.00 - FABRICAÇÃO E REFINO DE AÇÚCAR</option>
+                                                                                    <option value="26.43.00">26.43.00 - REFINAÇÃO E PREPARAÇÃO DE ÓLEOS E GORDURAS VEGETAIS, PRODUÇÃO DE MANTEIGA DE CACAU E GORDURAS DE ORIGEM ANIMAL DESTINADAS À ALIMENTAÇÃO</option>
+                                                                                    <option value="26.50.01">26.50.01 - INDUSTRIALIZAÇÃO DE PRODUTOS DE ORIGEM ANIMAL, INCLUSIVE COLA</option>
+                                                                                    <option value="26.50.02">26.50.02 - INDUSTRIALIZAÇÃO DE PRODUTOS DE ORIGEM VEGETAL</option>
+                                                                                    <option value="26.50.20">26.50.20 - ABATE DE ANIMAIS DE PEQUENO PORTE (AVES, RÃS, COELHOS, ETC.) EM ABATEDOUROS, FRIGORÍFICOS E CHARQUEADAS, COM OU SEM INDUSTRIALIZAÇÃO DE PRODUTOS DE ORIGEM ANIMAL</option>
+                                                                                    <option value="26.50.30">26.50.30 - ABATE DE ANIMAIS DE MÉDIO PORTE (SUÍNOS, OVINOS, CAPRINOS) EM ABATEDOUROS, FRIGORÍFICOS E CHARQUEADAS, COM OU SEM INDUSTRIALIZAÇÃO DE PRODUTOS DE ORIGEM ANIMAL</option>
+                                                                                    <option value="26.50.40">26.50.40 - ABATE DE ANIMAIS DE GRANDE PORTE (BOVINOS, EQUINOS, BUBALINOS, MUARES) EM ABATEDOUROS, FRIGORÍFICOS E CHARQUEADAS, COM OU SEM INDUSTRIALIZAÇÃO DE PRODUTOS DE ORIGEM ANIMAL</option>
+                                                                                    <option value="26.60.00">26.60.00 - PREPARAÇÃO DE PESCADO E FABRICAÇÃO DE CONSERVAS DE PESCADO, EXCETO ENTREPOSTO</option>
+                                                                                    <option value="26.70.00">26.70.00 - PREPARAÇÃO DO LEITE E FABRICAÇÃO DE PRODUTOS DE LATICÍNIOS</option>
+                                                                                    <option value="26.70.10">26.70.10 - RESFRIAMENTO E DISTRIBUIÇÃO DE LEITE</option>
+                                                                                    <option value="26.91.00">26.91.00 - FABRICAÇÃO DE SORVETES</option>
+                                                                                    <option value="26.92.00">26.92.00 - FABRICAÇÃO DE FERMENTOS E LEVEDURAS</option>
+                                                                                    <option value="26.94.00">26.94.00 - FABRICAÇÃO DE RAÇÕES BALANCEADAS E DE ALIMENTOS PREPARADOS PARA ANIMAIS - INCLUSIVE FARINHAS DE CARNE, SANGUE, OSSO, PEIXE E PENA</option>
+                                                                                    <option value="26.95.00">26.95.00 - FABRICAÇÃO DE RAÇÕES BALANCEADAS PARA ANIMAIS, POR MEIO DA MISTURA DE PRODUTOS DE ORIGEM VEGETAL E RAÇÕES INDUSTRIALIZADAS</option>
+                                                                                    <option value="27.10.00">27.10.00 - FABRICAÇÃO E ENGARRAFAMENTO DE VINHOS</option>
+                                                                                    <option value="27.20.00">27.20.00 - FABRICAÇÃO E ENGARRAFAMENTO DE AGUARDENTES, LICORES E OUTRAS BEBIDAS ALCOÓLICAS</option>
+                                                                                    <option value="27.40.00">27.40.00 - FABRICAÇÃO DE BEBIDAS NÃO ALCOÓLICAS - EXCETO ENGARRAFAMENTO E GASEIFICAÇÃO DE ÁGUAS MINERAIS EM EMBALAGEM PET</option>
+                                                                                    <option value="27.40.10">27.40.10 - FABRICAÇÃO E ENGARRAFAMENTO DE CERVEJAS, CHOPES, INCLUSIVE MALTES</option>
+                                                                                    <option value="28.10.00">28.10.00 - PREPARAÇÃO DE FUMO, FABRICAÇÃO DE CIGARROS, CHARUTOS E CIGARRILHAS E OUTRAS ATIVIDADES DE ELABORAÇÃO DO TABACO, NÃO ESPECIFICADAS OU NÃO CLASSIFICADAS</option>
+                                                                                    <option value="29.10.00">29.10.00 - ATIVIDADES DA INDÚSTRIA EDITORIAL E GRÁFICA COM GERAÇÃO DE RESÍDUOS PERIGOSOS OU COM GERAÇÃO DE EFLUENTES LÍQUIDOS OU COM EMISSÕES ATMOSFÉRICAS</option>
+                                                                                    <option value="30.10.00">30.10.00 - USINAS DE PRODUÇÃO DE CONCRETO OU ARGAMASSA</option>
+                                                                                    <option value="30.20.00">30.20.00 - USINAS DE PRODUÇÃO DE CONCRETO ASFÁLTICO</option>
+                                                                                    <option value="30.30.00">30.30.00 - FABRICAÇÃO DE BIOCOMBUSTÍVEIS, EXCETO ÁLCOOL</option>
+                                                                                    <option value="30.40.00">30.40.00 - FABRICAÇÃO DE ABRASIVOS</option>
+                                                                                    <option value="30.60.00">30.60.00 - FABRICAÇÃO DE CARVÃO ATIVADO E CARDIFF</option>
+                                                                                    <option value="30.60.10">30.60.10 - FABRICAÇÃO DE CARVÃO VEGETAL</option>
+                                                                                    <option value="30.70.00">30.70.00 - FABRICAÇÃO DE ARTIGOS DIVERSOS DE RESINAS, FIBRAS, FIOS ARTIFICIAIS E SINTÉTICOS E BORRACHA E LÁTEX SINTÉTICO</option>
+                                                                                    <option value="30.80.00">30.80.00 - FABRICAÇÃO DE FRALDAS DESCARTÁVEIS E ABSORVENTES HIGIÊNICOS</option>
+                                                                                    <option value="30.90.00">30.90.00 - FABRICAÇÃO DE CALÇADOS DE QUALQUER MATERIAL, EXCETO EM COURO</option>
+                                                                                    <option value="30.90.10">30.90.10 - FABRICAÇÃO DE PARTES DE CALÇADO DE QUALQUER MATERIAL, EXCETO EM COURO</option>
+                                                                                    <option value="33.10.00">33.10.00 - IMPLANTAÇÃO DE FERROVIAS</option>
+                                                                                    <option value="33.11.00">33.11.00 - IMPLANTAÇÃO PIONEIRA DE ESTRADAS PÚBLICAS OU OPERAÇÃO DE RODOVIAS (EXCETO AS VICINAIS), COM OU SEM PAVIMENTAÇÃO</option>
+                                                                                    <option value="33.12.00">33.12.00 - IMPLANTAÇÃO, DUPLICAÇÃO OU PAVIMENTAÇÃO DE RODOVIAS, EXCETO AS VICINAIS OU SOBRE VIAS URBANAS CONSOLIDADAS</option>
+                                                                                    <option value="33.12.01">33.12.01 - CANAIS PARA NAVEGAÇÃO</option>
+                                                                                    <option value="33.12.02">33.12.02 - RESTAURAÇÃO E MELHORIAS DE RODOVIAS PAVIMENTADAS</option>
+                                                                                    <option value="33.13.00">33.13.00 - RESERVATÓRIOS ARTIFICIAIS PARA USOS MÚLTIPLOS QUE NÃO DECORRAM DE BARRAMENTO OU REPRESAMENTO DE CURSOS D’ÁGUA NATURAIS</option>
+                                                                                    <option value="33.13.03">33.13.03 - BARRAGEM OU RESERVATÓRIO ARTIFICIAL DE USOS MÚLTIPLOS QUE DECORRAM DE BARRAMENTO OU REPRESAMENTO EM CURSOS D’ÁGUA NATURAIS</option>
+                                                                                    <option value="33.13.05">33.13.05 - CANAIS DE IRRIGAÇÃO</option>
+                                                                                    <option value="33.13.07">33.13.07 - RETIFICAÇÃO DE CURSOS D’ÁGUA</option>
+                                                                                    <option value="33.13.08">33.13.08 - CANALIZAÇÃO DE CURSOS D’ÁGUA</option>
+                                                                                    <option value="33.13.09">33.13.09 - ABERTURAS DE BARRAS E EMBOCADURAS</option>
+                                                                                    <option value="33.13.12">33.13.12 - MOLHES E GUIAS DE CORRENTES E SIMILARES</option>
+                                                                                    <option value="33.13.13">33.13.13 - DIQUES</option>
+                                                                                    <option value="33.13.19">33.13.19 - ESTRUTURA DE APOIO NÁUTICO - EAN I - TRAPICHE, PIER, ATRACADOURO, RAMPA DE LANÇAMENTO DE EMBARCAÇÕES E PLATAFORMA DE PESCA</option>
+                                                                                    <option value="33.13.20">33.13.20 - ESTRUTURA DE APOIO NÁUTICO - EAN II - GARAGEM NÁUTICA OU MARINA</option>
+                                                                                    <option value="33.13.21">33.13.21 - TRANSPOSIÇÃO DE BACIA</option>
+                                                                                    <option value="33.13.27">33.13.27 - RETIFICAÇÃO DE CURSOS D&#039;ÁGUA, EM NO MÁXIMO 50 M (CINQUENTA METROS) DE EXTENSÃO EM ÁREAS ANTROPIZADAS, VISANDO A CONTENÇÃO DE PROCESSOS EROSIVOS, SEGURANÇA DE EDIFICAÇÕES E DE VIAS PÚBLICAS </option>
+                                                                                    <option value="33.13.28">33.13.28 - CANALIZAÇÃO OU TUBULAÇÃO DE CURSOS D&#039;ÁGUA EM ÁREA URBANA, EM NO MÁXIMO 100 M (CEM METROS) LINEARES DE EXTENSÃO ENTRE TRECHOS JÁ TUBULADOS OU CANALIZADOS.</option>
+                                                                                    <option value="33.20.00">33.20.00 - DRAGAGEM</option>
+                                                                                    <option value="33.20.01">33.20.01 - DESASSOREAMENTO MECANIZADO DE CURSOS D’ÁGUA, EXCETO POR DRAGA</option>
+                                                                                    <option value="33.30.00">33.30.00 - MACRODRENAGEM</option>
+                                                                                    <option value="33.40.00">33.40.00 - ALIMENTAÇÃO ARTIFICIAL DE PRAIA</option>
+                                                                                    <option value="34.11.00">34.11.00 - PRODUÇÃO DE ENERGIA TERMOELÉTRICA</option>
+                                                                                    <option value="34.11.01">34.11.01 - PRODUÇÃO DE ENERGIA HIDRELÉTRICA</option>
+                                                                                    <option value="34.11.02">34.11.02 - PRODUÇÃO DE ENERGIA EÓLICA, EXCETO SE COM MINI GERAÇÃO DE ENERGIA DISTRIBUÍDA</option>
+                                                                                    <option value="34.11.03">34.11.03 - USINA DE ENERGIA SOLAR TERMOELÉTRICA</option>
+                                                                                    <option value="34.11.04">34.11.04 - PRODUÇÃO DE ENERGIA SOLAR FOTOVOLTAICA NO SOLO</option>
+                                                                                    <option value="34.11.05">34.11.05 - PRODUÇÃO DE ENERGIA TERMOELÉTRICA A PARTIR DE GÁS NATURAL</option>
+                                                                                    <option value="34.11.06">34.11.06 - PRODUÇÃO DE ENERGIA HIDRELÉTRICA ATRAVÉS DE CENTRAIS GERADORAS HIDRELÉTRICAS DE GERAÇÃO DISTRIBUÍDA ATÉ 0,5 MW, SEM FORMAÇÃO DE RESERVATÓRIO OU COM APROVEITAMENTO DE BARRAMENTOS JÁ CONSOLIDADOS</option>
+                                                                                    <option value="34.11.10">34.11.10 - PLANTA PILOTO PARA PRODUÇÃO DE ENERGIA ELÉTRICA POR PERÍODO DE ATÉ 48 MESES</option>
+                                                                                    <option value="34.12.00">34.12.00 - LINHAS E REDES DE TRANSMISSÃO DE ENERGIA ELÉTRICA</option>
+                                                                                    <option value="34.15.00">34.15.00 - SUBESTAÇÃO DE TRANSMISSÃO DE ENERGIA ELÉTRICA</option>
+                                                                                    <option value="34.20.00">34.20.00 - UNIDADE DE PRODUÇÃO DE GÁS E BIOGÁS, COM OU SEM APROVEITAMENTO ENERGÉTICO</option>
+                                                                                    <option value="34.31.00">34.31.00 - CAPTAÇÃO, ADUÇÃO OU TRATAMENTO DE ÁGUA BRUTA SUPERFICIAL PARA ABASTECIMENTO PÚBLICO</option>
+                                                                                    <option value="34.31.01">34.31.01 - ADUÇÃO OU TRATAMENTO DE ÁGUA BRUTA SUBTERRÂNEA PARA ABASTECIMENTO PÚBLICO</option>
+                                                                                    <option value="34.31.10">34.31.10 - SISTEMA DE COLETA E TRATAMENTO DE EFLUENTES INDUSTRIAIS</option>
+                                                                                    <option value="34.31.11">34.31.11 - SISTEMA DE COLETA E TRATAMENTO DE ESGOTOS SANITÁRIOS</option>
+                                                                                    <option value="34.31.12">34.31.12 - SISTEMA PÚBLICO DE COLETA E TRATAMENTO DE ESGOTOS SANITÁRIOS COM SISTEMA DE DISPOSIÇÃO OCEÂNICA</option>
+                                                                                    <option value="34.31.13">34.31.13 - SISTEMA DE TRATAMENTO DE EFLUENTES SANITÁRIOS PROVENIENTE DE SERVIÇOS DE COLETA E TRANSPORTE RODOVIÁRIO DE EFLUENTES SANITÁRIOS</option>
+                                                                                    <option value="34.41.09">34.41.09 - Tratamento de resíduos sólidos urbanos e seus derivados, por processos térmicos, com ou sem aproveitamento energético</option>
+                                                                                    <option value="34.41.10">34.41.10 - DISPOSIÇÃO FINAL DE REJEITOS URBANOS EM ATERROS SANITÁRIOS</option>
+                                                                                    <option value="34.41.11">34.41.11 - TRATAMENTO TÉRMICO DE RESÍDUOS DE SERVIÇOS DE SAÚDE</option>
+                                                                                    <option value="34.41.13">34.41.13 - Estação de transbordo para resíduos ou rejeitos sólidos urbanos ou equiparados aos resíduos domiciliares</option>
+                                                                                    <option value="34.41.14">34.41.14 - UNIDADE DE REDUÇÃO MICROBIANA DE RESÍDUOS DE SERVIÇO DE SAÚDE</option>
+                                                                                    <option value="34.41.15">34.41.15 - UNIDADE DE COMPOSTAGEM DE RESÍDUOS SÓLIDOS URBANOS OU EQUIPARADOS, SEGREGADOS NA FONTE</option>
+                                                                                    <option value="34.41.16">34.41.16 - CENTRAL DE TRIAGEM DE RESÍDUOS SÓLIDOS URBANOS OU EQUIPARADOS, ORIUNDOS DE COLETA SELETIVA</option>
+                                                                                    <option value="34.41.17">34.41.17 - UNIDADE DE BIODIGESTÃO ANAERÓBICA DE RESÍDUOS</option>
+                                                                                    <option value="42.32.00">42.32.00 - COMÉRCIO DE COMBUSTÍVEIS LÍQUIDOS E GASOSOS EM POSTOS REVENDEDORES, POSTOS FLUTUANTES E INSTALAÇÕES DE SISTEMA RETALHISTA, COM OU SEM LAVAGEM OU LUBRIFICAÇÃO DE VEÍCULOS</option>
+                                                                                    <option value="42.32.20">42.32.20 - INSTALAÇÕES AÉREAS DE TANCAGEM AUTÔNOMA PARA CONSUMO PRÓPRIO DE COMBUSTÍVEIS LÍQUIDOS E GASOSOS</option>
+                                                                                    <option value="42.32.30">42.32.30 - SUBSTITUIÇÃO DE TANQUES NO COMÉRCIO DE COMBUSTÍVEIS EM POSTOS DE ABASTECIMENTO, POSTOS DE REVENDA, POSTOS FLUTUANTES E INSTALAÇÃO DE SISTEMA RETALHISTA</option>
+                                                                                    <option value="42.32.40">42.32.40 - INSTALAÇÕES SUBTERRÂNEAS DE TANCAGEM AUTÔNOMA PARA CONSUMO PRÓPRIO DE COMBUSTÍVEIS LÍQUIDOS OU GASOSOS</option>
+                                                                                    <option value="42.40.00">42.40.00 - DEPÓSITO DE AGROTÓXICOS EM CASAS AGROPECUÁRIAS</option>
+                                                                                    <option value="43.01.00">43.01.00 - COMÉRCIO ATACADISTA COM DEPÓSITOS DE PRODUTOS EXTRATIVOS DE ORIGEM MINERAL EM BRUTO</option>
+                                                                                    <option value="43.20.00">43.20.00 - Depósito ou armazenamento de produtos químicos perigosos, exceto
+combustíveis e agrotóxicos.</option>
+                                                                                    <option value="43.20.10">43.20.10 - COMÉRCIO ATACADISTA COM DEPÓSITOS DE AGROTÓXICOS</option>
+                                                                                    <option value="43.30.00">43.30.00 - COMÉRCIO ATACADISTA COM DEPÓSITOS DE COMBUSTÍVEIS E LUBRIFICANTES, DE ORIGEM VEGETAL E MINERAL</option>
+                                                                                    <option value="43.40.00">43.40.00 - POSTOS DE RECOLHIMENTO DE EMBALAGENS DE AGROTÓXICOS, VAZIAS OU CONTENDO RESÍDUOS</option>
+                                                                                    <option value="43.50.10">43.50.10 - CENTRAL DE RECOLHIMENTO DE EMBALAGENS DE AGROTÓXICOS, VAZIAS OU CONTENDO RESÍDUOS</option>
+                                                                                    <option value="47.10.10">47.10.10 - Transporte rodoviário de produtos perigosos, resíduos perigosos ou rejeitos perigosos,
+exclusivamente no território catarinense</option>
+                                                                                    <option value="47.51.00">47.51.00 - TRANSPORTE POR OLEODUTOS, GASODUTOS E MINERODUTOS</option>
+                                                                                    <option value="47.51.10">47.51.10 - RAMAIS PARA TRANSPORTE DE COMBUSTÍVEIS</option>
+                                                                                    <option value="47.51.20">47.51.20 - RAMAIS PARA DISTRIBUIÇÃO DE GÁS NATURAL, EXCETO QUANDO EM ÁREAS URBANAS OU EM FAIXAS DE DOMÍNIO DE INFRAESTRUTURAS VIÁRIAS JÁ IMPLANTADAS</option>
+                                                                                    <option value="47.81.00">47.81.00 - PORTOS</option>
+                                                                                    <option value="47.81.01">47.81.01 - TERMINAIS PORTUÁRIOS</option>
+                                                                                    <option value="47.82.01">47.82.01 - AEROPORTOS</option>
+                                                                                    <option value="47.82.02">47.82.02 - TERMINAIS AEROPORTUÁRIOS DE CARGA</option>
+                                                                                    <option value="47.82.03">47.82.03 - Aeródromo, exceto helipontos, heliportos e áreas para veículos aéreos não tripulados (VanT)</option>
+                                                                                    <option value="47.83.01">47.83.01 - TERMINAL DE MINÉRIO</option>
+                                                                                    <option value="47.83.02">47.83.02 - TERMINAL DE PETRÓLEO</option>
+                                                                                    <option value="47.83.03">47.83.03 - TERMINAL DE PRODUTOS QUÍMICOS</option>
+                                                                                    <option value="47.84.00">47.84.00 - TERMINAL RODOVIÁRIO DE CARGA ONDE SE OBSERVE PELO MENOS UMA DAS SEGUINTES CONDIÇÕES:
+A) NÃO POSSUA PLANO DIRETOR
+B) NÃO EXISTA SISTEMA DE COLETA E TRATAMENTO DE ESGOTO SANITÁRIO NA ÁREA OBJETO DA ATIVIDADE</option>
+                                                                                    <option value="47.85.00">47.85.00 - TERMINAL FERROVIÁRIO DE CARGA</option>
+                                                                                    <option value="47.86.00">47.86.00 - TERMINAL RETROPORTUÁRIO</option>
+                                                                                    <option value="53.20.20">53.20.20 - SERVIÇO DE COLETA E TRANSPORTE RODOVIÁRIO DE EFLUENTES</option>
+                                                                                    <option value="53.40.00">53.40.00 - SERVIÇOS DE APLICAÇÃO AÉREA DE AGROTÓXICOS E/OU PRODUTOS AGRÍCOLAS, POR AERONAVES tripuladas</option>
+                                                                                    <option value="56.11.00">56.11.00 - HOSPITAIS, SANATÓRIOS E MATERNIDADES</option>
+                                                                                    <option value="56.11.01">56.11.01 - LABORATÓRIO DE ANÁLISES DE SERVIÇOS DE SAÚDE, EXCETO LOCAIS EXCLUSIVOS DE COLETA</option>
+                                                                                    <option value="56.20.00">56.20.00 - HOSPITAIS PARA ANIMAIS E CENTRO DE ZOONOSES COM ALOJAMENTO DE ANIMAIS</option>
+                                                                                    <option value="71.00.00">71.00.00 - SERVIÇOS DE REPARAÇÃO E MANUTENÇÃO DE MÁQUINAS, EQUIPAMENTOS OU VEÍCULOS, COM PINTURA, EXCETO MANUTENÇÃO DE ELETRODOMÉSTICOS</option>
+                                                                                    <option value="71.01.00">71.01.00 - LABORATÓRIOS DE PRESTAÇÃO DE SERVIÇOS DE ANÁLISES BIOLÓGICAS, FÍSICAS, FÍSICO-QUÍMICAS, EXCLUÍDAS AS UNIDADES LABORATORIAIS TEMPORÁRIAS</option>
+                                                                                    <option value="71.11.00">71.11.00 - PARCELAMENTO DO SOLO URBANO LOTEAMENTO LOCALIZADO EM MUNICÍPIOS DA ZONA COSTEIRA, ASSIM DEFINIDOS PELA LEGISLAÇÃO ESPECÍFICA, OU EM MUNICÍPIOS ONDE SE OBSERVE PELO MENOS UMA DAS SEGUINTES CONDIÇÕES</option>
+                                                                                    <option value="71.11.01">71.11.01 - CONDOMÍNIOS DE CASA OU EDIFÍCIOS RESIDENCIAIS LOCALIZADOS EM MUNICÍPIOS ONDE SE OBSERVE PELO MENOS UMA DAS SEGUINTES CONDIÇÕES</option>
+                                                                                    <option value="71.11.02">71.11.02 - ATIVIDADES DE HOTELARIA LOCALIZADOS EM MUNICÍPIOS ONDE SE OBSERVE PELO MENOS UMA DAS SEGUINTES CONDIÇÕES</option>
+                                                                                    <option value="71.11.03">71.11.03 - CONDOMÍNIO EM ÁREAS RURAIS LOCALIZADOS EM MUNICÍPIOS ONDE SE OBSERVE PELO MENOS UMA DAS SEGUINTES CONDIÇÕES</option>
+                                                                                    <option value="71.11.05">71.11.05 - CONJUNTOS HABITACIONAIS DESTINADOS À POPULAÇÃO DE BAIXA RENDA QUE IMPLIQUEM EM PARCELAMENTO DE SOLO</option>
+                                                                                    <option value="71.11.06">71.11.06 - CONDOMÍNIOS COMERCIAIS HORIZONTAIS OU VERTICAIS LOCALIZADOS EM MUNICÍPIOS ONDE SE OBSERVE PELO MENOS UMA DAS SEGUINTES CONDIÇÕES</option>
+                                                                                    <option value="71.11.07">71.11.07 - CONDOMÍNIOS DE EDIFÍCIOS DE USO MISTO (COMERCIAL, RESIDENCIAL, SERVIÇOS) LOCALIZADOS EM MUNICÍPIOS ONDE SE OBSERVE PELO MENOS UMA DAS SEGUINTES CONDIÇÕES</option>
+                                                                                    <option value="71.11.08">71.11.08 - PARCELAMENTO DO SOLO URBANO CONDOMÍNIO DE LOTES PARA FINS RESIDENCIAIS, LOCALIZADO EM MUNICÍPIOS DA ZONA COSTEIRA, ASSIM DEFINIDOS PELA LEGISLAÇÃO ESPECÍFICA OU EM MUNICÍPIOS ONDE SE OBSERVE PELO MENOS UMA DAS SEGUINTES CONDIÇÕES</option>
+                                                                                    <option value="71.21.10">71.21.10 - LOTEAMENTO COM FINS INDUSTRIAIS E COMERCIAIS</option>
+                                                                                    <option value="71.21.11">71.21.11 - CONDOMÍNIO COM FINS INDUSTRIAIS OU DE SERVIÇOS (MULTISSETORIAL)</option>
+                                                                                    <option value="71.30.00">71.30.00 - UNIDADE DE RECICLAGEM DE RESÍDUOS CLASSE I</option>
+                                                                                    <option value="71.30.01">71.30.01 - UNIDADE DE RECICLAGEM DE RESÍDUOS CLASSE IIB</option>
+                                                                                    <option value="71.30.02">71.30.02 - UNIDADE DE RECICLAGEM DE RESÍDUOS CLASSE II A</option>
+                                                                                    <option value="71.30.03">71.30.03 - UNIDADE DE RECICLAGEM DE ELETROELETRÔNICOS E ELETRODOMÉSTICOS PÓS CONSUMO</option>
+                                                                                    <option value="71.30.04">71.30.04 - UNIDADE DE COMPOSTAGEM COM PRODUÇÃO DE FERTILIZANTE ORGÂNICO</option>
+                                                                                    <option value="71.40.01">71.40.01 - UNIDADE DE DESCARACTERIZAÇÃO, COM OU SEM DESCONTAMINAÇÃO, COM OU SEM RECICLAGEM DE LÂMPADAS</option>
+                                                                                    <option value="71.40.02">71.40.02 - UNIDADE MÓVEL DE TRATAMENTO DE RESÍDUOS, SEM QUE OCORRA EMISSÃO DE EFLUENTES GASOSOS</option>
+                                                                                    <option value="71.50.00">71.50.00 - DEPÓSITO E ATERRO DE REJEITOS DE MINERAÇÃO - EXCETO CARVÃO MINERAL</option>
+                                                                                    <option value="71.60.00">71.60.00 - Tratamento de resíduos Classes I, IIA e IIB, por processos térmicos, com ou sem aproveitamento energético, exceto para recuperação energética de resíduos em caldeiras à biomassa e derivados de madeira</option>
+                                                                                    <option value="71.60.01">71.60.01 - ARMAZENAMENTO TEMPORÁRIO DE RESÍDUOS CLASSE I</option>
+                                                                                    <option value="71.60.02">71.60.02 - ARMAZENAMENTO TEMPORÁRIO DE RESÍDUOS CLASSE IIA, EXCETO ELETROELETRÔNICOS E ELETRODOMÉSTICOS PÓS-CONSUMO</option>
+                                                                                    <option value="71.60.03">71.60.03 - DISPOSIÇÃO FINAL DE REJEITOS CLASSE I, DE QUALQUER ORIGEM</option>
+                                                                                    <option value="71.60.04">71.60.04 - DISPOSIÇÃO FINAL DE REJEITOS CLASSE II A E CLASSE IIB, DE QUALQUER ORIGEM, EM ATERROS</option>
+                                                                                    <option value="71.60.05">71.60.05 - DISPOSIÇÃO FINAL DE REJEITOS DA CONSTRUÇÃO CIVIL, EM ATERROS</option>
+                                                                                    <option value="71.60.06">71.60.06 - UNIDADE DE RECICLAGEM DE RESÍDUOS DA CONSTRUÇÃO CIVIL</option>
+                                                                                    <option value="71.60.07">71.60.07 - UNIDADE DE MISTURA E PRÉ-CONDICIONAMENTO DE RESÍDUOS INDUSTRIAIS CLASSE I E CLASSE IIA PARA FINS DE COPROCESSAMENTO</option>
+                                                                                    <option value="71.60.08">71.60.08 - ARMAZENAMENTO TEMPORÁRIO DE ELETROELETRÔNICOS E ELETRODOMÉSTICOS PÓS-CONSUMO</option>
+                                                                                    <option value="71.60.09">71.60.09 - DESTINAÇÃO FINAL DE REJEITOS E EFLUENTES, CLASSE I, ORIUNDOS DE OUTROS ESTADOS, EM ATERROS, OU POR INCINERAÇÃO SEM APROVEITAMENTO ENERGÉTICO OU PARA TRATAMENTO DE EFLUENTES</option>
+                                                                                    <option value="71.60.10">71.60.10 - UTILIZAÇÃO DE RESÍDUOS CLASSES I, IIA OU IIB COMO INSUMOS NA AGRICULTURA, SILVICULTURA OU EM PROCESSOS INDUSTRIAIS OU CONSTRUTIVOS</option>
+                                                                                    <option value="71.60.11">71.60.11 - DESTINAÇÃO FINAL DE REJEITOS E EFLUENTES, CLASSE IIA, ORIUNDOS DE OUTROS ESTADOS, EM ATERROS, OU POR INCINERAÇÃO SEM APROVEITAMENTO ENERGÉTICO OU PARA TRATAMENTO DE EFLUENTES</option>
+                                                                                    <option value="71.60.12">71.60.12 - UNIDADE DE TRIAGEM DE RESÍDUOS DE CONSTRUÇÃO CIVIL E VOLUMOSOS, COM ÁREA DE RESERVAÇÃO</option>
+                                                                                    <option value="71.60.13">71.60.13 - ARMAZENAMENTO TEMPORÁRIO DE RESÍDUOS CLASSE IIB</option>
+                                                                                    <option value="71.60.14">71.60.14 - Recuperação energética de resíduos em caldeiras à biomassa, conforme Subseção XVIII da Resolução Consema n° 190 de 1 de abril de 2022</option>
+                                                                                    <option value="71.60.15">71.60.15 - Planta piloto para tratamento de resíduos sólidos e seus derivados, por meio de processos térmicos, com ou sem reaproveitamento energético, por período de até 48 meses.</option>
+                                                                                    <option value="71.70.10">71.70.10 - COMPLEXOS TURÍSTICO E DE LAZER, INCLUSIVE PARQUES TEMÁTICOS E AUTÓDROMOS</option>
+                                                                                    <option value="71.80.00">71.80.00 - RECUPERAÇÃO DE ÁREAS DEGRADADAS ATRAVÉS DA CONFORMAÇÃO DE RELEVO, EXCETO ÁREAS CONTAMINADAS</option>
+                                                                                    <option value="71.80.01">71.80.01 - RECUPERAÇÃO DE ÁREAS CONTAMINADAS</option>
+                                                                                    <option value="71.90.01">71.90.01 - CEMITÉRIOS</option>
+                                                                                    <option value="71.90.02">71.90.02 - CREMATÓRIOS</option>
+                                                                                    <option value="71.90.03">71.90.03 - CEMITÉRIOS IMPLANTADOS ATÉ ABRIL DE 2003 E COM ATIVIDADE DE SEPULTAMENTO EM OPERAÇÃO</option>
+                                                                                    <option value="71.90.04">71.90.04 - CEMITÉRIOS IMPLANTADOS APÓS ABRIL DE 2003 E COM ATIVIDADE DE SEPULTAMENTO EM OPERAÇÃO</option>
+                                                                                    <option value="71.91.00">71.91.00 - Serviços de somatoconservação ou de tanatopraxia ou de taxidermia, localizados em municípios onde se observe pelo menos uma das seguintes condições:
+a) não possua Plano Diretor, de acordo com a Lei federal nº 10.257, de 10 de julho de 2001;
+b) não exista sistema de coleta e tratamento de esgoto na área objeto da atividade.</option>
+                                                                            </select>
+                                </div>
+                                <div class="col-lg-4 col-md-12 mb-3">
+                                    <label for="campoPorte" class="form-label">Porte</label>
+                                    <select class="form-select" id="campoPorte" name="porte">
+                                        <option value="0">Selecione um porte</option>
+                                        <option value="P">Pequeno</option>
+                                        <option value="M">Médio</option>
+                                        <option value="G">Grande</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-4 col-md-12 mb-3">
+                                    <label for="campoPotencialPoluidor" class="form-label">Potencial Poluidor</label>
+                                    <select class="form-select" id="campoPotencialPoluidor" name="potencialPoluidor">
+                                        <option value="0">Selecione um porte</option>
+                                        <option value="P">Pequeno</option>
+                                        <option value="M">Médio</option>
+                                        <option value="G">Grande</option>
+                                    </select>
+                                </div>
+                                <div class="col-lg-4 col-md-6 mb-3">
+                                    <label for="campoMunicipio" class="form-label">Município</label>
+                                    <select class="form-select" id="campoMunicipio" name="municipio">
+                                        <option value="0">Selecione um município</option>
+                                                                                    <option value="4200051">ABDON BATISTA</option>
+                                                                                    <option value="4200101">ABELARDO LUZ</option>
+                                                                                    <option value="4200200">AGROLÂNDIA</option>
+                                                                                    <option value="4200309">AGRONÔMICA</option>
+                                                                                    <option value="4200408">ÁGUA DOCE</option>
+                                                                                    <option value="4200507">ÁGUAS DE CHAPECÓ</option>
+                                                                                    <option value="4200556">ÁGUAS FRIAS</option>
+                                                                                    <option value="4200606">ÁGUAS MORNAS</option>
+                                                                                    <option value="4200705">ALFREDO WAGNER</option>
+                                                                                    <option value="4200754">ALTO BELA VISTA</option>
+                                                                                    <option value="4200804">ANCHIETA</option>
+                                                                                    <option value="4200903">ANGELINA</option>
+                                                                                    <option value="4201000">ANITA GARIBALDI</option>
+                                                                                    <option value="4201109">ANITÁPOLIS</option>
+                                                                                    <option value="4201208">ANTÔNIO CARLOS</option>
+                                                                                    <option value="4201257">APIÚNA</option>
+                                                                                    <option value="4201273">ARABUTÃ</option>
+                                                                                    <option value="4201307">ARAQUARI</option>
+                                                                                    <option value="4201406">ARARANGUÁ</option>
+                                                                                    <option value="4201505">ARMAZÉM</option>
+                                                                                    <option value="4201604">ARROIO TRINTA</option>
+                                                                                    <option value="4201653">ARVOREDO</option>
+                                                                                    <option value="4201703">ASCURRA</option>
+                                                                                    <option value="4201802">ATALANTA</option>
+                                                                                    <option value="4201901">AURORA</option>
+                                                                                    <option value="4201950">BALNEÁRIO ARROIO DO SILVA</option>
+                                                                                    <option value="4202057">BALNEÁRIO BARRA DO SUL</option>
+                                                                                    <option value="4202008">BALNEÁRIO CAMBORIÚ</option>
+                                                                                    <option value="4212809">BALNEÁRIO DE PIÇARRAS</option>
+                                                                                    <option value="4202073">BALNEÁRIO GAIVOTA</option>
+                                                                                    <option value="4220000">BALNEÁRIO RINCÃO</option>
+                                                                                    <option value="4202081">BANDEIRANTE</option>
+                                                                                    <option value="4202099">BARRA BONITA</option>
+                                                                                    <option value="4202107">BARRA VELHA</option>
+                                                                                    <option value="4202131">BELA VISTA DO TOLDO</option>
+                                                                                    <option value="4202156">BELMONTE</option>
+                                                                                    <option value="4202206">BENEDITO NOVO</option>
+                                                                                    <option value="4202305">BIGUAÇU</option>
+                                                                                    <option value="4202404">BLUMENAU</option>
+                                                                                    <option value="4202438">BOCAINA DO SUL</option>
+                                                                                    <option value="4202453">BOMBINHAS</option>
+                                                                                    <option value="4202503">BOM JARDIM DA SERRA</option>
+                                                                                    <option value="4202537">BOM JESUS</option>
+                                                                                    <option value="4202578">BOM JESUS DO OESTE</option>
+                                                                                    <option value="4202602">BOM RETIRO</option>
+                                                                                    <option value="4202701">BOTUVERÁ</option>
+                                                                                    <option value="4202800">BRAÇO DO NORTE</option>
+                                                                                    <option value="4202859">BRAÇO DO TROMBUDO</option>
+                                                                                    <option value="4202875">BRUNÓPOLIS</option>
+                                                                                    <option value="4202909">BRUSQUE</option>
+                                                                                    <option value="4203006">CAÇADOR</option>
+                                                                                    <option value="4203105">CAIBI</option>
+                                                                                    <option value="4203154">CALMON</option>
+                                                                                    <option value="4203204">CAMBORIÚ</option>
+                                                                                    <option value="4203303">CAMPO ALEGRE</option>
+                                                                                    <option value="4203402">CAMPO BELO DO SUL</option>
+                                                                                    <option value="4203501">CAMPO ERÊ</option>
+                                                                                    <option value="4203600">CAMPOS NOVOS</option>
+                                                                                    <option value="4203709">CANELINHA</option>
+                                                                                    <option value="4203808">CANOINHAS</option>
+                                                                                    <option value="4203253">CAPÃO ALTO</option>
+                                                                                    <option value="4203907">CAPINZAL</option>
+                                                                                    <option value="4203956">CAPIVARI DE BAIXO</option>
+                                                                                    <option value="4204004">CATANDUVAS</option>
+                                                                                    <option value="4204103">CAXAMBU DO SUL</option>
+                                                                                    <option value="4204152">CELSO RAMOS</option>
+                                                                                    <option value="4204178">CERRO NEGRO</option>
+                                                                                    <option value="4204194">CHAPADÃO DO LAGEADO</option>
+                                                                                    <option value="4204202">CHAPECÓ</option>
+                                                                                    <option value="4204251">COCAL DO SUL</option>
+                                                                                    <option value="4204301">CONCÓRDIA</option>
+                                                                                    <option value="4204350">CORDILHEIRA ALTA</option>
+                                                                                    <option value="4204400">CORONEL FREITAS</option>
+                                                                                    <option value="4204459">CORONEL MARTINS</option>
+                                                                                    <option value="4204558">CORREIA PINTO</option>
+                                                                                    <option value="4204509">CORUPÁ</option>
+                                                                                    <option value="4204608">CRICIÚMA</option>
+                                                                                    <option value="4204707">CUNHA PORÃ</option>
+                                                                                    <option value="4204756">CUNHATAÍ</option>
+                                                                                    <option value="4204806">CURITIBANOS</option>
+                                                                                    <option value="4204905">DESCANSO</option>
+                                                                                    <option value="4205001">DIONÍSIO CERQUEIRA</option>
+                                                                                    <option value="4205100">DONA EMMA</option>
+                                                                                    <option value="4205159">DOUTOR PEDRINHO</option>
+                                                                                    <option value="4205175">ENTRE RIOS</option>
+                                                                                    <option value="4205191">ERMO</option>
+                                                                                    <option value="4205209">ERVAL VELHO</option>
+                                                                                    <option value="4205308">FAXINAL DOS GUEDES</option>
+                                                                                    <option value="4205357">FLOR DO SERTÃO</option>
+                                                                                    <option value="4205407">FLORIANÓPOLIS</option>
+                                                                                    <option value="4205431">FORMOSA DO SUL</option>
+                                                                                    <option value="4205456">FORQUILHINHA</option>
+                                                                                    <option value="4205506">FRAIBURGO</option>
+                                                                                    <option value="4205555">FREI ROGÉRIO</option>
+                                                                                    <option value="4205605">GALVÃO</option>
+                                                                                    <option value="4205704">GAROPABA</option>
+                                                                                    <option value="4205803">GARUVA</option>
+                                                                                    <option value="4205902">GASPAR</option>
+                                                                                    <option value="4206009">GOVERNADOR CELSO RAMOS</option>
+                                                                                    <option value="4206108">GRÃO PARÁ</option>
+                                                                                    <option value="4206207">GRAVATAL</option>
+                                                                                    <option value="4206306">GUABIRUBA</option>
+                                                                                    <option value="4206405">GUARACIABA</option>
+                                                                                    <option value="4206504">GUARAMIRIM</option>
+                                                                                    <option value="4206603">GUARUJÁ DO SUL</option>
+                                                                                    <option value="4206652">GUATAMBÚ</option>
+                                                                                    <option value="4206702">HERVAL D OESTE</option>
+                                                                                    <option value="4206751">IBIAM</option>
+                                                                                    <option value="4206801">IBICARÉ</option>
+                                                                                    <option value="4206900">IBIRAMA</option>
+                                                                                    <option value="4207007">IÇARA</option>
+                                                                                    <option value="4207106">ILHOTA</option>
+                                                                                    <option value="4207205">IMARUÍ</option>
+                                                                                    <option value="4207304">IMBITUBA</option>
+                                                                                    <option value="4207403">IMBUIA</option>
+                                                                                    <option value="4207502">INDAIAL</option>
+                                                                                    <option value="4207577">IOMERÊ</option>
+                                                                                    <option value="4207601">IPIRA</option>
+                                                                                    <option value="4207650">IPORÃ DO OESTE</option>
+                                                                                    <option value="4207684">IPUAÇU</option>
+                                                                                    <option value="4207700">IPUMIRIM</option>
+                                                                                    <option value="4207759">IRACEMINHA</option>
+                                                                                    <option value="4207809">IRANI</option>
+                                                                                    <option value="4207858">IRATI</option>
+                                                                                    <option value="4207908">IRINEÓPOLIS</option>
+                                                                                    <option value="4208005">ITÁ</option>
+                                                                                    <option value="4208104">ITAIÓPOLIS</option>
+                                                                                    <option value="4208203">ITAJAÍ</option>
+                                                                                    <option value="4208302">ITAPEMA</option>
+                                                                                    <option value="4208401">ITAPIRANGA</option>
+                                                                                    <option value="4208450">ITAPOÁ</option>
+                                                                                    <option value="4208500">ITUPORANGA</option>
+                                                                                    <option value="4208609">JABORÁ</option>
+                                                                                    <option value="4208708">JACINTO MACHADO</option>
+                                                                                    <option value="4208807">JAGUARUNA</option>
+                                                                                    <option value="4208906">JARAGUÁ DO SUL</option>
+                                                                                    <option value="4208955">JARDINÓPOLIS</option>
+                                                                                    <option value="4209003">JOAÇABA</option>
+                                                                                    <option value="4209102">JOINVILLE</option>
+                                                                                    <option value="4209151">JOSÉ BOITEUX</option>
+                                                                                    <option value="4209177">JUPIÁ</option>
+                                                                                    <option value="4209201">LACERDÓPOLIS</option>
+                                                                                    <option value="4209300">LAGES</option>
+                                                                                    <option value="4209409">LAGUNA</option>
+                                                                                    <option value="4209458">LAJEADO GRANDE</option>
+                                                                                    <option value="4209508">LAURENTINO</option>
+                                                                                    <option value="4209607">LAURO MULLER</option>
+                                                                                    <option value="4209706">LEBON RÉGIS</option>
+                                                                                    <option value="4209805">LEOBERTO LEAL</option>
+                                                                                    <option value="4209854">LINDÓIA DO SUL</option>
+                                                                                    <option value="4209904">LONTRAS</option>
+                                                                                    <option value="4210001">LUIZ ALVES</option>
+                                                                                    <option value="4210035">LUZERNA</option>
+                                                                                    <option value="4210050">MACIEIRA</option>
+                                                                                    <option value="4210100">MAFRA</option>
+                                                                                    <option value="4210209">MAJOR GERCINO</option>
+                                                                                    <option value="4210308">MAJOR VIEIRA</option>
+                                                                                    <option value="4210407">MARACAJÁ</option>
+                                                                                    <option value="4210506">MARAVILHA</option>
+                                                                                    <option value="4210555">MAREMA</option>
+                                                                                    <option value="4210605">MASSARANDUBA</option>
+                                                                                    <option value="4210704">MATOS COSTA</option>
+                                                                                    <option value="4210803">MELEIRO</option>
+                                                                                    <option value="4210852">MIRIM DOCE</option>
+                                                                                    <option value="4210902">MODELO</option>
+                                                                                    <option value="4211009">MONDAÍ</option>
+                                                                                    <option value="4211058">MONTE CARLO</option>
+                                                                                    <option value="4211108">MONTE CASTELO</option>
+                                                                                    <option value="4211207">MORRO DA FUMAÇA</option>
+                                                                                    <option value="4211256">MORRO GRANDE</option>
+                                                                                    <option value="4211306">NAVEGANTES</option>
+                                                                                    <option value="4211405">NOVA ERECHIM</option>
+                                                                                    <option value="4211454">NOVA ITABERABA</option>
+                                                                                    <option value="4211504">NOVA TRENTO</option>
+                                                                                    <option value="4211603">NOVA VENEZA</option>
+                                                                                    <option value="4211652">NOVO HORIZONTE</option>
+                                                                                    <option value="4211702">ORLEANS</option>
+                                                                                    <option value="4211751">OTACÍLIO COSTA</option>
+                                                                                    <option value="4211801">OURO</option>
+                                                                                    <option value="4211850">OURO VERDE</option>
+                                                                                    <option value="4211876">PAIAL</option>
+                                                                                    <option value="4211892">PAINEL</option>
+                                                                                    <option value="4211900">PALHOÇA</option>
+                                                                                    <option value="4212007">PALMA SOLA</option>
+                                                                                    <option value="4212056">PALMEIRA</option>
+                                                                                    <option value="4212106">PALMITOS</option>
+                                                                                    <option value="4212205">PAPANDUVA</option>
+                                                                                    <option value="4212239">PARAÍSO</option>
+                                                                                    <option value="4212254">PASSO DE TORRES</option>
+                                                                                    <option value="4212270">PASSOS MAIA</option>
+                                                                                    <option value="4212304">PAULO LOPES</option>
+                                                                                    <option value="4212403">PEDRAS GRANDES</option>
+                                                                                    <option value="4212502">PENHA</option>
+                                                                                    <option value="4212601">PERITIBA</option>
+                                                                                    <option value="4212650">PESCARIA BRAVA</option>
+                                                                                    <option value="4212700">PETROLÂNDIA</option>
+                                                                                    <option value="4212908">PINHALZINHO</option>
+                                                                                    <option value="4213005">PINHEIRO PRETO</option>
+                                                                                    <option value="4213104">PIRATUBA</option>
+                                                                                    <option value="4213153">PLANALTO ALEGRE</option>
+                                                                                    <option value="4213203">POMERODE</option>
+                                                                                    <option value="4213302">PONTE ALTA</option>
+                                                                                    <option value="4213351">PONTE ALTA DO NORTE</option>
+                                                                                    <option value="4213401">PONTE SERRADA</option>
+                                                                                    <option value="4213500">PORTO BELO</option>
+                                                                                    <option value="4213609">PORTO UNIÃO</option>
+                                                                                    <option value="4213708">POUSO REDONDO</option>
+                                                                                    <option value="4213807">PRAIA GRANDE</option>
+                                                                                    <option value="4213906">PRESIDENTE CASTELO BRANCO</option>
+                                                                                    <option value="4214003">PRESIDENTE GETÚLIO</option>
+                                                                                    <option value="4214102">PRESIDENTE NEREU</option>
+                                                                                    <option value="4214151">PRINCESA</option>
+                                                                                    <option value="4214201">QUILOMBO</option>
+                                                                                    <option value="4214300">RANCHO QUEIMADO</option>
+                                                                                    <option value="4214409">RIO DAS ANTAS</option>
+                                                                                    <option value="4214508">RIO DO CAMPO</option>
+                                                                                    <option value="4214607">RIO DO OESTE</option>
+                                                                                    <option value="4214706">RIO DOS CEDROS</option>
+                                                                                    <option value="4214805">RIO DO SUL</option>
+                                                                                    <option value="4214904">RIO FORTUNA</option>
+                                                                                    <option value="4215000">RIO NEGRINHO</option>
+                                                                                    <option value="4215059">RIO RUFINO</option>
+                                                                                    <option value="4215075">RIQUEZA</option>
+                                                                                    <option value="4215109">RODEIO</option>
+                                                                                    <option value="4215208">ROMELÂNDIA</option>
+                                                                                    <option value="4215307">SALETE</option>
+                                                                                    <option value="4215356">SALTINHO</option>
+                                                                                    <option value="4215406">SALTO VELOSO</option>
+                                                                                    <option value="4215455">SANGÃO</option>
+                                                                                    <option value="4215505">SANTA CECÍLIA</option>
+                                                                                    <option value="4215554">SANTA HELENA</option>
+                                                                                    <option value="4215604">SANTA ROSA DE LIMA</option>
+                                                                                    <option value="4215653">SANTA ROSA DO SUL</option>
+                                                                                    <option value="4215679">SANTA TEREZINHA</option>
+                                                                                    <option value="4215687">SANTA TEREZINHA DO PROGRESSO</option>
+                                                                                    <option value="4215695">SANTIAGO DO SUL</option>
+                                                                                    <option value="4215703">SANTO AMARO DA IMPERATRIZ</option>
+                                                                                    <option value="4215802">SÃO BENTO DO SUL</option>
+                                                                                    <option value="4215752">SÃO BERNARDINO</option>
+                                                                                    <option value="4215901">SÃO BONIFÁCIO</option>
+                                                                                    <option value="4216008">SÃO CARLOS</option>
+                                                                                    <option value="4216057">SÃO CRISTOVÃO DO SUL</option>
+                                                                                    <option value="4216107">SÃO DOMINGOS</option>
+                                                                                    <option value="4216206">SÃO FRANCISCO DO SUL</option>
+                                                                                    <option value="4216305">SÃO JOÃO BATISTA</option>
+                                                                                    <option value="4216354">SÃO JOÃO DO ITAPERIÚ</option>
+                                                                                    <option value="4216255">SÃO JOÃO DO OESTE</option>
+                                                                                    <option value="4216404">SÃO JOÃO DO SUL</option>
+                                                                                    <option value="4216503">SÃO JOAQUIM</option>
+                                                                                    <option value="4216602">SÃO JOSÉ</option>
+                                                                                    <option value="4216701">SÃO JOSÉ DO CEDRO</option>
+                                                                                    <option value="4216800">SÃO JOSÉ DO CERRITO</option>
+                                                                                    <option value="4216909">SÃO LOURENÇO DO OESTE</option>
+                                                                                    <option value="4217006">SÃO LUDGERO</option>
+                                                                                    <option value="4217105">SÃO MARTINHO</option>
+                                                                                    <option value="4217154">SÃO MIGUEL DA BOA VISTA</option>
+                                                                                    <option value="4217204">SÃO MIGUEL DO OESTE</option>
+                                                                                    <option value="4217253">SÃO PEDRO DE ALCÂNTARA</option>
+                                                                                    <option value="4217303">SAUDADES</option>
+                                                                                    <option value="4217402">SCHROEDER</option>
+                                                                                    <option value="4217501">SEARA</option>
+                                                                                    <option value="4217550">SERRA ALTA</option>
+                                                                                    <option value="4217600">SIDERÓPOLIS</option>
+                                                                                    <option value="4217709">SOMBRIO</option>
+                                                                                    <option value="4217758">SUL BRASIL</option>
+                                                                                    <option value="4217808">TAIÓ</option>
+                                                                                    <option value="4217907">TANGARÁ</option>
+                                                                                    <option value="4217956">TIGRINHOS</option>
+                                                                                    <option value="4218004">TIJUCAS</option>
+                                                                                    <option value="4218103">TIMBÉ DO SUL</option>
+                                                                                    <option value="4218202">TIMBÓ</option>
+                                                                                    <option value="4218251">TIMBÓ GRANDE</option>
+                                                                                    <option value="4218301">TRÊS BARRAS</option>
+                                                                                    <option value="4218350">TREVISO</option>
+                                                                                    <option value="4218400">TREZE DE MAIO</option>
+                                                                                    <option value="4218509">TREZE TÍLIAS</option>
+                                                                                    <option value="4218608">TROMBUDO CENTRAL</option>
+                                                                                    <option value="4218707">TUBARÃO</option>
+                                                                                    <option value="4218756">TUNÁPOLIS</option>
+                                                                                    <option value="4218806">TURVO</option>
+                                                                                    <option value="4218855">UNIÃO DO OESTE</option>
+                                                                                    <option value="4218905">URUBICI</option>
+                                                                                    <option value="4218954">URUPEMA</option>
+                                                                                    <option value="4219002">URUSSANGA</option>
+                                                                                    <option value="4219101">VARGEÃO</option>
+                                                                                    <option value="4219150">VARGEM</option>
+                                                                                    <option value="4219176">VARGEM BONITA</option>
+                                                                                    <option value="4219200">VIDAL RAMOS</option>
+                                                                                    <option value="4219309">VIDEIRA</option>
+                                                                                    <option value="4219358">VITOR MEIRELES</option>
+                                                                                    <option value="4219408">WITMARSUM</option>
+                                                                                    <option value="4219507">XANXERÊ</option>
+                                                                                    <option value="4219606">XAVANTINA</option>
+                                                                                    <option value="4219705">XAXIM</option>
+                                                                                    <option value="4219853">ZORTÉA</option>
+                                                                            </select>
+                                </div>
+                                <div class="col-lg-4 col-md-6 mb-3">
+                                    <label for="campoRegional" class="form-label">Regional</label>
+                                    <select class="form-select" id="campoRegional" name="regional">
+                                        <option value="0">Selecione uma regional</option>
+                                                                                    <option value="20">BLUMENAU / CVI</option>
+                                                                                    <option value="30">CAÇADOR / CMO</option>
+                                                                                    <option value="22">CANOINHAS / CPN</option>
+                                                                                    <option value="25">CHAPECÓ / CRO</option>
+                                                                                    <option value="50">CONCÓRDIA / CAU</option>
+                                                                                    <option value="19">CRICIÚMA / CRS</option>
+                                                                                    <option value="3">GRANDE FLORIANÓPOLIS / CRF </option>
+                                                                                    <option value="27">ITAJAÍ / CFI</option>
+                                                                                    <option value="48">JARAGUA DO SUL / CJS</option>
+                                                                                    <option value="24">JOAÇABA / CRP</option>
+                                                                                    <option value="21">JOINVILLE  / CRN</option>
+                                                                                    <option value="23">LAGES / CPS</option>
+                                                                                    <option value="39">MAFRA / CMF</option>
+                                                                                    <option value="28">RIO DO SUL  / CAV</option>
+                                                                                    <option value="29">SÃO MIGUEL D&#039;OESTE / CEO</option>
+                                                                                    <option value="26">TUBARÃO / CTB</option>
+                                                                            </select>
+                                </div>
+                            </div>
+                            <div class="row align-items-end">
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="g-recaptcha" data-sitekey="6LfZOEorAAAAAB9xY98VJE75xz2ChyFWNUtztBKA" data-callback="captchaValidado"></div>
+                                </div>
+                                <div class="col-md-6 col-lg-8">
+                                    <button type="submit" id="botaoConsultar" class="btn btn-primary" disabled>
+                                        <i class="fas fa-search me-1"></i> Consultar
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h4 class="card-title">Resultado da Consulta</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="tblResultado" class="table table-bordered table-striped" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Protocolo (FCE)</th>
+                                        <th>Formalização</th>
+                                        <th>Processo</th>
+                                        <th>Estudo</th>
+                                        <th>Município</th>
+                                        <th>Tipo Licença</th>
+                                        <th style="width: 40%;">Atividade</th>
+                                        <th>Potencial Poluidor</th>
+                                        <th>Empreendimento</th>
+                                        <th>Porte</th>
+                                        <th>Licença</th>
+                                        <th>Emissão</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    </div>
+
+
+    <footer class="site-footer">
+        <div class="footer-lines">
+            <div class="line-red"></div>
+            <div class="line-green"></div>
+        </div>
+
+            <script src="https://consultas.ima.sc.gov.br/js/jquery-3.7.1.min.js"></script>
+    <script src="https://consultas.ima.sc.gov.br/lib/bootstrap-5.3.8/js/bootstrap.bundle.min.js"></script>
+    <script src="https://consultas.ima.sc.gov.br/lib/dataTables/datatables.min.js"></script>
+
+    <script src="https://consultas.ima.sc.gov.br/lib/select2/select2.min.js"></script>    </footer>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+    function captchaValidado() {
+        document.getElementById("botaoConsultar").disabled = false;
+    }
+
+    $(document).ready(function() {
+        // Inicializa a tabela de resultados
+        var tabelaResultado = $('#tblResultado').DataTable({
+            paging: true,
+            lengthChange: true,
+            searching: true,
+            ordering: true,
+            info: true,
+            autoWidth: false,
+            responsive: true,
+            language: {
+                url: "https://consultas.ima.sc.gov.br/lib/dataTables/pt-br.json"
+            },
+            // Configuração dos botões de exportação
+            dom: 'Bfrtip',
+            buttons: [{
+                    extend: 'csv',
+                    text: 'Exportar CSV',
+                    className: 'btn btn-success btn-sm'
+                },
+                {
+                    extend: 'print',
+                    text: 'Imprimir',
+                    className: 'btn btn-info btn-sm'
+                }
+            ],
+            // Define as colunas que receberão os dados do AJAX
+            columns: [{
+                    data: 'fce'
+                }, {
+                    data: 'data_formalizacao'
+                }, {
+                    data: 'processo'
+                }, {
+                    data: 'estudo'
+                }, {
+                    data: 'municipio'
+                }, {
+                    data: 'tplicenca'
+                }, {
+                    data: 'atividade'
+                }, {
+                    data: 'potencialpoluidor'
+                },
+                {
+                    data: 'empreendimento'
+                }, {
+                    data: 'porte'
+                }, {
+                    data: 'licenca'
+                }, {
+                    data: 'data_emissao'
+                }
+            ]
+        });
+
+        // Evento de submit do formulário de pesquisa
+        $('#form-pesquisa').on('submit', function(e) {
+            e.preventDefault();
+
+            var $button = $(this).find('button[type="submit"]');
+            var $icon = $button.find('i');
+            var originalIconClass = 'fas fa-search me-1';
+            var loadingIconClass = 'fas fa-spinner fa-spin me-1';
+
+            $button.prop('disabled', true);
+            $icon.attr('class', loadingIconClass);
+            tabelaResultado.clear();
+            $.ajax({
+                url: "https://consultas.ima.sc.gov.br/relatorio/requeridas-emitidas",
+                type: 'POST',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function(data) {
+                    
+                    tabelaResultado.clear();
+                    if (data && data.length > 0) {
+                        tabelaResultado.rows.add(data);
+                    }
+                    tabelaResultado.draw();
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error("Erro AJAX:", textStatus, errorThrown, jqXHR.responseText);
+                    alert('Ocorreu um erro ao realizar a consulta.');
+                },
+                complete: function() {
+                    $button.prop('disabled', false);
+                    $icon.attr('class', originalIconClass);
+                    // Reseta o reCAPTCHA para uma nova consulta
+                    grecaptcha.reset();
+                    document.getElementById("botaoConsultar").disabled = true;
+                }
+            });
+        });
+
+        // Lógica para desabilitar o campo de atividade
+        $("#campoTipo").change(function() {
+            if ($("#campoTipo").val() == "EXPLORACAO_FLORESTAL") {
+                $("#campoAtividade").prop("disabled", true);
+                $("#campoPorte").prop("disabled", true);
+                $("#campoPotencialPoluidor").prop("disabled", true);
+            } else {
+                if ($("#campoTipo").val() == "CERTIDAO") {
+                    $("#campoPorte").prop("disabled", true);
+                } else {
+                    $("#campoPorte").prop("disabled", false);
+                    $("#campoAtividade").prop("disabled", false);
+                    $("#campoPotencialPoluidor").prop("disabled", false);
+                }
+
+            }
+        });
+
+
+        // Ativa o Select2 para o campo de Atividade
+        $('#campoAtividade').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Selecione uma atividade'
+        });
+
+        // Ativa o Select2 para o campo de Município
+        $('#campoMunicipio').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Selecione um município'
+        });
+
+        // Ativa o Select2 para o campo de Regional
+        $('#campoRegional').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Selecione uma regional'
+        });
+
+    });
+</script>
+
+</body>
+
+</html>
