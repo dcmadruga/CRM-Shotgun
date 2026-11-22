@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 194, data: '2026-11-22', titulo: 'Menu em nova ordem', itens: [
+    'O menu (lateral no computador e abas no celular) agora segue a ordem: Hoje, CRM, Propostas, TASK, Telemetria e Administração.'
+  ] },
   { v: 193, data: '2026-11-22', titulo: 'Ícone do app: reinstale para ver o S', itens: [
     'O app instalado passa a ser reconhecido como um app novo, com o ícone do S. Para trocar o ícone antigo: desinstale o Shotgun (clique com o botão direito no atalho ou nas configurações do navegador) e instale de novo pelo botão Instalar app ou pelo ícone de instalar na barra de endereço.',
     'Seus dados e o seu login continuam os mesmos. Não é preciso fazer nada no celular se o ícone já estiver certo.'
