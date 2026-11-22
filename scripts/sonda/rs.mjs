@@ -4,15 +4,20 @@ const UA = { 'user-agent': 'Mozilla/5.0 (compatible; shotgun-radar/1.0; +https:/
 const q = encodeURIComponent;
 const F = 'https://ww3.fepam.rs.gov.br/licenciamento/';
 const post = body => ({ method: 'POST', body: new URLSearchParams(body).toString(), headers: { ...UA, 'content-type': 'application/x-www-form-urlencoded', referer: F + 'Area1/default.asp' } });
-const corpo = { buscar: '1', tamanho: '', tipoBusca: 'muni', estado: 'RS', municipio: '4314902', razao: 'POSTO', atividade: '' };
 const urls = {
-  'fepam-pal': F + 'area1/popup3.asp?t=0&palavra=' + q('combust'),
-  'fepam-pal2': [F + 'area1/popup3.asp?t=0', post({ palavra: 'combustiveis' })],
-  'fepam-l-A3': ['https://ww3.fepam.rs.gov.br/licenciamento/Area3/lista2.asp', post(corpo)],
-  'fepam-l-up': ['https://ww3.fepam.rs.gov.br/LICENCIAMENTO/area3/lista2.asp', post(corpo)],
-  'fepam-l-get': 'https://ww3.fepam.rs.gov.br/licenciamento/area3/lista2.asp?' + new URLSearchParams(corpo),
-  'fepam-area3': 'https://ww3.fepam.rs.gov.br/licenciamento/area3/',
+  'qd-busca-rs': 'https://api.queridodiario.org.br/gazettes?querystring=' + q('"posto de combustíveis" licença') + '&published_since=2026-05-01&size=30&excerpt_size=800&number_of_excerpts=2&territory_ids=4314902&territory_ids=4305108&territory_ids=4304606&territory_ids=4314407&territory_ids=4316907&territory_ids=4309209',
+  'famurs-materia2': 'https://www.diariomunicipal.com.br/famurs/materia/A3C22DCD',
+  'sol-public': 'https://secweb.procergs.com.br/sra/public/',
+  'sol-consulta': 'https://secweb.procergs.com.br/sra/publico/consultaDocumentos.xhtml',
 };
+// endpoints do app do DOE-RS (Angular)
+try {
+  const js = await (await fetch('https://www.diariooficial.rs.gov.br/main-WOM4SM2S.js', { headers: UA })).text();
+  const achados = [...new Set([...js.matchAll(/["'`]((?:https?:\/\/[^"'`\s]{3,90})|(?:\/[a-z0-9_\-]+(?:\/[a-zA-Z0-9_\-${}.]+){1,6}))["'`]/g)].map(m => m[1]).filter(x => /api|doe|busca|materia|pesquis|diario|edic|ato|caderno/i.test(x)))];
+  await mkdir('rs-sondas', { recursive: true });
+  await writeFile('rs-sondas/doe-endpoints.txt', achados.join('\n'));
+  const i = js.search(/busca|pesquisa/i); await writeFile('rs-sondas/doe-trechos.txt', [...js.matchAll(/.{0,200}(?:materias\/|\/busca|pesquisa)[^]{0,200}/gi)].slice(0, 60).map(m => m[0]).join('\n=====\n'));
+} catch (e) { console.log('doe js', e.message); }
 await mkdir('rs-sondas', { recursive: true });
 const resumo = [];
 for (const [k, u] of Object.entries(urls)) {
