@@ -13,16 +13,15 @@ async function pega(nome, url, opts = {}) {
 }
 const AMP = 'https://www.diariomunicipal.com.br/amp/';
 const q = (t) => `${AMP}pesquisar?busca_avancada%5Btexto%5D=${encodeURIComponent(t)}&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-21&busca_avancada%5Bpagina%5D=1`;
-await pega('noticia-publicidade', 'https://www.parana.pr.gov.br/Audio/Mudancas-na-publicidade-de-licencas-ambientais-passam-vigorar-nesta-quinta-feira');
-await pega('iat-home', 'https://www.iat.pr.gov.br/');
-await pega('iat-busca-requeridas', 'https://www.iat.pr.gov.br/search/node?keys=licen%C3%A7as+requeridas');
-await pega('iat-busca-publicidade', 'https://www.iat.pr.gov.br/search/node?keys=publicidade+licen%C3%A7as');
-await pega('sga-home', 'https://www.sga.pr.gov.br/');
-await pega('sga-iat', 'https://sga.iat.pr.gov.br/');
-await pega('sga-consulta', 'https://www.sga.pr.gov.br/sga-iap/consultarProcessoLicenciamento.do?action=iniciar');
-await pega('amp-busca', q('"posto de combustíveis"'));
-await pega('amp-busca-sumula', q('súmula requerimento licença combustíveis'));
-await pega('dioe-consulta', 'https://www.documentos.dioe.pr.gov.br/dioe/consultaPublicaPDF.do?action=pgLocalizar&enviado=true');
-await pega('dioe-home', 'https://www.documentos.dioe.pr.gov.br/');
+await pega('noticia-dioe-nova', 'https://www.parana.pr.gov.br/aen/Noticia/Estado-moderniza-Diario-Oficial-com-nova-plataforma-digital-e-amplia-transparencia');
+await pega('servico-dioe', 'https://www.parana.pr.gov.br/servicos/Administracao/Transparencia/Consultar-o-Diario-Oficial-do-Estado-DIOE-Epol8QoB');
+await pega('dioe-http', 'http://www.documentos.dioe.pr.gov.br/');
+await pega('dioe-raiz', 'https://www.dioe.pr.gov.br/');
+await pega('dioe-raiz2', 'https://dioe.pr.gov.br/');
+await pega('diariooficial-pr', 'https://www.diariooficial.pr.gov.br/');
 await pega('qd-curitiba', 'https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-05-01&size=5&territory_ids=4106902&excerpt_size=500');
+await pega('qd-pr-cidades', 'https://api.queridodiario.org.br/cities?levels=3');
+await pega('amp-licenca', q('"licença prévia" posto'));
+await pega('amp-licenca2', q('"licença de instalação" combustíveis'));
+await pega('amp-meio', q('"meio ambiente" "posto de combustíveis" licença'));
 await writeFile('pr-sondas/resumo.tsv', resumo.join('\n') + '\n');
