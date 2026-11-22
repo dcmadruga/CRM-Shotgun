@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 184, data: '2026-11-22', titulo: 'Pedidos de acesso no sino', itens: [
+    'Administrador: quando alguém se cadastra pelo "Me cadastrar" e fica aguardando liberação, o pedido aparece no sino de notificações. Tocar no aviso abre a tela Usuários.'
+  ] },
   { v: 183, data: '2026-11-22', titulo: 'Filtros por usuário e estado no CRM', itens: [
     'CRM: filtre o Funil, os Leads e os Clientes por estado. O estado vem da cidade do lead ou da proposta.',
     'Os seus estados de atuação aparecem primeiro na lista de estados.',
