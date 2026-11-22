@@ -11,13 +11,15 @@ async function pega(nome, url, opts = {}) {
   } catch (e) { resumo.push(`${nome}\tERRO\t${e.message}\t${url}`); return ''; }
 }
 const D = 'https://diariomunicipal.sc.gov.br/';
-await pega('dom-lic', D + '?r=site/index&q=' + encodeURIComponent('combustíveis') + '&categoria=' + encodeURIComponent('Licenciamento ambiental') + '&dataInicial=01/08/2026&dataFinal=22/11/2026');
-await pega('dom-lic2', D + '?r=site/index&q=' + encodeURIComponent('"posto de combustíveis"') + '&categoria=' + encodeURIComponent('Licenciamento ambiental'));
-await pega('dom-ato', D + 'atos/8947782');
-await pega('ima-consulta', 'https://consultas.ima.sc.gov.br/consulta');
-await pega('ima-relatorio', 'https://consultas.ima.sc.gov.br/relatorio');
-await pega('gaia-processos', 'https://gaia.ima.sc.gov.br/web/processos');
-await pega('sinfat-consulta', 'https://sinfatmunicipal.ciga.sc.gov.br/consulta');
-await pega('sinfat-municipios', 'https://sinfatmunicipal.ciga.sc.gov.br/municipios');
-await pega('doe-v2', 'https://portal.doe.sea.sc.gov.br/v2.46.00/');
+const cat = '&categoria=' + encodeURIComponent('Licenciamento ambiental');
+await pega('dom-c-posto', D + '?r=site/index&q=posto' + cat + '&dataInicial=22/08/2026&dataFinal=22/11/2026');
+await pega('dom-c-4232', D + '?r=site/index&q=' + encodeURIComponent('"42.32"') + cat + '&dataInicial=22/08/2026&dataFinal=22/11/2026');
+await pega('dom-c-vazio', D + '?r=site/index&q=' + cat + '&dataInicial=15/11/2026&dataFinal=22/11/2026');
+await pega('dom-c-posto-p2', D + '?r=site/index&q=posto' + cat + '&dataInicial=22/08/2026&dataFinal=22/11/2026&AtoASolrDocument_page=2');
+await pega('dom-ato-lic', D + 'atos/8758649');
+const S = 'https://sinfatmunicipal.ciga.sc.gov.br/consulta';
+await pega('sinfat-form-mes', S + '?status=formalizado&periodo=mes');
+await pega('sinfat-emit-semana', S + '?status=emitido&periodo=semana');
+await pega('sinfat-razao-posto', S + '?empto_razao=posto&periodo=ano');
+await pega('sinfat-razao-comb', S + '?empto_razao=combustiveis&periodo=ano');
 await writeFile('sc-sondas/resumo.tsv', resumo.join('\n') + '\n');
