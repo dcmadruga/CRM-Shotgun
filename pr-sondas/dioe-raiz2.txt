@@ -1,0 +1,598 @@
+200 https://dioe.pr.gov.br/
+access-control-allow-origin: *
+content-length: 28387
+content-type: text/html; charset=UTF-8
+date: Sun, 22 Nov 2026 13:29:03 GMT
+server: Apache/2.4.52 (Ubuntu)
+set-cookie: CAKEPHP=m5nd6froifad6b1v44o0u307s2; expires=Sun, 22-Nov-2026 19:29:03 GMT; Max-Age=21600; path=/; HttpOnly
+
+
+    <!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Diário Oficial  / Home</title>
+
+    <meta name="description" content="">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;1,700;1,800&display=swap" rel="stylesheet">
+    <link href="/theme/Parana2/favicon.ico" type="image/x-icon" rel="icon"/><link href="/theme/Parana2/favicon.ico" type="image/x-icon" rel="shortcut icon"/>
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css"/>
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap-theme.min.css"/>
+	<link rel="stylesheet" type="text/css" href="/assets/bootstrap-datepicker/css/datepicker.css"/>
+	<link rel="stylesheet" type="text/css" href="/css/fontawesomeIcon.css"/>
+	<link rel="stylesheet" type="text/css" href="/theme/Parana2/css/style.css"/>
+	<link rel="stylesheet" type="text/css" href="/theme/Parana2/css/layout.css"/>
+	<link rel="stylesheet" type="text/css" href="/theme/Parana2/css/modal-autenticidade.css"/>
+
+	<script type="text/javascript" src="/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="/assets/bootstrap-datepicker/js/bootstrap-datepicker.js"></script>
+	<script type="text/javascript" src="/assets/bootstrap-datepicker/js/locales/bootstrap-datepicker.pt-BR.js"></script>
+<link rel="stylesheet" type="text/css" href="/theme/Parana2/css/home.css"/><script type="text/javascript" src="/util/js/clock.js"></script><script type="text/javascript" src="/admin/js/vendor/jquery/jquery.mask.js"></script>
+    <script type="text/javascript">
+        var BASE_URL    = '';
+        var PLUGIN_URL  = '/portal/display';
+        var CURRENT_URL = '/portal/pages/display';
+        var CDN_URL     = '';
+        var SUBTEMA     = false;
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+            $("#dialog-message").modal();
+        });
+    </script>
+
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-0M8WTG8KKL"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-0M8WTG8KKL');
+</script>
+</head>
+
+
+<body>
+    
+    <!-- =============================================
+         HEADER BRANCO
+         ============================================= -->
+    <header class="dn-header-top">
+                <a href="/" class="dn-header-logo">
+            <img src="/theme/Parana2/img/BrasaoParana.svg" alt="Logo" style="height:44px;"/>            <div class="dn-header-logo-divider"></div>
+            <div class="dn-header-logo-text">
+                <span>CONSULTAS</span>
+                <span>Diário Oficial</span>
+            </div>
+        </a>
+
+        <div class="dn-header-right">
+                        <a href="/cadastro" class="dn-btn-publicador">
+                <span class="dn-btn-publicador-icon">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </span>
+                <span class="dn-btn-publicador-texto">Área do publicador</span>
+                <span class="dn-btn-publicador-texto-mobile"><span>Área do</span><span>publicador</span></span>
+            </a>
+                    </div>
+    </header>
+
+    <!-- =============================================
+         BARRA INFO ESCURA
+         ============================================= -->
+    <div class="dn-header-info">
+        <div class="dn-header-info-left">
+            <span>
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Domingo, 22 de novembro de 2026            </span>
+        </div>
+        <a href="#" class="dn-btn-autenticidade" id="btn-abrir-autenticidade">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Verificar autenticidade
+        </a>
+    </div>
+
+    <!-- =============================================
+         MENU NAV
+         ============================================= -->
+    <nav class="dn-navbar">
+        <div class="container">
+            <ul>
+                            </ul>
+        </div>
+    </nav>
+
+    <div class="main-container ">
+        
+	<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+	<script type="text/javascript" src="/site/js/enquete.js"></script>
+	<script type="text/javascript" src="/assets/blockui/jquery.blockUI.js"></script>
+	<script type="text/javascript" src="/theme/Parana2/js/home.js"></script>
+
+<!-- =============================================
+     SEÇÃO PRINCIPAL
+     ============================================= -->
+<section class="main-section">
+
+    <!-- CAPA (esquerda) -->
+    <div class="capa-col">
+        <div class="capa-wrapper">
+            <div class="capa-img-container">
+                <a href="#" id="link-capa-pdf" target="_blank" title="Baixar PDF desta edição">
+                    <span class="capa-overlay">
+                        <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+                        Baixar PDF
+                    </span>
+                    <img src="" id="imagemCapa" alt="Capa do Diário Oficial" />
+                </a>
+            </div>
+        </div>
+
+        <div class="capa-info">
+            <h3 class="tipo-atual-nome">Diário Oficial</h3>
+            <p class="edicao-meta">
+                Edição Nº <span class="numero-edicao"></span> · <span class="data-edicao"></span><span class="paginas-edicao"></span>
+            </p>
+            <div class="capa-downloads">
+                                <a href="#" class="btn-download" id="downloadPdfView" target="_blank">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    PDF
+                </a>
+                <a href="#" class="btn-download" id="downloadHTML">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    HTML
+                </a>
+                <a href="#" class="btn-download" id="downloadJornal">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                    Jornal
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- FORMULÁRIOS (direita) -->
+    <div class="forms-col">
+        <h2>Consultar edições do <em>Diário Oficial</em></h2>
+        <p class="subtitle">Encontre publicações por data, palavra-chave ou navegue pelas últimas edições do Diário Oficial do Estado do Paraná.</p>
+
+        <!-- Tabs -->
+        <div class="search-tabs" role="tablist">
+            <button class="search-tab active" data-tab="edicao" role="tab">Por Edição</button>
+            <button class="search-tab" data-tab="palavra" role="tab">Por Palavra</button>
+            <button class="search-tab" data-tab="protocolo" role="tab">Por protocolo</button>
+        </div>
+
+        <!-- Painel: Por Edição -->
+                <div class="search-panel active" id="panel-edicao">
+            <form class="busca_data">
+                <label class="field-label">Número da Edição</label>
+                <input type="text" class="field-input" id="numeroEdicao" placeholder="Ex: 123456" value="">
+
+                <label class="field-label">Data da Edição</label>
+                <input type="text" class="field-input databusca data" id="dataEdicaoPortal" placeholder="DD/MM/AAAA" value="">
+
+                <button type="submit" class="btn-buscar" id="sbmt1">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    Buscar edição
+                </button>
+            </form>
+        </div>
+
+        <!-- Painel: Por Palavra -->
+        <div class="search-panel" id="panel-palavra">
+            <form class="busca_palavra" action="/buscanova" method="post">
+                <label class="field-label">Nome completo ou palavra-chave</label>
+                <input type="text" class="field-input q" id="input2" placeholder="Ex: Decreto Nº 12.000" name="q">
+                <input type="hidden" class="field-input tipo" id="input-tipo" name="tipo">
+
+                <label class="field-label">Período</label>
+                <div class="fields-row">
+                    <input type="text" class="field-input data" placeholder="DD/MM/AAAA" id="dataBuscaInicial">
+                    <input type="text" class="field-input data" placeholder="DD/MM/AAAA" id="dataBuscaFinal">
+                </div>
+
+                <button type="submit" class="btn-buscar btn" id="smbt2">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    Buscar publicação
+                </button>
+            </form>
+        </div>
+
+        <!-- Painel: Por Protocolo -->
+        <div class="search-panel" id="panel-protocolo">
+            <form id="form-busca-protocolo">
+                <label class="field-label">Protocolo</label>
+                <input type="text" class="field-input" id="input-protocolo" placeholder="Ex: 123456789/2026" autocomplete="off" inputmode="numeric">
+                <div id="protocolo-erro" style="display:none; color:#b83232; font-size:13px; margin-bottom:12px;"></div>
+
+                <button type="submit" class="btn-buscar" id="btn-buscar-protocolo">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                    Buscar matéria
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- =============================================
+     SEÇÃO — Acesse por tipo de Diário Oficial
+     ============================================= -->
+<section class="tipos-section">
+    <div class="tipos-inner">
+        <div class="tipos-header">
+            <h2>Acesse por tipo de <em>Diário Oficial</em></h2>
+            <a href="/listagem" class="ver-todas">Ver todas as edições →</a>
+        </div>
+
+        <div class="tipos-grid" id="tipos-grid">
+            <!-- cards gerados dinamicamente pelo JS -->
+        </div>
+    </div>
+</section>
+
+<!-- =============================================
+     NOTÍCIAS (mantém lógica PHP original)
+     ============================================= -->
+
+<!-- WhatsApp modal (inalterado) -->
+
+<!-- Avisos (inalterado) -->
+
+<!-- =============================================
+     MODAL — RESULTADO BUSCA POR PROTOCOLO
+     ============================================= -->
+<div class="aut-overlay" id="modalProtocolo">
+    <div class="aut-modal" role="dialog" aria-modal="true" aria-labelledby="proto-titulo" style="max-width:480px;">
+        <div class="aut-modal-header">
+            <h3 id="proto-titulo">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                Matéria localizada
+            </h3>
+            <button class="aut-modal-close" id="btn-fechar-protocolo" aria-label="Fechar">&times;</button>
+        </div>
+        <div class="aut-modal-body">
+            <div style="display:flex; gap:16px; margin-bottom:20px;">
+                <div style="flex-shrink:0;">
+                    <img id="proto-thumb" src="" alt="Capa do Diário" style="width:80px; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,.15); display:none;">
+                    <div id="proto-thumb-loading" style="width:80px; height:110px; background:#e9ecf1; border-radius:6px; display:flex; align-items:center; justify-content:center;">
+                        <svg width="24" height="24" fill="none" stroke="#aab" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                    </div>
+                </div>
+                <div id="proto-info" style="padding:14px 16px; background:#f4f5f7; border-radius:8px; font-size:14px; color:#1a2b4a; line-height:1.7; flex:1;"></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <a id="btn-download-diario" href="#" target="_blank" class="btn-buscar" style="text-decoration:none; justify-content:center;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15V3m0 12-4-4m4 4 4-4M2 17l.621 2.485A2 2 0 0 0 4.561 21h14.878a2 2 0 0 0 1.94-1.515L22 17"/></svg>
+                    Download do Diário Oficial certificado
+                </a>
+                <a id="btn-download-pagina" href="#" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:10px; border:1.5px solid #c9d0db; border-radius:8px; padding:14px; font-size:15px; font-weight:600; color:#1a2b4a; background:#fff; text-decoration:none; transition:border-color .2s, background .2s;">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Download da página certificada
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- =============================================
+     SCRIPTS
+     ============================================= -->
+
+<script type="text/javascript">
+// Mapa de subthemes configurados (slug → dados), disponível para home.js
+window.TEMAS_MAPA = {};
+// carregarTiposHomeDinamico é chamado por ultima_data() após saber o TIPO_ATUAL
+
+// Tabs
+document.querySelectorAll('.search-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.search-tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.search-panel').forEach(function(p) { p.classList.remove('active'); });
+        tab.classList.add('active');
+        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+});
+
+// WhatsApp
+$('#botaoWhatsapp').on('click', function() {
+    $('#modalWhatsappForm').modal();
+});
+
+$(document).on('ready', function() {
+    $(document).on('submit', '#submit-wpp', function() {
+        $(e).preventDefault();
+        if ($('#celular-wpp').length == 0) {
+            $('#celular-wpp').focus();
+            return false;
+        }
+        $(this).submit();
+        return true;
+    });
+});
+
+$(".celMask").mask("(99) 99999-9999");
+
+// =============================================
+// BUSCA POR PROTOCOLO
+// =============================================
+(function () {
+    var overlay   = document.getElementById('modalProtocolo');
+    var btnFechar = document.getElementById('btn-fechar-protocolo');
+    var scrollY   = 0;
+
+    function abrirModal() {
+        scrollY = window.scrollY || window.pageYOffset;
+        overlay.classList.add('aberto');
+        document.documentElement.style.overflow = 'hidden';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function fecharModal() {
+        overlay.classList.remove('aberto');
+        document.documentElement.style.overflow = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+    }
+
+    document.body.appendChild(overlay);
+    btnFechar.addEventListener('click', fecharModal);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) fecharModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fecharModal(); });
+
+    document.getElementById('input-protocolo').addEventListener('keydown', function (e) {
+        var allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab','Home','End','Enter'];
+        if (allowed.indexOf(e.key) !== -1) return;
+        if ((e.ctrlKey || e.metaKey) && ['a','c','v','x'].indexOf(e.key.toLowerCase()) !== -1) return;
+        if (!/^[0-9\/]$/.test(e.key)) e.preventDefault();
+    });
+
+    document.getElementById('form-busca-protocolo').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        var protocolo = document.getElementById('input-protocolo').value.trim();
+        var erroEl    = document.getElementById('protocolo-erro');
+        var btnEl     = document.getElementById('btn-buscar-protocolo');
+
+        if (!protocolo) {
+            erroEl.textContent = 'Informe o número do protocolo.';
+            erroEl.style.display = 'block';
+            return;
+        }
+
+        erroEl.style.display = 'none';
+        btnEl.disabled = true;
+        btnEl.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Buscando...';
+
+        $.ajax({
+            type: 'POST',
+            url: BASE_URL + '/portal/edicoes/consulta_aut_materia',
+            data: { protocolo: protocolo },
+            dataType: 'json'
+        }).done(function (res) {
+            if (res.error) {
+                erroEl.textContent = res.message || 'Matéria não localizada.';
+                erroEl.style.display = 'block';
+                return;
+            }
+
+            var materia     = res.data.materia;
+            var urlDlDiario = BASE_URL + '/portal/edicoes/download/' + materia.edicao_id;
+            var urlDlPagina = BASE_URL + '/portal/edicoes/download/' + materia.edicao_id + '/' + (materia.pagina_inicial || 1);
+
+            var dt = materia.data ? materia.data.split('-') : [];
+            var dataFormatada = dt.length === 3 ? dt[2] + '/' + dt[1] + '/' + dt[0] : materia.data;
+
+            var protocolo = materia.protocolo + '';
+            protocolo = protocolo.replace(/(.{4})$/, '/$1');
+
+            document.getElementById('proto-info').innerHTML =
+                '<strong>Protocolo:</strong> ' + protocolo + '<br>' +
+                '<strong>Data de publicação:</strong> ' + dataFormatada;
+
+            document.getElementById('btn-download-diario').href = urlDlDiario;
+            document.getElementById('btn-download-pagina').href = urlDlPagina;
+
+            // Thumb da capa da edição
+            var thumbEl   = document.getElementById('proto-thumb');
+            var loadingEl = document.getElementById('proto-thumb-loading');
+            var thumbUrl  = BASE_URL + '/apifront/portal/edicoes/imagem_diario/' + materia.edicao_id + '/1/thumb';
+            thumbEl.style.display = 'none';
+            loadingEl.style.display = 'flex';
+            var im = new Image();
+            im.onload = function() {
+                thumbEl.src = thumbUrl;
+                thumbEl.style.display = 'block';
+                loadingEl.style.display = 'none';
+            };
+            im.onerror = function() { loadingEl.style.display = 'none'; };
+            im.src = thumbUrl;
+
+            abrirModal();
+        }).fail(function (xhr) {
+            var msg = (xhr.responseJSON && xhr.responseJSON.message)
+                ? xhr.responseJSON.message
+                : 'Não foi possível conectar ao servidor. Tente novamente.';
+            erroEl.textContent = msg;
+            erroEl.style.display = 'block';
+        }).always(function () {
+            btnEl.disabled = false;
+            btnEl.innerHTML = '<svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Buscar matéria';
+        });
+    });
+})();
+</script>
+    </div>
+    <!-- #main-container -->
+
+    <footer class="dn-footer">
+        Powered by IONEWS
+    </footer>
+
+    
+    <!-- =============================================
+         MODAL — VERIFICAR AUTENTICIDADE
+         ============================================= -->
+
+    <div class="aut-overlay" id="modalAutenticidade">
+        <div class="aut-modal" role="dialog" aria-modal="true" aria-labelledby="aut-titulo">
+            <div class="aut-modal-header">
+                <h3 id="aut-titulo">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                    Verificar autenticidade
+                </h3>
+                <button class="aut-modal-close" id="btn-fechar-autenticidade" aria-label="Fechar">&times;</button>
+            </div>
+            <div class="aut-modal-body">
+                <p class="aut-hint">Informe o código verificador encontrado no rodapé das páginas do Diário Oficial.</p>
+                <div class="aut-input-row">
+                    <input type="text" class="aut-input" id="aut-input-hash" placeholder="Cole ou digite o código verificador" autocomplete="off">
+                    <button class="aut-btn-consultar" id="aut-btn-consultar">Consultar</button>
+                </div>
+                <div class="aut-resultado" id="aut-resultado"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        var overlay  = document.getElementById('modalAutenticidade');
+        var btnAbrir = document.getElementById('btn-abrir-autenticidade');
+        var btnFechar = document.getElementById('btn-fechar-autenticidade');
+        var inputHash = document.getElementById('aut-input-hash');
+        var btnConsultar = document.getElementById('aut-btn-consultar');
+        var resultado = document.getElementById('aut-resultado');
+
+        /* Move o overlay para filho direto do body ao iniciar,
+           evitando que transform/backdrop-filter de elementos pai
+           quebrem o position:fixed no mobile */
+        document.body.appendChild(overlay);
+
+        /* Salva posição do scroll para restaurar ao fechar (fix iOS) */
+        var scrollY = 0;
+
+        function abrir() {
+            scrollY = window.scrollY || window.pageYOffset;
+            overlay.classList.add('aberto');
+            /* trava scroll em todos os browsers incluindo iOS Safari */
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+            inputHash.value = '';
+            resultado.style.display = 'none';
+            resultado.innerHTML = '';
+            setTimeout(function () { inputHash.focus(); }, 100);
+        }
+
+        function fechar() {
+            overlay.classList.remove('aberto');
+            document.documentElement.style.overflow = '';
+            document.body.style.overflow = '';
+            window.scrollTo(0, scrollY);
+        }
+
+        btnAbrir.addEventListener('click', function (e) { e.preventDefault(); abrir(); });
+        btnFechar.addEventListener('click', fechar);
+        overlay.addEventListener('click', function (e) { if (e.target === overlay) fechar(); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') fechar(); });
+
+        function consultar() {
+            var hash = inputHash.value.trim();
+            if (!hash) { inputHash.focus(); return; }
+
+            btnConsultar.disabled = true;
+            btnConsultar.textContent = 'Consultando...';
+            resultado.style.display = 'none';
+            resultado.innerHTML = '';
+
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: BASE_URL + '/portal/edicoes/consulta_autenticidade',
+                data: { hash: hash }
+            }).done(function (res) {
+                mostrarResultado(res);
+            }).fail(function (e) {
+                mostrarErro(e.responseJSON.message);
+            }).always(function () {
+                btnConsultar.disabled = false;
+                btnConsultar.textContent = 'Consultar';
+            });
+        }
+
+        function mostrarResultado(res) {
+            resultado.style.display = 'block';
+
+            if (res.error) {
+                mostrarErro(res.msg || 'Código não encontrado.');
+                return;
+            }
+
+            var edicaoId = res.data.Edicao && res.data.Edicao.id ? res.data.Edicao.id : null;
+            var urlVer   = edicaoId
+                ? BASE_URL + '/ver-html/' + edicaoId + '/#e:' + edicaoId
+                : null;
+            var urlPdf   = edicaoId
+                ? BASE_URL + '/portal/edicoes/download/' + edicaoId
+                : null;
+
+            var html = '<div class="aut-resultado-ok">';
+            html += '<div class="aut-resultado-ok-header">';
+            html += '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>';
+            html += 'Autenticidade confirmada';
+            html += '</div>';
+            html += '<div class="aut-resultado-ok-body">';
+            html += res.msg || '';
+
+            if (urlPdf) {
+                html += '<a href="' + urlPdf + '" class="aut-btn-ver">';
+                html += '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+                html += 'PDF</a>&nbsp;';
+            }
+
+            if (urlVer) {
+                html += '<a href="' + urlVer + '" class="aut-btn-ver">';
+                html += '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>';
+                html += 'Visualizar edição</a>';
+            }
+            html += '</div></div>';
+
+            resultado.innerHTML = html;
+        }
+
+        function mostrarErro(msg) {
+            resultado.style.display = 'block';
+            resultado.innerHTML = '<div class="aut-resultado-erro">'
+                + '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+                + '<span>' + msg + '</span>'
+                + '</div>';
+        }
+
+        btnConsultar.addEventListener('click', consultar);
+        inputHash.addEventListener('keydown', function (e) { if (e.key === 'Enter') consultar(); });
+
+        var params = new URLSearchParams(window.location.search);
+        var hash = params.get('hash');
+
+        if (hash != null && hash.length > 0) {
+            abrir();
+            $("#aut-input-hash").val(hash);
+            consultar();
+        }
+
+    })();
+    </script>
+</body>
+</html>
