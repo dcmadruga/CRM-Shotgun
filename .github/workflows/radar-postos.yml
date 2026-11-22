@@ -49,7 +49,7 @@ jobs:
           RADAR_GATILHO: ${{ github.event_name == 'workflow_dispatch' && 'manual' || github.event_name == 'push' && 'push' || 'agendado' }}
           RADAR_DESDE: ${{ inputs.desde }}
           RADAR_DIAS: ${{ github.event_name == 'push' && '365' || '' }}
-          RADAR_FONTES: ${{ github.event_name == 'push' && 'famurs,doe-rs' || '' }}
+          RADAR_FONTES: ${{ github.event_name == 'push' && 'querido-rs' || '' }}
           RADAR_AMOSTRA_LOG: ${{ github.event_name == 'push' && '1' || '' }}
         run: node scripts/radar/radar.mjs
       - name: Guardar o resultado do teste

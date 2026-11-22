@@ -11,6 +11,7 @@ import { avisosDaPagina, analisarAviso, analisarEmitidas, analisarLicenca, hash,
 import * as iomat from './fontes/iomat.mjs';
 import * as famurs from './fontes/famurs.mjs';
 import * as doers from './fontes/doers.mjs';
+import * as querido from './fontes/querido.mjs';
 import * as anpFonte from './fontes/anp.mjs';
 
 const inicio = new Date();
@@ -21,7 +22,7 @@ const teste = process.env.RADAR_TESTE === 'true';
 const db = teste ? null : firestore();
 const gatilhoBase = process.env.RADAR_GATILHO || 'agendado';
 // Fontes de diário oficial integradas, por Estado. RADAR_FONTES (ex.: "famurs,doe-rs") limita a rodada.
-const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
+const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }, { mod: querido, uf: 'RS' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
 const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL' };
 
 const PRIOR_CAT = ['novo', 'tanques', 'ampliacao', 'reforma', 'renovacao', 'titularidade', 'ponto_proprio', 'outro'];
@@ -72,7 +73,7 @@ for (const { mod, uf } of FONTES) {
       }
     } else {
       // uma matéria por documento: licença emitida (prefeitura/FEPAM) ou aviso de requerimento
-      const r = await mod.coletar(deF, ate, log); consultas = r.consultas; lidos = r.docs.length; if (r.amostra) amostras[id] = r.amostra;
+      const r = await mod.coletar(deF, ate, log, { mun: mun[uf] }); consultas = r.consultas; lidos = r.docs.length; if (r.amostra) amostras[id] = r.amostra;
       for (const d of r.docs) {
         const lic = analisarLicenca(d.texto, mun[uf], { titulo: d.titulo, uf, entidade: d.entidade });
         const rs = lic ? [lic] : avisosDaPagina(d.texto).map(a => analisarAviso(a.texto, mun[uf], uf)).filter(Boolean);
