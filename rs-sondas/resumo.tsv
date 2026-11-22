@@ -1,4 +1,0 @@
-qd-busca-rs	200	application/json	62619	https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22%20licen%C3%A7a&published_since=2026-05-01&size=30&excerpt_size=800&number_of_excerpts=2&territory_ids=4314902&territory_ids=4305108&territory_ids=4304606&territory_ids=4314407&territory_ids=4316907&territory_ids=4309209
-famurs-materia2	200	text/html; charset=UTF-8	503515	https://www.diariomunicipal.com.br/famurs/materia/A3C22DCD
-sol-public	404	text/html;charset=UTF-8	5080	https://secweb.procergs.com.br/sra/public/
-sol-consulta	404	text/html;charset=UTF-8	5080	https://secweb.procergs.com.br/sra/publico/consultaDocumentos.xhtml

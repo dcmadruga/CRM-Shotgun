@@ -4,19 +4,13 @@ const UA = { 'user-agent': 'Mozilla/5.0 (compatible; shotgun-radar/1.0; +https:/
 const q = encodeURIComponent;
 const F = 'https://ww3.fepam.rs.gov.br/licenciamento/';
 const post = body => ({ method: 'POST', body: new URLSearchParams(body).toString(), headers: { ...UA, 'content-type': 'application/x-www-form-urlencoded', referer: F + 'Area1/default.asp' } });
-const urls = {
-  'qd-busca-rs': 'https://api.queridodiario.org.br/gazettes?querystring=' + q('"posto de combustíveis" licença') + '&published_since=2026-05-01&size=30&excerpt_size=800&number_of_excerpts=2&territory_ids=4314902&territory_ids=4305108&territory_ids=4304606&territory_ids=4314407&territory_ids=4316907&territory_ids=4309209',
-  'famurs-materia2': 'https://www.diariomunicipal.com.br/famurs/materia/A3C22DCD',
-  'sol-public': 'https://secweb.procergs.com.br/sra/public/',
-  'sol-consulta': 'https://secweb.procergs.com.br/sra/publico/consultaDocumentos.xhtml',
-};
-// endpoints do app do DOE-RS (Angular)
+const urls = {};
 try {
   const js = await (await fetch('https://www.diariooficial.rs.gov.br/main-WOM4SM2S.js', { headers: UA })).text();
-  const achados = [...new Set([...js.matchAll(/["'`]((?:https?:\/\/[^"'`\s]{3,90})|(?:\/[a-z0-9_\-]+(?:\/[a-zA-Z0-9_\-${}.]+){1,6}))["'`]/g)].map(m => m[1]).filter(x => /api|doe|busca|materia|pesquis|diario|edic|ato|caderno/i.test(x)))];
   await mkdir('rs-sondas', { recursive: true });
-  await writeFile('rs-sondas/doe-endpoints.txt', achados.join('\n'));
-  const i = js.search(/busca|pesquisa/i); await writeFile('rs-sondas/doe-trechos.txt', [...js.matchAll(/.{0,200}(?:materias\/|\/busca|pesquisa)[^]{0,200}/gi)].slice(0, 60).map(m => m[0]).join('\n=====\n'));
+  const pega = re => [...js.matchAll(re)].slice(0, 80).map(m => m[0]).join('\n=====\n');
+  await writeFile('rs-sondas/doe-http.txt', pega(/.{0,160}\.http\.(?:get|post)\(.{0,220}/g));
+  await writeFile('rs-sondas/doe-svc.txt', pega(/.{0,100}(?:consultarUltimos|sumario\(|pesquisarMaterias|buscar\(|apiUrl|baseUrl|urlApi|environment).{0,260}/g));
 } catch (e) { console.log('doe js', e.message); }
 await mkdir('rs-sondas', { recursive: true });
 const resumo = [];
