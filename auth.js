@@ -521,9 +521,11 @@ async function iniciar() {
             ${p.duvidaEm ? `<button type="button" data-a="duvidas"${duvNova(p) ? ' class="primary"' : ''}>Dúvidas do cliente${p.duvidaN ? ' (' + p.duvidaN + ')' : ''}${duvNova(p) ? ' · nova' : ''}</button>` : ''}
             <span class="pill ${st.cls}">${st.txt}</span>
           </div><div class="duvbox" hidden></div></div>
-        <div class="etapa${ok ? '' : ' bloq'}" data-passo="1"${oc(1)}><div class="etit">Passo 2 · Dados complementares ${p.e2Em ? `<span class="pill ok">DADOS RECEBIDOS</span> <span class="meta">em ${esc(fmtTs(p.e2Em))}${p.e2Anexos ? ' · ' + p.e2Anexos + ' anexo' + (p.e2Anexos > 1 ? 's' : '') : ''}</span>` : ''}</div>
+        <div class="etapa${ok ? '' : ' bloq'}" data-passo="1"${oc(1)}><div class="etit">Passo 2 · Dados complementares ${p.e2Em ? `<span class="pill ok">DADOS RECEBIDOS</span> <span class="meta">em ${esc(fmtTs(p.e2Em))}${p.e2Anexos ? ' · ' + p.e2Anexos + ' anexo' + (p.e2Anexos > 1 ? 's' : '') : ''}</span>` : ''}${p.e2Em && (p.e2Pendentes || []).length ? ' <span class="pill wait">DOCUMENTO PENDENTE</span>' : ''}</div>
+          ${p.e2Em && (p.e2Pendentes || []).length ? `<div class="meta e2pend">Falta o cliente enviar: <b>${esc(p.e2Pendentes.join(', '))}</b>. Ele envia pelo mesmo link da Etapa 2.</div>` : ''}
           <div class="acts">
             ${p.e2Em ? '<button type="button" class="primary" data-a="e2ver">Ver dados e anexos</button>' : ''}
+            ${p.e2Em && (p.e2Pendentes || []).length ? '<button type="button" data-a="e2cobrar">Cobrar documento pelo WhatsApp</button>' : ''}
             ${ok ? `<button type="button"${p.e2Em ? '' : ' class="primary"'} data-a="etapa2">Enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link da Etapa 2</button><button type="button" data-a="etapa2vend">Preencher pelo vendedor</button>`
                  : '<button type="button" disabled>Enviar pelo WhatsApp</button><button type="button" disabled>Copiar link da Etapa 2</button><span class="hint">Libera quando o cliente aprovar a proposta.</span>'}
           </div>
@@ -860,8 +862,8 @@ async function iniciar() {
         const [r, an] = await Promise.all([F.getDoc(F.doc(db, 'propostas', p.id, 'etapa2', 'resposta')), F.getDocs(F.collection(db, 'propostas', p.id, 'anexos'))]);
         const d = r.exists() ? r.data() : { campos: {} };
         const linhas = Object.entries(d.campos || {}).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
-        const arqs = an.docs.map(x => ({ id: x.id, ...x.data() }));
-        box.innerHTML = `<div class="refwrap"><table class="refs e2resp"><tbody>${linhas || '<tr><td>Sem respostas salvas.</td></tr>'}</tbody></table></div>
+        const arqs = an.docs.map(x => ({ id: x.id, ...x.data() })), pend = p.e2Pendentes || d.pendentes || [];
+        box.innerHTML = `${pend.length ? `<p class="meta e2pend">Pendente: <b>${esc(pend.join(', '))}</b>. O cliente marcou que manda mais tarde.</p>` : ''}<div class="refwrap"><table class="refs e2resp"><tbody>${linhas || '<tr><td>Sem respostas salvas.</td></tr>'}</tbody></table></div>
           ${arqs.length ? `<div class="etit" style="margin-top:6px">Anexos</div><div class="acts">${arqs.map(x => `<button type="button" data-a="anexo" data-aid="${esc(x.id)}">⬇ ${esc(x.nome)} <span class="meta">(${esc(x.campo || '')}, ${(Number(x.tamanho || 0) / 1048576).toFixed(1)} MB)</span></button>`).join('')}</div>` : ''}
           <div class="acts" style="margin-top:6px"><button type="button" data-a="e2copiar">Copiar dados</button></div>`;
         box.dataset.texto = d.texto || '';
@@ -882,6 +884,11 @@ async function iniciar() {
       } catch (err) { pMsg('Não foi possível baixar o anexo (' + (err.code || err.message) + ').'); }
       finally { b.disabled = false; }
       return;
+    }
+    if (a === 'e2cobrar') {
+      const pend = p.e2Pendentes || []; if (!pend.length) return;
+      abrirWa(p.waCli, `Olá${p.contato ? ' ' + p.contato : ''}! Recebemos os dados complementares da proposta nº ${p.numero}. Ficou faltando enviar: ${pend.join(', ')}.\n\nQuando tiver em mãos, é só abrir o mesmo link e anexar:\n${linkEtapa2(p)}\n\n${perfil.nome || p.vendedor || ''} - Argo`);
+      pMsg('WhatsApp aberto com a cobrança do documento pendente.'); return;
     }
     if (a === 'etapa2vend') { window.open(linkEtapa2(p) + '&vend=1', '_blank'); pMsg('Formulário da Etapa 2 aberto em outra aba para você preencher.'); return; }
     if (a === 'etapa2' || a === 'etapa2copy') {
