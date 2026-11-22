@@ -3,7 +3,7 @@
 <title>Shotgun</title>
 <link rel="manifest" href="manifest.webmanifest?v=193">
 <meta name="theme-color" content="#161616">
-<script>/* Tema: escuro é o inicial; a escolha fica gravada neste aparelho */try{document.documentElement.dataset.theme=localStorage.getItem('sg-tema')=='light'?'light':'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
+<script>/* Tema: escuro é o inicial. Abre no tema do último usuário deste aparelho (sg-tema-u), antes de desenhar a tela */try{var u=localStorage.getItem('sg-tema-u'),t=(u&&localStorage.getItem('sg-tema:'+u))||localStorage.getItem('sg-tema');document.documentElement.dataset.theme=t=='light'?'light':'dark'}catch(e){document.documentElement.dataset.theme='dark'}</script>
 <link rel="icon" href="icons/shotgun-s-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="icons/shotgun-s-16.png" sizes="16x16" type="image/png">
 <link rel="apple-touch-icon" href="icons/shotgun-s-180.png">
@@ -2033,7 +2033,19 @@ $('btnNova').addEventListener('click',()=>{ $('waCli').value=''; formMsg('O clie
   const bt=document.getElementById('btnTema'), meta=document.querySelector('meta[name=theme-color]');
   const aplicarTema=t=>{ document.documentElement.dataset.theme=t; bt.setAttribute('aria-label',t==='dark'?'Mudar para o tema claro':'Mudar para o tema escuro'); if(meta) meta.content=t==='dark'?'#161616':'#2E2E2E'; };
   aplicarTema(document.documentElement.dataset.theme==='light'?'light':'dark');
-  bt.addEventListener('click',()=>{ const t=document.documentElement.dataset.theme==='light'?'dark':'light'; aplicarTema(t); try{ localStorage.setItem('sg-tema',t) }catch(e){} });
+  // Lembrado por usuário: neste aparelho (sg-tema:<uid>) e no cadastro da pessoa (campo tema), para valer em todos os aparelhos
+  let temaUid='', temaSalvarNuvem=null;
+  const guardarTema=t=>{ try{ localStorage.setItem('sg-tema',t); if(temaUid){ localStorage.setItem('sg-tema:'+temaUid,t); localStorage.setItem('sg-tema-u',temaUid) } }catch(e){} };
+  bt.addEventListener('click',()=>{ const t=document.documentElement.dataset.theme==='light'?'dark':'light'; aplicarTema(t); guardarTema(t);
+    if(temaSalvarNuvem) try{ Promise.resolve(temaSalvarNuvem(t)).catch(()=>{}) }catch(e){} });
+  // Chamado pelo login: aplica o tema da pessoa (o do cadastro vale mais que o deste aparelho)
+  window.sgTemaEntrou=(uid,temaNuvem,salvar)=>{ temaUid=uid||''; temaSalvarNuvem=typeof salvar==='function'?salvar:null;
+    let t=temaNuvem==='light'||temaNuvem==='dark'?temaNuvem:'';
+    if(!t) try{ t=localStorage.getItem('sg-tema:'+temaUid)||'' }catch(e){}
+    if(t!=='light'&&t!=='dark') t=document.documentElement.dataset.theme==='light'?'light':'dark';
+    aplicarTema(t); guardarTema(t);
+    if(temaSalvarNuvem&&temaNuvem!==t) try{ Promise.resolve(temaSalvarNuvem(t)).catch(()=>{}) }catch(e){} };
+  window.addEventListener('argo-sair',()=>{ temaUid=''; temaSalvarNuvem=null; });
 
   // Tela de carregamento: sai quando a página termina de carregar (ou em até 4 s)
   const sp=document.getElementById('sgSplash');
