@@ -13,9 +13,10 @@ const SINAL = /licen[cç]a|licenciamento|ambiental|meio\s+ambiente|requer|\bL[PI
 
 async function json(u) {
   let erro;
-  for (let t = 1; t <= 4; t++) {
-    try { const r = await fetch(u, { headers: UA, signal: AbortSignal.timeout(60000) }); if (!r.ok) throw new Error('HTTP ' + r.status); return await r.json(); }
-    catch (e) { erro = e; await espera(t * 4000); }
+  // a API às vezes devolve 5xx (520/502/504) quando a consulta pesa: espera mais a cada tentativa
+  for (let t = 1; t <= 6; t++) {
+    try { const r = await fetch(u, { headers: UA, signal: AbortSignal.timeout(90000) }); if (!r.ok) throw new Error('HTTP ' + r.status); return await r.json(); }
+    catch (e) { erro = e; if (t < 6) await espera(t * 10000); }
   }
   throw new Error(`Querido Diário: ${erro.message} (${u.slice(0, 160)})`);
 }
@@ -24,7 +25,8 @@ async function json(u) {
 export async function coletar(de, ate, log = console.log, ctx = {}) {
   const codigos = (ctx.mun?.lista || []).map(m => m.ibge).filter(c => /^\d{7}$/.test(c));
   if (!codigos.length) throw new Error('Querido Diário: lista de municípios sem código IBGE');
-  const lotes = []; for (let i = 0; i < codigos.length; i += 100) lotes.push(codigos.slice(i, i + 100));
+  // lotes menores deixam cada consulta mais leve (lotes de 100 cidades davam erro 520 na API)
+  const lotes = []; for (let i = 0; i < codigos.length; i += 40) lotes.push(codigos.slice(i, i + 40));
   const docs = [], vistos = new Set(), cidades = new Set(); let consultas = 0, achados = 0;
   for (const termo of TERMOS) {
     let total = 0;
