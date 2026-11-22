@@ -1,0 +1,1479 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <link rel="stylesheet" rev="stylesheet" type="text/css" href="css/area1.css" />
+    <link rel="stylesheet" rev="stylesheet" type="text/css" href="css/inicial.css" />
+    <link rel="stylesheet" rev="stylesheet" type="text/css" href="../home/home.css" />
+    <link rel="stylesheet" rev="stylesheet" type="text/css" href="../area2/css/area2.css" />
+    <!--<link rel="stylesheet" rev="stylesheet" type="text/css" href="../area2/css/inicial.css" />-->
+    <!--CSS PARA ABAS -->
+    <link rel="stylesheet" rev="stylesheet" type="text/css" href="../css/testeAbas.css" />
+    <link rel="stylesheet" rev="stylesheet" type="text/css" href="area4.css" />
+
+    <link rel="stylesheet" rev="stylesheet" type="text/css" href="../area3/css/area3.css" />
+    <link rel="stylesheet" rev="stylesheet" type="text/css" href="../area3/css/inicial.css" />
+    <title>FEPAM - Licenciamento</title>
+    <script language="JavaScript" type="text/javascript" src="../js/default.js"></script>
+    <script language="JavaScript" type="text/javascript" src="../js/xmlw3cdom.js"></script>
+    <script language="JavaScript" type="text/javascript" src="../js/tinyxmlsax.js"></script>
+    <script language="JavaScript" type="text/javascript" src="../js/ajaxRequest.js"></script>
+    <script language="JavaScript" type="text/javascript" src="../js/forms.js"></script>
+    <script type="text/javascript" src="HelpBalloon/lib/prototype/prototype.js"></script>
+    <script type="text/javascript" src="HelpBalloon/lib/scriptaculous/scriptaculous.js"></script>
+    <script type="text/javascript" src="HelpBalloon/src/HelpBalloon.js"></script>
+
+    <script type="text/javascript">
+		<!--
+    //
+    // Override the default settings to point to the parent directory
+    //
+    HelpBalloon.Options.prototype = Object.extend(HelpBalloon.Options.prototype, {
+        icon: 'HelpBalloon/images/icon.gif',
+        button: 'HelpBalloon/images/button.png',
+        balloonPrefix: 'HelpBalloon/images/balloon-'
+    });
+
+    //-->
+    </script>
+    <script language="JavaScript">
+	<!--
+
+    function soNumeros(v) {
+        return v.replace(/\D/g, "");
+    }
+
+    function TeclaUp(e, v) {
+        var tecla = event.keyCode;
+        var valor = document.getElementById(v).value;
+
+        if (tecla == 17) {
+            valor = valor.toString().replace("-", "");
+            valor = valor.toString().replace(".", "");
+            valor = valor.toString().replace(".", "");
+            valor = valor.toString().replace("/", "");
+            document.getElementById(v).value = valor;
+
+        }
+    }
+
+
+    function Tecla(e) {
+        //if(document.all) // Internet Explorer
+        var tecla = event.keyCode;
+        //else if(document.layers) // Nestcape
+        //var tecla = e.which;
+
+        if (tecla >= 65 && tecla <= 90) // LETRAS MAIUSCULAS
+            return true;
+        else
+            if (tecla >= 97 && tecla <= 122) // LETRAS MINUSCULAS
+                return true;
+            else
+
+                if (tecla > 47 && tecla < 58) // numeros de 0 a 9
+                    return true;
+                else {
+                    if (tecla != 8) // backspace
+                        return false;
+                    else
+                        return true;
+                }
+
+    }
+
+    function verificacpf() {
+        var cpfcnpj = document.atividade.cpfcnpj2.value;
+        var vlsUF = document.atividade.vlsUF.value;
+
+        window.self.location.href = 'default.asp?consulta=sim&cpfcnpj=' + cpfcnpj + '&vlsUF=' + vlsUF;
+    }
+
+
+    function submitForm() {
+
+        var codigo = document.atividade.cod_atividade.value
+        var vlsUF = document.atividade.vlsUF.value
+        var municipio = document.atividade.municipio.value
+        var ir_app = false//document.atividade.ir_app.checked
+        var VlsUnidadeConcervacaoFederal = document.atividade.VlsUnidadeConcervacaoFederal.checked
+        var ir_mun = document.atividade.ir_mun.checked
+        var ir_uce = document.atividade.ir_uce.checked
+        var tamanho = document.atividade.tamanho.value
+        var cpfcnpj = document.atividade.cpfcnpj2.value
+
+
+
+        if (cpfcnpj == "") {
+            alert('Para prosseguir � necess�rio preencher o CPF/CNPJ/Documento Estrangeiro.');
+        }
+
+        if (codigo == "") {
+            popUp('popup.asp');
+        }
+        else {
+            if (tamanho == "" || codigo == "532,61") {
+                popUp('popup3.asp?cod_atividade=' + codigo + '&vlsUF=' + vlsUF + '&VlsUnidadeConcervacaoFederal=' + VlsUnidadeConcervacaoFederal + '&municipio=' + municipio + '&ir_app=' + ir_app + '&ir_mun=' + ir_mun + '&ir_uce=' + ir_uce + '&tamanho=' + tamanho + '&cpfcnpj=' + cpfcnpj);
+            }
+            else {
+                if (municipio == "" && codigo != "123,11" && codigo != "123,12" && codigo != "123,13" && codigo != "123,14" && codigo != "4.710,10" && codigo != "4.710,20" && codigo != "4.710,30") {
+                    alert('Para prosseguir � necess�rio selecionar um munic�pio.');
+                }
+                else {
+                    if (codigo == "123,11" || codigo == "123,12" || codigo == "123,13" || codigo == "123,14" || codigo == "4.710,10" || codigo == "4.710,20" || codigo == "4.710,30")
+                        if (municipio == "")
+                            municipio = "0";
+                    window.self.location.href = "default.asp?area=1&tamanho=" + tamanho + "&codigo=" + codigo + "&vlsUF=" + vlsUF + "&VlsUnidadeConcervacaoFederal=" + VlsUnidadeConcervacaoFederal + "&municipio=" + municipio + "&ir_app=" + ir_app + "&ir_mun=" + ir_mun + "&ir_uce=" + ir_uce + "&cpfcnpj=" + cpfcnpj;
+
+                }
+            }
+        }
+
+        // if (municipio != "" and codigo != "" and cpfcnpj != "")
+        //  {
+        //     
+        //  }
+
+    }
+
+    function submit() {
+
+        var cpfcnpj = document.form_cpfcnpj.cpfcnpj.value
+
+        window.self.location.href = "default.asp?area=2&cpfcnpj=" + cpfcnpj;
+    }
+
+
+    function sendInfo(tamanho, ramo) {
+        if (ramo == "S") {
+            //document.atividade.action = "../../integrador_silvicultura/index.asp"; // SITE EXTERNO sis_logon.asp
+            //document.atividade.action = "../../integrador_silvicultura/sis_logon.asp"; // SITE EXTERNO sis_logon.asp
+            //document.atividade.action = "../../integrador_silviculturah/index.asp";// SITE DESENVOLVIMENTO E HOMOLOGA��O
+            document.atividade.action = "../../integrador_silviculturah/sis_logon.asp";// SITE DESENVOLVIMENTO E HOMOLOGA��O
+        } else {
+            document.atividade.tamanho.value = tamanho;
+            document.atividade.cod_atividade.value = ramo;
+            document.atividade.action = "../area1/lista.asp";
+        }
+        document.atividade.submit();
+    }
+
+    function foco_campo() {
+        document.getElementById("cod_atividade").focus();
+    }
+    //-->
+
+
+
+    function load(estado) {
+        if (estado != "") {
+            fillCombo(document.busca.municipio, '../src/comboMunicipio.asp?UF=' + estado);
+        } else {
+            document.busca.municipio.options.length = 0;
+        }
+    }
+
+
+    // Fun��o para aceitar apenas n�mero, pontos e virgulas em campos texto
+    function soAtividade(e, field) {
+        var key;
+        var keychar;
+
+        if (window.event) {
+            key = window.event.keyCode;
+        } else if (e) {
+            key = e.which;
+        } else {
+            return true;
+        }
+
+        keychar = String.fromCharCode(key);
+
+        if (key == 13) {
+            //submitatividade();
+        }
+        //verifica se ja tem ponto ou virgula
+        if ((field.value.indexOf(keychar) > -1) && ((key == 44) || (key == 46))) {
+            return false;
+        } else {
+            // teclas de controle
+            if ((key == null) || (key == 0) || (key == 8) ||
+                 (key == 9) || (key == 27)) {
+                return true;
+            } else if ((("0123456789,").indexOf(keychar) > -1)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+    </script>
+
+    <script language="JavaScript">
+
+<!--
+    function submitespc() {
+
+        // processo documento cpfcnpj razao endereco
+        //if (document.busca.processo.value == "" && document.busca.documento.value == "" && document.busca.cpf.value == "")
+        //{
+        //alert("Informe algum par�metro para pesquisa!");
+        //	}else{
+        //var x = "sim";
+        if (document.busca.tipoBusca[2].checked == true) {
+
+            if (document.busca.cpf.value == "") {
+                alert("Insira CNPJ / CPF / Documento estrangeiro ");
+                document.getElementById("cpf").focus();
+            }
+            else
+                window.self.location.href = "default.asp?area=3&cpfcnpj=" + document.getElementById("cpf").value;
+        }
+
+        if (document.busca.tipoBusca[0].checked == true) {
+            if (document.busca.processo.value == "") {
+                alert("Insira o n�mero do processo a ser pesquisado");
+                document.getElementById("processo").focus();
+            }
+
+            if (document.busca.processo.value != "") {
+                //document.busca.processo.value = soNumeros(document.busca.processo.value);
+                //link = "detalhe.asp?tipoBusca=processo&processo="+ document.busca.processo.value;
+                document.busca.processo.value = soNumeros(document.busca.processo.value);
+                link = "../area3/detalheDocProc.asp?area=3&buscar=2&tipoBusca=processo&processo=" + document.busca.processo.value;
+                //location.href(link);
+                window.self.location.href = link;
+            }
+        }
+
+        if (document.busca.tipoBusca[1].checked == true) {
+            if (document.busca.tipoDoc.value == "") {
+                alert("Para prosseguir � necess�rio selecionar um tipo de documento.");
+                document.getElementById("tipoDoc").focus();
+            }
+            var codigo = document.busca.tipoDoc.value;
+            document.busca.documento.value = soNumeros(document.busca.documento.value);
+
+            if (document.busca.documento.value == "") {
+                alert("Insira o n�mero e o ano do documento a ser pesquisado");
+                document.getElementById("documento").focus();
+            }
+
+            if (document.busca.documento.value != "" && document.busca.tipoDoc.value != "") {
+                //link = "../area3/detalhe.asp?tipoBusca=documento&processo="+ document.busca.processo.value+"&codigo="+codigo;
+                link = "../area3/detalheDocproc.asp?area=3&buscar=2&tipoBusca=documento&processo=" + document.busca.documento.value + "&codigo=" + codigo;
+                //location.href(link);
+                window.self.location.href = link;
+            }
+        }
+
+        if (document.busca.tipoBusca[3].checked == true) {
+
+            if (document.busca.estado.value != "RS") {
+			
+                if ((document.busca.atividade.value != "4.710,10" && document.busca.atividade.value != "4.710,12" && document.busca.atividade.value != "4.710,20" && document.busca.atividade.value != "4.710,30" && document.busca.atividade.value != "94.715,00" && document.busca.atividade.value != "4.711,20" && document.busca.atividade.value != "4.711,10" && document.busca.atividade.value != "4.740,10" && document.busca.atividade.value != "4.740,20" && document.busca.atividade.value != "4.740,30" && document.busca.atividade.value != "4.740,40") &&
+					(document.busca.atividade.value != "4710,10" && document.busca.atividade.value != "4710,12" && document.busca.atividade.value != "4710,20" && document.busca.atividade.value != "4710,30" && document.busca.atividade.value != "94715,00" && document.busca.atividade.value != "4711,20" && document.busca.atividade.value != "4711,10" && document.busca.atividade.value != "4740,10" && document.busca.atividade.value != "4740,20" && document.busca.atividade.value != "4740,30" && document.busca.atividade.value != "4740,40") ) {
+                    alert("Escolha um Ramo de transportadoras!");
+                    document.getElementById("atividade").value = "";
+                    document.getElementById("atividade").focus();
+                }
+                if (document.busca.municipio.value == "0" || document.busca.municipio.value == "") {
+                    alert("Escolha o Munic�pio");
+                    document.getElementById("municipio").focus();
+                }
+                else
+                    if (document.busca.razao.value.length < 5 && document.busca.razao.value != "") {
+                        alert("A Raz�o Social deve possuir no m�nimo 5 caracteres");
+                        document.getElementById("razao").focus();
+                    }
+                    else
+                        if (document.busca.estado.value != "RS" && document.busca.municipio.value != "0" && document.busca.atividade.value != "") {
+                            link = "../area3/listaRazao.asp?area=3&buscar=2&tipoBusca=municipio&municipio=" + document.busca.municipio.value + "&uf=" + document.busca.estado.value + "&razao=" + document.busca.razao.value + "&ramo=" + document.busca.atividade.value;
+                            window.self.location.href = link;
+                        }
+            }
+            else
+                if (document.busca.municipio.value == "" || document.busca.municipio.value == "0") {
+                    alert("Escolha o Munic�pio");
+                    document.getElementById("municipio").focus();
+                }
+                else {
+                    if (document.busca.razao.value.length < 5 && document.busca.razao.value != "") {
+                        alert("A Raz�o Social deve possuir no m�nimo 5 caracteres");
+                        document.getElementById("razao").focus();
+                    }
+                    else
+                        if (document.busca.razao.value == "" && document.busca.atividade.value == "") {
+                            alert("Informe a Raz�o Social e/ou Ramo de Atividade");
+                        }
+                        else {
+                            link = "../area3/listaRazao.asp?area=3&buscar=2&tipoBusca=municipio&municipio=" + document.busca.municipio.value  + "&razao=" + document.busca.razao.value + "&ramo=" + document.busca.atividade.value;
+                            window.self.location.href = link;
+                        }
+                }
+        }
+    }
+
+    function submitabran() {
+        /*if ((document.busca.atividade.value == "") && (document.busca.enderecoAbran.value =="")) {
+            alert("Informe um c�digo de atividade ou um trecho do endere�o para prosseguir na busca.");
+        } else {*/
+        clearAll();
+        document.busca.buscar.value = "1";
+        if (document.busca.atividade.value == "") {
+            alert('Informe um C�digo da Atividade para continuar! ');
+        } else {
+            if (document.busca.municipio.value == "" && document.busca.atividade.value == "") {
+                alert('Informe o Munic�pio do Empreendimento \nou um C�digo da Atividade para continuar! ');
+            } else {
+                if (document.busca.municipio.value == "0") {
+                    alert('Selecione uma cidade!')
+                } else {
+                    document.busca.submit();
+                }
+                //alert(document.busca.municipio.value);
+            }
+        }
+
+    }
+
+    function submitespc2() {
+        if (document.especialista.tipoBusca.checked == true) {
+
+            document.especialista.processo.value = soNumeros(document.especialista.processo.value);
+            link = "../../Especialistas/Especialistas.aspx?processo=" + document.especialista.processo.value;
+            //location.href(link);
+            window.self.location.href = link;
+        }
+
+    }
+
+    function limpaTamanho() {
+        document.atividade.tamanho.value = "";
+    }
+
+
+    function clearAll() {
+        document.busca.processo.value = "";
+        //document.busca.razao.value = "";
+        document.busca.cpfcnpj.value = "";
+        document.busca.documento.value = "";
+        //document.busca.endereco.value = "";
+    }
+
+
+    function formata(campo, mask, evt) {
+
+        if (document.all) { // Internet Explorer
+            key = evt.keyCode;
+        }
+        else { // Nestcape
+            key = evt.which;
+        }
+
+        if (key == 8) {
+            return true;
+        }
+
+        string = campo.value;
+        i = string.length;
+
+        if (i < mask.length) {
+            if (mask.charAt(i) == '?') {
+                return (key > 47 && key < 58);
+            } else {
+                if (mask.charAt(i) == '!') { return true; }
+                for (c = i; c < mask.length; c++) {
+                    if (mask.charAt(c) != '?' && mask.charAt(c) != '!')
+                        campo.value = campo.value + mask.charAt(c);
+                    else if (mask.charAt(c) == '!') {
+                        return true;
+                    } else {
+                        return (key > 47 && key < 58);
+                    }
+                }
+            }
+        } else return false;
+    }
+
+    function FormataProcesso(pForm, pCampo, pTamMax, pTeclaPres) {
+        var wTecla, wVr, wTam;
+
+        // alert(pForm[pCampo].value);
+
+        wTecla = pTeclaPres.keyCode;
+        wVr = pForm[pCampo].value;
+        wVr = wVr.toString().replace("-", "");
+        wVr = wVr.toString().replace(".", "");
+        wVr = wVr.toString().replace(".", "");
+        wVr = wVr.toString().replace("/", "");
+        wTam = wVr.length;
+
+        if (wTam < pTamMax && wTecla != 8) {
+            wTam = wVr.length + 1;
+        }
+
+        if (wTecla == 8) {
+            wTam = wTam - 1;
+        }
+
+        if (wTecla == 8 || wTecla == 88 || wTecla >= 48 && wTecla <= 57 || wTecla >= 96 && wTecla <= 105) {
+            /* if ( wTam <= 2 ){
+               pForm[pCampo].value = wVr ;
+             }*/
+            if (wTam > 1 && wTam <= pTamMax) {
+                wVr = wVr.substr(0, wTam - 1) + '.' + wVr.substr(wTam - 1, wTam);
+            }
+            if (wTam > 3 && wTam <= pTamMax) {
+                wVr = wVr.substr(0, wTam - 3) + '/' + wVr.substr(wTam - 3, wTam);
+            }
+            if (wTam > 5 && wTam <= pTamMax) {
+                wVr = wVr.substr(0, wTam - 5) + '.' + wVr.substr(wTam - 5, wTam);
+            }
+            if (wTam > 7 && wTam <= pTamMax) {
+                wVr = wVr.substr(0, wTam - 7) + '-' + wVr.substr(wTam - 7, wTam);
+            }
+            /* if ( wTam == pTamMax){
+                   wVr = wVr.substr( 0, wTam - pPos1 ) + '.' + wVr.substr(wTam - pPos1, 3) + '.' + wVr.substr(wTam - pPos2, wTam);
+             }*/
+            pForm[pCampo].value = wVr;
+
+        }
+
+    }
+
+    function FormataAtividade(pForm, pCampo, pTamMax, pTeclaPres) {
+        var wTecla, wVr, wTam;
+
+        // alert(pForm[pCampo].value);
+
+
+        wTecla = pTeclaPres.keyCode;
+        if (wTecla == 8 || wTecla >= 48 && wTecla <= 57) {
+
+            wVr = pForm[pCampo].value;
+
+            wVr = wVr.replace("-", "");
+            wVr = wVr.replace(".", "");
+            wVr = wVr.replace(",", "");
+            wVr = wVr.replace("/", "");
+            wTam = wVr.length;
+
+            if (wTam < pTamMax && wTecla != 8) {
+                wTam = wVr.length + 1;
+            }
+
+            if (wTecla == 8) {
+                wTam = wTam - 1;
+            }
+
+            if (wTecla == 8 || wTecla >= 48 && wTecla <= 57) {
+                /* if ( wTam <= 2 ){
+                   pForm[pCampo].value = wVr ;
+                 }*/
+                if (wTam > 2 && wTam <= pTamMax) {
+                    wVr = wVr.substr(0, wTam - 2) + ',' + wVr.substr(wTam - 2, wTam);
+                }
+                if (wTam > 5 && wTam <= pTamMax) {
+                    wVr = wVr.substr(0, wTam - 5) + '.' + wVr.substr(wTam - 5, wTam);
+                }
+
+                /* if ( wTam == pTamMax){
+                       wVr = wVr.substr( 0, wTam - pPos1 ) + '.' + wVr.substr(wTam - pPos1, 3) + '.' + wVr.substr(wTam - pPos2, wTam);
+                 }*/
+                pForm[pCampo].value = wVr;
+
+
+            }
+        } else {
+            wVr = pForm[pCampo].value;
+            wVr = wVr.replace("-", "");
+            wVr = wVr.replace(".", "");
+            wVr = wVr.replace(",", "");
+            wVr = wVr.replace("/", "");
+            pForm[pCampo].value = wVr;
+        }
+    }
+
+    function FormataDocumento(pForm, pCampo, pTamMax, pTeclaPres) {
+        var wTecla, wVr, wTam;
+
+        // alert(pForm[pCampo].value);
+
+        wTecla = pTeclaPres.keyCode;
+        wVr = pForm[pCampo].value;
+        wVr = wVr.toString().replace("-", "");
+        wVr = wVr.toString().replace(".", "");
+        wVr = wVr.toString().replace(".", "");
+        wVr = wVr.toString().replace("/", "");
+        wTam = wVr.length;
+
+        if (wTam < pTamMax && wTecla != 8) {
+            wTam = wVr.length + 1;
+        }
+
+        if (wTecla == 8) {
+            wTam = wTam - 1;
+        }
+
+        if (wTecla == 8 || wTecla == 88 || wTecla >= 48 && wTecla <= 57 || wTecla >= 96 && wTecla <= 105) {
+            /* if ( wTam <= 2 ){
+               pForm[pCampo].value = wVr ;
+             }*/
+            if (wTam > 4 && wTam <= pTamMax) {
+                wVr = wVr.substr(0, wTam - 4) + '/' + wVr.substr(wTam - 4, wTam);
+            }
+
+            /* if ( wTam == pTamMax){
+                   wVr = wVr.substr( 0, wTam - pPos1 ) + '.' + wVr.substr(wTam - pPos1, 3) + '.' + wVr.substr(wTam - pPos2, wTam);
+             }*/
+            pForm[pCampo].value = wVr;
+
+        }
+
+    }
+
+    function OnEnter(evt) {
+        var key_code = evt.keyCode ? evt.keyCode :
+                           evt.charCode ? evt.charCode :
+                           evt.which ? evt.which : void 0;
+
+
+        if (key_code == 13) {
+            return true;
+        }
+    }
+
+    function EnviaFormulario(e) {
+        if (OnEnter(e)) {
+            submit();
+        }
+        else {
+            return true;
+        }
+    }
+
+    //	function sendInfo(tamanho,ramo) {
+    //		document.busca.atividade.value = ramo;
+    //	}
+    //-->
+    </script>
+    <script type="text/javascript">
+
+        function ativaRadio() {
+            document.busca.tipoBusca[2].checked = true;
+        }
+
+
+        function ativArea(area) {
+
+            //alert(area);
+
+            if (area == "Amarela") {
+                if (document.getElementById('div01').style.display == "none") {
+                    document.getElementById('div01').style.display = "block";
+                    document.getElementById('div02').style.display = "none";
+                    document.getElementById('div03').style.display = "none";
+                    document.getElementById('div04').style.display = "none";
+                } else {
+                    document.getElementById('div01').style.display = "none";
+                }
+            }
+
+            if (area == "Vermelha") {
+                if (document.getElementById('div02').style.display == "none") {
+                    document.getElementById('div01').style.display = "none";
+                    document.getElementById('div02').style.display = "block";
+                    document.getElementById('div03').style.display = "none";
+                    document.getElementById('div04').style.display = "none";
+                } else {
+                    document.getElementById('div02').style.display = "none";
+                }
+            }
+
+            if (area == "Verde") 
+			{
+			var InicioSol = ValidaInicioSol();
+				if (InicioSol) 
+				{
+					if (document.getElementById('div03').style.display == "none") 
+					{
+						document.getElementById('div01').style.display = "none";
+						document.getElementById('div02').style.display = "none";
+                        document.getElementById('div03').style.display = "Block";
+                        document.getElementById('div04').style.display = "none";
+						//document.getElementById('div_UFEmp').style.display="none";
+					} 
+					else 
+					{
+						document.getElementById('div03').style.display = "none";
+					}
+				}
+				else 
+				{
+					   window.location.replace("http://www.sol.rs.gov.br");
+				}
+            }
+
+            if (area == "Azul") {
+                if (document.getElementById('div04').style.display == "none") {
+                    document.getElementById('div01').style.display = "none";
+                    document.getElementById('div02').style.display = "none";
+                    document.getElementById('div03').style.display = "none";
+                    document.getElementById('div04').style.display = "block";
+
+                } else {
+                    document.getElementById('div04').style.display = "none";
+                }
+            }
+        }
+
+
+        function verificaUF() {
+
+            var cpfcnpj = document.atividade.cpfcnpj2.value;
+            var vlsUF = document.atividade.vlsUF.value;
+            var codAtiv = document.atividade.cod_atividade.value;
+
+            if (cpfcnpj == "") {
+                alert('Insira o seu CNPJ/CPF/Documento estrangeiro antes de prosseguir!');
+            } else if (codAtiv == "") {
+                alert('Insira o c�digo da atividade antes de prosseguir!');
+            } else {
+                window.self.location.href = 'default.asp?consultaUF=sim&cpfcnpj=' + cpfcnpj + '&vlsUF=' + vlsUF + '&codigo=' + codAtiv;
+            }
+        }
+
+    </script>
+
+
+    <style type="text/css">
+        <!--
+        .style1
+        {
+            color: #CC3300;
+            font-weight: bold;
+            font-family: "Trebuchet MS";
+        }
+
+        .style2
+        {
+            color: #669900;
+            font-weight: bold;
+            font-family: "Trebuchet MS";
+        }
+
+        .style3
+        {
+            color: #FED30E;
+            font-weight: bold;
+            font-family: "Trebuchet MS";
+        }
+
+        .style4
+        {
+            font-family: "Trebuchet MS";
+        }
+
+        .textoVerde
+        {
+            font-family: "Trebuchet MS";
+            color: #006600;
+            font-size: 11px;
+        }
+
+            .textoVerde a
+            {
+                font-family: "Trebuchet MS";
+                color: #006600;
+                text-decoration: none;
+            }
+
+                .textoVerde a:link
+                {
+                    font-family: "Trebuchet MS";
+                    color: #006600;
+                    text-decoration: none;
+                }
+
+                .textoVerde a:hover
+                {
+                    font-family: "Trebuchet MS";
+                    color: #006600;
+                    text-decoration: underline;
+                }
+
+                .textoVerde a:visited
+                {
+                    font-family: "Trebuchet MS";
+                    color: #006600;
+                    text-decoration: none;
+                }
+
+        .style5
+        {
+            color: #990000;
+            font-weight: bold;
+        }
+
+        .style6
+        {
+            font-size: 10px;
+        }
+        .style8
+        {
+            color: #00AACC;
+            font-weight: bold;
+            font-family: "Trebuchet MS";
+        }
+        -->
+    </style>
+</head>
+
+<body>
+
+    <style type="text/css">
+<!--
+body {
+	margin-top: 0px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	margin-right: 0px;
+}
+
+.style4 {font-size: 13px; color: #993300; }
+.style3T {color: #666666; font-size: 9px; }
+-->
+</style>
+<div id="topo">
+ <div class="centralizar">
+ 
+  <script language="JavaScript" type="text/javascript">
+   <!--
+   function MM_findObj(n, d) { //v4.01
+    var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+    if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) 
+
+x=d.forms[i][n];
+    for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+    if(!x && d.getElementById) x=d.getElementById(n); return x;
+   }
+   function openFold( linha ){
+    //alert( MM_findObj(linha) );
+    if( MM_findObj(linha).style.display == "none" )
+     MM_findObj(linha).style.display = "block";
+    else
+     MM_findObj(linha).style.display = "none";
+   }
+   function popRoteiro(){
+    var pg = '../home/roteiro.asp';
+    var nome = 'pops';
+    var w = '570';
+    var h = '400';
+    var rolagem = '1';
+    var winObj=window.open(pg,nome,'width='+w+',height='+h+',directories=0,location=0,menubar=0,resizable=0,scrollbars='+rolagem+',status=0,toolbar=0,marginleft=0,margintop=0,left='+(((screen.width-w)/2)+-10)+',top='+(((screen.height-h)/2)+-30));
+    winObj.focus();
+   }
+   function popUps( sUrl , sW , sH , sR ){
+    var pg = sUrl;
+    var nome = 'pops';
+    var w = sW;
+    var h = sH;
+    var rolagem = sR;
+    var winObj=window.open(pg,nome,'width='+w+',height='+h+',directories=0,location=0,menubar=0,resizable=0,scrollbars='+rolagem+',status=0,toolbar=0,marginleft=0,margintop=0,left='+(((screen.width-w)/2)+-10)+',top='+(((screen.height-h)/2)+-30));
+    winObj.focus();
+   }
+   //-->
+  </script>
+
+  <table  border="0">
+   <tr>
+    <td valign="top" align="center">
+	 <img src="../imagens/pixel.gif" width="1" height="11" border="0" /><br />	 <a href="https://www.fepam.rs.gov.br" target="_blank"><img src="../imagens/teste.png" alt="logo fepam" width="75" height="75" border="0" /></a><img src="../imagens/pixel.gif" width="10" height="30" border="0" /><br />
+   	</td>
+    
+    <td valign="center" style="width: 100%;text-align: center;">
+       <h2>Licenciamento Ambiental<h2>
+   	</td>
+   </tr>
+  </table>  
+			<div> </div>
+		</div>
+	</div>
+
+    <div id="centroASO">
+        <div class="centralizar">
+
+            <!--
+		<div id="fundo_topo_conteudo_area4">
+		<div id="fundo_esq_conteudo_area4">
+		<div id="fundo_dir_conteudo_area4">
+		<div id="fundo_baixo_conteudo_area4">
+		-->
+
+
+
+            <p>&nbsp;</p>
+            <p>&nbsp;</p>
+            <p>&nbsp;</p>
+            <p>&nbsp;</p>
+            &nbsp;&nbsp;&nbsp;<div align="left">
+                <label class="font05">&nbsp;&nbsp;Escolha uma op&ccedil;&atilde;o!</label>
+            </div>
+            <p>&nbsp;</p>
+            <div class="centralizar" align="left">
+                <img src="../imagens/botao_consultasgenericas.gif" style="cursor: pointer" onclick="javascript: ativArea('Amarela');" />
+            </div>
+            <div id="div01" style="display: none">
+                <div id="centro">
+                    <div class="centralizar">
+                        <div id="fundo_topo_conteudo_area3">
+                            <div id="fundo_esq_conteudo_area3">
+                                <div id="fundo_dir_conteudo_area3">
+                                    <div id="fundo_baixo_conteudo_area3">
+                                        <!--
+									<div id="c_sup_esq_conteudo_area3"></div>
+									<div id="c_sup_dir_conteudo_area3"></div>
+									-->
+
+                                        <table background="../imagens/barra_amarelo.gif" width="100%">
+                                            <tr class="aba02">
+                                                <td>&nbsp;</td>
+                                                <td colspan="9"></td>
+                                            </tr>
+                                        </table>
+
+                                        <div class="conteudo">
+                                            <h3 class="style3">CONSULTAS GEN&Eacute;RICAS </h3>
+                                            <p>&nbsp;</p>
+                                            <form name="busca" method="post" action="../area3/lista2.asp">
+                                                <input type="hidden" name="buscar" value="1" />
+                                                <input name="tamanho" type="hidden" />
+                                                <table width="750" cellpadding="0" cellspacing="0">
+                                                    <!--DWLayoutTable-->
+                                                    <tr valign="middle">
+                                                        <td width="248" height="26" class="texto">
+                                                            <input name="tipoBusca" type="radio" value="processo" checked="checked" />
+                                                            <strong>N�mero do processo</strong>&nbsp;&nbsp;
+														<script type="text/javascript">
+														    new HelpBalloon({
+														        title: 'N�mero do processo',
+														        content: '<p></br>Insira os n�meros do processo que voc� quer consultar. </p> </br></br> Digite somente os n�meros sem tra�o, ponto e barra.',
+														        fixedPosition: HelpBalloon.POS_BOTTOM_RIGHT  // 0
+														    });
+                                                        </script>
+                                                        </td>
+                                                        <td colspan="2">
+                                                            <input name="processo" type="text" maxlength="17" onkeypress="FormataProcesso(document.busca,'processo',13,event);" style="visibility: visible; width: 155px;" onclick="document.busca.tipoBusca[0].checked = true;" />
+                                                        </td>
+                                                        <td width="135">
+                                                            <a href="javascript:submitespc()" class="botao" style="width: 106px;">
+                                                                <img src="../imagens/botao_prosseguir.jpg" alt="Buscar" width="106" height="24" /></a>
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr height="10">
+                                                        <td height="19" colspan="4">
+                                                            <p class="divisor_horizontal_cinza">&nbsp;</p>
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr valign="middle">
+                                                        <p style="font-style: italic">
+                                                            <td width="248" height="30" class="texto">
+                                                                <input name="tipoBusca" type="radio" value="documento" />
+                                                                <strong>N�mero do documento licenciat�rio</strong>&nbsp;&nbsp;
+														<script type="text/javascript">
+														    new HelpBalloon({
+														        title: 'N�mero do documento',
+														        content: '<p></br>Insira os n�meros do documento que voc� quer consultar. </p> </br></br> Digite somente os n�meros sem a barra.',
+														        fixedPosition: HelpBalloon.POS_BOTTOM_RIGHT  // 0
+														    });
+                                                        </script>
+                                                            </td>
+                                                            <td colspan="2">
+                                                                
+                                                                <input name="documento" type="text" maxlength="10" onkeypress="FormataDocumento(document.busca,'documento',9,event);" style="visibility: visible; width: 155px;" onclick="document.busca.tipoBusca[1].checked = true;" />
+                                                            </td>
+                                                            <td>
+                                                                <a href="javascript:submitespc()" class="botao" style="width: 106px;">
+                                                                    <img src="../imagens/botao_prosseguir.jpg" alt="Buscar" width="106" height="24" /></a>
+                                                            </td>
+                                                            <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr valign="middle">
+                                                        <td height="35" class="texto">&nbsp;</td>
+                                                        <td colspan="3">
+                                                            <select name="tipoDoc" id="tipoDoc" style="border-width: thin; border-style: solid; border-color: #999999; font-size: 10px; font-family: 'Trebuchet MS'" onclick="document.busca.tipoBusca[1].checked=true;">
+                                                                <option value="">Selecione o tipo de documento</option>
+                                                                <option value=1610>ADITIVO DE TERMO DE COMPROMISSO AMBIENTAL</option><option value=1621>ADITIVO DO TERMO DE COMPROMISSO DE EXECU��O  MEDIDA COMPENSAT�RIA DE EIA</option><option value=223>ALTERA��ES-CERTIFICADO DE CADASTRO LABORAT�RIO AN�LISES AMBIENTAIS</option><option value=234>ALTERA��ES-INFORMA��ES DE CADASTRO DE AGROT�XICO</option><option value=10012>ALVARA PARA LICENCIAMENTO DE ATIVIDADES DIVERSAS PARA INTERVEN��O EM VEGETA��O</option><option value=10011>ALVARA PARA LICENCIAMENTO DE SERVI�OS FLORESTAIS</option><option value=20040>ALVAR� DE CONCLUS�O DE BARRAGEM</option><option value=20041>ALVAR� DE REGULARIZA��O DE BARRAGEM</option><option value=322>ALVAR� PARA LICENCIAMENTO FLORESTAL</option><option value=1622>ATESTADO DE ENCERRAMENTO DO TCMC</option><option value=140>ATUALIZA��O DE DOCUMENTO LICENCIAT�RIO</option><option value=410>AUTORIZA��O DE MANIFESTO DE TRANSPORTE DE RES�DUOS-MTR</option><option value=434>AUTORIZA��O DE RECEBIMENTO DE RES�DUO/REJEITO/EFLUENTE DE FORA DO ESTADO</option><option value=20012>AUTORIZA��O DE REFORMA DE BARRAGEM</option><option value=433>AUTORIZA��O DE REMESSA DE RES�DUO/REJEITO/EFLUENTE PARA FORA DO ESTADO</option><option value=4230>AUTORIZA��O DE USO DE MAT�RIA-PRIMA FLORESTAL</option><option value=10021>AUTORIZA��O FLORESTAL</option><option value=400>AUTORIZA��O GERAL</option><option value=420>AUTORIZA��O PARA APLICA��O DE HERBICIDA</option><option value=20011>AUTORIZA��O PARA CONSTRU��O DE BARRAGEM</option><option value=4250>AUTORIZA��O PARA DESATIVA��O DE EMPREENDIMENTO</option><option value=4270>AUTORIZA��O PARA ENCHIMENTO DO RESERVAT�RIO</option><option value=440>AUTORIZA��O PARA MANEJO DE FAUNA SILVESTRE</option><option value=422>AUTORIZA��O PARA MANEJO DE VEGETA��O NATIVA</option><option value=4260>AUTORIZA��O PARA TESTES PR� OPERACIONAIS</option><option value=4240>AUTORIZA��O PARA USO DE �REA IRREGULAR CONVERTIDA</option><option value=20010>AUTORIZA��O PR�VIA</option><option value=432>AUTORIZA��O RECEBIMENTO RES�DUO, REJEITO OU EFLUENTE PARA DENTRO ESTADO DO RS</option><option value=431>AUTORIZA��O REMESSA DE RES�DUO, REJEITO OU EFLUENTE PARA FORA ESTADO DO RS</option><option value=10033>AVERBA��O RESERVA FLORESTAL</option><option value=10034>AVERBA��O RESERVA LEGAL</option><option value=10031>AVERBA��O �REAS DE PRESERVA��O PERMANENTE</option><option value=10032>AVERBA��O �RVORES IMUNES AO CORTE</option><option value=290>CERTIFICADO DE CADASTRO DA ATIVIDADE DE SILVICULTURA</option><option value=230>CERTIFICADO DE CADASTRO DE AGROT�XICO CATEGORIA 1</option><option value=231>CERTIFICADO DE CADASTRO DE AGROT�XICO CATEGORIA 2</option><option value=232>CERTIFICADO DE CADASTRO DE AGROT�XICO CATEGORIA 3</option><option value=233>CERTIFICADO DE CADASTRO DE AGROT�XICO CATEGORIA 4</option><option value=235>CERTIFICADO DE CADASTRO DE AGROT�XICO CATEGORIA 5</option><option value=236>CERTIFICADO DE CADASTRO DE AGROT�XICO N�O CLASSIFICADO</option><option value=119>CERTIFICADO DE CADASTRO DE AUDITOR AMBIENTAL</option><option value=270>CERTIFICADO DE CADASTRO DE EQUIPE DE ATENDIMENTO � EMERG�NCIA</option><option value=225>CERTIFICADO DE CADASTRO DE LABORAT�RIO P/ AN�LISES AMBIENTAIS</option><option value=200>CERTIFICADO DE CADASTRO IRRIGANTE DE ARROZ</option><option value=210>CERTIFICADO DE CADASTRO IRRIGANTE OUTRAS CULTURAS</option><option value=224>CERTIFICADO DE CADASTRO LABORAT�RIO AN�LISES AMBIENTAIS - FORA RS</option><option value=222>CERTIFICADO DE CADASTRO LABORAT�RIO AN�LISES AMBIENTAIS - INTERIOR</option><option value=220>CERTIFICADO DE CADASTRO LABORAT�RIO AN�LISES AMBIENTAIS - PORTO ALEGRE</option><option value=221>CERTIFICADO DE CADASTRO LABORAT�RIO AN�LISES AMBIENTAIS - REG METR PORTO ALEGRE</option><option value=240>CERTIFICADO DE CADASTRO PISCICULTURA</option><option value=260>CERTIFICADO DE PRODUTOR FLORESTAL</option><option value=10041>CERTIFICADO FLORESTAL A</option><option value=2110>DECLARA��O APROVA��O DE TERMO DE REFER�NCIA PARA ELABORA��O DE EIA/RIMA</option><option value=380>DECLARA��O DE ALTERA��O DE DRAGA E/OU TERMINAL DE MIN�RIO</option><option value=340>DECLARA��O DE ALTERA��O DE FROTA - TRANSPORTADORAS</option><option value=351>DECLARA��O DE ALTERA��O DE �REA IRRIGADA</option><option value=321>DECLARA��O DE APROVA��O AMBIENTAL</option><option value=10051>DECLARA��O DE APROVA��O DE PROJETOS FLORESTAIS</option><option value=2160>DECLARA��O DE CI�NCIA DE AUTO DE CONSTATA��O</option><option value=2150>DECLARA��O DE DESATIVA��O</option><option value=10052>DECLARA��O DE ISEN��O DE ALVARA PARA LICENCIAMENTO DE SERVI�OS FLORESTAIS</option><option value=300>DECLARA��O DE ISEN��O DE LICENCIAMENTO</option><option value=310>DECLARA��O DE LICENCIAMENTO MUNICIPALIZADO</option><option value=2140>DECLARA��O DE PASSIVO AMBIENTAL</option><option value=2120>DECLARA��O DE PRORROGA��O</option><option value=320>DECLARA��O DE REGULARIDADE</option><option value=2130>DECLARA��O DE REVOGA��O DE PRORROGA��O</option><option value=330>DECLARA��O GERAL</option><option value=20031>DISPENSA DE OUTORGA</option><option value=5322>INDEF ALVAR� PARA LICENCIAMENTO FLORESTAL</option><option value=5340>INDEF AUTORIZA��O MANIFESTO DE TRANSPORTE DE RES�DUOS-MTR</option><option value=5224>INDEF CAD LABORAT�RIO - FORA RS</option><option value=5222>INDEF CAD LABORAT�RIO - INTERIOR</option><option value=5220>INDEF CAD LABORAT�RIO - PORTO ALEGRE</option><option value=5221>INDEF CAD LABORAT�RIO - REG METROPOLITANA</option><option value=5230>INDEF CERT DE CADASTRO DE AGROT�XICO CATEGORIA 1</option><option value=5231>INDEF CERT DE CADASTRO DE AGROT�XICO CATEGORIA 2</option><option value=5232>INDEF CERT DE CADASTRO DE AGROT�XICO CATEGORIA 3</option><option value=5233>INDEF CERT DE CADASTRO DE AGROT�XICO CATEGORIA 4</option><option value=5234>INDEF CERT DE CADASTRO DE AGROT�XICO CATEGORIA 5</option><option value=5236>INDEF CERT DE CADASTRO DE AGROT�XICO N�O CLASSIFICADO</option><option value=5330>INDEF DE AUTORIZA��O DE MANEJO DE FAUNA SILVESTRE</option><option value=5870>INDEF DE AUTORIZA��O PARA MANEJO DE VEGETA��O NATIVA</option><option value=271>INDEF DE CERTIFICADO DE CADASTRO DE EPAE</option><option value=52110>INDEF DECL  APROV TERMO DE REF P/ ELAB DE EIA/RIMA</option><option value=5820>INDEF LIC INSTALA��O  COM EIA/RIMA</option><option value=5390>INDEF TERMO DE ENCERRAMENTO</option><option value=10111>INDEFERIMENTO DE ALVARA  DE SERVI�OS FLORESTAIS</option><option value=20140>INDEFERIMENTO DE ALVAR� DE CONCLUS�O DE BARRAGEM</option><option value=20141>INDEFERIMENTO DE ALVAR� DE REGULARIZA��O DE BARRAGEM</option><option value=5970>INDEFERIMENTO DE AUTORIZA��O DE ENCHIMENTO DE RESERVAT�RIO</option><option value=5432>INDEFERIMENTO DE AUTORIZA��O DE RECEBIMENTO RRE DE FORA DO ESTADO RS</option><option value=5431>INDEFERIMENTO DE AUTORIZA��O DE REMESSA RRE PARA FORA DO ESTADO RS</option><option value=5920>INDEFERIMENTO DE AUTORIZA��O DE USO DE �REA CONVERTIDA IRREGULAR</option><option value=540>INDEFERIMENTO DE AUTORIZA��O GERAL</option><option value=20111>INDEFERIMENTO DE AUTORIZA��O PARA CONSTRU��O DE BARRAGEM</option><option value=5950>INDEFERIMENTO DE AUTORIZA��O PARA DESATIVA��O DE EMPREENDIMENTO</option><option value=20112>INDEFERIMENTO DE AUTORIZA��O PARA REFORMA DE BARRAGEM</option><option value=5960>INDEFERIMENTO DE AUTORIZA��O PARA TESTES PR� OPERACIONAIS</option><option value=20110>INDEFERIMENTO DE AUTORIZA��O PR�VIA</option><option value=550>INDEFERIMENTO DE CADASTRAMENTO DE LABORAT�RIO</option><option value=590>INDEFERIMENTO DE CADASTRO DE AUDITOR AMBIENTAL</option><option value=560>INDEFERIMENTO DE CERTIFICADO DE CADASTRO AGROT�XICO</option><option value=5980>INDEFERIMENTO DE CERTIFICADO DE CADASTRO DE ATIVIDADE DE SILVICULTURA</option><option value=5940>INDEFERIMENTO DE CERTIFICADO DE PRODUTOR FLORESTAL</option><option value=3601>INDEFERIMENTO DE DECLARA��O DE ALTERA��O DE RESPONSABILIDADE</option><option value=5350>INDEFERIMENTO DE DECLARA��O DE APROVA��O AMBIENTAL</option><option value=5860>INDEFERIMENTO DE DECLARA��O DE REGULARIDADE</option><option value=2330>INDEFERIMENTO DE DECLARA��O GERAL</option><option value=20131>INDEFERIMENTO DE DISPENSA DE OUTORGA</option><option value=500>INDEFERIMENTO DE ISEN��O LICENCIAMENTO</option><option value=5930>INDEFERIMENTO DE LICEN�A AMBIENTAL POR COMPROMISSO</option><option value=571>INDEFERIMENTO DE LICEN�A AMBIENTAL �NICA</option><option value=520>INDEFERIMENTO DE LICEN�A DE INSTALA��O</option><option value=5116>INDEFERIMENTO DE LICEN�A DE INSTALA��O DE AMPLIA��O</option><option value=5118>INDEFERIMENTO DE LICEN�A DE INSTALA��O DE AMPLIA��O COM EIA/RIMA</option><option value=5117>INDEFERIMENTO DE LICEN�A DE INSTALA��O DE MODERNIZA��O AMBIENTAL</option><option value=530>INDEFERIMENTO DE LICEN�A DE OPERA��O</option><option value=531>INDEFERIMENTO DE LICEN�A DE OPERA��O CORRETIVA</option><option value=510>INDEFERIMENTO DE LICEN�A PR�VIA</option><option value=5106>INDEFERIMENTO DE LICEN�A PR�VIA DE AMPLIA��O</option><option value=5108>INDEFERIMENTO DE LICEN�A PR�VIA DE AMPLIA��O COM EIA/RIMA</option><option value=5107>INDEFERIMENTO DE LICEN�A PR�VIA DE MODERNIZA��O AMBIENTAL</option><option value=5181>INDEFERIMENTO DE LICEN�A PR�VIA E DE INSTALA��O PARA ALTERA��O</option><option value=5120>INDEFERIMENTO DE LICEN�A PR�VIA E DE INSTALA��O UNIFICADAS</option><option value=5105>INDEFERIMENTO DE LICEN�A PR�VIA EIA/RIMA</option><option value=581>INDEFERIMENTO DE LICEN�A �NICA DE INSTALA��O E OPERA��O</option><option value=20130>INDEFERIMENTO DE OUTORGA</option><option value=20120>INDEFERIMENTO DE RESERVA DE DISPONIBILIDADE HIDRICA</option><option value=10061>LAUDO FLORESTAL SOLICITADO POR TERCEIROS COM VISTORIA</option><option value=281>LICEN�A AMBIENTAL POR COMPROMISSO</option><option value=282>LICEN�A AMBIENTAL POR COMPROMISSO DE MUNIC�PIO</option><option value=151>LICEN�A AMBIENTAL �NICA</option><option value=110>LICEN�A DE INSTALA��O</option><option value=114>LICEN�A DE INSTALA��O DE ALTERA��O/MODERNIZA��O</option><option value=116>LICEN�A DE INSTALA��O DE AMPLIA��O</option><option value=118>LICEN�A DE INSTALA��O DE AMPLIA��O COM EIA/RIMA</option><option value=112>LICEN�A DE INSTALA��O DE AMPLIA��O DE CAPACIDADE PRODUTIVA</option><option value=113>LICEN�A DE INSTALA��O DE AMPLIA��O DE �REA/CAPAC PRODUTIVA</option><option value=111>LICEN�A DE INSTALA��O DE AMPLIA��O DE �REA/MODERNIZA��O/CAPAC PRODUTIVA</option><option value=117>LICEN�A DE INSTALA��O DE MODERNIZA��O AMBIENTAL</option><option value=161>LICEN�A DE INSTALA��O E OPERA��O</option><option value=115>LICEN�A DE INSTALA��O EIA/RIMA</option><option value=120>LICEN�A DE OPERA��O</option><option value=126>LICEN�A DE OPERA��O CORRETIVA</option><option value=125>LICEN�A DE OPERA��O EIA/RIMA</option><option value=100>LICEN�A PR�VIA</option><option value=104>LICEN�A PR�VIA DE ALTERA��O/MODERNIZA��O</option><option value=106>LICEN�A PR�VIA DE AMPLIA��O</option><option value=108>LICEN�A PR�VIA DE AMPLIA��O COM EIA/RIMA</option><option value=102>LICEN�A PR�VIA DE AMPLIA��O DE CAPACIDADE PRODUTIVA</option><option value=103>LICEN�A PR�VIA DE AMPLIA��O DE �REA/CAPAC PRODUTIVA</option><option value=101>LICEN�A PR�VIA DE AMPLIA��O DE �REA/MODERNIZA��O/CAPAC PRODUTIVA</option><option value=10071>LICEN�A PR�VIA DE EXAME E AVALIA��O DA �REA FLORESTAL</option><option value=107>LICEN�A PR�VIA DE MODERNIZA��O AMBIENTAL</option><option value=181>LICEN�A PR�VIA E DE INSTALA��O PARA ALTERA��O</option><option value=171>LICEN�A PR�VIA E DE INSTALA��O UNIFICADAS</option><option value=105>LICEN�A PR�VIA EIA/RIMA</option><option value=152>LICEN�A �NICA DE INSTALA��O E OPERA��O</option><option value=20030>OUTORGA</option><option value=10211>PARECER PARA ALVARA DE SERVI�OS FLORESTAIS</option><option value=20240>PARECER PARA ALVAR� DE CONCLUS�O DE BARRAGEM</option><option value=20241>PARECER PARA ALVAR� DE REGULARIZA��O DE BARRAGEM</option><option value=20212>PARECER PARA AUTORIZA��O DE REFORMA DE BARRAGEM</option><option value=20211>PARECER PARA AUTORIZA��O PARA CONSTRU��O DE BARRAGEM</option><option value=20210>PARECER PARA AUTORIZA��O PR�VIA</option><option value=20231>PARECER PARA DISPENSA DE OUTORGA</option><option value=20340>PARECER PARA INDEFERIMENTO DE ALVAR� DE CONCLUS�O DE BARRAGEM</option><option value=20341>PARECER PARA INDEFERIMENTO DE ALVAR� DE REGULARIZA��O DE BARRAGEM</option><option value=20311>PARECER PARA INDEFERIMENTO DE AUTORIZA��O PARA CONSTRU��O DE BARRAGEM</option><option value=20312>PARECER PARA INDEFERIMENTO DE AUTORIZA��O PARA REFORMA DE BARRAGEM</option><option value=20310>PARECER PARA INDEFERIMENTO DE AUTORIZA��O PR�VIA</option><option value=20331>PARECER PARA INDEFERIMENTO DE DISPENSA DE OUTORGA</option><option value=20330>PARECER PARA INDEFERIMENTO DE OUTORGA</option><option value=20320>PARECER PARA INDEFERIMENTO DE RESERVA DE DISPONIBILIDADE H�DRICA</option><option value=20230>PARECER PARA OUTORGA</option><option value=20220>PARECER PARA RESERVA DE DISPONIBILIDADE HIDRICA</option><option value=20213>PARECER PARA TAMPONAMENTO DE PO�O</option><option value=10081>PARECER SOBRE PROJETO FLORESTAL</option><option value=10082>PARECER T�CNICO FLORESTAL SOLICITADO POR TERCEIROS</option><option value=10083>PARECER T�CNICO PR�VIO</option><option value=600>REGISTRO DE PRODUTOR DE AGROT�XICO</option><option value=20020>RESERVA DE DISPONIBILIDADE H�DRICA</option><option value=20013>TAMPONAMENTO DE PO�O</option><option value=2300>TERMO DE AJUSTAMENTO DE CONDUTA</option><option value=2200>TERMO DE ANUENCIA PREVIA</option><option value=10092>TERMO DE ANU�NCIA DE GESTOR DE UNIDADE DE CONSERVA��O</option><option value=10091>TERMO DE ANU�NCIA PARA MANEJO DE VEGETA��O EM APP DE �REA URBANA</option><option value=1600>TERMO DE COMPROMISSO AMBIENTAL</option><option value=1630>TERMO DE COMPROMISSO AMBIENTAL</option><option value=1640>TERMO DE COMPROMISSO AMBIENTAL</option><option value=1620>TERMO DE COMPROMISSO DE EXECU��O DE MEDIDA COMPENSAT�RIA DE EIA</option><option value=3490>TERMO DE COOPERA��O DO BIOMA MATA ATL�NTICA</option><option value=3100>TERMO DE COOPERA��O T�CNICA</option><option value=3530>TERMO DE DESIST�NCIA E DE CONFISS�O DE D�VIDA</option><option value=390>TERMO DE ENCERRAMENTO</option><option value=2410>TERMO DE NOTIFICA��O ADM</option><option value=2411>TERMO DE NOTIFICA��O ADM - LEVANTAMENTO DE SUSPENS�O</option><option value=3501>TERMO DE PARCELAMENTO E CONFISS�O DE D�VIDA</option><option value=3330>TERMO DE REFERENCIA EIA/RIMA</option><option value=2700>TERMO DE VISTORIA PARA PROCESSOS DE LICENC AMBIENTAL DMIN</option>select tido.tido_id as tido_id, tido.abreviatura,tido.descricao as descricao from fep_tipos_documentos tido, fep_sub_classes_documentos sucd where tido.sucd_id = sucd.sucd_id  and   sucd.cldo_id in (1,2,3,4,5,6,29,100,101,200,201) order by tido.descricao
+                                                            </select>
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr height="10">
+                                                        <td height="19" colspan="4" class="texto">
+                                                            <p class="divisor_horizontal_cinza">&nbsp;</p>
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr valign="middle">
+                                                        <td height="35" class="texto">
+                                                            <input name="tipoBusca" id="tipoBusca" type="radio" value="cpfcnpj" />
+                                                            <strong>CPF/CNPJ/Doc. Estrangeiro</strong>&nbsp;&nbsp;
+														<script type="text/javascript">
+														    new HelpBalloon(
+                                                            {
+                                                                title: 'Documento de Identifica��o',
+                                                                content: '<p></br>Insira os n&uacute;meros do seu documento. </p> </br></br> Digite somente os n&uacute;meros. No caso de documento estrangeiro digite tamb&eacute;m as letras, se houver.',
+                                                                fixedPosition: HelpBalloon.POS_BOTTOM_RIGHT  // 0
+                                                            }
+                                                            );
+                                                        </script>
+                                                        </td>
+                                                        <td colspan="2">
+                                                            <input name="cpf" id="cpf" type="text" style="visibility: visible; width: 155px;" onclick="javascript: ativaRadio();" onkeypress="javascript: return Tecla(event);" onkeyup="javascript: return TeclaUp(event,'cpf');" />
+                                                        </td>
+                                                        <td>
+                                                            <img src="../imagens/botao_prosseguir.jpg" alt="Buscar" width="106" height="24" onclick="javascript: submitespc();" style="cursor: pointer;" />
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr height="10">
+                                                        <td height="19" colspan="4" class="texto">
+                                                            <p class="divisor_horizontal_cinza">&nbsp;</p>
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr valign="middle">
+                                                        <td height="30" class="texto">
+                                                            <input name="tipoBusca" id="radio" type="radio" value="muni" />
+                                                            <strong>Munic&iacute;pio</strong>&nbsp;
+														<script type="text/javascript">
+														    new HelpBalloon({
+														        title: 'Munic�pio',
+														        content: '<p></br>Primeiro escolha o munic�pio o qual voc� procura informa��es. Depois a Raz�o Social e/ou Ramo da Atividade.</br>Outros estados somente para Transportadoras',
+														        fixedPosition: HelpBalloon.POS_BOTTOM_RIGHT  // 0
+														    });
+                                                        </script>
+                                                        </td>
+                                                        <td colspan="2" class="texto">
+                                                            <select id="estado" name="estado" onclick="document.busca.tipoBusca[3].checked=true;" onchange="load(this[this.selectedIndex].value)" style="font-size: 10px; font-family: 'Trebuchet MS', Arial, Verdana">
+                                                                <option  value="AC">ACRE</option><option  value="AL">ALAGOAS</option><option  value="AM">AMAZONAS</option><option  value="BA">BAHIA</option><option  value="CE">CEAR�</option><option  value="DF">DISTRITO FEDERAL</option><option  value="ES">ESP�RITO SANTO</option><option  value="GO">GOI�S</option><option  value="MA">MARANH�O</option><option  value="MT">MATO GROSSO</option><option  value="MS">MATO GROSSO DO SUL</option><option  value="MG">MINAS GERAIS</option><option  value="PR">PARAN�</option><option  value="PB">PARA�BA</option><option  value="PA">PAR�</option><option  value="PE">PERNAMBUCO</option><option  value="PI">PIAU�</option><option  value="RJ">RIO DE JANEIRO</option><option  value="RN">RIO GRANDE DO NORTE</option><option  selected="selected"  value="RS">RIO GRANDE DO SUL</option><option  value="RO">ROND�NIA</option><option  value="SC">SANTA CATARINA</option><option  value="SE">SERGIPE</option><option  value="SP">S�O PAULO</option><option  value="TO">TOCANTINS</option>
+                                                            </select>
+                                                            <span class="style6">outros estados somente para transportadoras</span>
+                                                        </td>
+                                                        <td class="texto">
+                                                            <a href="javascript:submitespc()" class="botao" style="width: 106px;">
+                                                                <img src="../imagens/botao_prosseguir.jpg" alt="Buscar" width="106" height="24" /></a>
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td height="21" class="texto">&nbsp;</td>
+                                                        <td colspan="3">
+                                                            <select name="municipio" style="width: 250px; font-size: 10px; font-family: 'Trebuchet MS', Arial, Verdana" onclick="document.busca.tipoBusca[3].checked=true;">
+                                                                SELECT (muni_id) as muni_id , (nome) as nome FROM fep_municipios WHERE UNFE_ID = 'RS'  and exists (select null from fep_atividades_antropicas ata1 , fep_municipios muni where ata1.muni_id = muni.muni_id) ORDER BY NOME<br><option value="0">Selecione um municipio</option><option value="9999999">TODOS</option><option value="4300034">ACEGUA</option><option value="4300059">AGUA SANTA</option><option value="4300109">AGUDO</option><option value="4300208">AJURICABA</option><option value="4300307">ALECRIM</option><option value="4300406">ALEGRETE</option><option value="4300455">ALEGRIA</option><option value="4300471">ALMIRANTE TAMANDARE DO SUL</option><option value="4300505">ALPESTRE</option><option value="4300554">ALTO ALEGRE</option><option value="4300570">ALTO FELIZ</option><option value="4300604">ALVORADA</option><option value="4300638">AMARAL FERRADOR</option><option value="4300646">AMETISTA DO SUL</option><option value="4300661">ANDRE DA ROCHA</option><option value="4300703">ANTA GORDA</option><option value="4300802">ANTONIO PRADO</option><option value="4300851">ARAMBARE</option><option value="4300877">ARARICA</option><option value="4300901">ARATIBA</option><option value="4301008">ARROIO DO MEIO</option><option value="4301073">ARROIO DO PADRE</option><option value="4301057">ARROIO DO SAL</option><option value="4301206">ARROIO DO TIGRE</option><option value="4301107">ARROIO DOS RATOS</option><option value="4301305">ARROIO GRANDE</option><option value="4301404">ARVOREZINHA</option><option value="4301503">AUGUSTO PESTANA</option><option value="4301552">AUREA</option><option value="4301602">BAGE</option><option value="4301636">BALNEARIO PINHAL</option><option value="4301651">BARAO</option><option value="4301701">BARAO DO COTEGIPE</option><option value="4301750">BARAO DO TRIUNFO</option><option value="4301859">BARRA DO GUARITA</option><option value="4301875">BARRA DO QUARAI</option><option value="4301909">BARRA DO RIBEIRO</option><option value="4301925">BARRA DO RIO AZUL</option><option value="4301958">BARRA FUNDA</option><option value="4301800">BARRACAO</option><option value="4302006">BARROS CASSAL</option><option value="4302055">BENJAMIN CONSTANT DO SUL</option><option value="4302105">BENTO GONCALVES</option><option value="4302154">BOA VISTA DAS MISSOES</option><option value="4302204">BOA VISTA DO BURICA</option><option value="4302220">BOA VISTA DO CADEADO</option><option value="4302238">BOA VISTA DO INCRA</option><option value="4302253">BOA VISTA DO SUL</option><option value="4302303">BOM JESUS</option><option value="4302352">BOM PRINCIPIO</option><option value="4302378">BOM PROGRESSO</option><option value="4302402">BOM RETIRO DO SUL</option><option value="4302451">BOQUEIRAO DO LEAO</option><option value="4302501">BOSSOROCA</option><option value="4302584">BOZANO</option><option value="4302600">BRAGA</option><option value="4302659">BROCHIER</option><option value="4302709">BUTIA</option><option value="4302808">CACAPAVA DO SUL</option><option value="4302907">CACEQUI</option><option value="4303004">CACHOEIRA DO SUL</option><option value="4303103">CACHOEIRINHA</option><option value="4303202">CACIQUE DOBLE</option><option value="4303301">CAIBATE</option><option value="4303400">CAICARA</option><option value="4303509">CAMAQUA</option><option value="4303558">CAMARGO</option><option value="4303608">CAMBARA DO SUL</option><option value="4303673">CAMPESTRE DA SERRA</option><option value="4303707">CAMPINA DAS MISSOES</option><option value="4303806">CAMPINAS DO SUL</option><option value="4303905">CAMPO BOM</option><option value="4304002">CAMPO NOVO</option><option value="4304101">CAMPOS BORGES</option><option value="4304200">CANDELARIA</option><option value="4304309">CANDIDO GODOI</option><option value="4304358">CANDIOTA</option><option value="4304408">CANELA</option><option value="4304507">CANGUCU</option><option value="4304606">CANOAS</option><option value="4304614">CANUDOS DO VALE</option><option value="4304622">CAPAO BONITO DO SUL</option><option value="4304630">CAPAO DA CANOA</option><option value="4304655">CAPAO DO CIPO</option><option value="4304663">CAPAO DO LEAO</option><option value="4304689">CAPELA DE SANTANA</option><option value="4304697">CAPITAO</option><option value="4304671">CAPIVARI DO SUL</option><option value="4304713">CARAA</option><option value="4304705">CARAZINHO</option><option value="4304804">CARLOS BARBOSA</option><option value="4304853">CARLOS GOMES</option><option value="4304903">CASCA</option><option value="4304952">CASEIROS</option><option value="4305009">CATUIPE</option><option value="4305108">CAXIAS DO SUL</option><option value="4305116">CENTENARIO</option><option value="4305124">CERRITO</option><option value="4305132">CERRO BRANCO</option><option value="4305157">CERRO GRANDE</option><option value="4305173">CERRO GRANDE DO SUL</option><option value="4305207">CERRO LARGO</option><option value="4305306">CHAPADA</option><option value="4305355">CHARQUEADAS</option><option value="4305371">CHARRUA</option><option value="4305405">CHIAPETTA</option><option value="4305439">CHUI</option><option value="4305447">CHUVISCA</option><option value="4305454">CIDREIRA</option><option value="4305504">CIRIACO</option><option value="4305587">COLINAS</option><option value="4305603">COLORADO</option><option value="4305702">CONDOR</option><option value="4305801">CONSTANTINA</option><option value="4305835">COQUEIRO BAIXO</option><option value="4305850">COQUEIROS DO SUL</option><option value="4305871">CORONEL BARROS</option><option value="4305900">CORONEL BICACO</option><option value="4305934">CORONEL PILAR</option><option value="4305959">COTIPORA</option><option value="4305975">COXILHA</option><option value="4306007">CRISSIUMAL</option><option value="4306056">CRISTAL</option><option value="4306072">CRISTAL DO SUL</option><option value="4306106">CRUZ ALTA</option><option value="4306130">CRUZALTENSE</option><option value="4306205">CRUZEIRO DO SUL</option><option value="4306304">DAVID CANABARRO</option><option value="4306320">DERRUBADAS</option><option value="4306353">DEZESSEIS DE NOVEMBRO</option><option value="4306379">DILERMANDO DE AGUIAR</option><option value="4306403">DOIS IRMAOS</option><option value="4306429">DOIS IRMAOS DAS MISSOES</option><option value="4306452">DOIS LAJEADOS</option><option value="4306502">DOM FELICIANO</option><option value="4306601">DOM PEDRITO</option><option value="4306551">DOM PEDRO DE ALCANTARA</option><option value="4306700">DONA FRANCISCA</option><option value="4306734">DOUTOR MAURICIO CARDOSO</option><option value="4306759">DOUTOR RICARDO</option><option value="4306767">ELDORADO DO SUL</option><option value="4306809">ENCANTADO</option><option value="4306908">ENCRUZILHADA DO SUL</option><option value="4306924">ENGENHO VELHO</option><option value="4306932">ENTRE IJUIS</option><option value="4306957">ENTRE RIOS DO SUL</option><option value="4306973">EREBANGO</option><option value="4307005">ERECHIM</option><option value="4307054">ERNESTINA</option><option value="4307203">ERVAL GRANDE</option><option value="4307302">ERVAL SECO</option><option value="4307401">ESMERALDA</option><option value="4307450">ESPERANCA DO SUL</option><option value="4307500">ESPUMOSO</option><option value="4307559">ESTACAO</option><option value="4307609">ESTANCIA VELHA</option><option value="4307708">ESTEIO</option><option value="4307807">ESTRELA</option><option value="4307815">ESTRELA VELHA</option><option value="4307831">EUGENIO DE CASTRO</option><option value="4307864">FAGUNDES VARELA</option><option value="4307906">FARROUPILHA</option><option value="4308003">FAXINAL DO SOTURNO</option><option value="4308052">FAXINALZINHO</option><option value="4308078">FAZENDA VILA NOVA</option><option value="4308102">FELIZ</option><option value="4308201">FLORES DA CUNHA</option><option value="4308250">FLORIANO PEIXOTO</option><option value="4308300">FONTOURA XAVIER</option><option value="4308409">FORMIGUEIRO</option><option value="4308433">FORQUETINHA</option><option value="4308458">FORTALEZA DOS VALOS</option><option value="4308508">FREDERICO WESTPHALEN</option><option value="4308607">GARIBALDI</option><option value="4308656">GARRUCHOS</option><option value="4308706">GAURAMA</option><option value="4308805">GENERAL CAMARA</option><option value="4308854">GENTIL</option><option value="4308904">GETULIO VARGAS</option><option value="4309001">GIRUA</option><option value="4309050">GLORINHA</option><option value="4309100">GRAMADO</option><option value="4309126">GRAMADO DOS LOUREIROS</option><option value="4309159">GRAMADO XAVIER</option><option value="4309209">GRAVATAI</option><option value="4309258">GUABIJU</option><option value="4309308">GUAIBA</option><option value="4309407">GUAPORE</option><option value="4309506">GUARANI DAS MISSOES</option><option value="4309555">HARMONIA</option><option value="4307104">HERVAL</option><option value="4309571">HERVEIRAS</option><option value="4309605">HORIZONTINA</option><option value="4309654">HULHA NEGRA</option><option value="4309704">HUMAITA</option><option value="4309753">IBARAMA</option><option value="4309803">IBIACA</option><option value="4309902">IBIRAIARAS</option><option value="4309951">IBIRAPUITA</option><option value="4310009">IBIRUBA</option><option value="4310108">IGREJINHA</option><option value="4310207">IJUI</option><option value="4310306">ILOPOLIS</option><option value="4310330">IMBE</option><option value="4310363">IMIGRANTE</option><option value="4310405">INDEPENDENCIA</option><option value="4310413">INHACORA</option><option value="4310439">IPE</option><option value="4310462">IPIRANGA DO SUL</option><option value="4310504">IRAI</option><option value="4310538">ITAARA</option><option value="4310553">ITACURUBI</option><option value="4310579">ITAPUCA</option><option value="4310603">ITAQUI</option><option value="4310652">ITATI</option><option value="4310702">ITATIBA DO SUL</option><option value="4310751">IVORA</option><option value="4310801">IVOTI</option><option value="4310850">JABOTICABA</option><option value="4310876">JACUIZINHO</option><option value="4310900">JACUTINGA</option><option value="4311007">JAGUARAO</option><option value="4311106">JAGUARI</option><option value="4311122">JAQUIRANA</option><option value="4311130">JARI</option><option value="4311155">JOIA</option><option value="4311205">JULIO DE CASTILHOS</option><option value="4311239">LAGOA BONITA DO SUL</option><option value="4311270">LAGOA DOS TRES CANTOS</option><option value="4311304">LAGOA VERMELHA</option><option value="4311254">LAGOAO</option><option value="4311403">LAJEADO</option><option value="4311429">LAJEADO DO BUGRE</option><option value="4311502">LAVRAS DO SUL</option><option value="4311601">LIBERATO SALZANO</option><option value="4311627">LINDOLFO COLLOR</option><option value="4311643">LINHA NOVA</option><option value="4311700">MACHADINHO</option><option value="4311734">MAMPITUBA</option><option value="4311759">MANOEL VIANA</option><option value="4311775">MAQUINE</option><option value="4311791">MARATA</option><option value="4311809">MARAU</option><option value="4311908">MARCELINO RAMOS</option><option value="4311981">MARIANA PIMENTEL</option><option value="4312005">MARIANO MORO</option><option value="4312054">MARQUES DE SOUZA</option><option value="4312104">MATA</option><option value="4312138">MATO CASTELHANO</option><option value="4312153">MATO LEITAO</option><option value="4312179">MATO QUEIMADO</option><option value="4312203">MAXIMILIANO DE ALMEIDA</option><option value="4311718">MA�AMBARA</option><option value="4312252">MINAS DO LEAO</option><option value="4312302">MIRAGUAI</option><option value="4312351">MONTAURI</option><option value="4312377">MONTE ALEGRE DOS CAMPOS</option><option value="4312385">MONTE BELO DO SUL</option><option value="4312401">MONTENEGRO</option><option value="4312427">MORMA�O</option><option value="4312443">MORRINHOS DO SUL</option><option value="4312450">MORRO REDONDO</option><option value="4312476">MORRO REUTER</option><option value="4312500">MOSTARDAS</option><option value="4312609">MUCUM</option><option value="4312617">MUITOS CAPOES</option><option value="4312625">MULITERNO</option><option value="4312658">NAO ME TOQUE</option><option value="4312674">NICOLAU VERGUEIRO</option><option value="4312708">NONOAI</option><option value="4312757">NOVA ALVORADA</option><option value="4312807">NOVA ARACA</option><option value="4312906">NOVA BASSANO</option><option value="4312955">NOVA BOA VISTA</option><option value="4313003">NOVA BRESCIA</option><option value="4313011">NOVA CANDELARIA</option><option value="4313037">NOVA ESPERANCA DO SUL</option><option value="4313060">NOVA HARTZ</option><option value="4313086">NOVA PADUA</option><option value="4313102">NOVA PALMA</option><option value="4313201">NOVA PETROPOLIS</option><option value="4313300">NOVA PRATA</option><option value="4313334">NOVA RAMADA</option><option value="4313359">NOVA ROMA DO SUL</option><option value="4313375">NOVA SANTA RITA</option><option value="4313490">NOVO BARREIRO</option><option value="4313391">NOVO CABRAIS</option><option value="4313409">NOVO HAMBURGO</option><option value="4313425">NOVO MACHADO</option><option value="4313441">NOVO TIRADENTES</option><option value="4313466">NOVO XINGU</option><option value="4313508">OSORIO</option><option value="4313607">PAIM FILHO</option><option value="4313656">PALMARES DO SUL</option><option value="4313706">PALMEIRA DAS MISSOES</option><option value="4313805">PALMITINHO</option><option value="4313904">PANAMBI</option><option value="4313953">PANTANO GRANDE</option><option value="4314001">PARAI</option><option value="4314027">PARAISO DO SUL</option><option value="4314035">PARECI NOVO</option><option value="4314050">PAROBE</option><option value="4314068">PASSA SETE</option><option value="4314076">PASSO DO SOBRADO</option><option value="4314100">PASSO FUNDO</option><option value="4314134">PAULO BENTO</option><option value="4314159">PAVERAMA</option><option value="4314175">PEDRAS ALTAS</option><option value="4314209">PEDRO OSORIO</option><option value="4314308">PEJUCARA</option><option value="4314407">PELOTAS</option><option value="4314423">PICADA CAFE</option><option value="4314456">PINHAL</option><option value="4314464">PINHAL DA SERRA</option><option value="4314472">PINHAL GRANDE</option><option value="4314498">PINHEIRINHO DO VALE</option><option value="4314506">PINHEIRO MACHADO</option><option value="4314548">PINTO BANDEIRA</option><option value="4314555">PIRAPO</option><option value="4314605">PIRATINI</option><option value="4314704">PLANALTO</option><option value="4314753">POCO DAS ANTAS</option><option value="4314779">PONTAO</option><option value="4314787">PONTE PRETA</option><option value="4314803">PORTAO</option><option value="4314902">PORTO ALEGRE</option><option value="4315008">PORTO LUCENA</option><option value="4315057">PORTO MAUA</option><option value="4315073">PORTO VERA CRUZ</option><option value="4315107">PORTO XAVIER</option><option value="4315131">POUSO NOVO</option><option value="4315149">PRESIDENTE LUCENA</option><option value="4315156">PROGRESSO</option><option value="4315172">PROTASIO ALVES</option><option value="4315206">PUTINGA</option><option value="4315305">QUARAI</option><option value="4315313">QUATRO IRMAOS</option><option value="4315321">QUEVEDOS</option><option value="4315354">QUINZE DE NOVEMBRO</option><option value="4315404">REDENTORA</option><option value="4315453">RELVADO</option><option value="4315503">RESTINGA SECA</option><option value="4315552">RIO DOS INDIOS</option><option value="4315602">RIO GRANDE</option><option value="4315701">RIO PARDO</option><option value="4315750">RIOZINHO</option><option value="4315800">ROCA SALES</option><option value="4315909">RODEIO BONITO</option><option value="4315958">ROLADOR</option><option value="4316006">ROLANTE</option><option value="4316105">RONDA ALTA</option><option value="4316204">RONDINHA</option><option value="4316303">ROQUE GONZALES</option><option value="4316402">ROSARIO DO SUL</option><option value="4316428">SAGRADA FAMILIA</option><option value="4316436">SALDANHA MARINHO</option><option value="4316451">SALTO DO JACUI</option><option value="4316477">SALVADOR DAS MISSOES</option><option value="4316501">SALVADOR DO SUL</option><option value="4316600">SANANDUVA</option><option value="4316709">SANTA BARBARA DO SUL</option><option value="4316733">SANTA CECILIA DO SUL</option><option value="4316758">SANTA CLARA DO SUL</option><option value="4316808">SANTA CRUZ DO SUL</option><option value="4316972">SANTA MARGARIDA DO SUL</option><option value="4316907">SANTA MARIA</option><option value="4316956">SANTA MARIA DO HERVAL</option><option value="4317202">SANTA ROSA</option><option value="4317251">SANTA TEREZA</option><option value="4317301">SANTA VITORIA DO PALMAR</option><option value="4317004">SANTANA DA BOA VISTA</option><option value="4317103">SANTANA DO LIVRAMENTO</option><option value="4317400">SANTIAGO</option><option value="4317509">SANTO ANGELO</option><option value="4317608">SANTO ANTONIO DA PATRULHA</option><option value="4317707">SANTO ANTONIO DAS MISSOES</option><option value="4317558">SANTO ANTONIO DO PALMA</option><option value="4317756">SANTO ANTONIO DO PLANALTO</option><option value="4317806">SANTO AUGUSTO</option><option value="4317905">SANTO CRISTO</option><option value="4317954">SANTO EXPEDITO DO SUL</option><option value="4318002">SAO BORJA</option><option value="4318051">SAO DOMINGOS DO SUL</option><option value="4318101">SAO FRANCISCO DE ASSIS</option><option value="4318200">SAO FRANCISCO DE PAULA</option><option value="4318309">SAO GABRIEL</option><option value="4318408">SAO JERONIMO</option><option value="4318424">SAO JOAO DA URTIGA</option><option value="4318432">SAO JOAO DO POLESINE</option><option value="4318440">SAO JORGE</option><option value="4318457">SAO JOSE DAS MISSOES</option><option value="4318465">SAO JOSE DO HERVAL</option><option value="4318481">SAO JOSE DO HORTENCIO</option><option value="4318499">SAO JOSE DO INHACORA</option><option value="4318507">SAO JOSE DO NORTE</option><option value="4318606">SAO JOSE DO OURO</option><option value="4318614">SAO JOSE DO SUL</option><option value="4318622">SAO JOSE DOS AUSENTES</option><option value="4318705">SAO LEOPOLDO</option><option value="4318804">SAO LOURENCO DO SUL</option><option value="4318903">SAO LUIZ GONZAGA</option><option value="4319000">SAO MARCOS</option><option value="4319109">SAO MARTINHO</option><option value="4319125">SAO MARTINHO DA SERRA</option><option value="4319158">SAO MIGUEL DAS MISSOES</option><option value="4319208">SAO NICOLAU</option><option value="4319307">SAO PAULO DAS MISSOES</option><option value="4319356">SAO PEDRO DA SERRA</option><option value="4319364">SAO PEDRO DAS MISSOES</option><option value="4319372">SAO PEDRO DO BUTIA</option><option value="4319406">SAO PEDRO DO SUL</option><option value="4319505">SAO SEBASTIAO DO CAI</option><option value="4319604">SAO SEPE</option><option value="4319703">SAO VALENTIM</option><option value="4319711">SAO VALENTIM DO SUL</option><option value="4319737">SAO VALERIO DO SUL</option><option value="4319752">SAO VENDELINO</option><option value="4319802">SAO VICENTE DO SUL</option><option value="4319901">SAPIRANGA</option><option value="4320008">SAPUCAIA DO SUL</option><option value="4320107">SARANDI</option><option value="4320206">SEBERI</option><option value="4320230">SEDE NOVA</option><option value="4320263">SEGREDO</option><option value="4320305">SELBACH</option><option value="4320321">SENADOR SALGADO FILHO</option><option value="4320354">SENTINELA DO SUL</option><option value="4320404">SERAFINA CORREA</option><option value="4320453">SERIO</option><option value="4320503">SERT�O</option><option value="4320552">SERT�O SANTANA</option><option value="4320578">SETE DE SETEMBRO</option><option value="4320602">SEVERIANO DE ALMEIDA</option><option value="4320651">SILVEIRA MARTINS</option><option value="4320677">SINIMBU</option><option value="4320701">SOBRADINHO</option><option value="4320800">SOLEDADE</option><option value="4320859">TABAI</option><option value="4320909">TAPEJARA</option><option value="4321006">TAPERA</option><option value="4321105">TAPES</option><option value="4321204">TAQUARA</option><option value="4321303">TAQUARI</option><option value="4321329">TAQUARUCU DO SUL</option><option value="4321352">TAVARES</option><option value="4321402">TENENTE PORTELA</option><option value="4321436">TERRA DE AREIA</option><option value="4321451">TEUTONIA</option><option value="4321469">TIO HUGO</option><option value="4321477">TIRADENTES DO SUL</option><option value="4321493">TOROPI</option><option value="4321501">TORRES</option><option value="4321600">TRAMANDAI</option><option value="4321626">TRAVESSEIRO</option><option value="4321634">TRES ARROIOS</option><option value="4321667">TRES CACHOEIRAS</option><option value="4321709">TRES COROAS</option><option value="4321808">TRES DE MAIO</option><option value="4321832">TRES FORQUILHAS</option><option value="4321857">TRES PALMEIRAS</option><option value="4321907">TRES PASSOS</option><option value="4321956">TRINDADE DO SUL</option><option value="4322004">TRIUNFO</option><option value="4322103">TUCUNDUVA</option><option value="4322152">TUNAS</option><option value="4322186">TUPANCI DO SUL</option><option value="4322202">TUPANCIRETA</option><option value="4322251">TUPANDI</option><option value="4322301">TUPARENDI</option><option value="4322327">TURU�U</option><option value="4322343">UBIRETAMA</option><option value="4322350">UNIAO DA SERRA</option><option value="4322376">UNISTALDA</option><option value="4322400">URUGUAIANA</option><option value="4322509">VACARIA</option><option value="4322533">VALE DO SOL</option><option value="4322541">VALE REAL</option><option value="4322525">VALE VERDE</option><option value="4322558">VANINI</option><option value="4322608">VENANCIO AIRES</option><option value="4322707">VERA CRUZ</option><option value="4322806">VERANOPOLIS</option><option value="4322855">VESPASIANO CORREA</option><option value="4322905">VIADUTOS</option><option value="4323002">VIAMAO</option><option value="4323101">VICENTE DUTRA</option><option value="4323200">VICTOR GRAEFF</option><option value="4323309">VILA FLORES</option><option value="4323358">VILA LANGARO</option><option value="4323408">VILA MARIA</option><option value="4323457">VILA NOVA DO SUL</option><option value="4323507">VISTA ALEGRE</option><option value="4323606">VISTA ALEGRE DO PRATA</option><option value="4323705">VISTA GAUCHA</option><option value="4323754">VITORIA DAS MISSOES</option><option value="4323770">WESTFALIA</option><option value="4323804">XANGRI-LA</option>
+                                                            </select>
+                                                            <div id="carregando" style="width: 150px; fontz-index: 0; display: none; text-align: center; font-size: 10px; font-family: 'Trebuchet MS', Arial, Verdana">Aguarde....</div>
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td height="20" align="right" class="texto">Raz&atilde;o Social&nbsp;&nbsp; </td>
+                                                        <td colspan="3">
+                                                            <input name="razao" type="text" class="texto" style="width: 315px;" onclick="document.busca.tipoBusca[3].checked = true;" />
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td align="right" class="texto">Ramo da atividade* &nbsp;</td>
+                                                        <td width="138">
+                                                            <input name="atividade" type="text" class="texto" id="atividade" onkeypress="return soAtividade(event,this)" maxlength="9" onclick="document.busca.tipoBusca[3].checked = true;" />
+                                                        </td>
+                                                        <td colspan="2" valign="middle">
+                                                            <a href="javascript:void(popUp('../area1/popup.asp?tabela=3'))" class="botao" onclick="document.busca.tipoBusca[3].checked=true;">
+                                                                <img src="../imagens/botao_localizar_atividade_area3.jpg" alt="Localizar Atividade" width="145" height="18" />
+                                                            </a>
+                                                        </td>
+                                                        <td width="7" align="right">&nbsp;</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td align="right" class="texto" colspan="2">*N&uacute;meros separados por virgula. Ex.: "126,10"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                        <td width="212" valign="top" class="texto">*Escolha independe do Porte.</td>
+                                                        <td class="font04 style5">Habilite as pop-ups!</td>
+                                                        <td></td>
+                                                    </tr>
+                                                </table>
+                                            </form>
+
+
+                                            <!-- 	<div id="c_inf_esq_conteudo_area3"></div>
+										<div id="c_inf_dir_conteudo_area3"></div> -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            
+            <!--
+            <br />
+            <div align="left">
+                <label class="font05">&nbsp;&nbsp;Para obter formul&aacute;rios e boletos de pagamentos, utilize uma das op&ccedil;&otilde;es abaixo!</label> 
+            </div>
+            -->
+            <!--		
+<div id="fundo_topo_conteudo_area4">
+<div id="fundo_esq_conteudo_area4">
+<div id="fundo_dir_conteudo_area4">
+<div id="fundo_baixo_conteudo_area4">		
+
+		<div id="c_sup_esq_conteudo_area4"></div>
+		<div id="c_sup_dir_conteudo_area4"></div>
+		<div id="c_inf_esq_conteudo_area4"></div>
+		<div id="c_inf_dir_conteudo_area4"></div>
+-->
+
+
+            <p>&nbsp;</p>
+            <div class="centralizar" align="left">
+                <img src="../imagens/botao_empreendedorcadastrado.gif" style="cursor: pointer;" onclick="javascript: ativArea('Vermelha');" />
+            </div>
+            <div id="div02" style="display: none">
+                <div id="area2">
+                    <div id="centro">
+                        <div class="centralizar">
+                            <div id="fundo_topo_conteudo_area2">
+                                <div id="fundo_esq_conteudo_area2">
+                                    <div id="fundo_dir_conteudo_area2">
+                                        <div id="fundo_baixo_conteudo_area2">
+                                            <!--
+										<div id="c_sup_esq_conteudo_area2"></div>
+										<div id="c_sup_dir_conteudo_area2"></div>
+										-->
+                                            <table background="../imagens/barra_vermelha.gif" width="100%">
+                                                <tr class="aba02">
+                                                    <td>&nbsp;</td>
+                                                    <td colspan="9"></td>
+                                                </tr>
+                                            </table>
+                                            <div class="conteudo">
+                                                <h3 class="style1">EMPREENDEDOR CADASTRADO NA FEPAM  </h3>
+                                                <p class="style4">&nbsp;</p>
+                                                <form name="form_cpfcnpj" method="post">
+                                                    
+                                                    <input id="validacao" name="validacao" type="hidden" />
+                                                    <table width="724" border="0" cellspacing="0" cellpadding="0">
+                                                        <!--DWLayoutTable-->
+                                                        <tr>
+                                                            <td colspan="2" class="texto">
+                                                                <label>Insira o seu <b>CNPJ</b>/<b>CPF</b>/<strong>Documento estrangeiro</strong> cadastrado na <strong>Fepam</strong> e clique em Prosseguir. (Somente n�mero)</label>
+                                                            </td>
+                                                            <td width="127" align="left" valign="bottom">
+                                                                <input name="cpfcnpj" id="cpfcnpj" type="text" maxlength="20" onkeypress="javascript: return Tecla(event);" onkeyup="javascript: return TeclaUp(event, 'cpfcnpj');" />
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width="369" align="left" valign="baseline" class="textoVerde">
+                                                                <p>
+                                                                    <br />
+                                                                </p>
+                                                                <p><a href="../../central/formularios/arq/ISD-MJ.doc" target="_blank"><strong>&nbsp;Modelo de requerimento</strong>: Juntada em processo administrativo  </a></p>
+                                                            </td>
+                                                            <td width="254">
+                                                                <!--DWLayoutEmptyCell-->
+                                                                &nbsp;</td>
+                                                            <td align="left">
+                                                                <a href="javascript:submit();" class="botao" style="width: 106px;">&nbsp;<img src="../imagens/botao_prosseguir.jpg" alt="Prosseguir" width="106" height="24" /></a>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </form>
+                                            </div>
+                                            <!--<div id="c_inf_esq_conteudo_area2"></div>
+										<div id="c_inf_dir_conteudo_area2"></div>-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <p>&nbsp;</p>
+            <div class="centralizar" align="left">
+                <img src="../imagens/botao_empreendedornaocadastrado.gif" style="cursor: pointer;" onclick="javascript: ativArea('Verde');" />
+            </div>
+            <div id="div03" style="display:none">
+                <div id="area1">
+                    <div id="centro">
+                        <div class="centralizar">
+                            <div id="fundo_topo_conteudo_area1">
+                                <div id="fundo_esq_conteudo_area1">
+                                    <div id="fundo_dir_conteudo_area1">
+                                        <div id="fundo_baixo_conteudo_area1">
+                                            <!--  
+										<div id="c_sup_esq_conteudo_area1"></div>
+										<div id="c_sup_dir_conteudo_area1"></div>
+										-->
+                                            <table background="../imagens/barra_verde_maior.jpg" width="100%">
+                                                <tr class="aba02" align="center">
+                                                    <td colspan="10" height="27"><em><strong>Siga os passos abaixo para gerar seu boleto</strong></em></td>
+                                                </tr>
+                                                <tr class="aba02">
+                                                    <td>&nbsp;</td>
+                                                    <td class="aba01">Enquadramento</td>
+                                                    <td>
+                                                        <img src="../imagens/seta.png" /></td>
+                                                    <td>Classe de Doc.</td>
+                                                    <td>
+                                                        <img src="../imagens/seta.png" /></td>
+                                                    <td>Tipo de Doc.</td>
+                                                    <td>
+                                                        <img src="../imagens/seta.png" /></td>
+                                                    <td>Dados de Cobran�a</td>
+                                                    <td>
+                                                        <img src="../imagens/seta.png" /></td>
+                                                    <td>Emiss�o de Boleto</td>
+                                                </tr>
+                                            </table>
+                                            <div class="conteudo">
+                                                <!--include file="../includes/formAtividade.asp"-->
+                                                
+                                                <h3 class="style2">EMPREENDEDOR N&Atilde;O CADASTRADO NA FEPAM  </h3>
+                                                <p class="font04 style4"></p>
+                                                <form name="atividade" method="post">
+                                                    <input name="nova_busca" type="hidden" value="S" />
+                                                    <input name="tamanho" type="hidden" />
+                                                    <table width="740" border="0" cellspacing="0" cellpadding="0">
+                                                        <!--DWLayoutTable-->
+                                                        <tr>
+                                                            <td height="32" class="texto" align="left">Insira o seu <b>CNPJ</b>/<b>CPF</b>/<strong>Documento estrangeiro</strong></td>
+                                                            <td height="32" class="texto" align="left">
+                                                                <input name="cpfcnpj2" id="cpfcnpj2" type="text" value="" maxlength="20" onblur="javascript:verificacpf()" onkeyup="javascript: return TeclaUp(event,'cpfcnpj2');" /></td>
+                                                            <td colspan="3" align="center" valign="top" class="font04 style5" font>Habilite as pop-ups!</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td height="32" class="texto" align="left">Insira o <b>c�digo da atividade</b> que necessita licenciar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                                                            <td height="32" class="texto" align="left">
+                                                                <input align="left" name="cod_atividade" type="text" id="cod_atividade" onkeypress="return soAtividade(event,this)" border="1" value="" onchange="javascript:limpaTamanho();" />
+                                                            </td>
+                                                            <td colspan="3">
+                                                                <p class="texto">Se n�o souber o c�digo, clique no bot�o abaixo para localizar a atividade.</p>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td height="32" class="texto" align="left">Escolha a <b>Unidade Federativa(UF)</b> do empreendimento</td>
+                                                            <td height="32" class="texto" align="left">
+                                                                
+                                                                <select name="vlsUF" id="vlsUF" style="border-width: thin; border-style: solid; border-color: #999999; font-size: 10px; font-family: 'Trebuchet MS'" onchange="javascript:verificaUF();">
+                                                                    
+                                                                    <option value="AC" >AC</option>
+                                                                    
+                                                                    <option value="AL" >AL</option>
+                                                                    
+                                                                    <option value="AM" >AM</option>
+                                                                    
+                                                                    <option value="AP" >AP</option>
+                                                                    
+                                                                    <option value="BA" >BA</option>
+                                                                    
+                                                                    <option value="BE" >BE</option>
+                                                                    
+                                                                    <option value="CE" >CE</option>
+                                                                    
+                                                                    <option value="DF" >DF</option>
+                                                                    
+                                                                    <option value="ES" >ES</option>
+                                                                    
+                                                                    <option value="GO" >GO</option>
+                                                                    
+                                                                    <option value="MA" >MA</option>
+                                                                    
+                                                                    <option value="MG" >MG</option>
+                                                                    
+                                                                    <option value="MS" >MS</option>
+                                                                    
+                                                                    <option value="MT" >MT</option>
+                                                                    
+                                                                    <option value="PA" >PA</option>
+                                                                    
+                                                                    <option value="PB" >PB</option>
+                                                                    
+                                                                    <option value="PE" >PE</option>
+                                                                    
+                                                                    <option value="PI" >PI</option>
+                                                                    
+                                                                    <option value="PR" >PR</option>
+                                                                    
+                                                                    <option value="RJ" >RJ</option>
+                                                                    
+                                                                    <option value="RN" >RN</option>
+                                                                    
+                                                                    <option value="RO" >RO</option>
+                                                                    
+                                                                    <option value="RR" >RR</option>
+                                                                    
+                                                                    <option value="RS" selected>RS</option>
+                                                                    
+                                                                    <option value="SC" >SC</option>
+                                                                    
+                                                                    <option value="SE" >SE</option>
+                                                                    
+                                                                    <option value="SP" >SP</option>
+                                                                    
+                                                                    <option value="TO" >TO</option>
+                                                                    
+                                                                </select>
+                                                            </td>
+                                                            <td colspan="3">&nbsp;</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width="333" height="29" class="texto">&nbsp;</td>
+                                                            <td width="138" align="left">&nbsp;</td>
+                                                            <td colspan="2" align="right" valign="top"><a href="javascript:void(popUp('../area1/popup.asp'));" class="botao">
+                                                                <img src="../imagens/botao_localizar_atividade_area3.jpg" alt="Localizar Atividade" width="145" height="18" /></a></td>
+                                                            <td width="57">&nbsp;</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width="333" height="8"></td>
+                                                            <td align="left"></td>
+                                                            <td colspan="2"></td>
+                                                            <td></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width="333" height="32" valign="top" class="texto">Escolha o munic&iacute;pio onde estar&aacute; localizado o empreendimento </td>
+                                                            <td colspan="4" class="texto" >Assinale se o empreendimento est&aacute; localizado em alguma das seguintes �reas: </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width="333" height="39" valign="top">
+                                                                <label>
+                                                                    <select name="municipio" class="texto" id="municipio" style="border-style: solid; border-width: thin; border-color: #999999; font-family: 'Trebuchet MS'; font-size: 10px">
+                                                                        <option value="">Selecione o munic�pio</option>
+                                                                        <option value=4300034>ACEGUA</option><option value=4300059>AGUA SANTA</option><option value=4300109>AGUDO</option><option value=4300208>AJURICABA</option><option value=4300307>ALECRIM</option><option value=4300406>ALEGRETE</option><option value=4300455>ALEGRIA</option><option value=4300471>ALMIRANTE TAMANDARE DO SUL</option><option value=4300505>ALPESTRE</option><option value=4300554>ALTO ALEGRE</option><option value=4300570>ALTO FELIZ</option><option value=4300604>ALVORADA</option><option value=4300638>AMARAL FERRADOR</option><option value=4300646>AMETISTA DO SUL</option><option value=4300661>ANDRE DA ROCHA</option><option value=4300703>ANTA GORDA</option><option value=4300802>ANTONIO PRADO</option><option value=4300851>ARAMBARE</option><option value=4300877>ARARICA</option><option value=4300901>ARATIBA</option><option value=4301008>ARROIO DO MEIO</option><option value=4301073>ARROIO DO PADRE</option><option value=4301057>ARROIO DO SAL</option><option value=4301206>ARROIO DO TIGRE</option><option value=4301107>ARROIO DOS RATOS</option><option value=4301305>ARROIO GRANDE</option><option value=4301404>ARVOREZINHA</option><option value=4301503>AUGUSTO PESTANA</option><option value=4301552>AUREA</option><option value=4301602>BAGE</option><option value=4301636>BALNEARIO PINHAL</option><option value=4301651>BARAO</option><option value=4301701>BARAO DO COTEGIPE</option><option value=4301750>BARAO DO TRIUNFO</option><option value=4301859>BARRA DO GUARITA</option><option value=4301875>BARRA DO QUARAI</option><option value=4301909>BARRA DO RIBEIRO</option><option value=4301925>BARRA DO RIO AZUL</option><option value=4301958>BARRA FUNDA</option><option value=4301800>BARRACAO</option><option value=4302006>BARROS CASSAL</option><option value=4302055>BENJAMIN CONSTANT DO SUL</option><option value=4302105>BENTO GONCALVES</option><option value=4302154>BOA VISTA DAS MISSOES</option><option value=4302204>BOA VISTA DO BURICA</option><option value=4302220>BOA VISTA DO CADEADO</option><option value=4302238>BOA VISTA DO INCRA</option><option value=4302253>BOA VISTA DO SUL</option><option value=4302303>BOM JESUS</option><option value=4302352>BOM PRINCIPIO</option><option value=4302378>BOM PROGRESSO</option><option value=4302402>BOM RETIRO DO SUL</option><option value=4302451>BOQUEIRAO DO LEAO</option><option value=4302501>BOSSOROCA</option><option value=4302584>BOZANO</option><option value=4302600>BRAGA</option><option value=4302659>BROCHIER</option><option value=4302709>BUTIA</option><option value=4302808>CACAPAVA DO SUL</option><option value=4302907>CACEQUI</option><option value=4303004>CACHOEIRA DO SUL</option><option value=4303103>CACHOEIRINHA</option><option value=4303202>CACIQUE DOBLE</option><option value=4303301>CAIBATE</option><option value=4303400>CAICARA</option><option value=4303509>CAMAQUA</option><option value=4303558>CAMARGO</option><option value=4303608>CAMBARA DO SUL</option><option value=4303673>CAMPESTRE DA SERRA</option><option value=4303707>CAMPINA DAS MISSOES</option><option value=4303806>CAMPINAS DO SUL</option><option value=4303905>CAMPO BOM</option><option value=4304002>CAMPO NOVO</option><option value=4304101>CAMPOS BORGES</option><option value=4304200>CANDELARIA</option><option value=4304309>CANDIDO GODOI</option><option value=4304358>CANDIOTA</option><option value=4304408>CANELA</option><option value=4304507>CANGUCU</option><option value=4304606>CANOAS</option><option value=4304614>CANUDOS DO VALE</option><option value=4304622>CAPAO BONITO DO SUL</option><option value=4304630>CAPAO DA CANOA</option><option value=4304655>CAPAO DO CIPO</option><option value=4304663>CAPAO DO LEAO</option><option value=4304689>CAPELA DE SANTANA</option><option value=4304697>CAPITAO</option><option value=4304671>CAPIVARI DO SUL</option><option value=4304713>CARAA</option><option value=4304705>CARAZINHO</option><option value=4304804>CARLOS BARBOSA</option><option value=4304853>CARLOS GOMES</option><option value=4304903>CASCA</option><option value=4304952>CASEIROS</option><option value=4305009>CATUIPE</option><option value=4305108>CAXIAS DO SUL</option><option value=4305116>CENTENARIO</option><option value=4305124>CERRITO</option><option value=4305132>CERRO BRANCO</option><option value=4305157>CERRO GRANDE</option><option value=4305173>CERRO GRANDE DO SUL</option><option value=4305207>CERRO LARGO</option><option value=4305306>CHAPADA</option><option value=4305355>CHARQUEADAS</option><option value=4305371>CHARRUA</option><option value=4305405>CHIAPETTA</option><option value=4305439>CHUI</option><option value=4305447>CHUVISCA</option><option value=4305454>CIDREIRA</option><option value=4305504>CIRIACO</option><option value=4305587>COLINAS</option><option value=4305603>COLORADO</option><option value=4305702>CONDOR</option><option value=4305801>CONSTANTINA</option><option value=4305835>COQUEIRO BAIXO</option><option value=4305850>COQUEIROS DO SUL</option><option value=4305871>CORONEL BARROS</option><option value=4305900>CORONEL BICACO</option><option value=4305934>CORONEL PILAR</option><option value=4305959>COTIPORA</option><option value=4305975>COXILHA</option><option value=4306007>CRISSIUMAL</option><option value=4306056>CRISTAL</option><option value=4306072>CRISTAL DO SUL</option><option value=4306106>CRUZ ALTA</option><option value=4306130>CRUZALTENSE</option><option value=4306205>CRUZEIRO DO SUL</option><option value=4306304>DAVID CANABARRO</option><option value=4306320>DERRUBADAS</option><option value=4306353>DEZESSEIS DE NOVEMBRO</option><option value=4306379>DILERMANDO DE AGUIAR</option><option value=4306403>DOIS IRMAOS</option><option value=4306429>DOIS IRMAOS DAS MISSOES</option><option value=4306452>DOIS LAJEADOS</option><option value=4306502>DOM FELICIANO</option><option value=4306601>DOM PEDRITO</option><option value=4306551>DOM PEDRO DE ALCANTARA</option><option value=4306700>DONA FRANCISCA</option><option value=4306734>DOUTOR MAURICIO CARDOSO</option><option value=4306759>DOUTOR RICARDO</option><option value=4306767>ELDORADO DO SUL</option><option value=4306809>ENCANTADO</option><option value=4306908>ENCRUZILHADA DO SUL</option><option value=4306924>ENGENHO VELHO</option><option value=4306932>ENTRE IJUIS</option><option value=4306957>ENTRE RIOS DO SUL</option><option value=4306973>EREBANGO</option><option value=4307005>ERECHIM</option><option value=4307054>ERNESTINA</option><option value=4307203>ERVAL GRANDE</option><option value=4307302>ERVAL SECO</option><option value=4307401>ESMERALDA</option><option value=4307450>ESPERANCA DO SUL</option><option value=4307500>ESPUMOSO</option><option value=4307559>ESTACAO</option><option value=4307609>ESTANCIA VELHA</option><option value=4307708>ESTEIO</option><option value=4307807>ESTRELA</option><option value=4307815>ESTRELA VELHA</option><option value=4307831>EUGENIO DE CASTRO</option><option value=4307864>FAGUNDES VARELA</option><option value=4307906>FARROUPILHA</option><option value=4308003>FAXINAL DO SOTURNO</option><option value=4308052>FAXINALZINHO</option><option value=4308078>FAZENDA VILA NOVA</option><option value=4308102>FELIZ</option><option value=4308201>FLORES DA CUNHA</option><option value=4308250>FLORIANO PEIXOTO</option><option value=4308300>FONTOURA XAVIER</option><option value=4308409>FORMIGUEIRO</option><option value=4308433>FORQUETINHA</option><option value=4308458>FORTALEZA DOS VALOS</option><option value=4308508>FREDERICO WESTPHALEN</option><option value=4308607>GARIBALDI</option><option value=4308656>GARRUCHOS</option><option value=4308706>GAURAMA</option><option value=4308805>GENERAL CAMARA</option><option value=4308854>GENTIL</option><option value=4308904>GETULIO VARGAS</option><option value=4309001>GIRUA</option><option value=4309050>GLORINHA</option><option value=4309100>GRAMADO</option><option value=4309126>GRAMADO DOS LOUREIROS</option><option value=4309159>GRAMADO XAVIER</option><option value=4309209>GRAVATAI</option><option value=4309258>GUABIJU</option><option value=4309308>GUAIBA</option><option value=4309407>GUAPORE</option><option value=4309506>GUARANI DAS MISSOES</option><option value=4309555>HARMONIA</option><option value=4307104>HERVAL</option><option value=4309571>HERVEIRAS</option><option value=4309605>HORIZONTINA</option><option value=4309654>HULHA NEGRA</option><option value=4309704>HUMAITA</option><option value=4309753>IBARAMA</option><option value=4309803>IBIACA</option><option value=4309902>IBIRAIARAS</option><option value=4309951>IBIRAPUITA</option><option value=4310009>IBIRUBA</option><option value=4310108>IGREJINHA</option><option value=4310207>IJUI</option><option value=4310306>ILOPOLIS</option><option value=4310330>IMBE</option><option value=4310363>IMIGRANTE</option><option value=4310405>INDEPENDENCIA</option><option value=4310413>INHACORA</option><option value=4310439>IPE</option><option value=4310462>IPIRANGA DO SUL</option><option value=4310504>IRAI</option><option value=4310538>ITAARA</option><option value=4310553>ITACURUBI</option><option value=4310579>ITAPUCA</option><option value=4310603>ITAQUI</option><option value=4310652>ITATI</option><option value=4310702>ITATIBA DO SUL</option><option value=4310751>IVORA</option><option value=4310801>IVOTI</option><option value=4310850>JABOTICABA</option><option value=4310876>JACUIZINHO</option><option value=4310900>JACUTINGA</option><option value=4311007>JAGUARAO</option><option value=4311106>JAGUARI</option><option value=4311122>JAQUIRANA</option><option value=4311130>JARI</option><option value=4311155>JOIA</option><option value=4311205>JULIO DE CASTILHOS</option><option value=4311239>LAGOA BONITA DO SUL</option><option value=4311270>LAGOA DOS TRES CANTOS</option><option value=4311304>LAGOA VERMELHA</option><option value=4311254>LAGOAO</option><option value=4311403>LAJEADO</option><option value=4311429>LAJEADO DO BUGRE</option><option value=4311502>LAVRAS DO SUL</option><option value=4311601>LIBERATO SALZANO</option><option value=4311627>LINDOLFO COLLOR</option><option value=4311643>LINHA NOVA</option><option value=4311700>MACHADINHO</option><option value=4311734>MAMPITUBA</option><option value=4311759>MANOEL VIANA</option><option value=4311775>MAQUINE</option><option value=4311791>MARATA</option><option value=4311809>MARAU</option><option value=4311908>MARCELINO RAMOS</option><option value=4311981>MARIANA PIMENTEL</option><option value=4312005>MARIANO MORO</option><option value=4312054>MARQUES DE SOUZA</option><option value=4312104>MATA</option><option value=4312138>MATO CASTELHANO</option><option value=4312153>MATO LEITAO</option><option value=4312179>MATO QUEIMADO</option><option value=4312203>MAXIMILIANO DE ALMEIDA</option><option value=4311718>MA�AMBARA</option><option value=4312252>MINAS DO LEAO</option><option value=4312302>MIRAGUAI</option><option value=4312351>MONTAURI</option><option value=4312377>MONTE ALEGRE DOS CAMPOS</option><option value=4312385>MONTE BELO DO SUL</option><option value=4312401>MONTENEGRO</option><option value=4312427>MORMA�O</option><option value=4312443>MORRINHOS DO SUL</option><option value=4312450>MORRO REDONDO</option><option value=4312476>MORRO REUTER</option><option value=4312500>MOSTARDAS</option><option value=4312609>MUCUM</option><option value=4312617>MUITOS CAPOES</option><option value=4312625>MULITERNO</option><option value=4312658>NAO ME TOQUE</option><option value=4312674>NICOLAU VERGUEIRO</option><option value=4312708>NONOAI</option><option value=4312757>NOVA ALVORADA</option><option value=4312807>NOVA ARACA</option><option value=4312906>NOVA BASSANO</option><option value=4312955>NOVA BOA VISTA</option><option value=4313003>NOVA BRESCIA</option><option value=4313011>NOVA CANDELARIA</option><option value=4313037>NOVA ESPERANCA DO SUL</option><option value=4313060>NOVA HARTZ</option><option value=4313086>NOVA PADUA</option><option value=4313102>NOVA PALMA</option><option value=4313201>NOVA PETROPOLIS</option><option value=4313300>NOVA PRATA</option><option value=4313334>NOVA RAMADA</option><option value=4313359>NOVA ROMA DO SUL</option><option value=4313375>NOVA SANTA RITA</option><option value=4313490>NOVO BARREIRO</option><option value=4313391>NOVO CABRAIS</option><option value=4313409>NOVO HAMBURGO</option><option value=4313425>NOVO MACHADO</option><option value=4313441>NOVO TIRADENTES</option><option value=4313466>NOVO XINGU</option><option value=4313508>OSORIO</option><option value=4313607>PAIM FILHO</option><option value=4313656>PALMARES DO SUL</option><option value=4313706>PALMEIRA DAS MISSOES</option><option value=4313805>PALMITINHO</option><option value=4313904>PANAMBI</option><option value=4313953>PANTANO GRANDE</option><option value=4314001>PARAI</option><option value=4314027>PARAISO DO SUL</option><option value=4314035>PARECI NOVO</option><option value=4314050>PAROBE</option><option value=4314068>PASSA SETE</option><option value=4314076>PASSO DO SOBRADO</option><option value=4314100>PASSO FUNDO</option><option value=4314134>PAULO BENTO</option><option value=4314159>PAVERAMA</option><option value=4314175>PEDRAS ALTAS</option><option value=4314209>PEDRO OSORIO</option><option value=4314308>PEJUCARA</option><option value=4314407>PELOTAS</option><option value=4314423>PICADA CAFE</option><option value=4314456>PINHAL</option><option value=4314464>PINHAL DA SERRA</option><option value=4314472>PINHAL GRANDE</option><option value=4314498>PINHEIRINHO DO VALE</option><option value=4314506>PINHEIRO MACHADO</option><option value=4314548>PINTO BANDEIRA</option><option value=4314555>PIRAPO</option><option value=4314605>PIRATINI</option><option value=4314704>PLANALTO</option><option value=4314753>POCO DAS ANTAS</option><option value=4314779>PONTAO</option><option value=4314787>PONTE PRETA</option><option value=4314803>PORTAO</option><option value=4314902>PORTO ALEGRE</option><option value=4315008>PORTO LUCENA</option><option value=4315057>PORTO MAUA</option><option value=4315073>PORTO VERA CRUZ</option><option value=4315107>PORTO XAVIER</option><option value=4315131>POUSO NOVO</option><option value=4315149>PRESIDENTE LUCENA</option><option value=4315156>PROGRESSO</option><option value=4315172>PROTASIO ALVES</option><option value=4315206>PUTINGA</option><option value=4315305>QUARAI</option><option value=4315313>QUATRO IRMAOS</option><option value=4315321>QUEVEDOS</option><option value=4315354>QUINZE DE NOVEMBRO</option><option value=4315404>REDENTORA</option><option value=4315453>RELVADO</option><option value=4315503>RESTINGA SECA</option><option value=4315552>RIO DOS INDIOS</option><option value=4315602>RIO GRANDE</option><option value=4315701>RIO PARDO</option><option value=4315750>RIOZINHO</option><option value=4315800>ROCA SALES</option><option value=4315909>RODEIO BONITO</option><option value=4315958>ROLADOR</option><option value=4316006>ROLANTE</option><option value=4316105>RONDA ALTA</option><option value=4316204>RONDINHA</option><option value=4316303>ROQUE GONZALES</option><option value=4316402>ROSARIO DO SUL</option><option value=4316428>SAGRADA FAMILIA</option><option value=4316436>SALDANHA MARINHO</option><option value=4316451>SALTO DO JACUI</option><option value=4316477>SALVADOR DAS MISSOES</option><option value=4316501>SALVADOR DO SUL</option><option value=4316600>SANANDUVA</option><option value=4316709>SANTA BARBARA DO SUL</option><option value=4316733>SANTA CECILIA DO SUL</option><option value=4316758>SANTA CLARA DO SUL</option><option value=4316808>SANTA CRUZ DO SUL</option><option value=4316972>SANTA MARGARIDA DO SUL</option><option value=4316907>SANTA MARIA</option><option value=4316956>SANTA MARIA DO HERVAL</option><option value=4317202>SANTA ROSA</option><option value=4317251>SANTA TEREZA</option><option value=4317301>SANTA VITORIA DO PALMAR</option><option value=4317004>SANTANA DA BOA VISTA</option><option value=4317103>SANTANA DO LIVRAMENTO</option><option value=4317400>SANTIAGO</option><option value=4317509>SANTO ANGELO</option><option value=4317608>SANTO ANTONIO DA PATRULHA</option><option value=4317707>SANTO ANTONIO DAS MISSOES</option><option value=4317558>SANTO ANTONIO DO PALMA</option><option value=4317756>SANTO ANTONIO DO PLANALTO</option><option value=4317806>SANTO AUGUSTO</option><option value=4317905>SANTO CRISTO</option><option value=4317954>SANTO EXPEDITO DO SUL</option><option value=4318002>SAO BORJA</option><option value=4318051>SAO DOMINGOS DO SUL</option><option value=4318101>SAO FRANCISCO DE ASSIS</option><option value=4318200>SAO FRANCISCO DE PAULA</option><option value=4318309>SAO GABRIEL</option><option value=4318408>SAO JERONIMO</option><option value=4318424>SAO JOAO DA URTIGA</option><option value=4318432>SAO JOAO DO POLESINE</option><option value=4318440>SAO JORGE</option><option value=4318457>SAO JOSE DAS MISSOES</option><option value=4318465>SAO JOSE DO HERVAL</option><option value=4318481>SAO JOSE DO HORTENCIO</option><option value=4318499>SAO JOSE DO INHACORA</option><option value=4318507>SAO JOSE DO NORTE</option><option value=4318606>SAO JOSE DO OURO</option><option value=4318614>SAO JOSE DO SUL</option><option value=4318622>SAO JOSE DOS AUSENTES</option><option value=4318705>SAO LEOPOLDO</option><option value=4318804>SAO LOURENCO DO SUL</option><option value=4318903>SAO LUIZ GONZAGA</option><option value=4319000>SAO MARCOS</option><option value=4319109>SAO MARTINHO</option><option value=4319125>SAO MARTINHO DA SERRA</option><option value=4319158>SAO MIGUEL DAS MISSOES</option><option value=4319208>SAO NICOLAU</option><option value=4319307>SAO PAULO DAS MISSOES</option><option value=4319356>SAO PEDRO DA SERRA</option><option value=4319364>SAO PEDRO DAS MISSOES</option><option value=4319372>SAO PEDRO DO BUTIA</option><option value=4319406>SAO PEDRO DO SUL</option><option value=4319505>SAO SEBASTIAO DO CAI</option><option value=4319604>SAO SEPE</option><option value=4319703>SAO VALENTIM</option><option value=4319711>SAO VALENTIM DO SUL</option><option value=4319737>SAO VALERIO DO SUL</option><option value=4319752>SAO VENDELINO</option><option value=4319802>SAO VICENTE DO SUL</option><option value=4319901>SAPIRANGA</option><option value=4320008>SAPUCAIA DO SUL</option><option value=4320107>SARANDI</option><option value=4320206>SEBERI</option><option value=4320230>SEDE NOVA</option><option value=4320263>SEGREDO</option><option value=4320305>SELBACH</option><option value=4320321>SENADOR SALGADO FILHO</option><option value=4320354>SENTINELA DO SUL</option><option value=4320404>SERAFINA CORREA</option><option value=4320453>SERIO</option><option value=4320503>SERT�O</option><option value=4320552>SERT�O SANTANA</option><option value=4320578>SETE DE SETEMBRO</option><option value=4320602>SEVERIANO DE ALMEIDA</option><option value=4320651>SILVEIRA MARTINS</option><option value=4320677>SINIMBU</option><option value=4320701>SOBRADINHO</option><option value=4320800>SOLEDADE</option><option value=4320859>TABAI</option><option value=4320909>TAPEJARA</option><option value=4321006>TAPERA</option><option value=4321105>TAPES</option><option value=4321204>TAQUARA</option><option value=4321303>TAQUARI</option><option value=4321329>TAQUARUCU DO SUL</option><option value=4321352>TAVARES</option><option value=4321402>TENENTE PORTELA</option><option value=4321436>TERRA DE AREIA</option><option value=4321451>TEUTONIA</option><option value=4321469>TIO HUGO</option><option value=4321477>TIRADENTES DO SUL</option><option value=4321493>TOROPI</option><option value=4321501>TORRES</option><option value=4321600>TRAMANDAI</option><option value=4321626>TRAVESSEIRO</option><option value=4321634>TRES ARROIOS</option><option value=4321667>TRES CACHOEIRAS</option><option value=4321709>TRES COROAS</option><option value=4321808>TRES DE MAIO</option><option value=4321832>TRES FORQUILHAS</option><option value=4321857>TRES PALMEIRAS</option><option value=4321907>TRES PASSOS</option><option value=4321956>TRINDADE DO SUL</option><option value=4322004>TRIUNFO</option><option value=4322103>TUCUNDUVA</option><option value=4322152>TUNAS</option><option value=4322186>TUPANCI DO SUL</option><option value=4322202>TUPANCIRETA</option><option value=4322251>TUPANDI</option><option value=4322301>TUPARENDI</option><option value=4322327>TURU�U</option><option value=4322343>UBIRETAMA</option><option value=4322350>UNIAO DA SERRA</option><option value=4322376>UNISTALDA</option><option value=4322400>URUGUAIANA</option><option value=4322509>VACARIA</option><option value=4322533>VALE DO SOL</option><option value=4322541>VALE REAL</option><option value=4322525>VALE VERDE</option><option value=4322558>VANINI</option><option value=4322608>VENANCIO AIRES</option><option value=4322707>VERA CRUZ</option><option value=4322806>VERANOPOLIS</option><option value=4322855>VESPASIANO CORREA</option><option value=4322905>VIADUTOS</option><option value=4323002>VIAMAO</option><option value=4323101>VICENTE DUTRA</option><option value=4323200>VICTOR GRAEFF</option><option value=4323309>VILA FLORES</option><option value=4323358>VILA LANGARO</option><option value=4323408>VILA MARIA</option><option value=4323457>VILA NOVA DO SUL</option><option value=4323507>VISTA ALEGRE</option><option value=4323606>VISTA ALEGRE DO PRATA</option><option value=4323705>VISTA GAUCHA</option><option value=4323754>VITORIA DAS MISSOES</option><option value=4323770>WESTFALIA</option><option value=4323804>XANGRI-LA</option>
+                                                                    </select>
+                                                                </label>
+                                                            </td>
+                                                            <td colspan="4" rowspan="4" >&nbsp;&nbsp;<table border="0">
+                                                                <tr>
+                                                                    <td valign="top">
+                                                                        <input id="VlsUnidadeConcervacaoFederal" name="VlsUnidadeConcervacaoFederal" type="checkbox" /></td>
+                                                                    <td class="texto">Localizado dentro, total ou parcial, de Unidade de Conserva��o Federal (UC), exceto APA.</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td valign="top">
+                                                                        <input type="checkbox" name="ir_uce" id="ir_uce" /></td>
+                                                                    <td class="texto">Localizado dentro, total ou parcial, de Unidade de Conserva��o Estadual (UC), exceto APA.</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td valign="top">
+                                                                        <input type="checkbox" name="ir_mun" id="ir_mun" /></td>
+                                                                    <td class="texto">Abrange mais de um munic�pio.</td>
+                                                                </tr>
+                                                            </table>
+                                                            </td>
+                                                        </tr>
+
+
+
+                                                        <tr>
+                                                            <td width="333" height="22" valign="top" class="texto"><strong>Instru&ccedil;&otilde;es para licenciamento</strong>:</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width="333" height="26" valign="top" class="textoVerde"><a href="../../central/formularios/arq/ISD.doc" target="_blank">&nbsp;&nbsp;Instru&ccedil;&otilde;es para Solicita&ccedil;&atilde;o de Documentos </a></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width="333" height="27" valign="top" class="textoVerde"><a href="../../central/formularios/arq/ISD-MA.doc" target="_blank">&nbsp;&nbsp;Modelo de  requerimento: Abertura de processo&nbsp;administrativo</a></td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width="333" height="33" valign="top" class="textoVerde"></td>
+                                                            <td height="10">
+                                                                <!--DWLayoutEmptyCell-->
+                                                                &nbsp;</td>
+                                                            <td>
+                                                                <!--DWLayoutEmptyCell-->
+                                                                &nbsp;</td>
+                                                            <td align="right"><a href="javascript:submitForm()" class="botao" style="width: 106px;">
+                                                                <img src="../imagens/botao_prosseguir.jpg" alt="Prosseguir" width="106" height="24" border="0" /></a></td>
+                                                            <td>
+                                                                <!--DWLayoutEmptyCell-->
+                                                                &nbsp;</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td height="1" align="center" valign="bottom"></td>
+                                                            <td></td>
+                                                            <td width="70"></td>
+                                                            <td width="152"></td>
+                                                            <td></td>
+                                                        </tr>
+                                                    </table>
+                                                </form>
+                                            </div>
+                                            <!--<div id="c_inf_esq_conteudo_area1"></div>
+										<div id="c_inf_dir_conteudo_area1"></div>-->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p>&nbsp;</p>
+             <div class="centralizar" align="left">
+                <img src="../imagens/botao_consultasespecialistas.gif" style="cursor: pointer" onclick="javascript: ativArea('Azul');" />
+            </div>
+            <div id="div04" style="display: none">
+                <div id="centro">
+                    <div class="centralizar">
+                        <div id="fundo_topo_conteudo_area4">
+                            <div id="fundo_esq_conteudo_area4">
+                                <div id="fundo_dir_conteudo_area4">
+                                    <div id="fundo_baixo_conteudo_area4">
+                                        <!--
+									<div id="c_sup_esq_conteudo_area3"></div>
+									<div id="c_sup_dir_conteudo_area3"></div>
+									-->
+
+                                        <table background="../imagens/barra_azul.gif" width="100%">
+                                            <tr class="aba02">
+                                                <td>&nbsp;</td>
+                                                <td colspan="9"></td>
+                                            </tr>
+                                        </table>
+
+                                        <div class="conteudo">
+                                            <h3 class="style8">CONSULTA PROCESSOS ESPECIALISTAS </h3>
+                                            <p>&nbsp;</p>
+                                            <form name="especialista" method="post">
+                                                <input type="hidden" name="buscar" value="4" />
+                                                <input name="tamanho" type="hidden" />
+                                                <table width="750" cellpadding="0" cellspacing="0">
+                                                    <!--DWLayoutTable-->
+                                                    <tr valign="middle">
+                                                        <td width="248" height="26" class="texto">
+                                                            <input name="tipoBusca" type="radio" value="processo" checked="checked" />
+                                                            <strong>N�mero do processo</strong>&nbsp;&nbsp;
+														<script type="text/javascript">
+                                                            new HelpBalloon({
+                                                                title: 'N�mero do processo',
+                                                                content: '<p></br>Insira os n�meros do processo que voc� quer consultar. </p> </br></br> Digite somente os n�meros sem tra�o, ponto e barra.',
+                                                                fixedPosition: HelpBalloon.POS_BOTTOM_RIGHT  // 0
+                                                            });
+                                                        </script>
+                                                        </td>
+                                                        <td colspan="2">
+                                                            <input name="processo" type="text" maxlength="17" onkeypress="FormataProcesso(document.especialista,'processo',13,event);" style="visibility: visible; width: 155px;" onclick="document.especialista.tipoBusca.checked = true;" />
+                                                        </td>
+                                                        <td width="135">
+                                                            <a href="javascript:submitespc2()" class="botao" style="width: 106px;">
+                                                                <img src="../imagens/botao_prosseguir.jpg" alt="Buscar" width="106" height="24" /></a>
+                                                        </td>
+                                                        <td>&nbsp;</td>
+                                                    </tr>
+                                                </table>
+                                            </form>
+
+
+                                           
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <br />
+            <!--		
+		</div>
+		</div>
+		</div>
+		</div>
+-->
+
+        </div>
+    </div>
+
+    <p>&nbsp;</p>
+    <div id="centralizar">
+        <div align="center">
+            <div class="botoes" style="display: inline;">
+                <table>
+                    <tr>
+                        <td>
+                            <a href="#topo" style="width: 46px;">
+                                <img src="../imagens/botao_topo.jpg" alt="Topo" /></a>
+                        </td>
+                        <td>
+                            <a href="javascript:history.back();" style="width: 48px;">
+                                <img src="../imagens/botao_voltar.jpg" alt="Voltar" /></a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    </div>
+    <div id=rodape>
+        <div class="centralizar">
+            <div class="area01 esq divisor_dir_azul">
+                <a href="../" target="_blank">
+                    <img src="../imagens/Logo_Novo_Fepam_Rodape.png" alt="FEPAM" border="0" /></a>
+            </div>
+
+            <div class="dir">
+                <table cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                        <td>
+                            <img src="../imagens/pixel.gif" alt="" border="0" width="5" height="1"></td>
+                        <td valign="top" align="center"><a href="../area1/default.asp">
+                            <img class="esq" src="../imagens/img_botao_home.gif" hspace="3" alt="Home" />
+                            <p>Home Licenciamento</p>
+                        </a></td>
+
+
+                        <td>
+                            <img src="../imagens/pixel.gif" alt="" border="0" width="4" height="1"></td>
+                        <td class="divisor_dir_azul">&nbsp;</td>
+                        <td>
+                            <img src="../imagens/pixel.gif" alt="" border="0" width="4" height="1"></td>
+                        <td><a href="https://www.fepam.rs.gov.br/fale-conosco" target="_blank">
+                            <p>contato</p>
+                        </a></td>
+                        <td>
+                            <img src="../imagens/pixel.gif" alt="" border="0" width="4" height="1"></td>
+                        <td><a href="https://www.fepam.rs.gov.br/fale-conosco" target="_blank">
+                            <img src="../imagens/img_botao_contato_topo.jpg" alt="Contato" /></a></td>
+                    </tr>
+                </table>
+                <table cellpadding="0" cellspacing="0" border="0" align="right">
+                    <tr>
+                        <td nowrap>
+                            <a href="https://www.fepam.rs.gov.br" target="_blank" style="float: right; margin: 5px 16px 0 0; _margin: 0 6px 0 0;">
+                                <p class="font03">website principal da Fepam</p>
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <!--# include file="../includes/rodape.asp"-->
+
+</body>
+</html>
