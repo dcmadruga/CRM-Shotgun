@@ -1,0 +1,119 @@
+(){this.addEventKeydownListener()}addEventKeydownListener(){typeof document>"u"||document.addEventListener("keydown",Q=>{Q.altKey&&(Q.key=="1"?this.startIn("conteudoInicio"):Q.key=="2"&&this.startIn("pesquisaInicio"))})}startIn(Q){let U=document.getElementById(Q);if(U!=null){let B=U.getBoundingClientRect().top;document.body.scrollTop=B,document.documentElement.scrollTop=B}}toggleContraste(){this.isContras
+=====
+l})}unsubscribeRouterEvents(){this._routerSub.unsubscribe()}initDia(){this.route.queryParams.subscribe(Q=>{this.wasChanged(Q)&&(this.toPesq(Q),BU.validNgbDate(this.pesq.dia)?(this.redirecionar(),this.pesquisar()):this.pesquisarUltimoDoe())})}pesquisarUltimoDoe(){this.loading=!0,this.diarioService.consultarUltimos(0).subscribe({next:Q=>{this.loading=!1,Q&&BU.validUrl(Q.dataPublicacao)&&(this.setarDia(BU.to
+=====
+IsoDate(Q.dataPublicacao)),this.redirecionar(),this.pesquisar())},error:Q=>{this.loading=!1,console.error(Q)}})}wasChanged(Q){if(!BU.validNgbDate(this.pesq.dia)||!BU.validUrl(Q.d))return!0;let U=this.pesq.dia,B=BU.urlToNgbDate(Q.d);return!BU.equalsNgbDate(U,B)
+=====
+(Q){this.pesq.dia=BU.urlToNgbDate(Q)}redirecionar(){this.router.navigate(["/sumario"],{queryParams:{d:BU.ngbDateToUrl(this.pesq.dia),td:this.pesq.tipoDiario,vz:this.pesq.visualizacao},replaceUrl:!0})}pesquisar(){this.infoNoResultDOE=null,this.infoNoResultDIC=null,this.loading=!1,this.sumario=null,this.pesq.diaPesquisado=null,BU.validNgbDate(this.pesq.dia)&&(this.loading=!0,this.sumarioService.sumario(this
+=====
+.pesq).subscribe({next:Q=>{this.loading=!1,this.sumario=Q,this.pesq.diaPesquisado=this.pesq.dia,this.showMsg()},error:Q=>{this.loading=!1,this.showMsg(),console.error(Q)}}))}tabelas(){let Q=[];return this.pesq.tipoDiario=="DOE"&&this.sumario&&this.sumario.tabelasDOE?Q=this.sumar
+=====
+resultado encontrado para a data selecionada.")}maskDate(Q){this.isNumber(Q.key)&&BU.mask(Q.target)}onlyNumber(Q){K0.onlyNumber(Q)}selectDia(Q){this.pesq.dia=Q,qU.scrollTop(),this.redirecionar(),this.pesquisar()}changeTipoDiario(Q){this.pesq.tipoDiario=Q.toUpperCase(),this.pesq.visualizacao="q",this.redirecionar()}changeVisualizacao(Q){this.pesq.visualizacao=Q,this.redirecionar()}wrapOrgaoBoxNome(Q){let U
+=====
+{return BU.ngbDateToUrl(Q)}redirectToResultadoByOrgao(Q){this.router.navigate(["/resultado"],{queryParams:{tipoDiario:this.pesq.tipoDiario,entidade:Q.nomeEntidade,dataIni:BU.ngbDateToUrl(this.pesq.diaPesquisado),dataFim:BU.ngbDateToUrl(this.pesq.diaPesquisado),forceFilter:!0}})}redirectToResultadoByTipoMateria(Q){this.router.navigate(["/resultado"],{queryParams:{tipoDiario:this.pesq.tipoDiario,tipoMateria
+=====
+:Q,dataIni:BU.ngbDateToUrl(this.pesq.diaPesquisado),dataFim:BU.ngbDateToUrl(this.pesq.diaPesquisado),forceFilter:!0}})}isNumber(Q){return!isNaN(this.toInteger(Q))}toInteger(Q){return parseInt(`${Q}`,10)}static \u0275fac=function(U){return new(U||F)(G(AF),G(XU),G(h1),G(_R))};static \u0275cmp=f({ty
+=====
+Y(-50%);pointer-events:none}@media (max-width: 575px){.grupo[_ngcontent-%COMP%]{max-width:fit-content}.date-picker[_ngcontent-%COMP%]{max-width:140px!important}}"]})};var rd=class F{classeBarra="barraPesquisaDOE";textoPesquisa="";textoChange=new A;onTextoChange(){this.textoChange.emit(this.textoPesquisa)}set tipoDiario(Q){Q==="doe"?this.classeBarra="barraPesquisaDOE":this.classeBarra="barraPesquisaDIC"}st
+=====
+atic \u0275fac=function(U){return new(U||F)};static \u0275cmp=f({type:F,selectors:[["app-input-pesquisa"]],inputs:{textoPesquisa:"textoPesquisa",tipoDiario:"tipoDiario"},outputs:{textoChange:"textoChange"},standalone:!0,features:[g],decls:1,vars:2,consts:[["placeholder","Digite","type","text",1,"barraPesquisa",3,"ngModelChange","input","ngCl
+=====
+ass","ngModel"]],template:function(U,B){U&1&&(e(0,"input",0),VF("ngModelChange",function(l){return ZF(B.textoPesquisa,l)||(B.textoPesquisa=l),l}),m("input",function(){return B.onTextoChange()}),t()),U&2&&(a("ngClass",B.classeBarra),lF("ngModel",B.textoPesquisa))},dependencies:[VU,uU,tF,UQ,iQ,eQ],styles:['@font-face{font-family:icons_out
+=====
+.cabecalho-share-box-dsk[_ngcontent-%COMP%] > app-share[_ngcontent-%COMP%]   .shares[_ngcontent-%COMP%]{top:7px}}@media (min-width: 1200px){.hidden-xl[_ngcontent-%COMP%]{display:none!important}}.barraPesquisa[_ngcontent-%COMP%]{font-family:roboto,sans-serif;font-weight:400;font-size:20px;line-height:23px!important;border-color:transparent!important;border-radius:1.875em!important;width:100%;height:100%;ma
+=====
+x-width:600px;max-height:60px;padding:20px;color:#333}.barraPesquisa[_ngcontent-%COMP%]:hover{opacity:.9}.barraPesquisaDIC[_ngcontent-%COMP%]{box-shadow:0 1px 7px 1px #2978cb!important}.barraPesquisaDOE[_ngcontent-%COMP%]{box-shadow:0 1px 7px 1px #3c7928!important}@media (max-width: 575px){.barraPesquisa[_ngcontent-%COMP%]{max-width:300px;max-height:40px;margin:20px auto}}@media (min-width: 576px
+=====
+) and (max-width: 767px){.barraPesquisa[_ngcontent-%COMP%]{max-width:400px;max-height:50px}}']})};var Cd=class F{faSearch=Gc;diarioSelecionado="doeSelecionado;";disabled=!0;set tipoDiario(Q){Q==="doe"?this.diarioSelecionado="doeSelecionado
+=====
+arioSelecionado+" desativado":this.diarioSelecionado=this.diarioSelecionado.replace(" desativado",""))}static \u0275fac=function(U){return new(U||F)};static \u0275cmp=f({type:F,selectors:[["app-botao-pesquisar"]],inputs:{disabled:"disabled",tipoDiario:"tipoDiario"},standalone:!0,features:[pF,g],decls:3,vars:4,consts:[["type","button","placement","top","triggers","mouseenter:mouseleave",1,"botaoPesquisar",
+=====
+ss",B.diarioSelecionado)("disabled",B.disabled)("ngbPopover",B.disabled?"Informe no m\xEDnimo 3 caracteres para a busca":""),S(),a("icon",B.faSearch))},dependencies:[RQ,IQ,VU,uU,QN,FN],styles:[".botaoPesquisar[_ngcontent-%COMP%]{font-family:roboto,sans-serif;font-weight:400;font-size:16px;line-height:19px!important;border-radius:1.25em;width:100%;max-width:150px;height:100%;min-height:38px;max-height:38px
+=====
+;margin:0;padding:0;border:0px;border-color:transparent}.botaoPesquisar[_ngcontent-%COMP%]:hover{opacity:.4}.desativado[_ngcontent-%COMP%]{opacity:.7}.desativado[_ngcontent-%COMP%]:hover{cursor:not-allowed}.doeSelecionado[_ngcontent-%COMP%]{color:#3c763d!important;backg
+=====
+%]{color:#205dac!important;background-color:#84b9ff!important;box-shadow:0 1px 7px 1px #2978cb!important}"]})};var m1=class F{constructor(Q){this.router=Q}trocaDiarioEvent=new A;tipoDiario="doe";textoPesquisa="";hoje=D(o0).getToday();dataFim=this.hoje;dataIni={year:1935,month:6,day:1};info="test";pesquisar(){this.textoPesquisa.length<3||this.router.navigate(["/resultado"],{queryParams:{dataIni:BU.ngbDateT
+=====
+oUrl(this.dataIni),dataFim:BU.ngbDateToUrl(this.dataFim),tipoDiario:this.tipoDiario,queryString:this.textoPesquisa,forceFilter:!0,page:1},replaceUrl:!0})}onTextoChange(Q){this.textoPesquisa=Q}onDataIniChange(Q){this.dataIni=Q}onDataFimChange(Q){this.dataFim=Q}trocaTipoDiario(Q){this.tipoDiario=Q,this.trocaDiarioEvent.emit(Q)}static \u0275fac=function(U){return new(U||F)(G(XU))};static \
+=====
+u0275cmp=f({type:F,selectors:[["app-pesquisa"]],outputs:{trocaDiarioEvent:"trocaDiarioEvent"},standalone:!0,features:[g],decls:12,vars:8,consts:[["id","pesquisa",1,"slide",3,"ngClass"],[1,"grupoPesquisa","row-cols-1"],[3,"trocaDiarioEvent"],[1,"tituloBarra"],[1,"barraPesquisa",3,"textoChange","keyup.enter","tipoDiario"],[1,"row","no-gutter","periodo","hidden-xs"],[1,"col-8","datas",3,"dataIniChange"
+=====
+,"dataFimChange","tipoDiario"],[1,"col","botaoPesquisar",3,"click","tipoDiario","disabled"],[1,"row","no-gutter","datepicker-mobile"],[1,"datas","hidden-sm","hidden-md","hidden-lg","hidden-xl",3,"dataIniChange","dataFimChange","tipoDiario"],[1,"botaoPesq
+=====
+v",0)(1,"div",1)(2,"app-botao-tipo-diario",2),m("trocaDiarioEvent",function(l){return B.trocaTipoDiario(l)}),t(),e(3,"label",3),i(4,"Busque um termo, nome, t\xEDtulo ou protocolo"),t(),e(5,"app-input-pesquisa",4),m("textoChange",function(l){return B.onTextoChange(l)})("keyup.enter",function(){return B.pesquisar()}),t(),e(6,"div",5)(7,"app-double-date-picker",6),m("dataIniChange",function(l){return B.onDat
+=====
+aIniChange(l)})("dataFimChange",function(l){return B.onDataFimChange(l)}),t(),e(8,"app-botao-pesquisar",7),m("click",function(){return B.pesquisar()}),t()(),e(9,"div",8)(10,"app-double-date-picker",9),m("dataIniChange",function(l){return B.onDataIniChange(l)})("dataFimChange",function(l){return B.onDataFimChange(l)}),t()(),e(11,"app-botao-pesq
+=====
+uisar",10),m("click",function(){return B.pesquisar()}),t()()()),U&2&&(a("ngClass",B.tipoDiario==="doe"?"pesquisaDOE":"pesquisaDIC"),S(5),a("tipoDiario",B.tipoDiario),S(2),a("tipoDiario",B.tipoDiario),S(),a("tipoDiario",B.tipoDiario)("disabled",B.textoPesquisa.length<3),S(2),a("tipoDiario",B.tipoDiario),S(),a("tipoDiario",B.t
+=====
+ipoDiario)("disabled",B.textoPesquisa.length<3))},dependencies:[DB,VU,uU,rd,Cd,pd],styles:[".pesquisaDOE[_ngcontent-%COMP%]{max-width:100%;max-height:340px;background-color:#508e3b;text-align:center;padding:20px}.pesquisaDIC[_ngcontent-%COMP%]{max-width:100%;max-height:340px;background-color:#4c99ea;
+=====
+font-weight:400;font-size:20px;line-height:23px!important;padding-top:20px;padding-bottom:20px}.periodo[_ngcontent-%COMP%]{max-width:500px!important;max-height:45px!important;margin:20px auto 0}.botaoPesquisar[_ngcontent-%COMP%]{height:40px}.datepicker-mobile[_ngcontent-%COMP%]{margin-left:0}@media (max-width: 575px){.tituloBarra[_ngcontent-%COMP%]{font-family:roboto,sans-serif;font-weight:400;font-size:1
+=====
+4px;line-height:17px!important;color:#fff;padding-bottom:0}.botaoPesquisar[_ngcontent-%COMP%]{padding-right:0!important;padding-left:0!important;max-width:80px;margin:0 auto;position:relative;top:10px}.datas[_ngcontent-%COMP%]{max-width:fit-content;margin:0 auto;padding:0}
+=====
+:F,selectors:[["app-home"]],standalone:!0,features:[g],decls:7,vars:1,consts:[[1,"main"],[3,"trocaDiarioEvent"],[3,"tipoDiario"]],template:function(U,B){U&1&&(e(0,"main",0),M(1,"app-header"),e(2,"app-pesquisa",1),m("trocaDiarioEvent",function(l){return B.trocaTipoDiario(l)}),t(),M(3,"app-destaque",2)(4,"app-edicoes")(5,"app-footer")(6,"app-chat-sidebar"),t()),U&2&&(S(3),a("tipoDiario",B.tipoDiario))},depe
+=====
+`],encapsulation:2})};var AR=class F{constructor(Q,U){this.http=Q;this.env=U;this.API_URL=U.getRestEndpoint()}API_URL;materiaSource=new cU;materiaObserver$=this.materiaSource.asObservable();pesquisa(Q){return this.http.get(this.API_URL+"public/materias/?page="+(Q.page&&!isNaN(parseInt(Q.page,10))?parseInt(Q.page,10):1)+"&tipoDiario="+Q.tipoDiario+(Q.queryString?"&queryString="+Q.queryString:"")+
+=====
+"")+(BU.validNgbDate(Q.dataIni)?"&dataIni="+BU.ngbDateToUrl(Q.dataIni):"")+(BU.validNgbDate(Q.dataFim)?"&dataFim="+BU.ngbDateToUrl(Q.dataFim):""))}leitura(Q){return this.http.get(this.API_URL+"public/materias/"+Q)}downloadMateria(Q,U){return this.getWithTimeout(this.API_URL+"public/materias/download/"+Q+"/"+U,"Tempo esgotado para gera\xE7\xE3o do "+U.toUpperCase()+". Tente novamente mais tarde.")}getWithTi
+=====
+meout(Q,U){return this.http.get(Q,{responseType:"blob"}).pipe(r2(3e4),WF(B=>B.name==="TimeoutError"?OF(()=>new Error(U)):this.handleError(B)))}rss(){return this.http.get(this.API_URL+"public/materias/feed")}mapDownload(Q){return Q.status==200?Q.blob():null}handleError(Q){return console.error("MateriaService::handleError",Q),OF(()=>new Error(Q))}static \u0275fac=function(U){return new(U||F)(y(NQ),y
+=====
+e.updateTag({property:"og:url",content:window.location.href})},error:U=>{this.loading=!1,console.log(U)}})}urlPdf(){return this.materia!=null?"assets/pdfjs/web/viewer.html?file="+this.API_URL+"public/materias/pdf-inline/"+this.materia.id+"#zoom=auto":"sem materia"}downloadMateria(Q){this.loading=!0,this.materia!=null&&this.materiaService.downloadMateria(this.materia.id,Q).subscribe({next:U=>{console.log("d
+=====
+-color:#d9d9d9}@media (max-width: 575px){.cabecalho-share[_ngcontent-%COMP%]{float:right;padding-left:10px}.cabecalho-share-box-dsk[_ngcontent-%COMP%], .cabecalho-sumario-box-dsk[_ngcontent-%COMP%], .pesquisa-box[_ngcontent-%COMP%]{display:none}.iframe-pdf[_ngcontent-%COMP%]{height:500px}}@media (min-width: 576px) and (max-width: 767px){.cabecalho-share[_ngcontent-%COMP%]{float:right;padding-left:10px}.ca
+=====
+becalho-share-box-dsk[_ngcontent-%COMP%], .cabecalho-sumario-box-dsk[_ngcontent-%COMP%], .pesquisa-box[_ngcontent-%COMP%]{display:none}.iframe-pdf[_ngcontent-%COMP%]{height:670px}}@media (min-width: 768px) and (max-width: 991px){.cabecalho-share-box-dsk[_ngcontent-%COMP%]{display:flex}.cabecalho-s
+=====
+sq={};resultadoPaginado;page=1;info=null;loading=!1;ngOnInit(){qU.scrollTop(),this.initDia()}initDia(){this.route.queryParams.subscribe(Q=>{BU.validUrl(Q.d)&&(this.pesq.dia=BU.urlToNgbDate(Q.d)),this.pesquisar()})}redirecionar(){this.router.navigate(["/destaques-do-dia"],{queryParams:{d:BU.ngbDateToUrl(this.pesq.dia)},replaceUrl:!0})}pesquisar(){this.info=null,this.resultadoPaginado={},this.pesq.diaPesqui
+=====
+sado=null,this.loading=!0,this.destaqueService.getDestaquesDia(this.pesq,this.page,20).subscribe({next:Q=>{this.loading=!1,this.resultadoPaginado=Q,this.pesq.dia==null?this.pesq.diaPesquisado=Q.destaques.length>0?Q.destaques[0].data:null:this.pesq.diaPesquisado=this.pesq.dia,this.showMsg()},error:Q=>{this.loading=!1,this.showMsg(),console.error(Q)}})}pageChange(){qU.scrollTop(),this.pes
+=====
+this.info=this.resultadoPaginado.mensagem)}maskDate(Q){isNaN(parseInt(Q.key,10))||BU.mask(Q.target)}onlyNumber(Q){K0.onlyNumber(Q)}selectDia(Q){this.pesq.dia=Q,qU.scrollTop(),this.redirecionar(),this.pesquisar()}get diaFmt(){return BU.validNgbDate(this.pesq.diaPesquisado)?BU.ngbDateToFormat(this.pesq.diaPesquisado):this.pesq.diaPesquisado!=null?this.pesq.diaPesquisado.replaceAll("-","/"):""}static \u0275f
+=====
+llTop(),this.route.queryParams.subscribe(Q=>{this.pesq.td=this.toTipoDiario(Q),this.pesq.dt=this.toDataPublicacao(Q),this.pesq.pg=this.toPagina(Q),this.pesq.ed=this.toEdicao(Q),this.setOrigin(Q),this.pesquisar()})}ngAfterViewInit(){this.adjustHeight()}pesquisar(){this.info="",this.loading=!0,ud({dic:this.diarioService.consultar(0,this.pesq.dt),doe:this.diarioService.consultar(1,this.pesq.dt)}).subscribe({
+=====
+next:({dic:Q,doe:U})=>{this.dic=Q,this.doe=U,this.pesquisaComSucesso()},error:Q=>this.pesquisaComErro(Q)})}pesquisaComSucesso(){this.loading=!1,this.carregar(),this.showMsg()}pesquisaComErro(Q){this.loading=!1,this.doe=null,this.dic=null,this.diarioSelecionado={},console.error(Q),this.showMsg()}carregar(){this.pesq.pg=this.toInteger(this.pesq.pg),(!this.pesq.pg||this.pesq.pg<=0)&&
+=====
+ parseInt(`${Q}`,10)}maskDate(Q){this.isNumber(Q.key)&&BU.mask(Q.target)}onlyNumber(Q){K0.onlyNumber(Q)}selectDia(Q){this.pesq.dt=BU.ngbDateToUrl(Q),this.pesq.pg=1,qU.scrollTop(),this.redirect(),this.pesquisar()}proximaEdicao(){this.pesq.ed==null||this.pesq.ed>=this.diarioSelecionado.edicoes.length?this.pesq.ed=this.diarioSelecionado.edicoes.length+1:this.pesq.ed+=1,this.irParaEdicao()}edicaoAnterior(){th
+=====
+icao[_ngcontent-%COMP%], .pagina-label[_ngcontent-%COMP%]{width:100%}}"]})};function jCU(F,Q){if(F&1&&(e(0,"a",15),i(1," Todas as mat\xE9rias "),t()),F&2){let U=T();PF("href","",U.getDoeUrl(),"public/materias/feed/rss.xml",KF)}}function yCU(F,Q){F&1&&(e(0,"span"),i(1,"N\xE3o h\xE1 di\xE1rio publicado no dia de hoje"),t())}function LCU(F,Q){if(F&1&&(e(0,"div",18)(1,"a",19),i(2),t()()),F&2){let U=Q.$implicit
+=====
+,B=T(2);S(),Sa("href","",B.getDoeUrl(),"public/materias/feed/",U,"/rss.xml",KF),S(),oU(" ",U," ")}}function fCU(F,Q){if(F&1&&(e(0,"div",9)(1,"div",10),M(2,"img",11),e(3,"span",16),i(4,"Tipos de mat\xE9rias"),t()(),O(5,LCU,3,4,"div",17),t()),F&2){let U=T();
+=====
+ateriaService=U;this.env=B;Q.setTitle("Siga nosso feed - Di\xE1rio Oficial do Rio Grande do Sul"),this.API_URL=B.getRestEndpoint()}API_URL;tiposMateriaRss=[];loading=!1;ngOnInit(){qU.scrollTop(),this.pesquisar()}pesquisar(){this.loading=!0,this.materiaService.rss().subscribe({next:Q=>{this.loading=!1,this.tiposMateriaRss=Q},error:Q=>{this.loading=!1,console.error(Q)}})}getDoeUrl(){return this.API_URL}isCo
+=====
+(U).index,l=T();return v(l.onRemoveFiltro(R))}),M(8,"img",9),t()()}if(F&2){let U=Q.$implicit,B=T();S(),lF("ngModel",U.opcao),S(5),a("ngClass",B.classeBarra),lF("ngModel",U.texto)}}var q1=class F{textoPesquisa="";keyupEnterEvent=new A;filtrosEvent=new A;filtros=[];classeBarra="barraPesquisaDOE";escondeBotao="";faPlus=o1;faX=Pc;onAddFilter(){this.filtros.push(new zJ),this.filtros.length>=3&&(this.escondeBot
+=====
+ge()}onTextoChange(){let Q="";for(let U=0;U<this.filtros.length;U++)Q+=" "+this.filtros[U].opcao+" "+this.filtros[U].texto;this.filtrosEvent.emit(Q)}set tipoDiario(Q){Q==="doe"?this.classeBarra="barraPesquisaDOE":this.classeBarra="barraPesquisaDIC"}set textoFiltros(Q){if(this.filtros.length==0){let U=Q.split(/\s+(?=OR|AND)/).map(B=>B.trim());for(let B=0;B<U.length;B++){let R=new zJ;U[B].startsWith("AND")?
+=====
+))}}this.filtros.length==3&&(this.escondeBotao="esconde-botao")}onKeyupEnter(){this.keyupEnterEvent.emit("")}static \u0275fac=function(U){return new(U||F)};static \u0275cmp=f({type:F,selectors:[["app-pesquisa-multiplos-inputs"]],inputs:{textoPesquisa:"textoPesquisa",tipoDiario:"tipoDiario",textoFiltros:"textoFiltros"},outputs:{keyupEnterEvent:"keyupEnterEvent",filtrosEvent:"filtrosEvent"},standalone:!0,fe
+=====
+.enter",4,"ngFor","ngForOf"],["id","addFiltro",3,"click","ngClass"],[3,"icon"],[1,"d-flex","flex-row","seletor-barra",3,"keyup.enter"],["aria-label","Seletor de tipo de busca",1,"form-select","seletorPesquisa",3,"ngModelChange","change","ngModel"],["value","AND"],["value","OR"],["id","barraFiltro","placeholder","Digite","type","text",1,"barraPesquisa",3,"ngModelChange","input","ngClass","ngModel"],[1,"bot
+=====
+nt-%COMP%]{transform:translateY(40%)!important;justify-content:center}.esconde-botao[_ngcontent-%COMP%]{visibility:hidden;height:0px}.seletor-barra[_ngcontent-%COMP%]{margin-top:10px;gap:10px}.seletorPesquisa[_ngcontent-%COMP%]{font-family:roboto,sans-serif;font-weight:400;font-size:20px;line-height:23px!important;border-color:transparent!important;border-radius:1.875em!important;max-width:150px;max-heigh
+=====
+t:45px;background-color:#fff;margin-left:15%}.seletorPesquisa[_ngcontent-%COMP%]:hover{opacity:.9}.barraPesquisa[_ngcontent-%COMP%]{font-family:roboto,sans-serif;font-weight:400;font-size:20px;line-height:23px!important;border-color:transparent!important;border-radius:1.875em!important;width:100%;height:100%;ma
+=====
+x-width:459px;max-height:45px;padding:20px;color:#333}.barraPesquisa[_ngcontent-%COMP%]:hover{opacity:.9}.barraPesquisaDIC[_ngcontent-%COMP%]{box-shadow:0 1px 7px 1px #2978cb!important}.barraPesquisaDOE[_ngcontent-%COMP%]{box-shadow:0 1px 7px 1px #3c7928!important}@media (max-width: 575px){#addFiltro[_ngcontent-%COMP%]{margin-left:0}.seletorPesquisa[_ngcontent-%COMP%]{margin-left:0;width:76px}.ba
+=====
+rraPesquisa[_ngcontent-%COMP%]{margin-left:0;width:150px}}"]})};var $1=class F{constructor(Q){this.router=Q}trocaDiarioEvent=new A;textoPesquisa="";tipoDiario="doe";textoFiltros="";hoje=D(o0).getToday();dataFim=this.hoje;dataIni={year:1935,month:6,day:1};info="test";set tipoDiarioSelecionado(Q){Q!=null&&(this.tipoDiario=Q.toLowerCase())}set q
+=====
+ueryString(Q){if(Q==null)return;let U=Q.match(/^(.*?)\s+(?:OR|AND)\s+/),B=Q.match(/(?:OR|AND)\s+.*$/),R=U?U[1].trim():"",l=B?B[0].trim():"";this.textoPesquisa=R,this.textoFiltros=l,this.textoPesquisa==""&&this.textoFiltros==""&&(this.textoPesquisa=Q)}pesquisar(){this.textoPesquisa.length!=3&&(this.textoPesquisa=this.textoPesquisa.trim()),!(this.textoPesquisa.length<3)&&this.router.navigate(["/res
+=====
+ultado"],{queryParams:{dataIni:BU.ngbDateToUrl(this.dataIni),dataFim:BU.ngbDateToUrl(this.dataFim),tipoDiario:this.tipoDiario,queryString:this.textoPesquisa+(this.textoFiltros?" "+this.textoFiltros:""),forceFilter:!0},replaceUrl:!0})}onTextoChange(Q){this.textoPesquisa=Q}onDataIniChange(Q){this.dataIni=Q}onDataFimChange(Q){this.dataFim=Q}trocaTipoDiario(
+=====
+Q){this.tipoDiario=Q,this.trocaDiarioEvent.emit(Q),this.pesquisar()}adicionaFiltros(Q){this.textoFiltros=Q}static \u0275fac=function(U){return new(U||F)(G(XU))};static \u0275cmp=f({type:F,selectors:[["app-pesquisa-resultado"]],inputs:{dataFim:"dataFim",dataIni:"da
+=====
+taIni",tipoDiarioSelecionado:"tipoDiarioSelecionado",queryString:"queryString"},outputs:{trocaDiarioEvent:"trocaDiarioEvent"},standalone:!0,features:[g],decls:21,vars:21,consts:[["id","pesquisa",1,"slide",3,"ngClass"],[1,"grupoPesquisa","d-flex","flex-column"],[1,"botaoDiario","hidden-xs",3,"trocaDiarioEvent","tipoDiario"],[1,"textosBarra","hidden-xs"],[1,"tituloBarra"],[1,""],[1,"periodo",
+=====
+"d-flex","flex-row"],[1,"barraPesquisa","hidden-xs",3,"textoChange","keyup.enter","tipoDiario","textoPesquisa"],[1,"datas","hidden-xs",3,"dataFimChange","dataIniChange","tipoDiario","dataIni","dataFim"],[1,"botaoPesquisar","hidden-xs",3,"click","tipoDiario","disabled"],[1,"hidden-xs",3,"keyupEnterEvent","fil
+=====
+trosEvent","tipoDiario","textoFiltros"],[1,"grupoPesquisa","row-cols-1","hidden-sm","hidden-md","hidden-lg","hidden-xl"],[1,"botaoDiario",3,"trocaDiarioEvent","tipoDiario"],[1,"barraPesquisa",3,"textoChange","keyup.enter","tipoDiario","textoPesquisa"],[1,"datas","hidden-sm","hidden-md","hidden-lg","hidden-xl","justify-content-center","datepicker-mobile",3,"dataFimChange","dataIniChange",
+=====
+"tipoDiario","dataIni","dataFim"],[1,"hidden-sm","hidden-md","hidden-lg","hidden-xl",3,"keyupEnterEvent","filtrosEvent","tipoDiario","textoFiltros"],[1,"botaoPesquisar","hidden-sm","hidden-md","hidden-lg","hidden-xl",3,"click","tipoDiario","disabled"]],template:function(U,B){U&1&&(e(0,"div",0)(1,"div",1)(2,"app-botao-tipo-diario",2),m("trocaDiarioEvent",function(l
+=====
+){return B.trocaTipoDiario(l)}),t(),e(3,"div",3)(4,"label",4),i(5,"Busque um termo, nome, t\xEDtulo ou protocolo"),t(),e(6,"label",5),i(7,"Periodo"),t()(),e(8,"div",6)(9,"app-input-pesquisa",7),m("textoChange",function(l){return B.onTextoChange(l)})("keyup.enter",function(){return B.pesquisar()}),t(),e(10,"app-double-date-picker",8),m("dataFimChange",function(l){return B.onDataFimChange
+=====
+(l)})("dataIniChange",function(l){return B.onDataIniChange(l)}),t(),e(11,"app-botao-pesquisar",9),m("click",function(){return B.pesquisar()}),t()(),e(12,"app-pesquisa-multiplos-inputs",10),m("keyupEnterEvent",function(){return B.pesquisar()})("filtrosEvent",function(l){return B.adicionaFiltros(l)}),t()(),e(13,"div",11)(14,"app-botao-tipo-diario",12),m("trocaDiario
