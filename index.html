@@ -497,7 +497,7 @@ table.users{min-width:640px}
 /* Com login, a Nova proposta sai do menu principal e abre pelo CRM */
 body.fb #tabProp{display:none!important}
 .crmmsg{margin:0;padding:8px 12px;border-radius:8px;background:color-mix(in srgb,var(--accent) 12%,transparent);font-size:13px}
-.crmboard{display:grid;grid-template-columns:repeat(6,minmax(132px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+.crmboard{display:grid;grid-template-columns:repeat(7,minmax(132px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
 .crmboard[hidden]{display:none}
 .crmcol{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px;min-width:132px;transition:border-color .15s,background .15s}
 .crmcol.alvo{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--bg))}
@@ -659,6 +659,9 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--field);border:1px solid var(--line)}
 .pill.off{color:var(--danger);border-color:var(--danger)}
 .pill.pend{color:var(--sg-disparo-texto);border-color:var(--sg-disparo);background:color-mix(in srgb,var(--sg-disparo) 10%,transparent)}
+.pill.salva{color:var(--warn-text);border-color:currentColor;background:var(--warn-soft)}
+.crmc .crmpend{color:var(--warn-text);font-weight:600}
+.crmcol[data-etapa=salva] h4 span{color:var(--warn-text)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pill.pend{color:var(--sg-disparo)}}:root[data-theme="dark"] .pill.pend{color:var(--sg-disparo)}
 .ucard.upend{background:color-mix(in srgb,var(--sg-disparo) 5%,transparent);border-radius:12px}
 .marcs{display:flex;flex-wrap:wrap;gap:6px}
@@ -796,10 +799,10 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div class="grid">
       <label>WhatsApp do contato do cliente<input id="waAprov" inputmode="tel" placeholder="(65) 99999-0000" autocomplete="off"></label>
     </div>
-    <div class="tools"><button type="button" class="primary" id="btnAprov">Enviar pelo WhatsApp</button><button type="button" id="btnAprovCopy">Copiar link da proposta</button></div>
+    <div class="tools"><button type="button" class="primary" id="btnAprov">Enviar pelo WhatsApp</button><button type="button" id="btnAprovCopy">Copiar link da proposta</button><button type="button" id="btnAprovSalvar" title="Guarda a proposta na aba Propostas como pendente de envio, para mandar depois">Salvar proposta</button></div>
     <div class="tools" id="aprovLinkRow" hidden><input id="aprovLink" readonly aria-label="Link da proposta" style="flex:1;min-width:200px"><button type="button" id="btnAprovLinkCopy">Copiar</button></div>
     <p class="refaz" id="refazInfo" hidden></p>
-    <p class="hint" id="aprovMsg">A proposta fica salva na aba Propostas. Quando o cliente aprovar pelo link, ela aparece como APROVADA e a Etapa 2 é liberada.</p>
+    <p class="hint" id="aprovMsg">A proposta fica salva na aba Propostas. Ainda não vai enviar? Use Salvar proposta: ela fica como PENDENTE DE ENVIO e você envia depois. Quando o cliente aprovar pelo link, ela aparece como APROVADA e a Etapa 2 é liberada.</p>
   </div></section>
 
   <section class="sec nofb"><h2>Etapa 2 · Dados complementares obrigatórios <span>depois que o cliente aprovar</span></h2><div class="body">
@@ -964,7 +967,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div class="tools ptools">
       <input id="pBusca" placeholder="Buscar por cliente, CNPJ ou número" autocomplete="off">
       <span class="pmodo" role="group" aria-label="Modo de exibição"><button type="button" id="pModoQuadro" aria-pressed="true">Quadro</button><button type="button" id="pModoLista" aria-pressed="false">Lista</button></span>
-      <select id="pFiltro" aria-label="Filtrar por status"><option value="">Todas</option><option value="enviada">Aguardando aprovação</option><option value="aprovada">Aprovadas</option><option value="ctenv">Contrato aguardando aceite</option><option value="ctok">Contrato aceito</option></select>
+      <select id="pFiltro" aria-label="Filtrar por status"><option value="">Todas</option><option value="pendente">Pendentes de envio</option><option value="enviada">Aguardando aprovação</option><option value="aprovada">Aprovadas</option><option value="ctenv">Contrato aguardando aceite</option><option value="ctok">Contrato aceito</option></select>
     </div>
     <div id="pBoard" class="pboard"></div>
     <div id="pList" class="plist"></div>
