@@ -1,0 +1,17 @@
+{
+ "collection": [],
+ "collectionSize": 0,
+ "pageSize": 10,
+ "filtroTiposMateria": {
+  "tipo": null,
+  "resultados": []
+ },
+ "filtroEntidades": {
+  "tipo": null,
+  "resultados": []
+ },
+ "filtroAssuntos": {
+  "tipo": null,
+  "resultados": []
+ }
+}
