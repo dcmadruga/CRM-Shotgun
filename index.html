@@ -360,7 +360,8 @@ header.top h1 img.sgmarca{width:auto;height:30px;display:block}
 #viewTask{--purple:var(--sg-implantacao-escuro)}
 .loginCard button.primary{padding:10px}
 .loginAlt{margin:4px 0 0;padding-top:12px;border-top:1px solid var(--line);text-align:center;font-size:13.5px;color:var(--muted)}.loginAlt .lnk{font-weight:600;text-decoration:none;padding:6px 2px}
-body.locked>*:not(#loginBox):not(#senhaBox):not(#fotoBox):not(script){visibility:hidden}
+body.locked>*:not(#loginBox):not(#senhaBox):not(#fotoBox):not(#falhaCarga):not(script){visibility:hidden}
+#falhaCarga{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:var(--bg);color:var(--fg);padding:16px}#falhaCarga[hidden]{display:none}#falhaCarga>div{max-width:420px;text-align:center;display:grid;gap:12px}
 table.users{min-width:640px}
 .ptools input{flex:1;min-width:180px}
 .plist{display:flex;flex-direction:column;gap:10px}
@@ -1163,6 +1164,11 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
 
 <script src="jspdf.umd.min.js"></script>
 <script src="firebase-config.js"></script>
+<script>
+/* Se o firebase-config.js não chegar (ex.: o GitHub Pages devolve 404 por alguns instantes logo depois de uma publicação),
+   o app não pode cair no modo sem login, que esconde o usuário e os menus. Mesma configuração do arquivo (não é segredo). */
+if(!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey)&&/\.github\.io$/.test(location.hostname)) window.FIREBASE_CONFIG={apiKey:"AIzaSyCl3ES4L-5EHzEOdE-PoUq6jEnxovY8kW8",authDomain:"propostas-argo.firebaseapp.com",projectId:"propostas-argo",storageBucket:"propostas-argo.firebasestorage.app",messagingSenderId:"696362967875",appId:"1:696362967875:web:b0061e09974e776fd645f6"};
+</script>
 <script src="etapa2-padrao.js"></script>
 <script src="etapa3-padrao.js"></script>
 <script src="etapa4-padrao.js"></script>
@@ -1945,6 +1951,12 @@ aplicarModo();
 if(!FB_ON && !String(CFG.vNome||'').trim()){ $('firstRun').hidden=false; setTimeout(()=>{ showTab(true) },0) }
 VEND.forEach(id=>$('c-'+id).addEventListener('input',()=>{ if(String(CFG.vNome||'').trim()) $('firstRun').hidden=true }));
 if(FB_ON) document.body.classList.add('locked');
+// Proteção: se o login não começar em 20 s (algum arquivo do app não chegou), mostra como recarregar em vez de uma tela vazia ou sem menus
+if(FB_ON) setTimeout(()=>{ if(window.argoFb) return;
+  const d=document.createElement('div'); d.id='falhaCarga'; d.setAttribute('role','alert');
+  d.innerHTML='<div><b>O app não carregou por completo.</b><span>Isso pode acontecer logo depois de uma atualização. Toque em Recarregar para baixar tudo de novo.</span><button type="button" class="primary">Recarregar o app</button></div>';
+  d.querySelector('button').onclick=e=>atualizarApp(e.target); document.body.appendChild(d);
+},20000);
 carregarEquipe(false);
 
 

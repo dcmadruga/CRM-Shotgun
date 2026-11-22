@@ -1,5 +1,5 @@
 // Funciona sem internet: guarda o app no aparelho. Parâmetros sempre tentam a rede primeiro.
-const VERSAO = 'shotgun-v201'; // prefixo antigo era argo-v (o app reconhece os dois)
+const VERSAO = 'shotgun-v202'; // prefixo antigo era argo-v (o app reconhece os dois)
 const ARQUIVOS = ['./', 'index.html', 'dados.html', 'auth.js', 'task.js', 'crm.js', 'telemetria.js', 'telemetria-anp.js', 'novidades.js', 'radar.js', 'notificacoes.js', 'anp.js', 'firebase-config.js', 'etapa2-padrao.js', 'aprovar.html', 'contrato.html', 'etapa3-padrao.js', 'etapa4-padrao.js', 'contrato-pdf.js', 'contrato-social.js', 'pretask.js', 'modulos-padrao.js', 'lib/municipios.js', 'lib/forge.min.js', 'lib/pdf.min.js', 'lib/pdf.worker.min.js', 'jspdf.umd.min.js', 'manifest.webmanifest', 'icons/shotgun-s-192.png', 'icons/shotgun-s-512.png', 'icons/shotgun-s-180.png', 'icons/shotgun-s-32.png', 'icons/shotgun-s-16.png', 'icons/argo-192.png', 'tema.css', 'icons/shotgun-logo.png', 'icons/shotgun-logo-negativo.png', 'icons/shotgun-simbolo-negativo.png', 'icons/bandeiras/petrobras.svg', 'icons/bandeiras/ipiranga.svg', 'icons/bandeiras/ale.svg'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(VERSAO).then(c => c.addAll(ARQUIVOS.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting())) });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSAO).map(k => caches.delete(k)))).then(() => self.clients.claim())) });
@@ -15,6 +15,7 @@ self.addEventListener('fetch', e => {
   // App: rede primeiro (pega atualizações), cache se estiver sem internet.
   // 'no-cache' confere com o servidor a cada vez: sem isso o navegador podia entregar por até 10 min a cópia antiga do GitHub Pages
   const req = e.request.mode === 'navigate' ? new Request(e.request.url, { cache: 'no-cache', credentials: 'same-origin' }) : new Request(e.request, { cache: 'no-cache' });
-  e.respondWith(fetch(req).then(r => { if (r.ok) { const c = r.clone(); caches.open(VERSAO).then(ca => ca.put(e.request, c)) } return r })
+  // Resposta com erro (ex.: 404 por alguns instantes logo depois de uma publicação): usa a cópia guardada, se houver
+  e.respondWith(fetch(req).then(r => { if (r.ok) { const c = r.clone(); caches.open(VERSAO).then(ca => ca.put(e.request, c)); return r } return caches.match(e.request, { ignoreSearch: true }).then(c => c || r) })
     .catch(() => caches.match(e.request, {ignoreSearch: true}).then(r => r || caches.match('index.html'))));
 });
