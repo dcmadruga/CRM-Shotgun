@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 201, data: '2026-11-22', titulo: 'Correção: Salvar proposta', itens: [
+    'O botão Salvar proposta dava "permission-denied". Agora a proposta é salva e fica como Pendente de envio.'
+  ] },
   { v: 200, data: '2026-11-22', titulo: 'Correção: menus e usuário sumindo depois da atualização', itens: [
     'Em alguns aparelhos, logo depois da versão 199, o menu mostrava só Nova proposta e Administração e o nome do usuário não aparecia. Corrigido.'
   ] },
