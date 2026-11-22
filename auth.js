@@ -453,6 +453,8 @@ async function iniciar() {
     abrirAba('tabList'); desenharPropostas();
     setTimeout(() => { const c = $('pList').querySelector(`.pcard[data-id="${CSS.escape(id)}"]`); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 0);
   }
+  // O sino de notificações (notificacoes.js) abre a proposta aceita no quadro de Propostas
+  window.addEventListener('shotgun-abrir-proposta', e => { const id = e.detail && e.detail.id; if (id) abrirJornada(id, null); });
   /* Hoje: o próximo passo de cada proposta */
   // Dúvida enviada pelo cliente na página da proposta e ainda não lida
   const duvNova = p => !!p.duvidaEm && (!p.duvidaLidaEm || (p.duvidaLidaEm.seconds || 0) < (p.duvidaEm.seconds || 0));

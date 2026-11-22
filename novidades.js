@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 186, data: '2026-11-22', titulo: 'Proposta aceita no sino', itens: [
+    'Quando o cliente aprova a proposta, o sino de notificações avisa o vendedor dono da proposta e o administrador, com o cliente, os valores e quem aprovou. Tocar no aviso abre a proposta.'
+  ] },
   { v: 185, data: '2026-11-22', titulo: 'Proposta mais fácil de preencher no celular', itens: [
     'Nova proposta no celular: em Licenças e Mensalidades, cada item mostra a descrição em cima, Qtd. e Preço unitário lado a lado em campos grandes, e as opções Isento, Ocultar e Não constar em contrato embaixo, sem nada cortado na lateral.'
   ] },

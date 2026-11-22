@@ -5,6 +5,8 @@
 //        notifLidas/{uid}  { ate, ids }  (lidas até a data "ate", mais as lidas uma a uma em "ids")
 // Pedidos de acesso: o ADM recebe um aviso automático para cada cadastro "Aguardando liberação" (lido da coleção usuarios,
 // sem gravar nada); o aviso some quando a pessoa é liberada ou o cadastro é excluído. Tocar abre a tela Usuários.
+// Proposta aceita: quando o cliente aprova a proposta (página de aprovação), o vendedor dono e o ADM recebem um aviso,
+// montado a partir da própria proposta (status 'aprovada', últimos 30 dias), sem gravar nada. Tocar abre a proposta.
 // Para criar uma notificação em qualquer parte do app: window.shotgunNotificar({ titulo, texto, setor, para, aba })
 // Regras do Firestore: docs/notificacoes-firestore.rules
 (() => {
@@ -23,10 +25,10 @@
 
   // Setores = módulos principais do TASK (mesma lista da tela Usuários)
   const setoresTop = () => ((MODS || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai);
-  const nomeSetor = id => id === 'todos' ? 'Todos' : id === 'pessoal' ? 'Para você' : id === 'usuarios' ? 'Usuários' : (setoresTop().find(m => m.id === id) || {}).titulo || id;
+  const nomeSetor = id => id === 'todos' ? 'Todos' : id === 'pessoal' ? 'Para você' : id === 'usuarios' ? 'Usuários' : id === 'propostas' ? 'Propostas' : (setoresTop().find(m => m.id === id) || {}).titulo || id;
   const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
   // Quem pode ver (o Firestore aplica a mesma regra no servidor)
-  const podeVer = n => admin || n.setor === 'todos' || (n.setor === 'pessoal' && n.para === uid) || meusSetores().includes(n.setor);
+  const podeVer = n => admin || n.auto || n.setor === 'todos' || (n.setor === 'pessoal' && n.para === uid) || meusSetores().includes(n.setor);
 
   function lista() {
     const m = new Map(); Object.values(porQuery).forEach(arr => arr.forEach(n => m.set(n.id, n)));
@@ -59,7 +61,8 @@
       const it = e.target.closest('[data-nid]'); if (!it) return;
       const n = lista().find(x => x.id === it.dataset.nid); if (!n) return;
       if (!lida(n)) marcar(n.id);
-      if (n.aba && $(n.aba)) { abrir(false); $(n.aba).click(); }
+      if (n.prop) { abrir(false); window.dispatchEvent(new CustomEvent('shotgun-abrir-proposta', { detail: { id: n.prop } })); }
+      else if (n.aba && $(n.aba)) { abrir(false); $(n.aba).click(); }
     });
     $('sgnLista').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-nid]')) { e.preventDefault(); e.target.click(); } });
     $('sgnForm').addEventListener('submit', async e => {
@@ -87,7 +90,7 @@
     $('sgnLerTodas').hidden = !nao;
     const ss = meusSetores().map(nomeSetor);
     $('sgnEscopo').textContent = admin ? 'Administrador: você vê as notificações de todos os setores.' : ss.length ? 'Seu setor: ' + ss.join(', ') + '.' : 'Avisos gerais e os enviados para você.';
-    $('sgnLista').innerHTML = ns.length ? ns.map(n => `<div class="sgnit${lida(n) ? '' : ' nova'}${n.aba ? ' link' : ''}" data-nid="${esc(n.id)}" role="button" tabindex="0">
+    $('sgnLista').innerHTML = ns.length ? ns.map(n => `<div class="sgnit${lida(n) ? '' : ' nova'}${n.aba || n.prop ? ' link' : ''}" data-nid="${esc(n.id)}" role="button" tabindex="0">
         <span class="sgnponto" aria-hidden="true"></span>
         <div class="sgncorpo"><b>${esc(n.titulo)}</b>${n.texto ? `<p>${esc(n.texto)}</p>` : ''}
           <span class="sgnmeta"><span class="sgnsetor">${esc(nomeSetor(n.setor))}</span>${esc(quando(n.t))}${n.por ? ' · ' + esc(n.por) : ''}</span></div>
@@ -145,6 +148,22 @@
     }, e => { console.warn('notificações (cadastros)', e.code || e); porQuery.cad = []; desenhar(); }));
   }
 
+  // Propostas aceitas pelo cliente (ADM: todas; vendedor: as suas). Só as dos últimos 30 dias, para não encher o sino com o histórico.
+  const brl = n => (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+  function ouvirAceitas() {
+    const col = F.collection(db, 'propostas');
+    const q = admin ? F.query(col, F.where('status', '==', 'aprovada')) : F.query(col, F.where('owner', '==', uid), F.where('status', '==', 'aprovada'));
+    unsubs.push(F.onSnapshot(q, s => {
+      const lim = Date.now() - 30 * 864e5;
+      porQuery.aceitas = s.docs.map(d => ({ id: d.id, ...d.data() })).map(p => ({ p, t: ms(p.aprovadoEm) })).filter(x => !x.t || x.t >= lim).map(({ p, t }) => {
+        const quem = [p.aprovadoNome, p.aprovadoCargo].filter(Boolean).join(', ');
+        const vals = [Number(p.totLic) ? 'Licenças ' + brl(p.totLic) : '', Number(p.totMen) ? 'Mensalidade ' + brl(p.totMen) : ''].filter(Boolean).join(' · ');
+        return { id: 'ace:' + p.id, auto: true, prop: p.id, titulo: 'Proposta aceita: ' + (p.cliente || p.numero || 'cliente'), texto: [vals, quem ? 'Aprovada por ' + quem : ''].filter(Boolean).join('\n'), setor: 'propostas', t, por: admin && p.owner !== uid ? p.vendedor || '' : '' };
+      });
+      desenhar();
+    }, e => { console.warn('notificações (propostas aceitas)', e.code || e); porQuery.aceitas = []; desenhar(); }));
+  }
+
   function iniciar(det) {
     if (det.perfil && det.perfil.uid === uid) { admin = !!det.admin || admin; desenhar(); return; } // o mesmo login avisa por dois eventos
     parar(); ({ F, db, perfil } = det); admin = !!det.admin; uid = perfil.uid;
@@ -156,6 +175,7 @@
       ['todos', ...meusSetores()].forEach(s => ouvir('s:' + s, F.query(col, F.where('setor', '==', s))));
       ouvir('eu', F.query(col, F.where('para', '==', uid)));
     }
+    ouvirAceitas();
     unsubLidas = F.onSnapshot(F.doc(db, 'notifLidas', uid), d => { const x = d.exists() ? d.data() : {}; lidas = { ate: ms(x.ate) || (x.ate === null ? Date.now() : 0), ids: Array.isArray(x.ids) ? x.ids : [] }; desenhar(); }, () => {});
     unsubMod = F.onSnapshot(F.doc(db, 'config', 'modulos'), d => { try { const j = d.exists() && d.data().json; if (j) MODS = JSON.parse(j); } catch (e) {} desenhar(); }, () => {});
   }
