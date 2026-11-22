@@ -4,11 +4,14 @@ const UA = { 'user-agent': 'Mozilla/5.0 (compatible; shotgun-radar/1.0; +https:/
 const q = encodeURIComponent;
 const F = 'https://ww3.fepam.rs.gov.br/licenciamento/';
 const post = body => ({ method: 'POST', body: new URLSearchParams(body).toString(), headers: { ...UA, 'content-type': 'application/x-www-form-urlencoded', referer: F + 'Area1/default.asp' } });
+const corpo = { buscar: '1', tamanho: '', tipoBusca: 'muni', estado: 'RS', municipio: '4314902', razao: 'POSTO', atividade: '' };
 const urls = {
-  'fepam-pop3': F + 'area1/popup.asp?tabela=3',
-  'fepam-pop': F + 'area1/popup.asp',
-  'fepam-razao-posto': [F + 'area3/lista2.asp', post({ buscar: '1', tamanho: '', tipoBusca: 'muni', estado: 'RS', municipio: '9999999', razao: 'POSTO', atividade: '' })],
-  'fepam-poa-todos': [F + 'area3/lista2.asp', post({ buscar: '1', tamanho: '', tipoBusca: 'muni', estado: 'RS', municipio: '4314902', razao: 'COMBUSTIVEIS', atividade: '' })],
+  'fepam-pal': F + 'area1/popup3.asp?t=0&palavra=' + q('combust'),
+  'fepam-pal2': [F + 'area1/popup3.asp?t=0', post({ palavra: 'combustiveis' })],
+  'fepam-l-A3': ['https://ww3.fepam.rs.gov.br/licenciamento/Area3/lista2.asp', post(corpo)],
+  'fepam-l-up': ['https://ww3.fepam.rs.gov.br/LICENCIAMENTO/area3/lista2.asp', post(corpo)],
+  'fepam-l-get': 'https://ww3.fepam.rs.gov.br/licenciamento/area3/lista2.asp?' + new URLSearchParams(corpo),
+  'fepam-area3': 'https://ww3.fepam.rs.gov.br/licenciamento/area3/',
 };
 await mkdir('rs-sondas', { recursive: true });
 const resumo = [];
