@@ -1,0 +1,22 @@
+503 https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-05-01&size=5&territory_ids=4106902&excerpt_size=500
+access-control-allow-credentials: true
+access-control-allow-origin: *
+access-control-expose-headers: Content-Length,Content-Range
+alt-svc: h3=":443"; ma=86400
+cf-cache-status: DYNAMIC
+cf-ray: a5e844e32b3d1ee8-MSP
+connection: keep-alive
+content-length: 20
+content-type: text/plain; charset=utf-8
+date: Sun, 22 Nov 2026 13:27:00 GMT
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+referrer-policy: strict-origin-when-cross-origin
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=KrxiAVsEcC9h7jb0h1HfjVzWBKxJpaoraLAOFH0KzNe08nvd6b3ZESx6LSaEgzVUpNEYXPR5lHGwOrODHulIK9Nrw4ra7M4ZYojIzwr2kYg7r%2FSUILSAdA5TS4KPKMXvNRU3gcbO2CQ7IFw%3D"}]}
+server: cloudflare
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+
+no available server

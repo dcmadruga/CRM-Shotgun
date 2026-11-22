@@ -1,0 +1,434 @@
+200 https://www.sga.pr.gov.br/sga-iap/consultarProcessoLicenciamento.do?action=iniciar
+connection: Keep-Alive
+content-type: text/html;charset=UTF-8
+date: Sun, 22 Nov 2026 13:26:56 GMT
+keep-alive: timeout=15, max=99
+server: Apache
+set-cookie: JSESSIONID=5RpE-JsSpi9Iq1FK3b2MSn7RRsxAKlGucOszRJ1d.siat75038; path=/sga-iap
+transfer-encoding: chunked
+x-powered-by: JSP/2.3
+
+
+
+
+
+
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Instituto &Aacute;gua e Terra - Sistema de Gest&atilde;o Ambiental</title>
+		
+		<!-- SGA + Ext JS Style-->
+		<link rel="stylesheet" type="text/css" href="js/extjs-4.1.0/resources/css/ext-sga.css" />
+		<link rel="stylesheet" type="text/css" href="css/ext-sga-fix.css" />
+		<link rel="stylesheet" type="text/css" href="css/sga.css" />
+		<link rel="stylesheet" type="text/css" href="css/themesPROD.css" />
+		
+		<!-- Font Icons (Font Awesome) -->
+		<link rel="stylesheet" type="text/css" href="css/font-awesome/css/font-awesome.min.css"/>
+
+		<!-- Script jQuery -->
+		<script src="js/jquery/jquery-3.2.1.min.js"></script>
+
+		<!-- Ext JS Scripts-->
+		<script src="js/extjs-4.1.0/ext-all.js"> </script>
+		<script src="js/extjs-4.1.0/ext-neptune.js"></script>
+		<script src="js/extjs-4.1.0/locale/ext-lang-pt_BR.js"></script>
+
+		<!-- SGA Fixes & Extras -->
+		<script src="js/ext-sga-addons.js"></script>
+		
+		
+<!-- Incluido por SGAPrincipal-->
+<script>
+Ext.PagingToolbar.PAGE_SIZE = 10;
+
+var redefineItems = function(items, requestForm){if (requestForm && Ext.isObject(requestForm)){var somenteLeitura = requestForm.camposSomenteLeitura || '';var desabilitados = requestForm.camposDesabilitados || '';var ocultos = requestForm.camposOcultos || '';var removidos = requestForm.camposRemovidos || '';var itensReconstruidos = new Array();for (var i = 0; Ext.isArray(items) && i < items.length; i++){var objConf = {};if (items[i]){if (items[i].items){var itemsOriginais = items[i].items;items[i].items = redefineItems(itemsOriginais, requestForm);}if (items[i].dockedItems){var dockedItemsOriginais = items[i].dockedItems;items[i].dockedItems = redefineItems(dockedItemsOriginais, requestForm);}if (items[i].columns){var columnsOriginais = items[i].columns;items[i].columns = redefineItems(columnsOriginais, requestForm);}var nameId = items[i].name || items[i].id;if (nameId){var idsRemovidos = removidos.split(';');var isRemovido = false;for (var posRemovido = 0 ; posRemovido < idsRemovidos.length; posRemovido++){if (idsRemovidos[posRemovido] == nameId){isRemovido = true;break;}}if (!isRemovido){for (val in requestForm){if (val == nameId && !Ext.isEmpty(requestForm[val])){var checkerTypes = 'checkbox;checkboxfield;radio;radiofield';var comboTypes = 'combo;combobox';if (items[i].xtype && checkerTypes.indexOf(items[i].xtype) > -1){Ext.Object.merge(objConf, {checked: requestForm[val] === items[i].inputValue || requestForm[val] == items[i].inputValue});}else if (items[i].xtype && comboTypes.indexOf(items[i].xtype) > -1){if (items[i].multiSelect){var valArray = Ext.isString(requestForm[val]) ? requestForm[val].split(items[i].delimiter) : [requestForm[val]];var valNumericArray = new Array();for (var count = 0; count < valArray.length; count++){if(Ext.isNumeric(valArray[count])){valNumericArray.push(Ext.util.Format.trim(valArray[count]) * 1);}}Ext.Object.merge(objConf, {value: valNumericArray});}else{Ext.Object.merge(objConf, {value: requestForm[val]});}}else{Ext.Object.merge(objConf, {value: requestForm[val]});}break;}}if (items[i].listeners && items[i].listeners.change && objConf.value){var currentVal = objConf.value;Ext.Object.merge(objConf, {listeners:{afterrender: function(cmp1){if (!(cmp1.isDisabled() || cmp1.readOnly)){cmp1.fireEvent('change', cmp1, cmp1.getValue(), null);}}}});}var itemDividido = null;var idsOcultos = ocultos.split(';');var isOculto = false;for (var posOculto = 0 ; posOculto < idsOcultos.length; posOculto++){if (idsOcultos[posOculto] == nameId){isOculto = true;break;}}if (isOculto){Ext.Object.merge(objConf, {hidden: true,allowBlank: true,listeners:{added: function(cmp, container, pos){if (container.fieldLabel && Ext.isEmpty(cmp.fieldLabel) && !container.hasListener('beforerender')){container.addListener('afterrender', function(c1){if (c1.items.getCount() <= 1){return false;}else if (pos == 0){c1.addListener('afterrender', function(c2){var nLabel = null;for (var j = 1; j < c2.items.getCount(); j++){if (c2.items.getAt(j).isVisible() && c2.items.getAt(j).getFieldLabel()){nLabel = c2.items.getAt(j).getFieldLabel();break;}}c2.setFieldLabel(nLabel);});}});}}}});}var idsDesabilitados = desabilitados.split(';');var isDesabilitado = false;for (var posDesabilitado = 0 ; posDesabilitado < idsDesabilitados.length; posDesabilitado++){if (idsDesabilitados[posDesabilitado] == nameId){isDesabilitado = true;break;}}if (isDesabilitado){if (items[i].xtype == 'grid' || items[i].xtype == 'gridpanel'){Ext.Object.merge(objConf, {disableSelection: true});}else{Ext.Object.merge(objConf, {disabled: true});}}var idsSomenteLeitura = somenteLeitura.split(';');var isSomenteLeitura = false;for (var posSomenteLeitura = 0 ; posSomenteLeitura < idsSomenteLeitura.length; posSomenteLeitura++){if (idsSomenteLeitura[posSomenteLeitura] == nameId){isSomenteLeitura = true;break;}}if (isSomenteLeitura){var changeToDisplay = 'textfield;datefield;numberfield;decimalfield;spinnerfield;timefield;filefield;fileuploadfield';var setReadOnlyText = 'textarea;textareafield;htmleditor';var setReadOnly = setReadOnlyText + ';checkbox;checkboxfield;radio;radiofield';var comboType = 'combo;combobox';if (items[i].xtype){if (changeToDisplay.indexOf(items[i].xtype) > -1){var newFieldLabel = items[i].fieldLabel && !Ext.isEmpty(items[i].fieldLabel) ? items[i].fieldLabel.replace(/^\*\s*/g, '') : '';var newWidth = items[i].width && !Ext.isEmpty(items[i].width) ? items[i].width : null;Ext.Object.merge(objConf, {xtype: 'displayfield', fieldCls: 'display-field-locked', fieldLabel: newFieldLabel, height: 23, width: newWidth, autoWidth: true, minWidth: items[i].width || 50});}else if(setReadOnly.indexOf(items[i].xtype) > -1){Ext.Object.merge(objConf, {readOnly: true});if(setReadOnlyText.indexOf(items[i].xtype) > -1){Ext.Object.merge(objConf, {fieldCls: 'display-field-locked', focusCls: 'display-field-locked'});}}else if(comboType.indexOf(items[i].xtype) > -1){itemDividido = new Array();var descName = Ext.isEmpty(items[i].name) ? null : (items[i].name.indexOf('id') == 0 ? items[i].name.replace(/id/i,'desc') : 'desc' +  Ext.String.capitalize(items[i].name));var descVal = null;var idVal = null;for (val in requestForm){if (val == descName && requestForm[val]){descVal = requestForm[val];break;}}for (val in requestForm){if (val == items[i].name && requestForm[val]){idVal = requestForm[val];break;}}itemDividido.push({xtype: 'displayfield',fieldCls: 'display-field-locked',height: Ext.isEmpty(items[i].height) ? 23 : items[i].height,name: descName,value: descVal,id: Ext.isEmpty(items[i].id) ? Ext.id() : items[i].id,fieldLabel: items[i].fieldLabel && !Ext.isEmpty(items[i].fieldLabel) ? items[i].fieldLabel.replace(/^\*\s*/g, '') : '',labelWidth: Ext.isEmpty(items[i].fieldLabel) ? null : items[i].labelWidth,width: Ext.isEmpty(items[i].width) ? '100%' : items[i].width});itemDividido.push({xtype: 'combo',hidden: true,hideTrigger: true,readOnly: true,store: Ext.isEmpty(items[i].store) ? null : items[i].store,name: Ext.isEmpty(items[i].name) ? null : items[i].name,value: idVal,allowBlank: Ext.isEmpty(items[i].allowBlank) ? null : items[i].allowBlank,autoRender: true,listeners: Ext.isEmpty(items[i].listeners) ? null : items[i].listeners});
+
+}}}if (itemDividido && itemDividido.length == 2){itensReconstruidos.push(itemDividido[0]);itensReconstruidos.push(itemDividido[1]);}else{itensReconstruidos.push(Ext.Object.merge(items[i], objConf));}}}else{itensReconstruidos.push(items[i]);}}}return itensReconstruidos;}else{return items;}};
+
+
+var _REQUEST = {};
+Ext.onReady(function () {Ext.tip.QuickTipManager.init();Ext.create('Ext.Viewport', {id: 'sgaPrincipalViewport',layout: 'border',renderTo: Ext.getBody(),minHeight: 600,minWidth: 800,autoDestroy: true,autoScroll: true,items: [{xtype: 'container',layout: 'border',region: 'center',style: {background: 'transparent',backgroundColor: 'none',margin: '0',padding: '0'},items: [{xtype: 'container',layout: 'border',region: 'north',cls: 'barra-menu',minWidth: 800,height: 63,items:[{xtype: 'container',region: 'west',width: 120,html:'<a href="inicial.do?action=posLogin"><img src="images/logo_sga_cabec.png" height="48" border="0" width="108" style="margin-top: 4px;"></a>'},]},{xtype: 'container',layout: 'hbox',region: 'north',cls: 'barra-titulo',height: 45,minWidth: 800,items:[{xtype: 'container',id: 'conteudoSGATitulo',height: 45,flex: 1}]},{xtype: 'container',cls: 'corpo',region: 'center',layout: 'fit',items:[{xtype: 'panel',layout: 'fit',minWidth: 800,bodyStyle: {backgroundColor: 'transparent',border: 'none'},items:[{xtype: 'container',id: 'conteudoSGAContainer',layout: 'border',style: {backgroundColor: 'transparent',padding: '10px 0'},items:[]}]}]},{xtype: 'container',cls: 'rodape',layout: 'hbox',region: 'south',height: 60,minWidth: 800,defaults:{xtype: 'container', height: 60},items:[{width: 120, html: '<a href="http://www.pr.gov.br" target="_blank" class="logo-pr" border="0"></a>'},{flex: 2, style:{paddingLeft: '15px'}, html: '<span class="sga-rodape-endereco"><span style="font-weight: bold;">Instituto &Aacute;gua e Terra - IAT</span><br>Rua Engenheiros Rebouças, 1206 &mdash; 80215-100 &mdash; Curitiba-PR  &nbsp;<br>Telefone: 41 3213-3468 &mdash; Fax 41 3333-6161</span>'}]}]}]});});
+</script>
+
+	</head>
+	
+	<body onbeforeunload="mostrarCarregando();">
+		
+
+
+		<!-- Gerado por SGAPanel -->
+		<script>
+			if (_REQUEST && Ext.Object){
+	Ext.Object.merge(_REQUEST, {listaModalidade:[{descTipoModalidade:"AA - Autorização Ambiental",descricaoModalidade:"Autorização Ambiental",idModalidade:16,ordem:3,ordemApresentacao:1,sigla:"AA",siglaDescricaoModalidade:"AA - Autorização Ambiental",siglaTipoModalidade:"AA",situacao:"ATIVO",tipoModalidadeLicenca:"AA"},{descTipoModalidade:"AF - Autorização Florestal",descricaoModalidade:"Autorização Florestal",idModalidade:18,ordem:3,ordemApresentacao:3,sigla:"AF",siglaDescricaoModalidade:"AF - Autorização Florestal",siglaTipoModalidade:"AF",situacao:"ATIVO",tipoModalidadeLicenca:"AF"},{descTipoModalidade:"DLAM - Declaração de Dispensa de Licenciamento Ambiental",descricaoModalidade:"Declaração de Dispensa de Licenciamento Ambiental",idModalidade:6,ordem:0,ordemApresentacao:10,sigla:"DLAM",siglaDescricaoModalidade:"DLAM - Declaração de Dispensa de Licenciamento Ambiental",siglaTipoModalidade:"DLAM",situacao:"ATIVO",tipoModalidadeLicenca:"DLAE"},{descTipoModalidade:"DLAM - Dispensa de Licenciamento Ambiental Municipal",descricaoModalidade:"Dispensa de Licenciamento Ambiental Municipal",idModalidade:23,ordem:0,ordemApresentacao:11,sigla:"DLAM",siglaDescricaoModalidade:"DLAM - Dispensa de Licenciamento Ambiental Municipal",siglaTipoModalidade:"DLAM",situacao:"ATIVO",tipoModalidadeLicenca:"DLAM"},{descTipoModalidade:"LIR - Licença de Instalação de Regularização",descricaoModalidade:"Licença de Instalação de Regularização",idModalidade:29,ordem:3,ordemApresentacao:17,sigla:"LIR",siglaDescricaoModalidade:"LIR - Licença de Instalação de Regularização",siglaTipoModalidade:"LIR",situacao:"ATIVO",tipoModalidadeLicenca:"LIR"},{descTipoModalidade:"LAC - Licença Ambiental por Adesão e Compromisso",descricaoModalidade:"Licença Ambiental por Adesão e Compromisso",idModalidade:26,ordem:1,ordemApresentacao:20,sigla:"LAC",siglaDescricaoModalidade:"LAC - Licença Ambiental por Adesão e Compromisso",siglaTipoModalidade:"LAC",situacao:"ATIVO",tipoModalidadeLicenca:"LAC"},{descTipoModalidade:"RLAC - Renovação de Licença Ambiental por Adesão e Compromisso",descricaoModalidade:"Renovação de Licença Ambiental por Adesão e Compromisso",idModalidade:27,ordem:1,ordemApresentacao:21,sigla:"RLAC",siglaDescricaoModalidade:"RLAC - Renovação de Licença Ambiental por Adesão e Compromisso",siglaTipoModalidade:"RLAC",situacao:"ATIVO",tipoModalidadeLicenca:"RLAC"},{descTipoModalidade:"LAS - Licença Ambiental Simplificada",descricaoModalidade:"Licença Ambiental Simplificada",idModalidade:7,ordem:2,ordemApresentacao:30,sigla:"LAS",siglaDescricaoModalidade:"LAS - Licença Ambiental Simplificada",siglaTipoModalidade:"LAS",situacao:"ATIVO",tipoModalidadeLicenca:"LAS"},{descTipoModalidade:"LASR - Licença Ambiental Simplificada de Regularização",descricaoModalidade:"Licença Ambiental Simplificada de Regularização",idModalidade:10,ordem:2,ordemApresentacao:31,sigla:"LASR",siglaDescricaoModalidade:"LASR - Licença Ambiental Simplificada de Regularização",siglaTipoModalidade:"LASR",situacao:"ATIVO",tipoModalidadeLicenca:"LASR"},{descTipoModalidade:"LAS-A - Licença Ambiental Simplificada de Ampliação",descricaoModalidade:"Licença Ambiental Simplificada de Ampliação",idModalidade:30,ordem:2,ordemApresentacao:31,sigla:"LAS-A",siglaDescricaoModalidade:"LAS-A - Licença Ambiental Simplificada de Ampliação",siglaTipoModalidade:"LAS-A",situacao:"ATIVO",tipoModalidadeLicenca:"LAS_A"},{descTipoModalidade:"RLAS - Renovação de Licença Ambiental Simplificada",descricaoModalidade:"Renovação de Licença Ambiental Simplificada",idModalidade:8,ordem:2,ordemApresentacao:32,sigla:"RLAS",siglaDescricaoModalidade:"RLAS - Renovação de Licença Ambiental Simplificada",siglaTipoModalidade:"RLAS",situacao:"ATIVO",tipoModalidadeLicenca:"RLAS"},{descTipoModalidade:"CP - Consulta Prévia",descricaoModalidade:"Consulta Prévia",idModalidade:25,ordem:0,ordemApresentacao:40,sigla:"CP",siglaDescricaoModalidade:"CP - Consulta Prévia",siglaTipoModalidade:"CP",situacao:"ATIVO",tipoModalidadeLicenca:"CP"},{descTipoModalidade:"LP - Licença Prévia",descricaoModalidade:"Licença Prévia",idModalidade:1,ordem:3,ordemApresentacao:41,sigla:"LP",siglaDescricaoModalidade:"LP - Licença Prévia",siglaTipoModalidade:"LP",situacao:"ATIVO",tipoModalidadeLicenca:"LP"},{descTipoModalidade:"LI - Licença de Instalação",descricaoModalidade:"Licença de Instalação",idModalidade:2,ordem:3,ordemApresentacao:42,sigla:"LI",siglaDescricaoModalidade:"LI - Licença de Instalação",siglaTipoModalidade:"LI",situacao:"ATIVO",tipoModalidadeLicenca:"LI"},{descTipoModalidade:"RLI - Renovação de Licença de Instalação",descricaoModalidade:"Renovação de Licença de Instalação",idModalidade:4,ordem:3,ordemApresentacao:43,sigla:"RLI",siglaDescricaoModalidade:"RLI - Renovação de Licença de Instalação",siglaTipoModalidade:"RLI",situacao:"ATIVO",tipoModalidadeLicenca:"RLI"},{descTipoModalidade:"LO - Licença de Operação",descricaoModalidade:"Licença de Operação",idModalidade:3,ordem:3,ordemApresentacao:44,sigla:"LO",siglaDescricaoModalidade:"LO - Licença de Operação",siglaTipoModalidade:"LO",situacao:"ATIVO",tipoModalidadeLicenca:"LO"},{descTipoModalidade:"LOR - Licença de Operação de Regularização",descricaoModalidade:"Licença de Operação de Regularização",idModalidade:9,ordem:3,ordemApresentacao:45,sigla:"LOR",siglaDescricaoModalidade:"LOR - Licença de Operação de Regularização",siglaTipoModalidade:"LOR",situacao:"ATIVO",tipoModalidadeLicenca:"LOR"},{descTipoModalidade:"RLO - Renovação de Licença de Operação",descricaoModalidade:"Renovação de Licença de Operação",idModalidade:5,ordem:3,ordemApresentacao:46,sigla:"RLO",siglaDescricaoModalidade:"RLO - Renovação de Licença de Operação",siglaTipoModalidade:"RLO",situacao:"ATIVO",tipoModalidadeLicenca:"RLO"},{descTipoModalidade:"LP-A - Licença Prévia (Ampliação)",descricaoModalidade:"Licença Prévia (Ampliação)",idModalidade:11,ordem:3,ordemApresentacao:51,sigla:"LP-A",siglaDescricaoModalidade:"LP-A - Licença Prévia (Ampliação)",siglaTipoModalidade:"LP-A",situacao:"ATIVO",tipoModalidadeLicenca:"LP_A"},{descTipoModalidade:"LI-A - Licença de Instalação (Ampliação)",descricaoModalidade:"Licença de Instalação (Ampliação)",idModalidade:12,ordem:3,ordemApresentacao:52,sigla:"LI-A",siglaDescricaoModalidade:"LI-A - Licença de Instalação (Ampliação)",siglaTipoModalidade:"LI-A",situacao:"ATIVO",tipoModalidadeLicenca:"LI_A"},{descTipoModalidade:"RLI-A - Renovação de Licença de Instalação (Ampliação)",descricaoModalidade:"Renovação de Licença de Instalação (Ampliação)",idModalidade:13,ordem:3,ordemApresentacao:53,sigla:"RLI-A",siglaDescricaoModalidade:"RLI-A - Renovação de Licença de Instalação (Ampliação)",siglaTipoModalidade:"RLI-A",situacao:"ATIVO",tipoModalidadeLicenca:"RLI_A"},{descTipoModalidade:"LO-A - Licença de Operação (Ampliação)",descricaoModalidade:"Licença de Operação (Ampliação)",idModalidade:14,ordem:3,ordemApresentacao:54,sigla:"LO-A",siglaDescricaoModalidade:"LO-A - Licença de Operação (Ampliação)",siglaTipoModalidade:"LO-A",situacao:"ATIVO",tipoModalidadeLicenca:"LO_A"},{descTipoModalidade:"LI-C - Licença de Instalação (Complementar)",descricaoModalidade:"Licença de Instalação (Complementar)",idModalidade:19,ordem:3,ordemApresentacao:55,sigla:"LI-C",siglaDescricaoModalidade:"LI-C - Licença de Instalação (Complementar)",siglaTipoModalidade:"LI-C",situacao:"ATIVO",tipoModalidadeLicenca:"LI_C"},{descTipoModalidade:"LO-C - Licença de Operação (Complementar)",descricaoModalidade:"Licença de Operação (Complementar)",idModalidade:21,ordem:3,ordemApresentacao:56,sigla:"LO-C",siglaDescricaoModalidade:"LO-C - Licença de Operação (Complementar)",siglaTipoModalidade:"LO-C",situacao:"ATIVO",tipoModalidadeLicenca:"LO_C"},{descTipoModalidade:"RLI-C - Renovação de Licença de Instalação (Complementar)",descricaoModalidade:"Renovação de Licença de Instalação (Complementar)",idModalidade:20,ordem:3,ordemApresentacao:57,sigla:"RLI-C",siglaDescricaoModalidade:"RLI-C - Renovação de Licença de Instalação (Complementar)",siglaTipoModalidade:"RLI-C",situacao:"ATIVO",tipoModalidadeLicenca:"RLI_C"}],listaGrupo:[{descricao:"Agropecuária",idGrupoAtividadeLicenca:5,situacao:"ATIVO"},{descricao:"Comércio e Serviço",idGrupoAtividadeLicenca:6,situacao:"ATIVO"},{descricao:"Corte Isolado",idGrupoAtividadeLicenca:24,situacao:"ATIVO"},{descricao:"Destinação final de resíduos sólidos industriais, urbanos ou de serviço de saúde e efluentes",idGrupoAtividadeLicenca:9,situacao:"ATIVO"},{descricao:"Empreendimentos Náuticos",idGrupoAtividadeLicenca:28,situacao:"ATIVO"},{descricao:"Empreendimentos Viários",idGrupoAtividadeLicenca:29,situacao:"ATIVO"},{descricao:"Geração, armazenamento e transmissão de energia",idGrupoAtividadeLicenca:16,situacao:"ATIVO"},{descricao:"Gerenciamento de resíduos sólidos e/ou efluentes",idGrupoAtividadeLicenca:10,situacao:"ATIVO"},{descricao:"Imobiliário",idGrupoAtividadeLicenca:8,situacao:"ATIVO"},{descricao:"Industrial",idGrupoAtividadeLicenca:1,situacao:"ATIVO"},{descricao:"Substituição de Espécies Exóticas",idGrupoAtividadeLicenca:27,situacao:"ATIVO"}]});
+};
+
+Ext.onReady(function() {Ext.QuickTips.init();Ext.getCmp('conteudoSGATitulo').insert(0, {xtype: 'container',html: '<span class="titulo">Consulta de Processo de Licenciamento</span>',height: 30});try {var conteudo = Ext.create('Ext.Container',{layout: 'anchor',items:[{xtype: 'form',bodyStyle: {border: 'none',borderRadius: '0',padding: '0 25px 0 0'},id: 'consultarProcessoLicenciamentoPanel',layout: 'anchor',disabled: false,dockedItems:[{xtype: 'toolbar',id: 'conteudoSGAToolbar',dock: 'bottom',style:{border: '1px solid #b5b5b5',borderTop: '1px solid #CCC !important',padding: '3px',margin: '-4px 0 10px 0'},items:[],listeners:{afterrender: function(ct){var hasButton = false;for (var i = 0; i < ct.items.getCount();i++){if (ct.items.getAt(i).isXType('button')){hasButton = true;break;}}if (!hasButton){ct.hide();}}}}],items: redefineItems([{autoHeight:true,autoScroll:true,defaults:{bodyStyle:'borderTop:1px solid #333'},layout:{type:'accordion',manageOverflow:2,activeOnTop:false,animate:true,multi:true,fill:false,reserveScrollbar:true,hideCollapseTool:true,collapsed:true,titleCollapse:false},items:[{title:'Pesquisar',layout:'anchor',autoHeight:true,items:[{xtype:'container',padding:'0 0 0 20',layout:{type:'hbox'},autoHeight:true,flex:1,style:{backgroundColor:'transparent'},items:[{xtype:'combo',id:'estadoMunicipioCombo',name:'estadoMunicipioCombo',labelAlign:'right',labelSeparator:':',labelWidth:180,fieldLabel:'Estado e Município',autoHeight:true,width:300,listeners:{change:function(cmb, n, o){var fp = cmb.ownerCt.up('form')|| null;var comboDependente = Ext.getCmp('municipioCombo')|| fp ? fp.getForm().findField('municipioCombo'):null;if(comboDependente){var param ={estadoMunicipioCombo:cmb.getValue()};var oldProxy = comboDependente.getStore()? comboDependente.getStore().getProxy():null;if (oldProxy){var newProxy = Ext.create('Ext.data.proxy.Ajax',{extraParams:param,url:oldProxy.url,reader:oldProxy.reader});comboDependente.getStore().suspendEvents(false);comboDependente.getStore().setProxy(newProxy);comboDependente.getStore().removeAll();comboDependente.getStore().totalLength = 0;comboDependente.getStore().load({start:0,page:1});comboDependente.getStore().resumeEvents();comboDependente.getStore().fireEvent('datachanged', comboDependente.getStore());}else{throw 'A combo dependente "municipioCombo" deve fornecer uma URL para recarregar seus itens!';}}else{throw 'A combo dependente "municipioCombo" não foi encontrada! O nome ou id atribuido existe?';}}},queryMode:'local',displayField:'sigla',valueField:'sigla',autoSelect:true,editable:true,forceSelection:true,matchFieldWidth:true,emptyText:'Selecione',store:Ext.create('Ext.data.Store',{fields:['sigla','sigla'],data:[{nome:"Acre",sigla:"AC"},{nome:"Alagoas",sigla:"AL"},{nome:"Amazonas",sigla:"AM"},{nome:"Amapá",sigla:"AP"},{nome:"Bahia",sigla:"BA"},{nome:"Ceará",sigla:"CE"},{nome:"Distrito Federal",sigla:"DF"},{nome:"Espírito Santo",sigla:"ES"},{nome:"Goiás",sigla:"GO"},{nome:"Maranhão",sigla:"MA"},{nome:"Minas Gerais",sigla:"MG"},{nome:"Mato Grosso do Sul",sigla:"MS"},{nome:"Mato Grosso",sigla:"MT"},{nome:"Pará",sigla:"PA"},{nome:"Paraíba",sigla:"PB"},{nome:"Pernambuco",sigla:"PE"},{nome:"Piauí",sigla:"PI"},{nome:"Paraná",sigla:"PR"},{nome:"Rio de Janeiro",sigla:"RJ"},{nome:"Rio Grande do Norte",sigla:"RN"},{nome:"Rondônia",sigla:"RO"},{nome:"Roraima",sigla:"RR"},{nome:"Rio Grande do Sul",sigla:"RS"},{nome:"Santa Catarina",sigla:"SC"},{nome:"Sergipe",sigla:"SE"},{nome:"São Paulo",sigla:"SP"},{nome:"Tocantins",sigla:"TO"}]})},{xtype:'container',padding:'0 0 0 10',autoHeight:true,flex:1,style:{backgroundColor:'transparent'},items:[{xtype:'combo',id:'municipioCombo',name:'municipioCombo',autoHeight:true,width:370,disabled:true,listeners:{select:function(cmb, n, v, opts){if(cmb.getValue()== null){var f = cmb.ownerCt.up('form')|| null;if(f){}}},reset:function (cmp, ct){if(cmp){cmp.clearValue();cmp.getStore().removeAll();cmp.getStore().totalLength = 0;cmp.disable();}}},queryMode:'local',displayField:'nomeMunicipio',valueField:'idMunicipioCorreios',autoSelect:true,editable:true,forceSelection:true,matchFieldWidth:true,emptyText:'Selecione',store:Ext.create('Ext.data.Store',{name:'storeCombo_municipioCombo',autoLoad:true,fields:['idMunicipioCorreios','nomeMunicipio'],proxy:{type:'ajax',url:'consultarProcessoLicenciamento.do?action=listaMunicipioPorUFAjax',reader:{root:'root',totalProperty:'total'}},listeners:{datachanged:function(store, opts){var cmp = Ext.getCmp('municipioCombo')|| null;if(!cmp){throw 'DataChanged:A combo id="municipioCombo" não foi encontrada! O id atribuido a combo existe?';}var frm = cmp.up('form');if(frm){var dados = (_REQUEST[frm.getId()]||{municipioCombo:null});var value = dados.municipioCombo || null;if(value == null || value == undefined){cmp.clearValue();cmp.fireEvent('select', cmp, null);}else{cmp.setValue(value);cmp.fireEvent('change', cmp, value);}if(cmp.getStore().getCount()== 0){cmp.disable();}else{cmp.enable();}}}}})}]}]},{xtype:'container',padding:'0 0 0 20',layout:{type:'hbox'},autoHeight:true,flex:1,style:{backgroundColor:'transparent'},items:[{xtype:'textfield',id:'txtNumProtocolo',name:'numProtocolo',labelAlign:'right',labelSeparator:':',labelWidth:180,fieldLabel:'Nº Protocolo',autoHeight:true,width:300,inputFormat:'9.999.999-9',minLength:11,enableKeyEvents:true},{xtype:'container',padding:'0 0 0 80',autoHeight:true,flex:1,style:{backgroundColor:'transparent'},items:[{xtype:'textfield',id:'numDocumento',name:'numDocumento',labelAlign:'right',labelSeparator:':',labelWidth:180,fieldLabel:'Nº Documento',autoHeight:true,width:300,maskRe:new RegExp('[0-9]'),maxLength:10,enforceMaxLength:true,enableKeyEvents:true}]}]},{xtype:'container',padding:'0 0 0 20',autoHeight:true,flex:1,style:{backgroundColor:'transparent'},items:[{xtype:'textfield',id:'textCpfCnpj',name:'cpfCnpj',labelAlign:'right',labelSeparator:':',labelWidth:180,fieldLabel:'CPF / CNPJ',autoHeight:true,minWidth:75,autoWidth:true,inputFormat:'###.###.###-##',enableKeyEvents:true},{xtype:'textfield',name:'nomeRazaoSocial',labelAlign:'right',labelSeparator:':',labelWidth:180,fieldLabel:'Nome / Razão Social',autoHeight:true,width:680,emptyText:'Informe pelo menos 3 caracteres',maxLength:100,enforceMaxLength:true,minLength:3,enableKeyEvents:true}]},{xtype:'panel',id:'panelPesquisaAvancada',height:125,flex:1,hidden:true,style:{backgroundColor:'transparent'},items:[{xtype:'combo',id:'modalidadeCombo',name:'idModalidade',labelAlign:'right',labelSeparator:':',labelWidth:180,fieldLabel:'Modalidade',autoHeight:true,width:680,queryMode:'local',displayField:'descTipoModalidade',valueField:'idModalidade',autoSelect:true,editable:true,forceSelection:true,matchFieldWidth:true,emptyText:'Selecione',store:Ext.create('Ext.data.Store',{fields:['idModalidade','descTipoModalidade'],data:[{descTipoModalidade:"AA - Autorização Ambiental",descricaoModalidade:"Autorização Ambiental",idModalidade:16,ordem:3,ordemApresentacao:1,sigla:"AA",siglaDescricaoModalidade:"AA - Autorização Ambiental",siglaTipoModalidade:"AA",situacao:"ATIVO",tipoModalidadeLicenca:"AA"},{descTipoModalidade:"AF - Autorização Florestal",descricaoModalidade:"Autorização Florestal",idModalidade:18,ordem:3,ordemApresentacao:3,sigla:"AF",siglaDescricaoModalidade:"AF - Autorização Florestal",siglaTipoModalidade:"AF",situacao:"ATIVO",tipoModalidadeLicenca:"AF"},{descTipoModalidade:"DLAM - Declaração de Dispensa de Licenciamento Ambiental",descricaoModalidade:"Declaração de Dispensa de Licenciamento Ambiental",idModalidade:6,ordem:0,ordemApresentacao:10,sigla:"DLAM",siglaDescricaoModalidade:"DLAM - Declaração de Dispensa de Licenciamento Ambiental",siglaTipoModalidade:"DLAM",situacao:"ATIVO",tipoModalidadeLicenca:"DLAE"},{descTipoModalidade:"DLAM - Dispensa de Licenciamento Ambiental Municipal",descricaoModalidade:"Dispensa de Licenciamento Ambiental Municipal",idModalidade:23,ordem:0,ordemApresentacao:11,sigla:"DLAM",siglaDescricaoModalidade:"DLAM - Dispensa de Licenciamento Ambiental Municipal",siglaTipoModalidade:"DLAM",situacao:"ATIVO",tipoModalidadeLicenca:"DLAM"},{descTipoModalidade:"LIR - Licença de Instalação de Regularização",descricaoModalidade:"Licença de Instalação de Regularização",idModalidade:29,ordem:3,ordemApresentacao:17,sigla:"LIR",siglaDescricaoModalidade:"LIR - Licença de Instalação de Regularização",siglaTipoModalidade:"LIR",situacao:"ATIVO",tipoModalidadeLicenca:"LIR"},{descTipoModalidade:"LAC - Licença Ambiental por Adesão e Compromisso",descricaoModalidade:"Licença Ambiental por Adesão e Compromisso",idModalidade:26,ordem:1,ordemApresentacao:20,sigla:"LAC",siglaDescricaoModalidade:"LAC - Licença Ambiental por Adesão e Compromisso",siglaTipoModalidade:"LAC",situacao:"ATIVO",tipoModalidadeLicenca:"LAC"},{descTipoModalidade:"RLAC - Renovação de Licença Ambiental por Adesão e Compromisso",descricaoModalidade:"Renovação de Licença Ambiental por Adesão e Compromisso",idModalidade:27,ordem:1,ordemApresentacao:21,sigla:"RLAC",siglaDescricaoModalidade:"RLAC - Renovação de Licença Ambiental por Adesão e Compromisso",siglaTipoModalidade:"RLAC",situacao:"ATIVO",tipoModalidadeLicenca:"RLAC"},{descTipoModalidade:"LAS - Licença Ambiental Simplificada",descricaoModalidade:"Licença Ambiental Simplificada",idModalidade:7,ordem:2,ordemApresentacao:30,sigla:"LAS",siglaDescricaoModalidade:"LAS - Licença Ambiental Simplificada",siglaTipoModalidade:"LAS",situacao:"ATIVO",tipoModalidadeLicenca:"LAS"},{descTipoModalidade:"LASR - Licença Ambiental Simplificada de Regularização",descricaoModalidade:"Licença Ambiental Simplificada de Regularização",idModalidade:10,ordem:2,ordemApresentacao:31,sigla:"LASR",siglaDescricaoModalidade:"LASR - Licença Ambiental Simplificada de Regularização",siglaTipoModalidade:"LASR",situacao:"ATIVO",tipoModalidadeLicenca:"LASR"},{descTipoModalidade:"LAS-A - Licença Ambiental Simplificada de Ampliação",descricaoModalidade:"Licença Ambiental Simplificada de Ampliação",idModalidade:30,ordem:2,ordemApresentacao:31,sigla:"LAS-A",siglaDescricaoModalidade:"LAS-A - Licença Ambiental Simplificada de Ampliação",siglaTipoModalidade:"LAS-A",situacao:"ATIVO",tipoModalidadeLicenca:"LAS_A"},{descTipoModalidade:"RLAS - Renovação de Licença Ambiental Simplificada",descricaoModalidade:"Renovação de Licença Ambiental Simplificada",idModalidade:8,ordem:2,ordemApresentacao:32,sigla:"RLAS",siglaDescricaoModalidade:"RLAS - Renovação de Licença Ambiental Simplificada",siglaTipoModalidade:"RLAS",situacao:"ATIVO",tipoModalidadeLicenca:"RLAS"},{descTipoModalidade:"CP - Consulta Prévia",descricaoModalidade:"Consulta Prévia",idModalidade:25,ordem:0,ordemApresentacao:40,sigla:"CP",siglaDescricaoModalidade:"CP - Consulta Prévia",siglaTipoModalidade:"CP",situacao:"ATIVO",tipoModalidadeLicenca:"CP"},{descTipoModalidade:"LP - Licença Prévia",descricaoModalidade:"Licença Prévia",idModalidade:1,ordem:3,ordemApresentacao:41,sigla:"LP",siglaDescricaoModalidade:"LP - Licença Prévia",siglaTipoModalidade:"LP",situacao:"ATIVO",tipoModalidadeLicenca:"LP"},{descTipoModalidade:"LI - Licença de Instalação",descricaoModalidade:"Licença de Instalação",idModalidade:2,ordem:3,ordemApresentacao:42,sigla:"LI",siglaDescricaoModalidade:"LI - Licença de Instalação",siglaTipoModalidade:"LI",situacao:"ATIVO",tipoModalidadeLicenca:"LI"},{descTipoModalidade:"RLI - Renovação de Licença de Instalação",descricaoModalidade:"Renovação de Licença de Instalação",idModalidade:4,ordem:3,ordemApresentacao:43,sigla:"RLI",siglaDescricaoModalidade:"RLI - Renovação de Licença de Instalação",siglaTipoModalidade:"RLI",situacao:"ATIVO",tipoModalidadeLicenca:"RLI"},{descTipoModalidade:"LO - Licença de Operação",descricaoModalidade:"Licença de Operação",idModalidade:3,ordem:3,ordemApresentacao:44,sigla:"LO",siglaDescricaoModalidade:"LO - Licença de Operação",siglaTipoModalidade:"LO",situacao:"ATIVO",tipoModalidadeLicenca:"LO"},{descTipoModalidade:"LOR - Licença de Operação de Regularização",descricaoModalidade:"Licença de Operação de Regularização",idModalidade:9,ordem:3,ordemApresentacao:45,sigla:"LOR",siglaDescricaoModalidade:"LOR - Licença de Operação de Regularização",siglaTipoModalidade:"LOR",situacao:"ATIVO",tipoModalidadeLicenca:"LOR"},{descTipoModalidade:"RLO - Renovação de Licença de Operação",descricaoModalidade:"Renovação de Licença de Operação",idModalidade:5,ordem:3,ordemApresentacao:46,sigla:"RLO",siglaDescricaoModalidade:"RLO - Renovação de Licença de Operação",siglaTipoModalidade:"RLO",situacao:"ATIVO",tipoModalidadeLicenca:"RLO"},{descTipoModalidade:"LP-A - Licença Prévia (Ampliação)",descricaoModalidade:"Licença Prévia (Ampliação)",idModalidade:11,ordem:3,ordemApresentacao:51,sigla:"LP-A",siglaDescricaoModalidade:"LP-A - Licença Prévia (Ampliação)",siglaTipoModalidade:"LP-A",situacao:"ATIVO",tipoModalidadeLicenca:"LP_A"},{descTipoModalidade:"LI-A - Licença de Instalação (Ampliação)",descricaoModalidade:"Licença de Instalação (Ampliação)",idModalidade:12,ordem:3,ordemApresentacao:52,sigla:"LI-A",siglaDescricaoModalidade:"LI-A - Licença de Instalação (Ampliação)",siglaTipoModalidade:"LI-A",situacao:"ATIVO",tipoModalidadeLicenca:"LI_A"},{descTipoModalidade:"RLI-A - Renovação de Licença de Instalação (Ampliação)",descricaoModalidade:"Renovação de Licença de Instalação (Ampliação)",idModalidade:13,ordem:3,ordemApresentacao:53,sigla:"RLI-A",siglaDescricaoModalidade:"RLI-A - Renovação de Licença de Instalação (Ampliação)",siglaTipoModalidade:"RLI-A",situacao:"ATIVO",tipoModalidadeLicenca:"RLI_A"},{descTipoModalidade:"LO-A - Licença de Operação (Ampliação)",descricaoModalidade:"Licença de Operação (Ampliação)",idModalidade:14,ordem:3,ordemApresentacao:54,sigla:"LO-A",siglaDescricaoModalidade:"LO-A - Licença de Operação (Ampliação)",siglaTipoModalidade:"LO-A",situacao:"ATIVO",tipoModalidadeLicenca:"LO_A"},{descTipoModalidade:"LI-C - Licença de Instalação (Complementar)",descricaoModalidade:"Licença de Instalação (Complementar)",idModalidade:19,ordem:3,ordemApresentacao:55,sigla:"LI-C",siglaDescricaoModalidade:"LI-C - Licença de Instalação (Complementar)",siglaTipoModalidade:"LI-C",situacao:"ATIVO",tipoModalidadeLicenca:"LI_C"},{descTipoModalidade:"LO-C - Licença de Operação (Complementar)",descricaoModalidade:"Licença de Operação (Complementar)",idModalidade:21,ordem:3,ordemApresentacao:56,sigla:"LO-C",siglaDescricaoModalidade:"LO-C - Licença de Operação (Complementar)",siglaTipoModalidade:"LO-C",situacao:"ATIVO",tipoModalidadeLicenca:"LO_C"},{descTipoModalidade:"RLI-C - Renovação de Licença de Instalação (Complementar)",descricaoModalidade:"Renovação de Licença de Instalação (Complementar)",idModalidade:20,ordem:3,ordemApresentacao:57,sigla:"RLI-C",siglaDescricaoModalidade:"RLI-C - Renovação de Licença de Instalação (Complementar)",siglaTipoModalidade:"RLI-C",situacao:"ATIVO",tipoModalidadeLicenca:"RLI_C"}]})},{xtype:'combo',id:'grupoCombo',name:'idGrupoAtividadeLicenca',labelAlign:'right',labelSeparator:':',labelWidth:180,fieldLabel:'Grupo',autoHeight:true,width:680,listeners:{change:function(cmb, n, o){var fp = cmb.ownerCt.up('form')|| null;var comboDependente = Ext.getCmp('atividadeCombo')|| fp ? fp.getForm().findField('atividadeCombo'):null;if(comboDependente){var param ={idGrupoAtividadeLicenca:cmb.getValue()};var oldProxy = comboDependente.getStore()? comboDependente.getStore().getProxy():null;if (oldProxy){var newProxy = Ext.create('Ext.data.proxy.Ajax',{extraParams:param,url:oldProxy.url,reader:oldProxy.reader});comboDependente.getStore().suspendEvents(false);comboDependente.getStore().setProxy(newProxy);comboDependente.getStore().removeAll();comboDependente.getStore().totalLength = 0;comboDependente.getStore().load({start:0,page:1});comboDependente.getStore().resumeEvents();comboDependente.getStore().fireEvent('datachanged', comboDependente.getStore());}else{throw 'A combo dependente "atividadeCombo" deve fornecer uma URL para recarregar seus itens!';}}else{throw 'A combo dependente "atividadeCombo" não foi encontrada! O nome ou id atribuido existe?';}}},queryMode:'local',displayField:'descricao',valueField:'idGrupoAtividadeLicenca',autoSelect:true,editable:true,forceSelection:true,matchFieldWidth:true,emptyText:'Selecione',store:Ext.create('Ext.data.Store',{fields:['idGrupoAtividadeLicenca','descricao'],data:[{descricao:"Agropecuária",idGrupoAtividadeLicenca:5,situacao:"ATIVO"},{descricao:"Comércio e Serviço",idGrupoAtividadeLicenca:6,situacao:"ATIVO"},{descricao:"Corte Isolado",idGrupoAtividadeLicenca:24,situacao:"ATIVO"},{descricao:"Destinação final de resíduos sólidos industriais, urbanos ou de serviço de saúde e efluentes",idGrupoAtividadeLicenca:9,situacao:"ATIVO"},{descricao:"Empreendimentos Náuticos",idGrupoAtividadeLicenca:28,situacao:"ATIVO"},{descricao:"Empreendimentos Viários",idGrupoAtividadeLicenca:29,situacao:"ATIVO"},{descricao:"Geração, armazenamento e transmissão de energia",idGrupoAtividadeLicenca:16,situacao:"ATIVO"},{descricao:"Gerenciamento de resíduos sólidos e/ou efluentes",idGrupoAtividadeLicenca:10,situacao:"ATIVO"},{descricao:"Imobiliário",idGrupoAtividadeLicenca:8,situacao:"ATIVO"},{descricao:"Industrial",idGrupoAtividadeLicenca:1,situacao:"ATIVO"},{descricao:"Substituição de Espécies Exóticas",idGrupoAtividadeLicenca:27,situacao:"ATIVO"}]})},{xtype:'combo',id:'atividadeCombo',name:'idAtividadeLicenca',labelAlign:'right',labelSeparator:':',labelWidth:180,fieldLabel:'Atividade',autoHeight:true,width:680,disabled:true,listeners:{select:function(cmb, n, v, opts){if(cmb.getValue()== null){var f = cmb.ownerCt.up('form')|| null;if(f){}}},reset:function (cmp, ct){if(cmp){cmp.clearValue();cmp.getStore().removeAll();cmp.getStore().totalLength = 0;cmp.disable();}}},queryMode:'local',displayField:'descricao',valueField:'idAtividadeLicenca',autoSelect:true,editable:true,forceSelection:true,matchFieldWidth:true,emptyText:'Selecione',store:Ext.create('Ext.data.Store',{name:'storeCombo_idAtividadeLicenca',autoLoad:false,fields:['idAtividadeLicenca','descricao'],proxy:{type:'ajax',url:'consultarProcessoLicenciamento.do?action=listarAtividadeJSON',reader:{root:'listaAtividade',totalProperty:'total'}},listeners:{datachanged:function(store, opts){var cmp = Ext.getCmp('atividadeCombo')|| null;if(!cmp){throw 'DataChanged:A combo id="atividadeCombo" não foi encontrada! O id atribuido a combo existe?';}var frm = cmp.up('form');if(frm){var dados = (_REQUEST[frm.getId()]||{atividadeCombo:null});var value = dados.atividadeCombo || null;if(value == null || value == undefined){cmp.clearValue();cmp.fireEvent('select', cmp, null);}else{cmp.setValue(value);cmp.fireEvent('change', cmp, value);}if(cmp.getStore().getCount()== 0){cmp.disable();}else{cmp.enable();}}}}})},{xtype:'container',padding:'0',layout:{type:'hbox'},autoHeight:true,flex:1,style:{backgroundColor:'transparent'},items:[{xtype:'datefield',id:'dtInicialField',name:'dtInicial',labelAlign:'right',labelSeparator:':',labelWidth:180,fieldLabel:'Período de Emissão (De/até)',autoHeight:true,width:280,enableKeyEvents:true,maxValue:'22/11/2026',format:'d/m/Y',showToday:true,useStrict:true},{xtype:'label',text:'-',autoHeight:true,width:20,padding:'5'},{xtype:'datefield',id:'dtFinalField',name:'dtFinal',autoHeight:true,width:100,enableKeyEvents:true,maxValue:'22/11/2026',format:'d/m/Y',showToday:true,useStrict:true}]}],bodyStyle:{padding:'0px 0px 0px 20px'}},{xtype:'container',padding:'0 0 0 200',autoHeight:true,flex:1,style:{backgroundColor:'transparent'},items:[{xtype:'checkbox',id:'ckPesquisaAvancada',name:'ckPesquisaAvancada',autoHeight:true,minWidth:75,autoWidth:true,listeners:{change:function(cmp, n, o){handlerPesquisaAvancada();}},name:'ckPesquisaAvancada',boxLabel:'Pesquisa Avançada'}]}],dockedItems:[{xtype:'toolbar',dock:'bottom',items:['->',{xtype:'button',id:'botaoLimpar_consultarProcessoLicenciamentoGrid',icon:'images/icon_limpar.png',text:'Limpar',saveDelay:400,handler:function(bt,ev){bt.disable();var fp = bt.ownerCt.up('form');var grid = fp ? fp.down('grid'):null;if (fp && grid){var fieldsFp = fp ? fp.query('field'):[];var clearObj ={};fp.getForm().reset();for (var i = 0;i < fieldsFp.length;i++){if (!fieldsFp[i].isXType('displayfield')&& fieldsFp[i].getName()){var val = fieldsFp[i].getValue()? (Ext.isNumeric(fieldsFp[i].getValue())? fieldsFp[i].getValue():'\'' + fieldsFp[i].getValue()+ '\''):'null';clearObj = Ext.merge(clearObj, Ext.JSON.decode('{' + fieldsFp[i].getName()+ ':' + val + '}'));}}var topTbars = grid ? grid.getDockedItems('toolbar[dock="top"]'):null;var tbar = topTbars[0]|| null;if (tbar && tbar.isVisible()){for (var i = 0;i < tbar.items.getCount();i++){var itemToolbar = tbar.items.getAt(i);if (itemToolbar.menu){for (var j = 0;j < itemToolbar.menu.items.getCount();j++){var itemMenu = itemToolbar.menu.items.getAt(j);if (itemMenu && itemMenu.selectionRequired){itemMenu.setDisabled(true);}}}else if (itemToolbar && itemToolbar.isXType('button')&& itemToolbar.selectionRequired){itemToolbar.setDisabled(true);}}}Ext.util.Cookies.clear(fp.getId());fp.getForm().setValues(clearObj);fp.getForm().clearInvalid();grid.getSelectionModel().clearSelections();grid.getStore().removeAll();reset_pagingToolbar(grid);bt.enable();}else{bt.enable();Ext.Msg.error('O componente usado para completar a requisição não foi encontrado.');}}},{xtype:'button',id:'botaoPesquisar_consultarProcessoLicenciamentoGrid',icon:'images/icon_pesquisar.png',text:'Pesquisar',saveDelay:400,handler:function(bt,ev){bt.disable();var fp = bt.ownerCt.up('form');var form = fp ? fp.getForm():null;var grid = fp ? fp.down('grid'):null;if (grid && form && form.isValid()){try{Ext.Msg.wait('Pesquisando...','Aguarde');Ext.Ajax.abortAll();var oldProxy = grid.getStore().getProxy();if (oldProxy && oldProxy.url){var newProxy = Ext.create('Ext.data.proxy.Ajax',{extraParams:form.getValues(),url:oldProxy.url,reader:oldProxy.reader});Ext.util.Cookies.set(fp.getId(), Ext.Base64.encode(Ext.encode(form.getValues())));grid.getSelectionModel().clearSelections();grid.getStore().setProxy(newProxy);grid.getStore().removeAll();grid.getStore().loadRawData([]);grid.getStore().totalLength = 0;grid.getStore().load({start:0,page:1,limit:10,callback:function(records, operation, success){bt.enable();Ext.Msg.hide();var mensagem = '';if (!operation.wasSuccessful()){try{mensagem = operation.request.proxy.reader.jsonData.mensagem;}catch(ex){mensagem = 'Não foi possível completar a pesquisa. Tente novamente mais tarde.';}var msg = mensagem == null ? 'Não foi possível completar a pesquisa. Tente novamente mais tarde.':mensagem;Ext.Msg.error(msg);}else{if (records && records.length == 0){mensagem = operation.request.proxy.reader.jsonData.mensagem;if (mensagem && mensagem != "OK"){Ext.create('Ext.window.Window',{bodyCls:'sga-tabpanel-body',closeAction:'hide',title:'<span style="background:url(images/icon_dialogo_info_small.png)0% 50% no-repeat transparent;padding-left:20px">Informa&ccedil;&atilde;o</span>',height:230,width:600,renderTo:Ext.getBody(),modal:true,closable:false,resizable:true,bodyStyle:{border:'1px solid #CCC'},dockedItems:[{xtype:'toolbar',dock:'bottom',layout:{pack:'center'},style:{backgroundColor:'#DBDEDF',borderRadius:'0',border:'1px solid #ccc',borderBottom:'none',padding:'5px'},items:[{xtype:'button',text:'OK',width:80,handler:function (bt, evt){var wd = bt.ownerCt ? bt.ownerCt.up('window'):null;if (wd){wd.close();}}}]}],html:'<p>' + mensagem + '</p>'}).show();}else{Ext.Msg.info('Nenhum registro encontrado.');}}else{var me = grid.down('pagingtoolbar');if (me != null){if (me.getStore()){me.getStore().currentPage = 1;}Ext.suspendLayouts();me.cursor=0;me.child('#inputItem').setValue(1);me.child('#first').setDisabled(true);me.child('#prev').setDisabled(true);me.child('#next').setDisabled(false);me.child('#last').setDisabled(false);me.updateInfo();Ext.resumeLayouts(true);}}}}});var tbars = grid.getDockedItems('toolbar[dock="bottom"]');var pagingTBar = tbars ? tbars[0]:null;if (pagingTBar && pagingTBar.isXType('pagingtoolbar')){pagingTBar.bindStore(grid.getStore());}}else{throw 'O grid não foi configurado para receber dados remotos e por isso não poderá exibir os dados de pesquisa. Reconfigure o SgaGrid passando uma URL que responda AJAX no atributo "itensGrid"';}}catch(ex){bt.enable();Ext.Msg.hide();var msg = 'O componente usado para completar a requisição não foi encontrado.<br><small>Causa:' + ex + '</small>';Ext.Msg.error(msg);}}else if (form && !form.isValid()){bt.enable();Ext.Msg.error('Os dados enviados não estão válidos. Corrija os campos destacados e tente novamente.');}else{bt.enable();Ext.Msg.error('O componente usado para completar a requisição não foi encontrado.');}}}, '->']}],listeners:{afterrender:function(cmp){var formPesquisa = cmp.up('form')|| null;if (formPesquisa){var buttons = cmp.query('button[text="Pesquisar"]');var btPesquisar = buttons ? buttons[0]:null;if (btPesquisar){new Ext.util.KeyMap({target:cmp.getEl(),key:Ext.EventObject.ENTER,fn:function(){btPesquisar.handler(btPesquisar);},scope:formPesquisa});}var fields = cmp.query('textfield');if (fields[0]){fields[0].focus(false, 500);}}}}},{xtype:'grid',id:'consultarProcessoLicenciamentoGrid',autoHeight:true,autoSync:true,columns:[{header:'Exibir',dataIndex:'numProtocolo',width:70,align:'center',renderer:function(value, metaData, record, rowIndex, colIndex, store, view){var fnRenderer = Ext.isFunction(exibirProcessoModificadoLicenciamentoRenderer)? exibirProcessoModificadoLicenciamentoRenderer:function(value, metaData, record, rowIndex, colIndex, store, view){};try{return fnRenderer(value, metaData, record, rowIndex, colIndex, store, view);}catch(e){throw 'SGAColunaGrid:A função "exibirProcessoModificadoLicenciamentoRenderer" não é um renderer válido. A função deve prover os parâmetros:value, metaData, record, rowIndex, colIndex, store e view.';}}},{header:'Nº Protocolo',dataIndex:'numProtocoloFormatado',width:110,align:'center'},{header:'Nome / Razão Social',dataIndex:'nomeRazaoSocial',flex:1},{header:'Atividade',dataIndex:'descAtividade',flex:1},{header:'Atividade Específica',dataIndex:'descAtividadeEspecifica',flex:1},{header:'Município / UF',dataIndex:'municipioUfFormatado',flex:1},{header:'Modalidade',dataIndex:'siglaModalidade',width:100,align:'center'},{header:'Nº Documento',dataIndex:'numDocumentoFormatado',width:110,align:'center'},{header:'Dt. Emissão',dataIndex:'dtDecisaoFormatado',width:100,align:'center'},{header:'Dt. Validade',dataIndex:'dtValidadeFormatado',width:100,align:'center'}],store:Ext.create('Ext.data.Store',{autoLoad:false,storeId:'consultarProcessoLicenciamentoGridStore',fields:[{name:'dtDecisaoFormatado', type:'string'},{name:'municipioUfFormatado', type:'string'},{name:'numDocumentoFormatado', type:'string'},{name:'arquivoDocumento', type:'string'},{name:'dtValidade', type:'string'},{name:'siglaUf', type:'string'},{name:'idGrupoAtividade', type:'number'},{name:'idAtividade', type:'number'},{name:'descAtividade', type:'string'},{name:'idModalidade', type:'number'},{name:'numProtocolo', type:'number'},{name:'siglaModalidade', type:'string'},{name:'cpfCnpj', type:'string'},{name:'nomeRazaoSocial', type:'string'},{name:'codIbge', type:'number'},{name:'nomeMunicipio', type:'string'},{name:'idMunicipioCorreios', type:'number'},{name:'descAtividadeEspecifica', type:'string'},{name:'dtDecisao', type:'string'},{name:'numDocumento', type:'number'},{name:'indSia', type:'string'},{name:'numProtocoloFormatado', type:'string'},{name:'dtValidadeFormatado', type:'string'}],pageSize:10,proxy:{type:'ajax',url:'consultarProcessoLicenciamento.do?action=consultarProcessoLicenciamento',reader:{root:'listaProcessoLicenciamento',totalProperty:'total'}}}),dockedItems:[{xtype:'toolbar',dock:'top',items:[{xtype:'button',id:'consultarProcessoLicenciamentoGrid_Exibir',text:'Exibir',icon:'images/icon_exibir.png',disabled:true,selectionRequired:true,handler:function(bt){try{var handler = remove;if (Ext.isFunction(handler)){handler(bt);}}catch(e){Ext.Msg.error('A fun&ccedil;&atilde;o utilizada para executar esta a&ccedil;&atilde;o n&atilde;o existe ou n&atilde;o foi declarada.. Causa:' + e);}}},{xtype:'button',id:'consultarProcessoLicenciamentoGrid_Relatorios',text:'Relat&oacute;rios',icon:'images/icon_relatorio.png',menu:{xtype:'menu',items:[{text:'Exportar para Planilha',id:'btExportarCsv',disabled:true,handler:function(bt){try{var handler = exportarPlanilha;if (Ext.isFunction(handler)){handler(bt);}}catch(e){Ext.Msg.error('A fun&ccedil;&atilde;o utilizada para executar esta a&ccedil;&atilde;o n&atilde;o existe ou n&atilde;o foi declarada.'+e);}}},{text:'Exportar para Excel',id:'btExportarExcel',disabled:true,handler:function(bt){try{var handler = exportarPlanilhaExcel;if (Ext.isFunction(handler)){handler(bt);}}catch(e){Ext.Msg.error('A fun&ccedil;&atilde;o utilizada para executar esta a&ccedil;&atilde;o n&atilde;o existe ou n&atilde;o foi declarada.'+e);}}}]}}],listeners:{afterrender:function(tbar){tbar.setVisible(tbar.items.getCount()> 0);}}},{xtype:'pagingtoolbar',store:'consultarProcessoLicenciamentoGridStore',dock:'bottom',displayInfo:true}],listeners:{afterrender:function(grid){if(grid && grid.getHeader()){grid.getHeader().hide();}},resize:function(thisGrid, nWidth, nHeight, oWidth, oHeight){Ext.Function.defer(function(){thisGrid.doLayout();}, 400);},selectionchange:function(sm, selected, eOpts){var grid = Ext.getCmp('consultarProcessoLicenciamentoGrid')|| null;var topTbars = grid ? grid.getDockedItems('toolbar[dock="top"]'):null;var tbar = topTbars[0]|| null;if (tbar && tbar.isVisible()){for (var i = 0;i < tbar.items.getCount();i++){var itemToolbar = tbar.items.getAt(i);if (itemToolbar.menu){for (var j = 0;j < itemToolbar.menu.items.getCount();j++){var itemMenu = itemToolbar.menu.items.getAt(j);if (itemMenu && itemMenu.selectionRequired){itemMenu.setDisabled(!sm.hasSelection());}}}else if (itemToolbar && itemToolbar.isXType('button')&& itemToolbar.selectionRequired){itemToolbar.setDisabled(!sm.hasSelection());}}}}}}]}], _REQUEST ? _REQUEST.consultarProcessoLicenciamentoPanel : null)}]});conteudo.region='center';conteudo.autoScroll=true;Ext.getCmp('conteudoSGAToolbar').add('->');Ext.getCmp('conteudoSGAToolbar').add(redefineItems([], _REQUEST ? _REQUEST.consultarProcessoLicenciamentoPanel : null));Ext.getCmp('conteudoSGAToolbar').add('->');Ext.getCmp('conteudoSGAContainer').add(conteudo);Ext.getCmp('conteudoSGAContainer').doLayout();var fp = Ext.getCmp('consultarProcessoLicenciamentoPanel');var cookie = fp ? Ext.util.Cookies.get(fp.getId()) : null;if(cookie){var grid = fp.down('grid');if(grid){try{var dados = Ext.decode(Ext.Base64.decode(cookie));fp.getForm().setValues(dados);var loadingMask = new Ext.LoadMask(grid, {msg:'Recarregando registros...',maskCls: 'mask_in_modal'});loadingMask.show();var oldProxy = grid.getStore().getProxy();var newProxy = Ext.create('Ext.data.proxy.Ajax', {extraParams: dados,url: oldProxy.url,reader: oldProxy.reader});grid.getStore().setProxy(newProxy);grid.getStore().removeAll();grid.getStore().totalLength = 0;grid.getStore().addListener('load', function(){loadingMask.hide();}, this, {single: true});grid.getStore().load({start: 0,page: 1,limit: 10});var tbars = grid.getDockedItems('toolbar[dock="bottom"]');var pagingTBar = tbars ? tbars[0] : null;if (pagingTBar && pagingTBar.isXType('pagingtoolbar')) {pagingTBar.bindStore(grid.getStore());}}catch(e){}}}}catch(ex) {alert('Falha ao carregar a tela em SgaPanel!</br><small>Causa: '+ex+'<\small>');}});
+
+Ext.onReady(function () {
+			var cpfCnpj  = Ext.getCmp('textCpfCnpj');
+			var numProtocolo  = Ext.getCmp('txtNumProtocolo');
+			var grid  = Ext.getCmp('consultarProcessoLicenciamentoGrid');
+			var store = grid.getStore();
+			var view = grid.view;
+
+			Ext.getCmp('consultarProcessoLicenciamentoGrid_Exibir').destroy(); 
+			Ext.getCmp('estadoMunicipioCombo').setValue('PR');
+
+			
+			if(store.isLoading()) {
+				Ext.Ajax.abort(store.proxy.activeRequest);
+			 }
+
+			store.addListener('clear', function(store, eOpts) {
+				if(store.getCount() == 0) {
+					Ext.getCmp('btExportarCsv').disable();
+					Ext.getCmp('btExportarExcel').disable();
+				
+				}else {
+					Ext.getCmp('btExportarCsv').enable();
+					Ext.getCmp('btExportarExcel').enable();
+				}
+			});
+			
+			store.addListener('datachanged', function(store, eOpts) {
+				if(store.getCount() == 0) {
+					Ext.getCmp('btExportarCsv').disable();
+					Ext.getCmp('btExportarExcel').disable();
+				}else {
+					Ext.getCmp('btExportarCsv').enable();
+					Ext.getCmp('btExportarExcel').enable();
+				}
+			});
+
+			grid.mon(view, {
+                uievent: function (type, view, cell, recordIndex, cellIndex, e) {
+                    grid.cellIndex = cellIndex;
+                    grid.recordIndex = recordIndex;
+                }
+            });
+
+			grid.tip = Ext.create('Ext.tip.ToolTip', {
+                target: view.el,
+                delegate: '.x-grid-cell',
+                trackMouse: true,
+                renderTo: Ext.getBody(),
+                listeners: {
+                    beforeshow: function updateTipBody(tip) {
+                        if (!Ext.isEmpty(grid.cellIndex) && grid.cellIndex !== -1) {
+                            header = grid.headerCt.getGridColumns()[grid.cellIndex];
+                            tip.update(grid.getStore().getAt(grid.recordIndex).get(header.dataIndex));
+                        }
+                    }
+                }
+            });
+
+			cpfCnpj.addListener('keypress', function(e, eOpts) {
+				if(e.value.length > 13) {
+					Ext.apply(cpfCnpj, {vtype: 'cnpj'})
+					Ext.apply(cpfCnpj, {inputFormat: '##.###.###/####-##'});
+				}else {
+					Ext.apply(cpfCnpj, {vtype: 'cpf'});
+					Ext.apply(cpfCnpj, {inputFormat: '###.###.###-##'});
+				}
+			 });
+
+			cpfCnpj.getEl().on('paste', function(evt,target) {
+				var clipboard =  getClipboardData(evt, target);
+				clipboard = clipboard.split('.').join('').split('-').join('').split('/').join('').split(' ').join('');
+				if(clipboard.length === 14) {
+					Ext.apply(cpfCnpj, {vtype: 'cnpj'});
+					Ext.apply(cpfCnpj, {inputFormat: '##.###.###/####-##'});
+				}else if(clipboard.length === 11 ) {
+					Ext.apply(cpfCnpj, {vtype: 'cpf'});
+					Ext.apply(cpfCnpj, {inputFormat: '###.###.###-##'});
+				}
+	 		});
+
+			numProtocolo.addListener('keypress', function(e, eOpts) {
+				if(e.value.length > 10) {
+					Ext.apply(numProtocolo, {inputFormat: '99.999.999-9'});
+				}else {
+					Ext.apply(numProtocolo, {inputFormat: '9.999.999-9'});
+				}
+			 });
+
+			numProtocolo.getEl().on('paste', function(evt,target) {
+				var clipboard =  getClipboardData(evt, target);
+				clipboard = clipboard.split('.').join('').split('-').join('').split(' ').join('');;
+				if(clipboard.length === 9) {
+					Ext.apply(numProtocolo, {inputFormat: '99.999.999-9'});
+				}else if(clipboard.length === 8){
+					Ext.apply(numProtocolo, {inputFormat: '9.999.999-9'});
+				}
+	 		});
+
+			carregarPesquisaAvancada();
+
+		});
+
+
+		
+
+	     var exibirProcessoModificadoLicenciamentoRenderer = function(value, metaData, record, rowIndex, colIndex, store, view){
+
+	    		if (value != null && value != ''){
+	    			return '<a href="#" onclick="escolherExibirProcessoLicenciamento('+value+','+record.data.indSia+')"  border="false"><img src="images/icon_exibir.png"/></a>';
+    			
+		    	}
+	    		return '&nbsp;';
+	    };
+
+
+	    var escolherExibirProcessoLicenciamento = function(numProtocolo, indSia) {
+	                              
+	    	 window.location.href = 'consultarProcessoLicenciamento.do?action=exibirDadosPublicoLicenca&numProtocolo='+ numProtocolo +'&indSia=' + indSia + '&ucsChamador=carregarInterfaceInicial';
+	    }
+
+	    function exibirProcessoLicenciamentoSemParecerTecnicoSGA(numProtocolo, indSia) {
+
+  		    var numProtocolo = numProtocolo;
+            var indSia= indSia;
+		    var numTentativas =0;
+		    var xhr = new XMLHttpRequest();
+		    xhr.onreadystatechange = function() {
+		        if (xhr.readyState == 4) {
+		            var dataImagem = xhr.responseText;
+
+		            Ext.create(Ext.window.Window, {
+			   			title: '<span style=\"background:url(images/icon_dialogo_aguardando_small.png)0% 50% no-repeat transparent;padding-left:20px\">Validação por CAPTCHA</span>',
+			   			height: 200,
+			 		    width: 440,
+			 		    modal: true,
+			 		    closable: false,
+			 		    dockedItems: [{
+			 		    	xtype: 'toolbar',
+			 		    	dock: 'bottom',
+			 		    	layout: {
+			 		   			pack: 'center'
+			 		   		},
+			 		    	items: 
+				 		    	[
+				 		    	{
+					 		    		xtype: 'button',
+					 		    		text: 'Cancelar',
+					 		    		icon: 'images/icon_cancelar.png',
+					 		    		width: 90,
+					 		    		handler: function(bt, evt) {
+											var wd = bt.ownerCt ? bt.ownerCt.up('window') : null;
+					 		    			if (wd) {
+					 		    				wd.close();
+					 		    			}
+					 		    		}
+					 		    },
+
+					 		   	{
+			 		    		xtype: 'button',
+			 		    		text: 'Continuar',
+			 		    		icon: 'images/icon_continuar.png',
+			 		    		width: 90,
+			 		    		handler: function(bt, evt) {
+									var wd = bt.ownerCt ? bt.ownerCt.up('window') : null;
+			 		    			if (wd) {
+
+				 		    			var valorCaptcha = Ext.getCmp('captchaDigitada').getValue();
+				 		    			Ext.Ajax.request({
+				 		   				url: 'consultarProcessoLicenciamento.do?action=verificarExistenciaDocumentoLicencaPublica&numProtocolo='+ numProtocolo +'&indSia=' + indSia+'&valorInformadoCaptcha='+valorCaptcha,
+				 		   				clientValidation: false,
+				 		   				success: function (response, opts) {
+				 		   					var obj = Ext.decode(response.responseText); 
+
+							 		   				if (obj.success) {
+							 		   				      if(obj.validado ==true || obj.validado == "true"){							 		   					 
+								 		   						 wd.close();									 		   				
+									 		   					var url = 'consultarProcessoLicenciamento.do?action=exibirDocumentoLicenca&numProtocolo='+ numProtocolo +'&indSia=' + indSia;
+								 		   						window.open(url);
+									 		   			 } else {
+									 		   				       
+                                                                    numTentativas++;
+									 		   				        Ext.getCmp('fileInfo').setRawValue('Ops..CAPTCHA  inválido ... tente Novamente!!!');	
+									 		   				    	
+									 		   				  		Ext.getCmp('captchaDigitada').setValue('');
+									 		   				  		if(numTentativas>3){
+									 		   				  				 Ext.getCmp('fileInfo').setRawValue('CAPTCHA  inválido ...Finalizando');
+										 		   				  		  wd.close();	
+										 		   				  	}
+									 		   				      	if(numTentativas==3){
+									 		   				           Ext.getCmp('fileInfo').setRawValue('CAPTCHA  inválido ... úlitma tentativa válida !!!');
+										 		   				  	}
+									 		   				    					 		   				
+										 		   		 }
+							 		   				
+						 		   					} 
+						 		   					else {
+						 		   					     wd.close();
+						 		   						Ext.Msg.warning(obj.mensagem);
+						 		   					}	
+				 		   			                
+					 		   							 		   			
+				 		   				},
+				 		   				failure: function (response, opts) {
+				 		   					var obj = Ext.decode(response.responseText),
+				 		   						msg = (obj && obj.mensagem) ? obj.mensagem : 'N&atilde;o foi poss&iacute;vel enviar a requisi&ccedil;&atilde;o.';
+				 		   					Ext.Msg.hide();
+				 		   					Ext.Msg.error(msg);
+				 		   				    wd.close();
+				 		   				}
+				 		   				}); 		    			
+			 		    				
+			 		    			};			 		    	
+			 		    			
+			 		    		}
+			 		    	}  ]
+			 		    }],items: [{
+							xtype: 'image',
+							border: true,
+							height: 41,
+							width:  400,
+							name: 'gera_captcha',
+							id: 'gera_captcha',
+							src: dataImagem,
+							shrinkWrap: true,
+				
+			                mode:       'image',
+							
+							itemId: 'reCaptcha',
+							 style: {
+							        'display': 'block',
+							        'margin': 'auto'
+							    },
+						    listeners: {
+						    	 load: function() {
+						              
+						          }
+							}
+																
+						},{
+							xtype: 'container',
+												
+							items: [
+								{
+									xtype: 'hidden',
+									name:'acao'
+								},	
+								{
+								    xtype: 'displayfield',
+								    value: ' Para Continuar digite os caracteres contidos na imagem.', 
+								    id:'fileInfo', 									    
+								    name:'fileInfo'
+								 },
+								{
+									xtype: 'hidden',
+									name:'identificador'
+								},{
+									xtype: 'fieldset',
+									title: '',
+									flex: 0,
+									items:[{
+										xtype: 'fieldcontainer',
+										fieldLabel:'CAPTCHA:',											
+										layout: 'hbox',
+										items:[{
+											xtype: 'textfield',
+											name: 'captchaDigitada',
+											id:'captchaDigitada',											
+											maxLength: 5,
+											minLength: 5,
+											width: 80,
+											allowBlank: false,
+											enforceMaxLength: true,
+											maskRe: /^[0-9a-zA-Z-_]+$/ 
+										},
+										{
+											xtype: 'button',
+											id: 'btnDetalheCodigo',
+											icon: 'images/icon_ajuda.png',
+											style: {
+											
+												backgroundColor: 'none',
+												background: 'transparent'
+											},
+											text:'',
+											tooltip: 'CAPTCHA é um acrônimo da expressão "Completely Automated Public Turing test to tell Computers and Humans Apart":um teste de desafio cognitivo, utilizado como ferramenta antispam, desenvolvido de forma pioneira na universidade de Carnegie-Mellon.'
+										}]
+									}]
+								}
+								
+							]	
+							
+						}]			 	
+				   	}).show();
+				            
+		            
+		        }
+		    }
+		    xhr.open('GET', '/sga-iap/gera_captcha', true);
+		    xhr.send(null);
+		  
+	};
+		
+
+		
+
+		var exportarPlanilha = function(bt, ev) {
+			window.open ('consultarProcessoLicenciamento.do?action=gerarPlanilhaCSV');
+		};
+
+		var exportarPlanilhaExcel = function(bt, ev) {
+			window.open ('consultarProcessoLicenciamento.do?action=gerarPlanilhaExcel');
+		};
+        
+	
+
+		
+
+		var carregarPesquisaAvancada = function() {
+			if(Ext.getCmp('modalidadeCombo').getValue() != null || Ext.getCmp('grupoCombo').getValue() != null ||
+				Ext.getCmp('atividadeCombo').getValue() != null || Ext.getCmp('dtInicialField').getValue() != null ||
+				Ext.getCmp('dtFinalField').getValue() != null) {
+
+					Ext.getCmp('ckPesquisaAvancada').setValue(true);
+					Ext.getCmp('panelPesquisaAvancada').show();
+
+			}
+		};
+
+		var handlerPesquisaAvancada = function() { 
+			if(Ext.getCmp('panelPesquisaAvancada').isVisible()) {
+				Ext.getCmp('panelPesquisaAvancada').hide();
+				limparPesquisaAvancada();
+			}else {
+				Ext.getCmp('panelPesquisaAvancada').show();
+			}
+
+		};
+
+		var limparPesquisaAvancada = function() {
+			Ext.getCmp('modalidadeCombo').reset();
+			Ext.getCmp('grupoCombo').reset();
+			Ext.getCmp('atividadeCombo').reset();
+			Ext.getCmp('atividadeCombo').setRawValue();
+			Ext.getCmp('dtInicialField').reset();
+			Ext.getCmp('dtFinalField').reset();
+		};
+
+		var getClipboardData = function (evt,target) {
+			if (Ext.isIE) {
+				return window.clipboardData.getData('Text');
+			}
+			else if (Ext.isGecko) {
+			   return evt.browserEvent.clipboardData.getData('text/plain');
+			}
+			else if (Ext.isOpera) {
+				return evt.browserEvent.clipboardData.getData('text/plain');
+			}
+			else if (Ext.isWebKit) {
+			   return evt.browserEvent.clipboardData.getData('text/plain');
+			}
+		}
+		</script>
+
+	</body>
+</html>
