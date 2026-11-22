@@ -1,0 +1,43 @@
+=[],this._destroyed=!1,le(Q,V=>this.processProvider(V)),this.records.set(ZD,dV(void 0,this)),R.has("environment")&&this.records.set(IF,dV(void 0,this));let l=this.records.get(NZ);l!=null&&typeof l.value=="string"&&this.scopes.add(l.value),this.injectorDefTypes=new Set(this.get(SD,kQ,CU.Self))}destroy(){this.assertNotDestroyed(),this._destroyed=!0;let Q=MU(null);try{for
+=====
+,B,R,l){let V=Q&&!vz(Q),d;if(V)d=U;else{let c=U||{};d=c.index,B=c.injector,R=c.projectableNodes,l=c.environmentInjector||c.ngModuleRef}let n=V?Q:new El(YB(Q)),J=B||this.parentInjector;if(!l&&n.ngModule==null){let r=(V?J:this.parentInjector).get(IF,null);r&&(l=r)}let W=YB(n.componentType??{}),Z=cV(this._lContainer,W?.id??null),N=Z?.firstChild??null,E=n.create(J,R,N,l);r
+=====
+provide:TR,useValue:this},{provide:DV,useValue:this.componentFactoryResolver},...B],mQ(Q),new Set(["environment"])),R&&this.resolveInjectorInitializers()}resolveInjectorInitializers(){this._r3Injector.resolveInjectorInitializers(),this.instance=this._r3Injector.get(this.ngModuleType)}get injector(){return this._r3Injector}destroy(){let Q=this._r3Injector;!Q.destroyed&&
+=====
+lue:this},{provide:DV,useValue:this.componentFactoryResolver}],Q.parent||eZ(),Q.debugName,new Set(["environment"]));this.injector=U,Q.runEnvironmentInitializers&&U.resolveInjectorInitializers()}destroy(){this.injector.destroy()}onDestroy(Q){this.injector.onDestroy(Q)}};function zZ(F,Q,U=null){return new FZ({providers:F,parent:Q,debugName:U,runEnvironmentInitializers:!0
+=====
+ll&&U.destroy()}finally{this.cachedInjectors.clear()}}static{this.\u0275prov=x({token:F,providedIn:"environment",factory:()=>new F(y(IF))})}}return F})();function g(F){N0("NgStandalone"),F.getStandaloneInjector=Q=>Q.get(Qw).getOrCreateStandaloneInjector(F)}function iU(F,Q,U){let B=iR()+F,R=SU();return R[B]===YQ?YV(R,B,U?Q.call(U):Q()):fi(R,B)}function lU(F,Q,U,B){retur
+=====
+{let U=YB(F),B=Q.elementInjector||eZ();return new El(U).create(B,Q.projectableNodes,Q.hostElement,Q.environmentInjector)}function mp(F){let Q=YB(F);if(!Q)return null;let U=new El(Q);return{get selector(){return U.selector},get type(){return U.componentType},get inputs(){return U.inputs},get outputs(){return U.outputs},get ngContentSelectors(){return U.ngContentSelector
+=====
+me).children,n=new tE(U,d,R.injector);this.activated=R.createComponent(V,{index:R.length,injector:n,environmentInjector:B}),this.changeDetector.markForCheck(),this.inputBinder?.bindActivatedRouteToOutletComponent(this),this.activateEvents.emit(this.activated.instance)}static{this.\u0275fac=function(B){return new(B||F)}}static{this.\u0275dir=TU({type:F,selectors:[["rout
+=====
+lNavigation=null,this.events=new cU,this.transitionAbortSubject=new cU,this.configLoader=D(rE),this.environmentInjector=D(IF),this.urlSerializer=D(jn),this.rootContexts=D(Ln),this.location=D(GR),this.inputBindingEnabled=D(mS,{optional:!0})!==null,this.titleStrategy=D(nC),this.options=D(In,{optional:!0})||{},this.paramsInheritanceStrategy=this.options.paramsInheritanceS
+=====
+tedUrl),Z.source,Z.restoredState)),N!==this.transitions?.getValue()?HF:Promise.resolve(Z)}),Wy(this.environmentInjector,this.configLoader,this.rootComponentType,U.config,this.urlSerializer,this.paramsInheritanceStrategy),cF(Z=>{l.targetSnapshot=Z.targetSnapshot,l.urlAfterRedirects=Z.urlAfterRedirects,this.currentNavigation=kU(X({},this.currentNavigation),{finalUrl:Z.ur
+=====
+nsition=l=kU(X({},n),{guards:Mj(n.targetSnapshot,n.currentSnapshot,this.rootContexts)}),l)),wj(this.environmentInjector,n=>this.events.next(n)),cF(n=>{if(l.guardsResult=n.guardsResult,n.guardsResult&&typeof n.guardsResult!="boolean")throw CS(this.urlSerializer,n.guardsResult);let J=new QE(n.id,this.urlSerializer.serialize(n.extractedUrl),this.urlSerializer.serialize(n.
+=====
+hot);this.events.next(W)}),fF(J=>{let W=!1;return FU(J).pipe(Zy(this.paramsInheritanceStrategy,this.environmentInjector),cF({next:()=>W=!0,complete:()=>{W||this.cancelNavigationTransition(J,"",R0.NoDataFromResolver)}}))}),cF(J=>{let W=new RE(J.id,this.urlSerializer.serialize(J.extractedUrl),this.urlSerializer.serialize(J.urlAfterRedirects),J.targetSnapshot);this.events
+=====
+eactivation()),fF(()=>{let{currentSnapshot:n,targetSnapshot:J}=l,W=this.createViewTransition?.(this.environmentInjector,n.root,J.root);return W?PU(W).pipe(ZU(()=>l)):FU(l)}),ZU(n=>{let J=rj(U.routeReuseStrategy,n.targetSnapshot,n.currentRouterState);return this.currentTransition=l=kU(X({},n),{targetRouterState:J}),this.currentNavigation.targetRouterState=J,l}),cF(()=>{
+=====
+ Xn(l.id,this.urlSerializer.serialize(l.extractedUrl),n,l.targetSnapshot??void 0);try{let W=Z0(this.environmentInjector,()=>this.navigationErrorHandler?.(J));if(W instanceof un){let{message:Z,cancellationCode:N}=CS(this.urlSerializer,W);this.events.next(new AB(l.id,this.urlSerializer.serialize(l.extractedUrl),Z,N)),this.events.next(new gV(W.redirectTo,W.navigationBehav
+=====
+}}return F})(),ag=(()=>{class F{constructor(){this._applicationRef=D(F0),this._injector=D(BF),this._environmentInjector=D(IF),this._document=D(gU),this._scrollBar=D(Zg),this._activeWindowCmptHasChanged=new cU,this._ariaHiddenValues=new Map,this._scrollBarRestoreFn=null,this._modalRefs=[],this._windowCmpts=[],this._activeInstances=new A;let U=D(bU);this._activeWindowCmp
+=====
+ found in the DOM.`);this._hideScrollBar();let V=new AS;U=R.injector||U;let d=U.get(IF,null)||this._environmentInjector,n=this._getContentRef(U,d,B,V,R),J=R.backdrop!==!1?this._attachBackdrop(l):void 0,W=this._attachWindowComponent(l,n.nodes),Z=new Bk(W,n,J,R.beforeDismiss);return this._registerModalRef(Z),this._registerWindowCmpt(W),Z.hidden.pipe(hQ(1)).subscribe(()=>
+=====
+ch(B=>B.dismiss(U))}hasOpenModals(){return this._modalRefs.length>0}_attachBackdrop(U){let B=yZ(Sg,{environmentInjector:this._applicationRef.injector,elementInjector:this._injector});return this._applicationRef.attachView(B.hostView),U.appendChild(B.location.nativeElement),B}_attachWindowComponent(U,B){let R=yZ(tg,{environmentInjector:this._applicationRef.injector,elem
+=====
+ateFromComponent(U,B,R,l,V){let d=BF.create({providers:[{provide:AS,useValue:l}],parent:U}),n=yZ(R,{environmentInjector:B,elementInjector:d}),J=n.location.nativeElement;return V.scrollable&&J.classList.add("component-host-scrollable"),this._applicationRef.attachView(n.hostView),new BR([[J]],n.hostView,n)}_setAriaHidden(U){let B=U.parentElement;B&&U!==this._document.bod
+=====
+this.http=Q}config;loadConfig(){return PQ(this,null,function*(){this.config=yield p2(this.http.get("environments/environment.json"))})}getDoeEndpoint(){return this.config.doeEndPoint}getRestEndpoint(){return this.config.restEndPoint}getProduction(){return this.config.production}static \u0275fac=function(U){return new(U||F)(y(NQ))};static \u0275prov=x({token:F,factory:F
+=====
+})};var h1=class F{constructor(Q,U){this.http=Q;this.env=U;this.API_URL=U.getRestEndpoint()}API_URL;sumario(Q){return this.http.get(this.API_URL+"public/sumario/"+BU.ngbDateToUrl(Q.dia)).pipe(WF(this.handleError))}handleError(Q){return console.error("DiarioService::handleError",Q),OF(()=>new Error(Q))}static \u0275fac=function(U){return new(U||F)(y(NQ),y(JF))};stati
+=====
+public/diarios/consultar/",{params:{tipoDiario:Q,data:U,tipoRetorno:B}}).pipe(WF(this.handleError))}consultarUltimos(Q=2){return this.http.get(this.API_URL+"public/diarios/consultar/",{params:{tipoRetorno:Q}}).pipe(WF(this.handleError))}download(Q,U=null){return U!==null?U="/"+U:U="/pdf",this.http.get(this.API_URL+"public/diarios/download/"+Q+U,{responseType:"blob"}).pipe(W
+=====
+s.pesquisar()):this.pesquisarUltimoDoe())})}pesquisarUltimoDoe(){this.loading=!0,this.diarioService.consultarUltimos(0).subscribe({next:Q=>{this.loading=!1,Q&&BU.validUrl(Q.dataPublicacao)&&(this.setarDia(BU.toIsoDate(Q.dataPublicacao)),this.redirecionar(),this.pesquisar())},error:Q=>{this.loading=!1,console.error(Q)}})}wasChanged(Q){if(!BU.validNgbDate(this.pesq.dia)||!BU.
+=====
+l,this.pesq.diaPesquisado=null,BU.validNgbDate(this.pesq.dia)&&(this.loading=!0,this.sumarioService.sumario(this.pesq).subscribe({next:Q=>{this.loading=!1,this.sumario=Q,this.pesq.diaPesquisado=this.pesq.dia,this.showMsg()},error:Q=>{this.loading=!1,this.showMsg(),console.error(Q)}}))}tabelas(){let Q=[];return this.pesq.tipoDiario=="DOE"&&this.sumario&&this.sumario.
