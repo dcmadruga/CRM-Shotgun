@@ -1,0 +1,12 @@
+noticia-publicidade	200	63756	https://www.parana.pr.gov.br/Audio/Mudancas-na-publicidade-de-licencas-ambientais-passam-vigorar-nesta-quinta-feira
+iat-home	200	329780	https://www.iat.pr.gov.br/
+iat-busca-requeridas	404	145911	https://www.iat.pr.gov.br/search/node?keys=licen%C3%A7as+requeridas
+iat-busca-publicidade	404	145913	https://www.iat.pr.gov.br/search/node?keys=publicidade+licen%C3%A7as
+sga-home	200	41758	https://auth-cs.identidadedigital.pr.gov.br/centralautenticacao/login.html?response_type=code&client_id=19f3cd308f1455b3fa09a282e0d496f4&redirect_uri=http%3A%2F%2Fwww.sga.pr.gov.br%2Fsga-iap&scope=&state=1795354014496&urlCert=https://certauth-cs.identidadedigital.pr.gov.br&dnsCidadao=https://cidadao-cs.identidadedigital.pr.gov.br/centralcidadao&loginPadrao=btnCentral&labelCentral=CPF&modulosDeAutenticacao=btnCertificado,btnCpf,btnCentral&urlLogo=http%3A%2F%2Fwww.sga.pr.gov.br%2Fsga-iap%2Fimages%2Flogo_sga.png&acesso=2094&tokenFormat=jwt&exibirLinkAutoCadastro=true&exibirLinkRecuperarSenha=true&exibirLinkAutoCadastroCertificado=false&exibirAviso=true&captcha=false
+sga-iat	ERRO	fetch failed	https://sga.iat.pr.gov.br/
+sga-consulta	200	61714	https://www.sga.pr.gov.br/sga-iap/consultarProcessoLicenciamento.do?action=iniciar
+amp-busca	200	154228	https://www.diariomunicipal.com.br/amp/pesquisar?busca_avancada%5Btexto%5D=%22posto%20de%20combust%C3%ADveis%22&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-21&busca_avancada%5Bpagina%5D=1
+amp-busca-sumula	200	127613	https://www.diariomunicipal.com.br/amp/pesquisar?busca_avancada%5Btexto%5D=s%C3%BAmula%20requerimento%20licen%C3%A7a%20combust%C3%ADveis&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-21&busca_avancada%5Bpagina%5D=1
+dioe-consulta	ERRO	fetch failed	https://www.documentos.dioe.pr.gov.br/dioe/consultaPublicaPDF.do?action=pgLocalizar&enviado=true
+dioe-home	ERRO	fetch failed	https://www.documentos.dioe.pr.gov.br/
+qd-curitiba	503	20	https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-05-01&size=5&territory_ids=4106902&excerpt_size=500
