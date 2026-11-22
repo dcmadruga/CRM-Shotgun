@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 200, data: '2026-11-22', titulo: 'Correção: menus e usuário sumindo depois da atualização', itens: [
+    'Em alguns aparelhos, logo depois da versão 199, o menu mostrava só Nova proposta e Administração e o nome do usuário não aparecia. Corrigido.'
+  ] },
   { v: 199, data: '2026-11-22', titulo: 'Salvar a proposta para enviar depois', itens: [
     'Nova proposta → Envio para aprovação: novo botão "Salvar proposta". Ele guarda a proposta sem enviar ao cliente.',
     'A proposta salva aparece na aba Propostas como "Pendente de envio", no painel Hoje como "Enviar a proposta ao cliente" e no funil do CRM, na nova coluna "Pendente de envio".',

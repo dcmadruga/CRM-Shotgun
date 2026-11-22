@@ -402,7 +402,7 @@ async function iniciar() {
     } catch (e) { aprovMsg('Não foi possível salvar: ' + (e.code || e.message) + '.'); }
     finally { btn.disabled = false; }
   });
-  $('btnAprovSalvar').addEventListener('click', async () => {
+  $('btnAprovSalvar')?.addEventListener('click', async () => { // ?. : se o aparelho ainda tiver o index.html antigo (sem o botão), o resto do app não pode parar
     const v = validarEnvio(); if (!v) return;
     const btn = $('btnAprovSalvar'); btn.disabled = true; aprovMsg('Salvando a proposta…');
     try {
