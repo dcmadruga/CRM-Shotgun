@@ -1,0 +1,1417 @@
+200 https://diariomunicipal.sc.gov.br/?r=site%2Fpage&view=integracao
+cache-control: no-store, no-cache, must-revalidate
+content-encoding: gzip
+content-length: 12213
+content-type: text/html; charset=UTF-8
+date: Sun, 22 Nov 2026 04:27:13 GMT
+expires: Thu, 19 Nov 1981 08:52:00 GMT
+pragma: no-cache
+server: Apache
+set-cookie: PHPSESSID=5m2u7816h3oqdk60ffglhddg22; path=/; secure; HttpOnly
+vary: Accept-Encoding
+x-xss-protection: 1;  mode=block
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="language" content="pt_BR" />
+    <meta name="description" content="DOM/SC. Diário Oficial dos Municípios de Santa Catarina.
+        Leis, decretos, licitações e demais publicações oficiais em mais de 550 entidades distintas." />
+
+    <!-- blueprint CSS framework -->
+    <link rel="stylesheet" type="text/css" href="/css/screen.css" media="screen, projection" />
+    <link rel="stylesheet" type="text/css" href="/css/print.css" media="print" />
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" type="text/css" href="/css/ie.css"
+          media="screen, projection"/>
+    <![endif]-->
+
+    <link rel="stylesheet" type="text/css" href="/css/main.css?ver=2" />
+    <link rel="stylesheet" type="text/css" href="/css/form.css" />
+    <link rel="icon" type="image/x-icon" href="/favicon_domsc.ico" />
+
+    <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1.0" />
+
+    <meta name="google-site-verification" content="u6bTH6qDDtjZXjAZscxGjXHh-teVqmr0vyNpvx_2ewo" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" type="text/css" href="https://static.dom.sc.gov.br/assets/43db1c71/css/bootstrap.min.css" />
+<link rel="stylesheet" type="text/css" href="https://static.dom.sc.gov.br/assets/43db1c71/css/bootstrap-responsive.min.css" />
+<link rel="stylesheet" type="text/css" href="https://static.dom.sc.gov.br/assets/43db1c71/css/bootstrap-yii.css" />
+<link rel="stylesheet" type="text/css" href="https://static.dom.sc.gov.br/assets/43db1c71/css/jquery-ui-bootstrap.css" />
+<link rel="stylesheet" type="text/css" href="/css/footer.css" />
+<script type="text/javascript" src="https://static.dom.sc.gov.br/assets/18299dc/jquery.min.js"></script>
+<script type="text/javascript" src="https://static.dom.sc.gov.br/assets/43db1c71/js/bootstrap.bootbox.min.js"></script>
+<script type="text/javascript" src="https://static.dom.sc.gov.br/assets/43db1c71/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://static.dom.sc.gov.br/assets/ef39d611/js/Chart.min.js"></script>
+<title>Diário Oficial dos Municípios de Santa Catarina - Manual de Integração</title>
+
+    <script type="text/javascript">
+        // fix bottstrap 2.1 on mobile touch
+        $(function() {
+            $('body').on('click.dropdown', '.dropdown form', function(e) {
+                e.stopPropagation()
+            });
+            $('body').on('touchstart.dropdown.data-api', '.dropdown', function(e) {
+                e.stopPropagation()
+            });
+        });
+    </script>
+
+            
+            <!-- Google tag (gtag.js) Google analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-DLE394TM0C"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+
+            gtag('config', 'G-DLE394TM0C');
+        </script>
+    
+    
+        <!-- adicionar Chatwoot -->
+        
+        <!-- Ref #546 -->
+        <!-- adicionar microsoft Clarity -->
+        <!-- <script type="text/javascript">
+            (function(c, l, a, r, i, t, y) {
+                c[a] = c[a] || function() {
+                    (c[a].q = c[a].q || []).push(arguments)
+                };
+                t = l.createElement(r);
+                t.async = 1;
+                t.src = "https://www.clarity.ms/tag/" + i;
+                y = l.getElementsByTagName(r)[0];
+                y.parentNode.insertBefore(t, y);
+            })(window, document, "clarity", "script", "qkimxu2hri");
+        </script> -->
+
+    
+    <script type="text/javascript" src="/js/geral/contraste.js"></script>
+    <script src="https://apps.consorciociga.gov.br/ciga-apps.js"></script>
+</head>
+
+<body>
+    <div class="fundo">
+        
+<div class="navbar-topo row-fluid hidden-phone">
+    <div class="navbar container no-print">
+        <div class="navbar-inner">
+                        <!-- logo -->
+            <ul class="nav pull-right">
+                <!-- alto contraste -->
+                <li><a title="Alto contraste" href="#" data-contraste><i class="icon-adjust"></i></a></li>
+                <ul id="yw0" class="nav"><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Menu <span class="caret"></span></a><ul id="yw1" class="dropdown-menu"><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/"><i class="icon-home"></i> Início</a></li><li class="nav-header">Ferramentas</li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=ato/index">Cadastrar Ato</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=autoEdicao/index">Autopublicações</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=ato/acervoIndex">Acervo Público</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=site/page&amp;view=integracao">API de Integração</a></li><li class="nav-header">Informações</li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=site/page&amp;view=calendario">Calendário de Edições</a></li><li><a tabindex="-1" href="https://ciga.sc.gov.br/cigadom">Como Publicar?</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=site/page&amp;view=entidades">Quais entidades publicam?</a></li><li><a tabindex="-1" href="https://dados.ciga.sc.gov.br">Dados Abertos</a></li><li class="nav-header">Institucional</li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=site/page&amp;view=domsc">Apresentação</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=site/page&amp;view=regras_domsc">Normas de Publicação</a></li></ul></li></ul>                <!-- CIGA APPs desktop -->
+                <li><ciga-apps style="z-index: 1000;"></ciga-apps></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- only mobile -->
+<div class="visible-phone">
+    <!-- CIGA APPs -->
+    <div class="no-print pull-right">
+        <ciga-apps style="z-index: 1000;"></ciga-apps>
+    </div>
+
+    <div class="navbar navbar-fixed-top no-print">
+        <div class="navbar-inner">
+            <!-- btn -->
+            <a class="btn btn-primary btn-navbar" data-toggle="collapse" data-target=".nav-collapse" style="margin-bottom: 0.8em; margin-top:0.8em;">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+
+                        <!-- logo -->
+
+            <div class="nav-collapse nav-responsive-collapse collapse">
+                <ul class="nav pull-right">
+                    <!-- alto contraste -->
+                    <li><a title="Alto contraste" href="#" data-contrast><i class="icon-adjust"></i>Alto contraste</a></li>
+                    <ul id="yw2" class="nav"><li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown" href="#">Menu <span class="caret"></span></a><ul id="yw3" class="dropdown-menu"><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/"><i class="icon-home"></i> Início</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=ato/index">Cadastrar Ato</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=autoEdicao/index">Autopublicações</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=ato/acervoIndex">Acervo Público</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=site/page&amp;view=integracao">API de Integração</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=site/page&amp;view=calendario">Calendário de Edições</a></li><li><a tabindex="-1" href="https://ciga.sc.gov.br/cigadom">Como Publicar?</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=site/page&amp;view=entidades">Quais entidades publicam?</a></li><li><a tabindex="-1" href="https://dados.ciga.sc.gov.br">Dados Abertos</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=site/page&amp;view=domsc">Apresentação</a></li><li><a tabindex="-1" href="https://diariomunicipal.sc.gov.br/?r=site/page&amp;view=regras_domsc">Normas de Publicação</a></li></ul></li></ul>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+        <div class="container" id="page">
+                            <div id="header">
+                    <div id="logo">
+                        <a href="https://diariomunicipal.sc.gov.br/">
+                            <img style="max-width:10em;" src="/images/logo.png" alt="Diário Oficial dos Municípios de Santa Catarina" />
+                        </a>
+                    </div>
+                </div>
+            
+            <div class="no-print">
+                <ul class=" breadcrumb"><li><a href="/">Página inicial</a></li><span class="divider">/</span><li class="active">Manual de Integração</li></ul>            </div>
+
+            <div class="flash-messages no-print">
+                            </div>
+
+            <div id="content">
+    
+<style>
+    td.text-center {
+        text-align: center
+    }
+</style>
+
+<div class="row offset1 span9">
+
+    <h1 class="center">Manual de Integração do DOM/SC</h1>
+
+        <div class='alert alert-info'>
+        <h3>Atenção</h3>
+                    <p>Já está disponível o campo para o Código de Registro de Informação do e-Sfinge (TCE/SC)!<br>
+                - Vide:
+                <a href="#cadastrar_ato_para_publicacao"><b>Cadastrar Ato para Publicação</b></a>,
+                                    <a href="#cadastrar_autopublicacao"><b>Cadastrar Autopublicação</b></a> e
+                                <a href="#cadastrar_item_acervo_publico"><b>Cadastrar Item de Acervo Público</b></a>.
+                <br>
+                - O método <a href="#verificar_status"><b>Verificar Status da Publicação</b></a> agora também retorna
+                a URL do PDF da publicação oficial.
+            </p>
+                <p>
+            Agora Decretos (categoria 2) também recebem Metadados!<br>
+            - Vide: <a href="#metadados_categoria_1_2"><b>Metadados para Leis e Decretos (categorias 1 e 2)</b></a>.<br>
+            - Enfatizamos a importância da implementação desse envio pois futuramente esses dados passarão a ser
+            exigidos obrigatoriamente também para o Cadastro de Atos para Publicação e não mais apenas para Item de
+            Acervo Público, como é hoje.
+        </p>
+    </div>
+
+    <div id="apresentacao">
+        <hr>
+        <h2>Apresentação</h2>
+
+        <p>
+            Este é um documento técnico que apresenta o formato de troca de dados com o fim de permitir a aplicativos de
+            terceiros o cadastro automatizado de documentos para publicação no Diário Oficial dos Municípios de Santa Catarina.
+        </p>
+        <p>
+            O cadastro automatizado de publicações pode ser útil para diversos sistemas de terceiros que armazenam ou
+            geram documentos os quais precisam ser submetidos ao processo de publicidade oficial, como ferramentas de
+            contabilidade e gestão de pessoal, ferramentas de controle legislativo, tributário e muitas outras.
+        </p>
+    </div>
+    <div id="informacoes-gerais">
+        <h2>Informações Gerais</h2>
+
+        <p>
+            A integração prevista neste documento é feita através de um web-service no modelo REST.
+            Toda comunicação cliente/servidor ocorrerá via protocolo HTTPS (TLS 1.2), porta 443/TCP.
+            São aceitos os métodos GET e POST, sendo seu uso discriminado neste documento.
+            A autenticação utilizada é do tipo HTTP Basic Auth.
+            O retorno é feito combinando os códigos HTTP padrão (200, 400, 401, 403 e 404) somados a um objeto JSON.
+        </p>
+        <p>
+            A autenticação do tipo HTTP Basic Auth, com CPF e CNPJ, e X-API-KEY, deve ser feita em todas as requisições.
+            O controle de acesso é o mesmo empregado para o login de cadastro de atos no site.
+            Todas as publicações são cadastradas no nome do usuário autenticado e o acompanhamento delas é de inteira
+            responsabilidade do usuário que a cadastrou.
+        </p>
+        <p>
+            Todas as regras de publicação vigentes são aplicadas também aos documentos cadastrados por API.
+        </p>
+        <p>
+            <b>Endereço base para as requisições:</b>
+        </p>
+        <ul>
+            <li>
+                <strong>HOMOLOGAÇÃO:</strong> <a href="https://domscdev.beta.consorciociga.gov.br/">https://domscdev.beta.consorciociga.gov.br/</a>
+            </li>
+            <li>
+                <strong>PRODUÇÃO:</strong> <a href="https://diariomunicipal.sc.gov.br/">https://diariomunicipal.sc.gov.br/</a>
+            </li>
+        </ul>
+    </div>
+    <div id="mensagens">
+        <hr>
+        <h2>Mensagens</h2>
+
+        <ul>
+            <li>
+                <a href="#detalhes_implementacao">Detalhes de Implementação dos Métodos</a>
+            </li>
+            <li>
+                <a href="#verificacao_usuario_senha">Verifica Usuário e Senha e Retorna Parâmetros Iniciais</a>
+            </li>
+            <li>
+                <a href="#novos_cadastros">Novos Cadastros</a>
+                <ul>
+                    <li>
+                        <a href="#metadados_categoria_1_2">&emsp;Metadados para Leis e Decretos (categorias 1 e 2)</a>
+                        <span class="badge badge-success">Novo</span>
+                    </li>
+                    <li>
+                        <a href="#metadados_categoria_6_7_28">&emsp;Metadados para Contratos, Convênios e Empenhos
+                            (categorias 6, 7 e 28)</a>
+                        <span class="badge badge-success">Novo</span>
+                    </li>
+                    <li>
+                        <a href="#resposta_padrao_novos_cadastros">&emsp;Resposta Padrão para Novos Cadastros</a>
+                    </li>
+                    <li>
+                        <a href="#cadastrar_ato_para_publicacao">&emsp;Cadastrar Ato para Publicação</a>
+                    </li>
+                                            <li>
+                            <a href="#cadastrar_autopublicacao">&emsp;Cadastrar Autopublicação</a>
+                            <span class="badge badge-success">Novo</span>
+                        </li>
+                    
+                    <li>
+                        <a href="#cadastrar_item_acervo_publico">&emsp;Cadastrar Item de Acervo Público</a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="#excluir_publicacao">Excluir Publicação Programada</a>
+            </li>
+            <li>
+                <a href="#verificar_status">Verificar Status da Publicação</a>
+            </li>
+            <li>
+                <a href="#listar_publicacoes">Listar Publicações</a>
+            </li>
+        </ul>
+
+        <hr>
+
+        <div id="detalhes_implementacao">
+            <h3>Detalhes de Implementação dos Métodos</h3>
+
+            <dl>
+                <dt>Modo de Autentificação</dt>
+                <dd>
+                    <p>
+                        Para todos os métodos abaixo, Usuário e Senha devem ser informados via HTTP Basic Auth.
+                    </p>
+                </dd>
+
+                <dt>Codificação dos Textos dos Parâmetros</dt>
+                <dd>
+                    <p>
+                        Todo argumento textual deverá ser passado com a codificação UTF-8.
+                    </p>
+                </dd>
+                <dt>&lt;parâmetro&gt;*</dt>
+                <dd>
+                    <p>
+                        Todo parâmetro seguido de asterisco (<b>*</b>) é obrigatório.
+                    </p>
+                </dd>
+            </dl>
+        </div>
+
+        <hr>
+
+        <div id="verificacao_usuario_senha">
+            <h3>Verifica Usuário e Senha e Retorna Parâmetros Iniciais</h3>
+
+            <p>
+                <b>URL:</b> <code>?r=remote/verify</code>
+            </p>
+            <p>
+                <b>Método:</b> GET
+            </p>
+            <p>
+                <b>Parâmetro na URL:</b> Nenhum
+            </p>
+            <p>
+                <b>Obs.:</b> As categorias retornadas têm os códigos estáveis, logo não é necessário verificá-los
+                sempre.
+            </p>
+            <p>
+                <b>Retorno:</b> Objeto JSON com o seguinte schema:
+            </p>
+
+            <pre><code>
+{
+    "type":"object",
+    "$schema": "http://json-schema.org/draft-03/schema",
+    "required":true,
+    "properties":{
+        "ok":{
+            "type":"boolean",
+            "description": "Indica se foi possível realizar a operação",
+            "required":true
+        },
+        "cod_entidade_usuario":{
+            "type":"integer",
+            "description": "Código da entidade do usuário autenticado",
+            "required":true
+        },
+        "nome_entidade_usuario":{
+            "type":"string",
+            "description": "Nome da entidade do usuário autenticado",
+            "required":true
+        },
+            "proxima_edicao":{
+            "type":"string",
+            "description": "Data no formato dd/mm/yyyy da próxima edição",
+            "required":true
+        },
+        "categorias":{
+            "type":"array",
+            "description": "Listagem das categorias válidas para cadastro",
+            "required":true
+        },
+    }
+}
+            </code></pre>
+
+            <p>Exemplo usando cURL:</p>
+            <pre class="alert-info"><code>
+ curl -u cpf_usuario:cnpj_empresa_integradora -H 'X-Api-Key: token_base64' "https://diariomunicipal.sc.gov.br/?r=remote/verify"
+            </code></pre>
+        </div>
+
+        <hr>
+
+        <div id="novos_cadastros">
+            <h2>Novos Cadastros</h2>
+
+            <p>
+                <!-- Existem duas formas de cadastrar documentos no DOM.
+                A primeira e mais comum, que visa à publicação do ato em uma Edição de uma determinada data deve ser -->
+                A forma de cadastro mais comum, que visa à publicação do ato em uma Edição de uma determinada data deve ser
+                feita pelo <a href="#cadastrar_ato_para_publicacao">"Cadastrar Ato para Publicação"</a>.
+                <!-- Já na modalidade de item de acervo público, em que o ato não é publicado em uma determinada Edição do -->
+                                    Para publicações instantâneas deve-se utilizar a opção <a href="#cadastrar_autopublicacao">"Cadastrar Autopublicação"</a>.
+                                Já na modalidade de item de acervo público, o ato não é publicado em uma determinada Edição do
+                DOM, mas fica armazenado e disponível mediante o mesmo sistema de pesquisa.
+                Esse cadastro de documentos, normalmente antigos, é feito pelo
+                <a href="#cadastrar_item_acervo_publico">"Cadastrar Item de Acervo Público"</a>.
+            </p>
+            <p>
+                Ainda sobre os tipos de cadastros disponíveis, ressaltam-se <b>4 pontos importantes em
+                    comum:</b>
+            </p>
+            <ol>
+                <li>
+                    Caso a categoria do Ato seja "1" ou "2", <a href="#metadados_categoria_1_2"> "Metadados para Leis e
+                        Decretos (categorias 1 e 2)"</a> podem ser enviados.
+                    <strong>Aqui enfatizamos que hoje os Metadados são obrigatóros para Itens de Acervo Público, mas
+                        que também, futuramente, serão obrigatórios para Cadastros de Novas Publicações;</strong>
+                </li>
+                <li>
+                    Caso a categoria do Ato seja "6, 7 ou 28", <a href="#metadados_categoria_6_7_28"> "Metadados para
+                        Contratos, Convênios e Empenhos (categorias 6, 7 e 28)"</a> podem ser enviados.
+                    <strong>Aqui enfatizamos que hoje os Metadados são obrigatóros para Itens de Acervo Público, mas
+                        que também, futuramente, serão obrigatórios para Cadastros de Novas Publicações;</strong>
+                </li>
+                <li>
+                    Basicamente a única diferença dos parâmetros desses cadastros é que para "Cadastrar Ato Para
+                    Publicação" deve-se fornecer o parâmetro "Ato[data_publicacao]".
+                                            Para "Cadastrar Autopublicação" a data de publicação será o momento presente e não deve ser informada.
+                                        Por outro lado, para "Cadastrar Item de Acervo Público", fornece-se o parâmetro
+                    "Ato[data_documento]".
+                </li>
+                <li>
+                    Todos os cadastros retormam <a href="#resposta_padrao_novos_cadastros">Resposta Padrão para Novos
+                        Cadastros</a>.
+                </li>
+            </ol>
+
+            <div id="metadados_categoria_1_2">
+                <h3>
+                    Metadados para Leis e Decretos (categorias 1 e 2)
+                    <span class="badge badge-success">Novo</span>
+                </h3>
+
+                <p>
+                    Esses metadados servem tanto para o <a href="#cadastrar_ato_para_publicacao">Cadastro de Novas
+                        Publicações</a>
+                                            e <a href="#cadastrar_autopublicacao">Cadastro de Autopublicações</a>,
+                                        como para <a href="#cadastrar_item_acervo_publico">Itens de Acervo
+                        Público</a>, <strong>sendo momentaneamente obrigatórios para este último</strong>.
+                </p>
+                <p>
+                    <strong>Futuramente esses parâmetros se tornão obrigatórios para ambos os cadastros!</strong>
+                </p>
+
+                <table id="table_metadados_leis" class="table table-striped">
+                    <thead>
+                        <th scope="col">Parâmetro</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Tamanho/Formato</th>
+                        <th scope="col">Descrição</th>
+                    </thead>
+                    <tr>
+                        <td>
+                            <b>Metadados[cod_subcategoria]**</b>
+                        </td>
+                        <td>Numérico</td>
+                        <td class="text-center">1</td>
+                        <td>
+                            <p>
+                                <b>Campo disponível e obrigatório apenas para Leis (categoria 1).</b><br>
+                                Valores possíveis:
+                            </p>
+                            <ul>
+                                                                    <li>
+                                        <b>1</b> => Lei Orgânica                                    </li>
+                                                                    <li>
+                                        <b>2</b> => Emenda à Lei Orgânica                                    </li>
+                                                                    <li>
+                                        <b>3</b> => Lei Complementar                                    </li>
+                                                                    <li>
+                                        <b>4</b> => Lei Ordinária                                    </li>
+                                                                    <li>
+                                        <b>5</b> => Lei Delegada                                    </li>
+                                                                    <li>
+                                        <b>6</b> => Medida Provisória                                    </li>
+                                                                    <li>
+                                        <b>7</b> => Decreto Legislativo                                    </li>
+                                                                    <li>
+                                        <b>9</b> => Anexos                                    </li>
+                                                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Metadados[status_lei]</b>
+                        </td>
+                        <td>Numérico</td>
+                        <td class="text-center">1</td>
+                        <td>
+                            <p>Valores possíveis:</p>
+                            <ul>
+                                <li><b>1</b> => Vigente (Não consta revogação expressa)</li>
+                                <li><b>2</b> => Revogada</li>
+                            </ul>
+                            <b>Obs.:</b> Este atributo está em fase de homologação.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Metadados[numero]*</b>
+                        </td>
+                        <td>Numérico</td>
+                        <td class="text-center">5 dígitos, com valor até 90000</td>
+                        <td>Número do ato normativo, sem pontos.</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Metadados[ano]*</b>
+                        </td>
+                        <td>Numérico</td>
+                        <td class="text-center">4</td>
+                        <td>YYYY - Ano do ato normativo.</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Metadados[epigrafe]</b>
+                        </td>
+                        <td>Textual</td>
+                        <td class="text-center">100</td>
+                        <td>
+                            Epígrafe do ato normativo, conforme art. 4º da LEI COMPLEMENTAR Nº 95, DE 26 DE FEVEREIRO DE
+                            1998.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Metadados[ementa]</b>
+                        </td>
+                        <td>Textual</td>
+                        <td class="text-center">500</td>
+                        <td>
+                            Ementa do ato normativo, conforme art. 5º da LEI COMPLEMENTAR Nº 95, DE 26 DE FEVEREIRO
+                            DE 1998.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Metadados[tag_assunto]</b>
+                        </td>
+                        <td>Textual</td>
+                        <td class="text-center">[...,]</td>
+                        <td>
+                            <p>Valores possíveis (array com um ou mais):</p>
+                            <ul>
+                                                                    <li>
+                                        Assistência Social                                    </li>
+                                                                    <li>
+                                        Criança e Adolescente                                    </li>
+                                                                    <li>
+                                        Educação                                    </li>
+                                                                    <li>
+                                        Meio Ambiente                                    </li>
+                                                                    <li>
+                                        Orçamento                                    </li>
+                                                                    <li>
+                                        Saúde                                    </li>
+                                                                    <li>
+                                        Segurança                                    </li>
+                                                                    <li>
+                                        Servidor Público                                    </li>
+                                                                    <li>
+                                        Transporte                                    </li>
+                                                                    <li>
+                                        Tributos                                    </li>
+                                                                    <li>
+                                        Trânsito                                    </li>
+                                                                    <li>
+                                        Turismo                                    </li>
+                                                                    <li>
+                                        Urbanística                                    </li>
+                                                                    <li>
+                                        Outros                                    </li>
+                                                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Metadados[projeto_lei]</b>
+                        </td>
+                        <td>Textual</td>
+                        <td class="text-center">100</td>
+                        <td>Referência ao PL de origem.</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Metadados[data_sancao]*</b>
+                        </td>
+                        <td>Data</td>
+                        <td class="text-center">dd/mm/yyyy</td>
+                        <td>
+                            Data da sanção.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Metadados[data_inicio_vigencia]</b>
+                        </td>
+                        <td>Data</td>
+                        <td class="text-center">dd/mm/yyyy</td>
+                        <td>
+                            Data do início da vigência.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b>Metadados[data_revogacao]</b>
+                        </td>
+                        <td>Data</td>
+                        <td class="text-center">dd/mm/yyyy</td>
+                        <td>
+                            Data da Revogação Total do ato se existir.<br>
+                            <b>Obs.:</b> Essa informação faz sentido no cadastro de Itens de Acervo Público de atos
+                            já revogados.
+                        </td>
+                    </tr>
+                </table>
+
+                <b>**</b> Campo disponível e obrigatório apenas para Leis (categoria 1).
+            </div>
+
+            <div id="metadados_categoria_6_7_28">
+                <h3>
+                    Metadados para Contratos, Convênios e Empenhos (categorias 6, 7 e 28)
+                    <span class="badge badge-success">Novo</span>
+                </h3>
+
+                <p>
+                    Esses metadados servem tanto para o <a href="#cadastrar_ato_para_publicacao">Cadastro de Novas
+                        Publicações</a>
+                                            e <a href="#cadastrar_autopublicacao">Cadastro de Autopublicações</a>,
+                    
+                    como para <a href="#cadastrar_item_acervo_publico">Itens de Acervo
+                        Público</a>, <strong>sendo momentaneamente obrigatórios para este último</strong>.
+                </p>
+                <p>
+                    <strong>Futuramente esses parâmetros se tornão obrigatórios para ambos os cadastros!</strong>
+                </p>
+
+                <table id="table_metadados_contratos" class="table table-striped">
+                    <thead>
+                        <th scope="col">Parâmetro</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Tamanho/Formato</th>
+                        <th scope="col">Descrição</th>
+                    </thead>
+                    <tr>
+                        <td><b>Metadados[legislacao]**</b></td>
+                        <td>Numérico</td>
+                        <td class="text-center">1</td>
+                        <td>
+                            <p>Valores possíveis:</p>
+                            <ul>
+                                <li><b>0</b> => Sem Legislação específica (<b>padrão</b>)</li>
+                                <li><b>1</b> => COVID-19 - LEI Nº 13.979, DE 6 DE FEVEREIRO DE 2020</li>
+                            </ul>
+                            Valor a ser passado caso seja um ato com fulcro em tal lei.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Metadados[numero]*</b></td>
+                        <td>Textual</td>
+                        <td class="text-center">255</td>
+                        <td>
+                            O nome/número do Contrato, Convênio ou Empenho.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Metadados[numero_processo]**</b></td>
+                        <td>Textual</td>
+                        <td class="text-center">255</td>
+                        <td>
+                            O nome/número do respectivo processo de contratação ou aquisição.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Metadados[url_processo]</b></td>
+                        <td>Textual</td>
+                        <td class="text-center">2000</td>
+                        <td>
+                            URL pública do respectivo processo de contratação ou aquisição.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Metadados[objeto]</b></td>
+                        <td>Textual</td>
+                        <td class="text-center">65535</td>
+                        <td>
+                            Objeto contratual.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Metadados[cnpj_cpf]*</b></td>
+                        <td>Textual</td>
+                        <td class="text-center">14 ou 11</td>
+                        <td>
+                            Número da inscrição na RFB do contratado (CNPJ ou CPF).
+                            Aceita-se os documentos apenas com os números e também com o caracteres de separação.
+                            Ex: 09427503000112 ou 09.427.503/0001-12.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Metadados[nome_razao_social]</b></td>
+                        <td>Textual</td>
+                        <td class="text-center">255</td>
+                        <td>
+                            Nome/Razão Social do contratado.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Metadados[data_assinatura]</b></td>
+                        <td>Data</td>
+                        <td class="text-center">dd/mm/yyyy</td>
+                        <td>
+                            Data de Assinatura.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Metadados[data_vigencia_inicio]**</b></td>
+                        <td>Data</td>
+                        <td class="text-center">dd/mm/yyyy</td>
+                        <td>
+                            Início da vigência (prazo contratual).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Metadados[data_vigencia_fim]**</b></td>
+                        <td>Data</td>
+                        <td class="text-center">dd/mm/yyyy</td>
+                        <td>
+                            Fim da vigência (prazo contratual).
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Metadados[valor]*</b></td>
+                        <td>Decimal</td>
+                        <td class="text-center">...0.000,00</td>
+                        <td>
+                            Valor.
+                        </td>
+                    </tr>
+                </table>
+
+                <b>**</b> Campos obrigatórios caso Metadados[legislacao] = 1, conforme Art. 4º, § 2º, da
+                <a href="http://www.planalto.gov.br/ccivil_03/_ato2019-2022/2020/lei/L13979.htm" target="_blank">Lei n.º
+                    13.979, de 6 de fevereiro de 2020</a>.
+            </div>
+
+            <div id="resposta_padrao_novos_cadastros">
+                <h3>Resposta Padrão para Novos Cadastros</h3>
+                <p>
+                    Ambas as operações de inserção (cadastros) retornam a mesma estrutura.
+                </p>
+                <p>
+                    <b>Retorno:</b> Objeto JSON com o seguinte schema:
+                </p>
+
+                <pre><code>
+{
+    "type":"object",
+    "$schema": "http://json-schema.org/draft-03/schema",
+    "required":true,
+    "properties":{
+        "ok":{
+            "type":"boolean",
+            "description": "Indica se foi possível realizar a operação",
+            "required":true
+        },
+        "codigo":{
+            "type":"integer",
+            "description": "Código do Ato Cadastrado",
+            "required":true
+        },
+    }
+}
+                </code></pre>
+            </div>
+
+            <div id="cadastrar_ato_para_publicacao">
+                <h3>Cadastrar Ato para Publicação</h3>
+
+                <p>
+                    <b>URL:</b> <code>?r=remote/create</code>
+                </p>
+                <p>
+                    <b>Método:</b> POST
+                </p>
+                <p>
+                    <b>Parâmetro na URL:</b> Nenhum
+                </p>
+                <p>
+                    <b>Parâmetros para serem enviados como itens de formulário no corpo do POST:</b>
+                </p>
+
+                <table id="table_cadastro_ato" class="table table-striped">
+                    <thead>
+                        <th scope="col">Parâmetro</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Tamanho/Formato</th>
+                        <th scope="col">Descrição</th>
+                    </thead>
+                    <tr>
+                        <td><b>Ato[titulo]*</b></td>
+                        <td>Textual</td>
+                        <td class="text-center">200</td>
+                        <td>Título da publicação</td>
+                    </tr>
+                    <tr>
+                        <td><b>Ato[cod_categoria]*</b></td>
+                        <td>Numérico</td>
+                        <td class="text-center">1</td>
+                        <td>Código da categoria, conforme remote/verify.</td>
+                    </tr>
+                    <tr>
+                        <td><b>Ato[data_publicacao]*</b>
+                        </td>
+                        <td>Data</td>
+                        <td class="text-center">dd/mm/yyyy</td>
+                        <td>Data de publicação (no mínimo a mesma retornada pelo remote/verify).</td>
+                    </tr>
+                    <tr>
+                        <td><b>Ato[anexo]*</b></td>
+                        <td>Documento</td>
+                        <td class="text-center"></td>
+                        <td>
+                            Arquivo para publicação, no formato DOCX, DOC, ODT, TXT, RTF, PDF ou ZIP,
+                            respeitando as normas de publicação no DOM.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Ato[url_origem_api]</b></td>
+                        <td>Textual</td>
+                        <td class="text-center">2000</td>
+                        <td>
+                            URL pública para o ato (publicação) no sistema de origem desse cadastro
+                        </td>
+                    </tr>
+                                            <tr>
+
+                            <td><b>Ato[cod_registro_info_sfinge]</b></td>
+                            <td>Textual</td>
+                            <td class="text-center">/^[A-Z\d]{40}$/</td>
+                            <td>
+                                Código de Registro de Informação do e-Sfinge (TCE/SC) instituído pela
+                                <a href="https://www.tcesc.tc.br/sites/default/files/leis_normas/INSTRU%C3%87%C3%83O%20NORMATIVA%20N%2028-2021%20CONSOLIDADA.pdf" target="_blank">INSTRUÇÃO NORMATIVA N.TC-28/2021</a>, obrigatório nos cadastros de
+                                Atos Jurídicos sujeitos à Pré-Publicação no e-Sfinge, conforme
+                                <a href="https://confluence.tce.sc.gov.br/display/SD/Layouts" target="_blank">layouts</a>.<br>
+                                Essa informação também poderá ser alimentada após publicação do Ato, para
+                                os demais casos que existir tal código, mas com conhecimento apenas pós publicação.
+                            </td>
+                        </tr>
+                                        <tr>
+                        <td><span class="badge badge-success">Novo</span> <b>Ato[cod_entidade]</b></td>
+                        <td>Numérico</td>
+                        <td class="text-center">1</td>
+                        <td>
+                            Código da entidade na qual o ato será publicado, conforme permissões do usuário publicador.
+                        </td>
+                    </tr>
+                </table>
+
+                <p>Exemplo usando cURL:</p>
+                <pre class="alert-info"><code>
+curl -u cpf_usuario:cnpj_empresa_integradora \
+    -H 'X-Api-Key: token_base64'  \
+    -F "Ato[titulo]=Resolução 123" \
+    -F "Ato[cod_categoria]=3" \
+    -F "Ato[data_publicacao]=03/12/2020" \
+    -F "Ato[anexo]=@arquivo.docx" \
+    -F "Ato[url_origem_api]=http://www.dominio.terceiro.com/.../..." \
+    "https://diariomunicipal.sc.gov.br/?r=remote/create"
+                </code></pre>
+
+                <p>Exemplo de Lei com Metadados usando cURL::</p>
+                <pre class="alert-info"><code>
+curl -u cpf_usuario:cnpj_empresa_integradora \
+    -H 'X-Api-Key: token_base64'  \
+    -F "Ato[titulo]=Lei Complementar N.º 1.234, de 01 de Dezembro de 2019" \
+    -F "Ato[cod_categoria]=1" \
+    -F "Ato[data_publicacao]=03/12/2019" \
+    -F "Ato[anexo]=@lei_complementar_1234_2019.docx" \
+    -F "Ato[url_origem_api]=www.dominio.terceiro.com/.../..." \
+        -F "Metadados[cod_subcategoria]=3" \
+        -F "Metadados[status_lei]=2" \
+        -F "Metadados[numero]=1234" \
+        -F "Metadados[ano]=2019" \
+        -F "Metadados[epigrafe]=Lei Complementar N.º 1.234, de 01 de Dezembro de 2019" \
+        -F "Metadados[ementa]=Dispõe sobre ...." \
+        -F "Metadados[tag_assunto][]=Saúde,Educação" \
+        -F "Metadados[projeto_lei]=Projeto de Lei N.º 670/2018" \
+        -F "Metadados[data_sancao]=01/12/2019" \
+        -F "Metadados[data_inicio_vigencia]=03/12/2019" \
+    "https://diariomunicipal.sc.gov.br/?r=remote/create"
+                </code></pre>
+            </div>
+
+                            <div id="cadastrar_autopublicacao">
+                    <h3>
+                        Cadastrar Autopublicação
+                    </h3>
+
+                    <p>
+                        <b>URL:</b> <code>?r=remote/autopublicacaoCreate</code>
+                    </p>
+                    <p>
+                        <b>Método:</b> POST
+                    </p>
+                    <p>
+                        <b>Parâmetro na URL:</b> Nenhum
+                    </p>
+                    <p>
+                        <b>Parâmetros para serem enviados como itens de formulário no corpo do POST:</b>
+                    </p>
+
+                    <table id="table_cadastro_ato" class="table table-striped">
+                        <thead>
+                            <th scope="col">Parâmetro</th>
+                            <th scope="col">Tipo</th>
+                            <th scope="col">Tamanho/Formato</th>
+                            <th scope="col">Descrição</th>
+                        </thead>
+                        <tr>
+                            <td><b>Ato[titulo]*</b></td>
+                            <td>Textual</td>
+                            <td class="text-center">200</td>
+                            <td>Título da publicação</td>
+                        </tr>
+                        <tr>
+                            <td><b>Ato[cod_categoria]*</b></td>
+                            <td>Numérico</td>
+                            <td class="text-center">1</td>
+                            <td>Código da categoria, conforme remote/verify.</td>
+                        </tr>
+                        <tr>
+                            <td><b>Ato[data_publicacao]</b>
+                            </td>
+                            <td>Data</td>
+                            <td class="text-center">dd/mm/yyyy</td>
+                            <td>Data de publicação. Atos com data do dia vigente serão instantâneamente publicados, enquanto que com data no futuro serão agendados e publicados automaticamente somente no dia selecionado.</td>
+                        </tr>
+                        <tr>
+                            <td><b>Ato[anexo]*</b></td>
+                            <td>Documento</td>
+                            <td class="text-center"></td>
+                            <td>
+                                <span class="badge badge-success">Novo</span><br>
+                                Arquivo para publicação, nos formatos DOCX, DOC, ODT, TXT, RTF ou PDF, respeitando as normas de publicação no DOM.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><b>Ato[url_origem_api]</b></td>
+                            <td>Textual</td>
+                            <td class="text-center">2000</td>
+                            <td>
+                                URL pública para o ato (publicação) no sistema de origem desse cadastro
+                            </td>
+                        </tr>
+                                                    <tr>
+                                <td><b>Ato[cod_registro_info_sfinge]</b></td>
+                                <td>Textual</td>
+                                <td class="text-center">/^[A-Z\d]{40}$/</td>
+                                <td>
+                                    Código de Registro de Informação do e-Sfinge (TCE/SC) instituído pela
+                                    <a href="https://www.tcesc.tc.br/sites/default/files/leis_normas/INSTRU%C3%87%C3%83O%20NORMATIVA%20N%2028-2021%20CONSOLIDADA.pdf" target="_blank">INSTRUÇÃO NORMATIVA N.TC-28/2021</a>, obrigatório nos cadastros de
+                                    Atos Jurídicos sujeitos à Pré-Publicação no e-Sfinge, conforme
+                                    <a href="https://confluence.tce.sc.gov.br/display/SD/Layouts" target="_blank">layouts</a>.<br>
+                                    Essa informação também poderá ser alimentada após publicação do Ato, para
+                                    os demais casos que existir tal código, mas com conhecimento apenas pós publicação.
+                                </td>
+                            </tr>
+                                                <tr>
+                            <td><span class="badge badge-success">Novo</span> <b>Ato[cod_entidade]</b></td>
+                            <td>Numérico</td>
+                            <td class="text-center">1</td>
+                            <td>
+                                Código da entidade na qual o ato será publicado, conforme permissões do usuário publicador.
+                            </td>
+                        </tr>
+                    </table>
+
+                    <p>
+                        Autopublicações cadastradas via API podem precisar de até 60 segundos para serem visualizadas na pesquisa geral.
+                    </p>
+
+                    <p>Exemplo usando cURL:</p>
+                    <pre class="alert-info"><code>
+curl -u cpf_usuario:cnpj_empresa_integradora \
+    -H 'X-Api-Key: token_base64'  \
+    -F "Ato[titulo]=Resolução 123" \
+    -F "Ato[cod_categoria]=3" \
+    -F "Ato[anexo]=@arquivo.pdf" \
+    -F "Ato[url_origem_api]=http://www.dominio.terceiro.com/.../..." \
+    "https://diariomunicipal.sc.gov.br/?r=remote/autopublicacaoCreate"
+                </code></pre>
+
+                    <p>Exemplo de Lei com Metadados usando cURL::</p>
+                    <pre class="alert-info"><code>
+curl -u cpf_usuario:cnpj_empresa_integradora \
+    -H 'X-Api-Key: token_base64'  \
+    -F "Ato[titulo]=Lei Complementar N.º 1.234, de 01 de Dezembro de 2019" \
+    -F "Ato[cod_categoria]=1" \
+    -F "Ato[anexo]=@lei_complementar_1234_2019.pdf" \
+    -F "Ato[url_origem_api]=www.dominio.terceiro.com/.../..." \
+        -F "Metadados[cod_subcategoria]=3" \
+        -F "Metadados[status_lei]=2" \
+        -F "Metadados[numero]=1234" \
+        -F "Metadados[ano]=2019" \
+        -F "Metadados[epigrafe]=Lei Complementar N.º 1.234, de 01 de Dezembro de 2019" \
+        -F "Metadados[ementa]=Dispõe sobre ...." \
+        -F "Metadados[tag_assunto][]=Saúde,Educação" \
+        -F "Metadados[projeto_lei]=Projeto de Lei N.º 670/2018" \
+        -F "Metadados[data_sancao]=01/12/2019" \
+        -F "Metadados[data_inicio_vigencia]=03/12/2019" \
+    "https://diariomunicipal.sc.gov.br/?r=remote/autopublicacaoCreate"
+                    </code></pre>
+                </div>
+            
+
+            <div id="cadastrar_item_acervo_publico">
+                <h3>
+                    Cadastrar Item de Acervo Público
+                </h3>
+
+                <p>
+                    <b>URL:</b> <code>?r=remote/acervoCreate</code>
+                </p>
+                <p>
+                    <b>Método:</b> POST
+                </p>
+                <p>
+                    <b>Parâmetro na URL:</b> Nenhum
+                </p>
+                <p>
+                    <b>Parâmetros para serem enviados como itens de formulário no corpo do POST:</b>
+                </p>
+
+                <table id="table_cadastro_ato" class="table table-striped">
+                    <thead>
+                        <th scope="col">Parâmetro</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Tamanho/Formato</th>
+                        <th scope="col">Descrição</th>
+                    </thead>
+                    <tr>
+                        <td><b>Ato[titulo]*</b></td>
+                        <td>Textual</td>
+                        <td class="text-center">200</td>
+                        <td>Título da publicação</td>
+                    </tr>
+                    <tr>
+                        <td><b>Ato[cod_categoria]*</b></td>
+                        <td>Numérico</td>
+                        <td class="text-center">1</td>
+                        <td>Código da categoria, conforme remote/verify.</td>
+                    </tr>
+                    <tr>
+                        <td><b>Ato[data_documento]*</b>
+                        </td>
+                        <td>Data</td>
+                        <td class="text-center">dd/mm/yyyy</td>
+                        <td>Data do Documento, ou seja, a data de sua criação e/ou de entrada em vigor/publicação.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Ato[anexo]*</b></td>
+                        <td>Documento</td>
+                        <td class="text-center"></td>
+                        <td>
+                            Arquivo para publicação, no formato DOC, DOCX ou RTF (PDF para tabelas da contabilidade),
+                            respeitando as normas de publicação no DOM.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><b>Ato[url_origem_api]</b></td>
+                        <td>Textual</td>
+                        <td class="text-center">2000</td>
+                        <td>
+                            URL pública para o ato (publicação) no sistema de origem desse cadastro
+                        </td>
+                    </tr>
+                                            <tr>
+
+                            <td><b>Ato[cod_registro_info_sfinge]</b></td>
+                            <td>Textual</td>
+                            <td class="text-center">/^[A-Z\d]{40}$/</td>
+                            <td>
+                                Código de Registro de Informação do e-Sfinge (TCE/SC) instituído pela
+                                <a href="https://www.tcesc.tc.br/sites/default/files/leis_normas/INSTRU%C3%87%C3%83O%20NORMATIVA%20N%2028-2021%20CONSOLIDADA.pdf" target="_blank">INSTRUÇÃO NORMATIVA N.TC-28/2021</a>, obrigatório nos cadastros de
+                                Atos Jurídicos sujeitos à Pré-Publicação no e-Sfinge, conforme
+                                <a href="https://confluence.tce.sc.gov.br/display/SD/Layouts" target="_blank">layouts</a>.<br>
+                                Essa informação também poderá ser alimentada após publicação do Item de Acervo, para
+                                os demais casos que existir tal código, mas com conhecimento apenas pós publicação.
+                            </td>
+                        </tr>
+                                        <tr>
+                        <td><span class="badge badge-success">Novo</span> <b>Ato[cod_entidade]</b></td>
+                        <td>Numérico</td>
+                        <td class="text-center">1</td>
+                        <td>
+                            Código da entidade na qual o ato será publicado, conforme permissões do usuário publicador.
+                        </td>
+                    </tr>
+                </table>
+
+                <p>
+                    <b>Alterado em 27/12/2021: </b>
+                    Itens de Acervo Público cadastrados via API podem precisar de até 60 segundos para serem visualizados na pesquisa geral.
+                </p>
+
+                <p>Exemplo usando cURL:</p>
+                <pre class="alert-info"><code>
+curl -u cpf_usuario:cnpj_empresa_integradora \
+    -H 'X-Api-Key: token_base64'  \
+    -F "Ato[titulo]=Lei Complementar N.º 1.234, de 01 de Dezembro de 1999" \
+    -F "Ato[cod_categoria]=1" \
+    -F "Ato[data_documento]=01/12/1999" \
+    -F "Ato[anexo]=@lei_complementar_1234_1999.docx" \
+    -F "Ato[url_origem_api]=www.dominio.terceiro.com/.../..." \
+        -F "Metadados[cod_subcategoria]=3" \
+        -F "Metadados[status_lei]=2" \
+        -F "Metadados[numero]=1234" \
+        -F "Metadados[ano]=1999" \
+        -F "Metadados[epigrafe]=Lei Complementar N.º 1.234, de 01 de Dezembro de 1999" \
+        -F "Metadados[ementa]=Dispõe sobre ...." \
+        -F "Metadados[tag_assunto][]=Saúde,Educação" \
+        -F "Metadados[projeto_lei]=Projeto de Lei N.º 670/1998" \
+        -F "Metadados[data_sancao]=01/12/1999" \
+        -F "Metadados[data_inicio_vigencia]=03/12/1999" \
+        -F "Metadados[data_revogacao]=11/11/2019" \
+    "https://diariomunicipal.sc.gov.br/?r=remote/acervoCreate"
+                </code></pre>
+            </div>
+        </div>
+
+        <hr>
+
+        <div id="excluir_publicacao">
+            <h3>Excluir Publicação Programada</h3>
+
+            <p>
+                <b>URL:</b> <code>?r=remote/delete</code>
+            </p>
+            <p>
+                <b>Método:</b> POST
+            </p>
+            <p>
+                <b>Parâmetro na URL:</b> id = código do documento cadastrado
+            </p>
+            <p>
+                <b>Retorno:</b> Objeto JSON com o seguinte schema:
+            </p>
+            <pre><code>
+{
+    "type":"object",
+    "$schema": "http://json-schema.org/draft-03/schema",
+    "required":true,
+    "properties":{
+        "ok":{
+            "type":"boolean",
+            "description": "Indica se foi possível realizar a operação",
+            "required":true
+        },
+        "codigo":{
+            "type":"integer",
+            "description": "Código do Ato",
+            "required":true
+        },
+    }
+}
+            </code></pre>
+
+            <p>Exemplo usando cURL:</p>
+            <pre class="alert-info"><code>
+curl -X POST -u cpf_usuario:cnpj_empresa_integradora -H 'X-Api-Key: token_base64' "https://diariomunicipal.sc.gov.br/?r=remote/delete&amp;id=&lt;código_ato&gt;"
+            </code></pre>
+        </div>
+
+        <hr />
+
+        <div id="verificar_status">
+            <h3>Verificar Status da Publicação</h3>
+
+            <p>
+                <b>URL:</b> <code>?r=remote/status</code>
+            </p>
+            <p>
+                <b>Método:</b> GET
+            </p>
+            <p>
+                <b>Parâmetro na URL:</b> codigo = código do documento cadastrado
+            </p>
+            <p>
+                <b>Retorno:</b> Objeto JSON com o seguinte schema:
+            </p>
+            
+            <pre><code>
+{
+    "type":"object",
+    "$schema": "http://json-schema.org/draft-03/schema",
+    "required":true,
+    "properties":{
+        "ok":{
+            "type":"boolean",
+            "description": "Indica se foi possível realizar a operação",
+            "required":true
+        },
+        "status":{
+            "type":"string | null",
+            "description": "Novo|Em diagramação|Publicado|Cancelado|Publicado Equivocadamente|Acervo Público|Acervo Removido|Autopublicação Nova|Autopublicação Assinada|Autopublicação Publicada|Autopublicação Publicada Equivocadamente",
+            "required":true
+        },
+        "data_publicacao":{
+            "type":"string | null",
+            "description":  "Data no formato dd/mm/yyyy",
+            "required":true
+        },
+        "edicao":{
+            "type":"integer | null",
+            "description": "N.º da Edição em que foi publicado",
+            "required":true
+        },
+        "pagina":{
+            "type":"integer | null",
+            "description": "Pág. do ato na Edição",
+            "required":true
+        },
+        "url":{
+            "type":"string | null",
+            "description": "URL para a publicação oficial (PDF)",
+            "required":true
+        },
+        "url_web":{
+            "type":"string | null",
+            "description": "URL para a publicação oficial (Página Web)",
+            "required":true
+        },
+    }
+}
+            </code></pre>
+
+            <p>Exemplo usando cURL:</p>
+            <pre class="alert-info"><code>
+curl -u cpf_usuario:cnpj_empresa_integradora -H 'X-Api-Key: token_base64' "https://diariomunicipal.sc.gov.br/?r=remote/status&amp;codigo=&lt;código_ato&gt;"
+            </code></pre>
+        </div>
+
+        <hr />
+
+        <div id="listar_publicacoes">
+            <h3>Listar Publicações</h3>
+
+            <p>
+                <b>URL:</b> <code>?r=remote/list</code>
+            </p>
+            <p>
+                <b>Método:</b> GET
+            </p>
+            <p>
+                <b>Parâmetro na URL:</b> page (número da página atual), count (quantidade de itens por página)
+            </p>
+            <p>
+                <b>Retorno:</b> Objeto JSON com o seguinte schema:
+            </p>
+            <pre><code>
+{
+    "type":"object",
+    "$schema": "http://json-schema.org/draft-03/schema",
+    "required":true,
+    "properties":{
+        "ok":{
+            "type":"boolean",
+            "description": "Indicativo de validade semântica da requisição.",
+            "required":true
+        },
+        "result":{
+            "type":"array",
+            "description": "Lista das publicações",
+            "required":false,
+            "items":{
+                "type":"object",
+                "required":false,
+                "properties":{
+                    "codigo":{
+                        "type":"integer",
+                        "required":true
+                    },
+                    "titulo":{
+                        "type":"string",
+                        "required":true
+                    },
+                    "categoria":{
+                        "type":"string",
+                        "required":true
+                    },
+                    "data_publicacao":{
+                        "type":"string",
+                        "description": "Formato dd/mm/yyyy",
+                        "required":true
+                    },
+                    "data_cadastro":{
+                        "type":"string",
+                        "description": "Formato dd/mm/yyyy h:i:s",
+                        "required":true
+                    },
+                    "url_origem_api":{
+                        "type":"string",
+                        "required":true
+                    },
+                    "status":{
+                        "type":"string",
+                        "required":true
+                    }
+                }
+            }
+        }
+    }
+}
+            </code></pre>
+
+            <p>Exemplo usando cURL:</p>
+            <pre class="alert-info"><code>
+curl -u cpf_usuario:cnpj_empresa_integradora -H 'X-Api-Key: token_base64' "https://diariomunicipal.sc.gov.br/?r=remote/list&amp;page=1&amp;count=50"
+            </code></pre>
+        </div>
+    </div></div>
+
+            <div class="clear"></div>
+
+            <div class="all">
+
+    <div class="content no-print">
+        <div class="left">
+            <div class="left-top">
+                <div style="display: inline-block; margin-right: 20px;">
+                    <p class="titulo-lista">Provedor da plataforma</p>
+                    <a href="https://consorciociga.gov.br" target="_blank">
+                        <img style="width:120px" src="/images/logo_ciga.png" alt="CIGA" />
+                    </a>
+                </div>
+                <h4 style="margin-top: 20px;">Consórcio de Inovação na Gestão Pública</h4>
+            </div>
+            <div class="left-bottom">
+                <div>
+                    <p class="titulo-lista">Suporte técnico Ciga</p>
+                    <h5>48 98406-1060 - dom@consorciociga.gov.br</h5>
+                </div>
+                <div class="end">
+                    <p class="titulo-lista">Endereço</p>
+                    <h5>R. General Liberato Bittencourt, 1885 — Sala 102 CEP 88070-800 - Florianópolis/SC</h5>
+                </div>
+            </div>
+        </div>
+        <div class="right">
+            <div class="right-left">
+                <p class="titulo-lista" style="margin-bottom: 20px;">Apoio</p>
+                <a href="http://fecam.org.br" target="_blank">
+                    <img style="width:240px" src="/images/logo_fecam.png" alt="FECAM" />
+                </a>
+            </div>
+            <div class="right-right">
+                <p class="titulo-lista" style="margin-bottom: 20px;">Diário Oficial</p>
+                <ul>
+                    <li>
+                        <a href="https://diariomunicipal.sc.gov.br/?r=site/page&view=domsc" target="_blank">Conheça o DOM/SC</a>                        
+                    </li>
+                    <li>
+                        <a href="https://consorciociga.gov.br/cigadom/faq-dom/" target="_blank">Dúvidas Frequentes</a>
+                    </li>
+                    <li>
+                        <a href="https://consorciociga.gov.br/cigadom/lai-e-lgpd/" target="_blank">LAI e LGPD</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="btm">
+        <div class="btm-box no-print">
+            <div class="copyright"> © 2025 - Todos os direitos reservados</div>
+            <div class="redes">
+                <div class="link">
+                    <a href="https://www.instagram.com/consorciociga/" target="_blank">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-instagram" viewBox="0 0 16 16">
+                            <path d="M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334" />
+                        </svg>
+                    </a>
+                </div>
+                <div class="link">
+                    <a href="https://www.linkedin.com/company/consorciociga" target="_blank">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-linkedin" viewBox="0 0 16 16">
+                            <path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854zm4.943 12.248V6.169H2.542v7.225zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248S2.4 3.226 2.4 3.934c0 .694.521 1.248 1.327 1.248zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016l.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225z" />
+                        </svg>
+                    </a>
+                </div>
+                <div class="link">
+                    <a href="https://www.youtube.com/c/CigaConsorcio" target="_blank">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-youtube" viewBox="0 0 16 16">
+                            <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.01 2.01 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.01 2.01 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31 31 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.01 2.01 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A100 100 0 0 1 7.858 2zM6.4 5.209v4.818l4.157-2.408z" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="color-bar no-print"></div>
+</div>
+        </div>
+    </div>
+<script type="text/javascript">
+/*<![CDATA[*/
+jQuery(function($) {
+jQuery('a[rel="tooltip"]').tooltip();
+jQuery('a[rel="popover"]').popover();
+$("div.flash-messages").animate({opacity: 1.0}, 12000).fadeOut("slow");
+});
+/*]]>*/
+</script>
+</body>
+
+</html>

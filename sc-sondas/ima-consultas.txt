@@ -1,0 +1,321 @@
+200 https://consultas.ima.sc.gov.br/
+cache-control: no-store, max-age=0, no-cache
+connection: keep-alive
+content-encoding: gzip
+content-type: text/html; charset=UTF-8
+date: Sun, 22 Nov 2026 04:27:17 GMT
+referrer-policy: strict-origin-when-cross-origin
+server: nginx
+transfer-encoding: chunked
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultas IMA</title>
+
+    <link rel="icon" type="image/png" href="https://consultas.ima.sc.gov.br/image/logos/ima-icon.png?v=2">
+    <link rel="shortcut icon" href="https://consultas.ima.sc.gov.br/favicon.ico?v=2">
+    <link rel="apple-touch-icon" href="https://consultas.ima.sc.gov.br/image/logos/ima-icon.png?v=2">
+
+    <link href="https://consultas.ima.sc.gov.br/lib/bootstrap-5.3.8/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="https://consultas.ima.sc.gov.br/lib/fontawesome/css/all.min.css" rel="stylesheet">
+
+    <link href="https://consultas.ima.sc.gov.br/lib/dataTables/datatables.min.css" rel="stylesheet">
+
+    <link href="https://consultas.ima.sc.gov.br/lib/select2/select2.min.css" rel="stylesheet">
+    <link href="https://consultas.ima.sc.gov.br/lib/select2/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://consultas.ima.sc.gov.br/css/base.css">
+</head>    </head>
+
+<body>
+        <nav class="navbar navbar-light bg-white shadow-sm">
+        <div class="container-fluid">
+            <a href="https://www.ima.sc.gov.br/" style="text-decoration: none;"><img src="https://consultas.ima.sc.gov.br/image/logos/ima.png" height="60" class="d-inline-block align-top" /> </a>
+            <a href="https://www.sc.gov.br/" style="text-decoration: none;"><img src="https://consultas.ima.sc.gov.br/image/logos/logo-sc.png" height="40" class="d-inline-block align-top" /> </a>
+        </div>
+    </nav>
+
+    <div class="content-wrapper">
+
+        
+<? // O conteúdo específico da home vai aqui dentro 
+?>
+
+
+
+<main class="container-fluid p-4 p-md-5">
+    <div class="container-header pt-4">
+        <div class="page-title-bar">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item active" aria-current="page">Consultas IMA</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+    <div class="row g-4 home-cards-grid">
+
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fa-solid fa-file-circle-check"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a target="_blank" href="https://gaia.ima.sc.gov.br/web/certidoes" class="stretched-link">Certidão de AIA</a>
+                        </h5>
+                        <p class="card-text mb-0">Certidão de processos de autos de infração</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-bullhorn"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/circular" class="stretched-link">Circulares</a>
+                        </h5>
+                        <p class="card-text mb-0">Circulares emitidas pelo IMA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-search"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/consulta" class="stretched-link">Consultas - Licenciamento</a>
+                        </h5>
+                        <p class="card-text mb-0">Realize buscas relacionadas ao licenciamento ambiental</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-sitemap"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a target="_blank" href="https://in.ima.sc.gov.br/home/diretriztecnica" class="stretched-link">Diretrizes Técnicas</a>
+                        </h5>
+                        <p class="card-text mb-0">Diretrizes Técnicas publicadas pelo IMA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-wrench"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/ferramentas" class="stretched-link">Ferramentas</a>
+                        </h5>
+                        <p class="card-text mb-0">Ferramentas que podem auxiliar na sua interação com o IMA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-globe-americas"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/relatoriogeo" class="stretched-link">Informações Geográficas</a>
+                        </h5>
+                        <p class="card-text mb-0">Relatório de Informações Ambientais Possíveis Restrições</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-scroll"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://in.ima.sc.gov.br/" class="stretched-link">Instruções Normativas</a>
+                        </h5>
+                        <p class="card-text mb-0">Instruções Normativas publicadas pelo IMA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-flask"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/laboratorio" class="stretched-link">Laboratórios</a>
+                        </h5>
+                        <p class="card-text mb-0">Consulte os laboratórios credenciados</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fa-solid fa-truck-front"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/limpafossa" class="stretched-link">Limpa-fossa</a>
+                        </h5>
+                        <p class="card-text mb-0">Verifique o Licenciamento, IMA-SC, de um limpa-fossa</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-th-large"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/midia/matrizProcedimentos.pdf" class="stretched-link">Matriz de procedimentos</a>
+                        </h5>
+                        <p class="card-text mb-0">Matriz de procedimentos para o licenciamento ambiental</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-file-signature"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/sumula" class="stretched-link">Pareceres e Súmulas</a>
+                        </h5>
+                        <p class="card-text mb-0">Pareceres referenciais e súmulas administrativas emitidas pelo IMA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-clipboard-list"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="http://pautas.ima.sc.gov.br/" class="stretched-link">Pautas (CCLA E CRLA)</a>
+                        </h5>
+                        <p class="card-text mb-0">Comissões de Licenciamento Ambiental</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-book-open"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/portarias" class="stretched-link">Portarias</a>
+                        </h5>
+                        <p class="card-text mb-0">Portarias publicadas pelo IMA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-folder-open"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://gaia.ima.sc.gov.br/web/processos" class="stretched-link">Processos de AIA</a>
+                        </h5>
+                        <p class="card-text mb-0">Consultar processos de autos de infração</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-file-alt"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/relatorio" class="stretched-link">Relatórios - Licenciamento</a>
+                        </h5>
+                        <p class="card-text mb-0">Gere relatórios com os dados de licenciamento do IMA</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-cogs"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/simulador" class="stretched-link">Simulador de Licenciamento</a>
+                        </h5>
+                        <p class="card-text mb-0">Simule o licenciamento para seu empreendimento</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/tpp" class="stretched-link">TPP</a>
+                        </h5>
+                        <p class="card-text mb-0">Consultar as placas dos veículos que transportam produto perigoso em SC</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-container me-3"><i class="fas fa-dove"></i></div>
+                    <div>
+                        <h5 class="card-title mb-1">
+                            <a href="https://consultas.ima.sc.gov.br/criadores" class="stretched-link">Criadores Autorizados</a>
+                        </h5>
+                        <p class="card-text mb-0">Consulte criadores autorizados por cidade, espécie ou nome popular</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+    </div>
+
+
+    <footer class="site-footer">
+        <div class="footer-lines">
+            <div class="line-red"></div>
+            <div class="line-green"></div>
+        </div>
+
+            <script src="https://consultas.ima.sc.gov.br/js/jquery-3.7.1.min.js"></script>
+    <script src="https://consultas.ima.sc.gov.br/lib/bootstrap-5.3.8/js/bootstrap.bundle.min.js"></script>
+    <script src="https://consultas.ima.sc.gov.br/lib/dataTables/datatables.min.js"></script>
+
+    <script src="https://consultas.ima.sc.gov.br/lib/select2/select2.min.js"></script>    </footer>
+        
+</body>
+
+</html>
