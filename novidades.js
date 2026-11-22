@@ -10,6 +10,13 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 199, data: '2026-11-22', titulo: 'Salvar a proposta para enviar depois', itens: [
+    'Nova proposta → Envio para aprovação: novo botão "Salvar proposta". Ele guarda a proposta sem enviar ao cliente.',
+    'A proposta salva aparece na aba Propostas como "Pendente de envio", no painel Hoje como "Enviar a proposta ao cliente" e no funil do CRM, na nova coluna "Pendente de envio".',
+    'Para enviar depois, abra o card na aba Propostas e use "Enviar pelo WhatsApp" ou "Copiar link da proposta". Na hora ela passa para "Aguardando aprovação".',
+    'Também dá para abrir a proposta pendente no formulário, ajustar o que precisar e enviar: a versão nova entra no lugar da pendente.',
+    'Novo filtro "Pendentes de envio" na aba Propostas.'
+  ] },
   { v: 198, data: '2026-11-22', titulo: 'Dados Primários só com o que o contrato precisa', itens: [
     'O link dos Dados Primários ficou mais curto: o cliente informa só o que entra no contrato (CNPJ, razão social, dados e endereço do responsável legal e o contrato social).',
     'Os demais dados (nome fantasia, inscrição estadual, telefone comercial, regime tributário, contabilidade, financeiro, dados bancários e observações) passaram para a Pré TASK, no novo item "Dados complementares", e o vendedor completa ali.',

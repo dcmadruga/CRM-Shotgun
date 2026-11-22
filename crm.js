@@ -21,6 +21,7 @@ const msg = t => { const el = $('crmMsg'); if (!el) return; el.textContent = t |
 const ETAPAS = [
   { id: 'lead', nome: 'Lead' },
   { id: 'qualificado', nome: 'Qualificado' },
+  { id: 'salva', nome: 'Pendente de envio' },
   { id: 'enviada', nome: 'Proposta enviada' },
   { id: 'aprovada', nome: 'Proposta aprovada' },
   { id: 'contrato', nome: 'Contrato aceito' },
@@ -67,7 +68,7 @@ const estadosDe = uid => (uid === perfil.uid && Array.isArray(perfil.estados) ? 
 const meu = x => (!fUser || x.owner === fUser) && (!fUf || ufDe(x) === fUf);
 const leads = () => docs.filter(d => d.tipo === 'lead' && meu(d));
 const notasCli = () => docs.filter(d => d.tipo === 'cliente');
-const etapaProp = p => p.crmPerdida ? 'perdido' : p.ctAceitoEm ? 'contrato' : p.status === 'aprovada' ? 'aprovada' : 'enviada';
+const etapaProp = p => p.crmPerdida ? 'perdido' : p.ctAceitoEm ? 'contrato' : p.status === 'aprovada' ? 'aprovada' : p.status === 'pendente' ? 'salva' : 'enviada';
 // Proposta que nasceu do lead (pelo vínculo gravado, pelo CNPJ ou pelo nome)
 function propDoLead(l) {
   const k = chave(l.cnpj, l.empresa);
@@ -507,7 +508,7 @@ function pedirMotivo(nome, fn) {
 async function mover(tipo, id, destino) {
   if (tipo === 'lead') {
     const l = docs.find(d => d.id === id); if (!l || l.etapa === destino) return;
-    if (destino === 'enviada') { gerarProposta(l); return; }
+    if (destino === 'enviada' || destino === 'salva') { gerarProposta(l); return; }
     if (!['lead', 'qualificado', 'perdido'].includes(destino)) { msg('Um lead vai para essas etapas quando vira proposta. Use "Gerar proposta".'); return; }
     const grava = async motivo => { try { await F.updateDoc(F.doc(db, 'crm', id), { etapa: destino, motivo: motivo || '', alterado: F.serverTimestamp(), alteradoPor: quem() }); return true; } catch (e) { msg('Não foi possível mover (' + (e.code || e.message) + ').'); return false; } };
     if (destino === 'perdido') pedirMotivo(l.empresa, grava); else grava('');
@@ -519,7 +520,7 @@ async function mover(tipo, id, destino) {
   if (destino === 'perdido') { pedirMotivo(p.cliente, m => marcarProp(id, true, m)); return; }
   const natural = etapaProp({ ...p, crmPerdida: false });
   if (atual === 'perdido' && destino === natural) { marcarProp(id, false); return; }
-  msg(['lead', 'qualificado'].includes(destino) ? 'Uma proposta não volta a ser lead.' : 'Essa etapa muda sozinha: quando o cliente aprova a proposta e quando aceita o contrato.');
+  msg(['lead', 'qualificado'].includes(destino) ? 'Uma proposta não volta a ser lead.' : atual === 'salva' && destino === 'enviada' ? 'Para enviar, abra a proposta e use Enviar pelo WhatsApp ou Copiar link.' : 'Essa etapa muda sozinha: quando a proposta é enviada, quando o cliente aprova e quando aceita o contrato.');
 }
 
 /* ---------- Eventos ---------- */
