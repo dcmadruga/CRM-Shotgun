@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 211, data: '2026-11-23', titulo: 'Cadastro novo pede o telefone / WhatsApp', itens: [
+    'Quem entra pela primeira vez e cria o próprio cadastro agora informa o celular com DDD (o WhatsApp). O campo já formata o número e, no celular, sugere os números salvos na conta Google do aparelho.',
+    'O telefone chega junto com o pedido de acesso e aparece em Administração > Usuários, pronto para sair nas propostas.'
+  ] },
   { v: 210, data: '2026-11-23', titulo: 'Novo cadastro do TASK pede os dados obrigatórios do Pré TASK', itens: [
     'No TASK, o "+ Novo cadastro" agora exige os mesmos dados obrigatórios do Pré TASK de uma proposta, incluindo os Dados Primários e os Dados complementares. O Salvar final só libera com tudo preenchido; o Salvar parcial continua guardando o card em "Em preparação".',
     'Os Dados Primários aparecem logo abaixo de Implantação e já vêm com o CNPJ, a razão social, a cidade e o CEP do posto informado. Proposta e contrato continuam opcionais nesse cadastro.'
