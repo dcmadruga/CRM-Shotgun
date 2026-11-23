@@ -1,0 +1,9 @@
+varre CETESB	1464	1337
+varre combustíveis	1921	1665
+varre posto de serviços	66	34
+varre junto à CETESB	33	32
+varre Licença de Instalação	13	12
+qd-sp	503	20	https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-01-01&size=3&excerpt_size=400&territory_ids=3550308
+qd-campinas	503	20	https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-01-01&size=3&excerpt_size=400&territory_ids=3509502
+qd-ribeirao	503	20	https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-01-01&size=3&excerpt_size=400&territory_ids=3543402
+qd-cidades	503	20	https://api.queridodiario.org.br/cities?levels=3
