@@ -1262,13 +1262,16 @@ async function iniciar() {
       const pai = document.createElement('div'); pai.className = 'modpai';
       pai.innerHTML = `<span>Este módulo é</span><select data-mpai aria-label="Etapa de outro módulo"><option value="">um módulo principal</option>${pais.map(x => `<option value="${esc(x.id)}"${s.pai === x.id ? ' selected' : ''}>etapa dentro de ${esc(x.titulo)}</option>`).join('')}</select>`;
       body.prepend(pai);
+      const ds = document.createElement('label'); ds.className = 'moddesc';
+      ds.innerHTML = `<span>Responsabilidades do setor <small>aparece no topo do módulo, no TASK</small></span><textarea data-mdesc rows="3" placeholder="Pelo que este setor é responsável e quais são as suas atribuições" aria-label="Responsabilidades do setor">${esc(s.desc != null ? s.desc : (window.MODULO_DESC ? window.MODULO_DESC(s.id) : '') || '')}</textarea>`;
+      pai.after(ds);
       const pr = document.createElement('div'); pr.className = 'modproc';
       pr.innerHTML = `<h3>Processos (${s.processos.length})</h3><div class="refwrap"><table class="e2tab"><thead><tr><th><span class="sr">Ordem</span></th><th>Processo</th><th>Responsável padrão</th><th>Prazo (dias após a Data da Base)</th><th><span class="sr">Ações</span></th></tr></thead><tbody>${s.processos.map((x, pi) => `<tr data-pi="${pi}"><td class="mdrag"><span class="mhandle" data-mdrag title="Arraste para mudar a ordem" aria-hidden="true">⠿</span></td><td><input data-mp="t" value="${esc(x.t)}" aria-label="Processo"></td><td><input data-mp="resp" value="${esc(x.resp || '')}" placeholder="Ex.: Implantação" aria-label="Responsável padrão"></td><td><input data-mp="prazo" type="number" min="0" value="${esc(x.prazo || '')}" aria-label="Prazo em dias" style="max-width:110px"></td><td class="a"><button type="button" data-mpa="up" ${pi === 0 ? 'disabled' : ''} aria-label="Subir">↑</button><button type="button" data-mpa="down" ${pi === s.processos.length - 1 ? 'disabled' : ''} aria-label="Descer">↓</button><button type="button" data-mpa="del" aria-label="Excluir processo">✕</button></td></tr>`).join('') || '<tr><td colspan="5" class="hint">Nenhum processo.</td></tr>'}</tbody></table></div><div class="tools"><button type="button" data-mpa="add">+ Processo</button></div>`;
       body.appendChild(pr);
     });
   }
   ligarSecoes($('modSecoes'), () => MOD, marcarMod, desenharMod);
-  $('modSecoes').addEventListener('input', e => { const t = e.target; if (!MOD || !t.dataset.mp) return; const s = MOD.secoes[+t.closest('[data-si]').dataset.si]; s.processos[+t.closest('[data-pi]').dataset.pi][t.dataset.mp] = t.value; marcarMod(); });
+  $('modSecoes').addEventListener('input', e => { const t = e.target; if (MOD && t.matches('[data-mdesc]')) { MOD.secoes[+t.closest('[data-si]').dataset.si].desc = t.value; marcarMod(); return; } if (!MOD || !t.dataset.mp) return; const s = MOD.secoes[+t.closest('[data-si]').dataset.si]; s.processos[+t.closest('[data-pi]').dataset.pi][t.dataset.mp] = t.value; marcarMod(); });
   $('modSecoes').addEventListener('change', e => { if (!MOD || !e.target.matches('[data-mpai]')) return; const s = MOD.secoes[+e.target.closest('[data-si]').dataset.si]; s.pai = e.target.value; if (s.pai) MOD.secoes.forEach(x => { if (x.pai === s.id) x.pai = ''; }); marcarMod(); desenharMod(); });
   $('modSecoes').addEventListener('click', e => {
     const b = e.target.closest('[data-mpa]'); if (!b || !MOD) return; const s = MOD.secoes[+b.closest('[data-si]').dataset.si], a = b.dataset.mpa;
@@ -1295,7 +1298,7 @@ async function iniciar() {
   $('btnModSalvar').addEventListener('click', async () => {
     if (!MOD || !fb.admin) return;
     if (MOD.secoes.some(s => !String(s.titulo || '').trim()) || MOD.secoes.some(s => (s.processos || []).some(x => !String(x.t || '').trim())) || MOD.secoes.flatMap(s => s.campos).some(c => !String(c.label || '').trim())) { modStatus('Todo módulo, campo e processo precisa de um nome.'); return; }
-    const btn = $('btnModSalvar'); btn.disabled = true; modStatus('Publicando…');
+    MOD.secoes.forEach(s => { if (s.desc == null) s.desc = window.MODULO_DESC ? window.MODULO_DESC(s.id) : ''; s.desc = String(s.desc).trim(); }); const btn = $('btnModSalvar'); btn.disabled = true; modStatus('Publicando…');
     try { const em = new Date().toISOString(); await F.setDoc(MODDOC, { json: JSON.stringify(MOD), em, por: perfil.nome || perfil.email }); modSujo = false; modStatus('Módulos publicados em ' + fmtQuando(em) + '. Valem para todos os cards do TASK.'); }
     catch (err) { modStatus('Não foi possível publicar (' + (err.code || err.message) + ').'); }
     finally { btn.disabled = false; }
