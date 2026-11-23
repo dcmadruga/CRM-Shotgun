@@ -1,0 +1,17 @@
+// Regras para os anexos do cadastro direto no TASK (sem proposta).
+// Cole este bloco DENTRO do "match /databases/{database}/documents { ... }" das regras atuais do Firestore
+// (console do Firebase > Firestore Database > Regras) e clique em Publicar. Não apague as regras que já existem:
+// este bloco só ACRESCENTA permissões (no Firestore, basta uma regra permitir).
+//
+// O card do cadastro direto guarda o Pré TASK dentro do próprio documento tasks/{id} (isso já funciona com as regras
+// atuais do TASK). Só os arquivos anexados (logo, certificado, backup do sistema anterior...) ficam numa subcoleção
+// tasks/{id}/anexos/{anexo}/partes/{parte}, que precisa desta regra: quem é ADM ou tem o perfil TASK lê e grava.
+// Pendências e diário dos Módulos ficam no próprio card e não precisam de regra nova.
+
+    function tdEu() { return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data; }
+    function tdTask() { return request.auth != null && tdEu().ativo == true
+      && (tdEu().get('papel', '') in ['adm', 'task'] || 'adm' in tdEu().get('papeis', []) || 'task' in tdEu().get('papeis', [])); }
+
+    match /tasks/{tid}/anexos/{rest=**} {
+      allow read, write: if tdTask();
+    }

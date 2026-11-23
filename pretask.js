@@ -11,6 +11,9 @@
   const brl = n => (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const STATUS = { fut: 'FUTURO', and: 'EM ANDAMENTO', fin: 'FINALIZADO' };
   const copia = o => JSON.parse(JSON.stringify(o));
+  // Onde ficam os anexos: na proposta (propostas/{id}) ou, no cadastro direto do TASK, no próprio card (tasks/{id})
+  const raiz = x => Array.isArray(x) ? x : ['propostas', x];
+  const raizC = () => C.direto ? ['tasks', C.tid] : ['propostas', C.pid];
 
   /* ---------- Estilos ---------- */
   const css = `
@@ -190,8 +193,8 @@
   const MINIS = new Map();
   function miniSalva(id) {
     if (MINIS.has(id)) return MINIS.get(id);
-    const pr = (async () => { try { if (!C || !C.F) return ''; const { F, db, pid } = C; const meta = (await F.getDoc(F.doc(db, 'propostas', pid, 'anexos', id))).data() || {}; if ((meta.tamanho || 0) > 4 * 1024 * 1024) return '';
-      const ps = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos', id, 'partes')); const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join(''); if (!b64) return '';
+    const pr = (async () => { try { if (!C || !C.F) return ''; const { F, db } = C, R = raizC(); const meta = (await F.getDoc(F.doc(db, ...R, 'anexos', id))).data() || {}; if ((meta.tamanho || 0) > 4 * 1024 * 1024) return '';
+      const ps = await F.getDocs(F.collection(db, ...R, 'anexos', id, 'partes')); const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join(''); if (!b64) return '';
       const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return URL.createObjectURL(new Blob([u8], { type: meta.tipo || 'image/png' })); } catch (e) { return ''; } })();
     MINIS.set(id, pr); return pr;
   }
@@ -246,8 +249,8 @@
     for (const u of fila) {
       n++; if (aviso) aviso(`Enviando anexo ${n} de ${fila.length}…`);
       const b64 = await new Promise((ok, err) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = err; r.readAsDataURL(u.f); });
-      const ref = F.doc(F.collection(db, 'propostas', pid, 'anexos')), PART = 700000, partes = Math.max(1, Math.ceil(b64.length / PART));
-      for (let i = 0; i < partes; i++) await F.setDoc(F.doc(db, 'propostas', pid, 'anexos', ref.id, 'partes', String(i).padStart(3, '0')), { d: b64.slice(i * PART, (i + 1) * PART) });
+      const R = raiz(pid), ref = F.doc(F.collection(db, ...R, 'anexos')), PART = 700000, partes = Math.max(1, Math.ceil(b64.length / PART));
+      for (let i = 0; i < partes; i++) await F.setDoc(F.doc(db, ...R, 'anexos', ref.id, 'partes', String(i).padStart(3, '0')), { d: b64.slice(i * PART, (i + 1) * PART) });
       const meta = { nome: u.nome, orig: u.f.name, tipo: u.f.type || 'application/octet-stream', tamanho: u.f.size, campo: u.campo, partes, etapa: u.etapa || 4, em: F.serverTimestamp() };
       await F.setDoc(ref, meta); u.lista.push({ id: ref.id, nome: u.nome, orig: u.f.name, tipo: meta.tipo, tamanho: u.f.size });
     }
@@ -366,13 +369,19 @@
     d.querySelector('#ptSalvar').textContent = ctx.origem === 'proposta' ? 'Salvar e enviar ao TASK' : 'Salvar final';
     if (!d.open) d.showModal();
     const { F, db, pid } = ctx;
+    // Cadastro direto no TASK (perfis TASK e ADM): sem proposta nem contrato. Tudo fica no próprio card
+    // (tasks/{id}.pre4: cabeçalho, valores e Dados Primários opcionais; anexos em tasks/{id}/anexos)
+    const direto = !pid && !!ctx.task; if (direto) { C.direto = true; C.tid = ctx.task.id; d.querySelector('#ptSalvar').textContent = 'Salvar final'; }
     const ler = async (...c) => { try { const r = await F.getDoc(F.doc(db, ...c)); return r.exists() ? r.data() : null; } catch (e) { return null; } };
     const json = x => { try { return x && x.json ? JSON.parse(x.json) : null; } catch (e) { return null; } };
-    const [p, e4, e2, cfg4, pub2, band] = await Promise.all([ler('propostas', pid), ler('propostas', pid, 'etapa4', 'dados'), ler('propostas', pid, 'etapa2', 'resposta'), ler('config', 'etapa4'), ler('publico', 'etapa2'), ler('publico', 'bandeiras')]);
-    if (!C || C.pid !== pid) return;
+    const tk = direto ? ctx.task : null, pre4 = (tk && tk.pre4) || null;
+    const [p, e4, e2, cfg4, pub2, band] = await Promise.all(direto
+      ? [{ direto: true, cliente: tk.apelido || tk.razao || '', cnpj: tk.cnpj || '', cidade: [tk.cidade, tk.uf].filter(Boolean).join(' - ') }, pre4, { valores: (pre4 && pre4.v2) || {}, direto: true }, ler('config', 'etapa4'), ler('publico', 'etapa2'), ler('publico', 'bandeiras')]
+      : [ler('propostas', pid), ler('propostas', pid, 'etapa4', 'dados'), ler('propostas', pid, 'etapa2', 'resposta'), ler('config', 'etapa4'), ler('publico', 'etapa2'), ler('publico', 'bandeiras')]);
+    if (!C || (direto ? C.tid !== tk.id : C.pid !== pid)) return;
     BAND_LOGOS = json(band);
     if (!p) { d.querySelector('#ptBody').innerHTML = '<p class="hint">Proposta não encontrada.</p>'; return; }
-    let an = []; try { an = (await F.getDocs(F.collection(db, 'propostas', pid, 'anexos'))).docs.map(x => ({ id: x.id, ...x.data() })); } catch (e) {}
+    let an = []; if (!direto || !ctx.novo) try { an = (await F.getDocs(F.collection(db, ...(direto ? ['tasks', tk.id] : ['propostas', pid]), 'anexos'))).docs.map(x => ({ id: x.id, ...x.data() })); } catch (e) {}
     let dono = null; if (p.owner) dono = await ler('usuarios', p.owner);
     // Centrais já cadastradas no TASK (para "Filial Nova em Central"); quem não lê o TASK digita o nome
     let centrais = []; try { centrais = [...new Set((await F.getDocs(F.collection(db, 'tasks'))).docs.map(x => x.data()).filter(t => !t.removido && t.central && t.central.tipo !== 'simples' && t.central.nome).map(t => t.central.nome.trim()))].sort((a, b) => a.localeCompare(b, 'pt-BR')); } catch (e) {}
@@ -383,7 +392,7 @@
     if (!pre.modalidade) { const im = p.implantacao || (p.dados && p.dados.implantacao); if (im) pre.modalidade = im === 'Remota' ? 'Remoto' : 'Presencial'; } // vem da proposta
     if (pre.tipoBase === 'Central' && !pre.nome) { const f = (v2.fantasia || p.cliente || '').trim(); if (f) pre.nome = /^central\b/i.test(f) ? f : 'Central ' + f; }
     Object.assign(C, { p, e4: e4 || {}, e2, cfg4: cfg4 && cfg4.json ? json(cfg4) : copia(window.ETAPA4_PADRAO || { secoes: [] }), cfg2: json(pub2) || window.ETAPA2_PADRAO || { secoes: [] }, an, dono, centrais, pre, v: copia((e4 && e4.valores) || {}), v2: copia(v2) });
-    d.querySelector('#ptTit').textContent = 'Pré TASK · ' + (p.cliente || '');
+    d.querySelector('#ptTit').textContent = (direto ? (ctx.novo ? 'Novo cadastro direto' : 'Pré TASK · cadastro direto') : 'Pré TASK') + (p.cliente ? ' · ' + p.cliente : '');
     trazerAnexosE2();
     camposBase().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v[k] === undefined && C.v['f0__' + k] !== undefined) C.v[k] = C.v['f0__' + k]; }));
     // a Bandeira voltou para a aba Integração: na Central ela é por filial, então o valor salvo na aba Implantação vai para a F1
@@ -421,9 +430,9 @@
     const P = C.pre, sts = { status: [P.status, P.modalidade].filter(Boolean).length + '/2' };
     const nStatus = [P.status, P.modalidade, P.dataBase, P.start].filter(Boolean).length;
     const base = [P.tipoBase, P.inclusao, P.potencial, P.nome].filter(Boolean).length + (P.filiais.length && P.filiais.every(f => dig(f.cnpj).length === 14 && f.tipo) ? 1 : 0) + (P.tipoBase !== 'Central' || P.f100 ? 1 : 0);
-    const m = { status: marca(nStatus, 4), base: marca(base, 6), proposta: marca(1, 1), contrato: marca(C.p.ctAceitoEm ? 1 : 0, 1) };
+    const m = { status: marca(nStatus, 4), base: marca(base, 6), proposta: marca(1, 1), contrato: marca(C.p.ctAceitoEm || C.direto ? 1 : 0, 1) };
     const conta2 = ss => { let ok = 0, tot = 0; ss.forEach(s => { const r = contar(s.campos, '', C.v2); ok += r.ok; tot += r.tot; }); return marca(ok, tot); };
-    m.e2 = conta2(secs2Cli()); m.e2c = C.e2 ? conta2(secs2Comp()) : marca(0, 1);
+    m.e2 = C.direto ? marca(1, 1) : conta2(secs2Cli()); m.e2c = C.direto ? marca(1, 1) : C.e2 ? conta2(secs2Comp()) : marca(0, 1);
     const vv = { ...C.v }; Object.entries(C.anx || {}).forEach(([k, st]) => { if (st && st.salvos) vv[k] = st.salvos.concat(st.novos || []); }); // anexos escolhidos e ainda não salvos também contam
     secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
     m.anexos = marca(1, 1);
@@ -477,7 +486,7 @@
       <label class="ptf"><span>Data do Start</span><input type="date" data-hk="start" value="${esc(P.start || '')}"></label>
       <div class="ptf"><span>Modalidade <b>*</b></span>${seg('modalidade', ['Presencial', 'Remoto'], P.modalidade)}</div>
       <div class="ptf"><span>Responsável pelo Cadastro</span><div class="ptro">${respCadastro()}</div></div>
-      <div class="ptf"><span>Responsável pela Proposta</span><div class="ptro">${esc(p.vendedor || (C.dono && C.dono.nome) || '')}${email ? ' · ' + esc(email) : ''}<small>elaborou e enviou a proposta</small></div></div>
+      ${C.direto ? `<div class="ptf"><span>Origem</span><div class="ptro">Cadastro direto no TASK<small>sem proposta e sem contrato</small></div></div>` : `<div class="ptf"><span>Responsável pela Proposta</span><div class="ptro">${esc(p.vendedor || (C.dono && C.dono.nome) || '')}${email ? ' · ' + esc(email) : ''}<small>elaborou e enviou a proposta</small></div></div>`}
     </div></div>`);
   }
   function linhaFil(f, i, central) {
@@ -509,6 +518,13 @@
     ${blocosBase().map(b => `<div class="ptsec"${b.band ? ' data-ptband' : ''}><h5>${esc(b.titulo)}</h5><div class="ptgrid">${camposHtml(b.campos, '', C.v, C.anx)}</div></div>`).join('')}`);
   }
   function painelProposta() {
+    if (C.direto) {
+      const ls = C.propostasLivres || [], at = C.propostaVinc || '';
+      return painel('proposta', 'Proposta', 'não se aplica ao cadastro direto', `<div class="ptsec"><h5>Sem proposta</h5><div class="ptgrid">
+        <p class="ptnote full">Este cadastro foi feito direto no TASK, então a proposta não é obrigatória. Se uma proposta aprovada surgir depois para este cliente, vincule aqui para ela aparecer no card.</p>
+        <label class="ptf full"><span>Vincular a uma proposta aprovada</span><select id="ptVinc"><option value="">Nenhuma</option>${ls.map(x => `<option value="${esc(x.id)}"${x.id === at ? ' selected' : ''}>Nº ${esc(x.numero || '')} · ${esc(x.cliente || '')}</option>`).join('')}</select></label>
+      </div></div>`);
+    }
     const p = C.p, l = (t, v) => v ? `<div class="ptf"><span>${t}</span><div class="ptro">${v}</div></div>` : '';
     return painel('proposta', 'Proposta', 'valores da proposta só para leitura', `<div class="ptsec"><h5>Proposta nº ${esc(p.numero || '')}</h5><div class="ptgrid">
       ${l('Cliente', esc(p.cliente))}${l('CNPJ', esc(fmtCnpj(p.cnpj)))}${l('Cidade', esc(p.cidade))}${l('Contato', esc(p.contato))}${l('Telefone', esc(p.fone))}${l('Vendedor', esc(p.vendedor))}
@@ -518,6 +534,7 @@
   }
   function painelE2() {
     const e2 = C.e2;
+    if (C.direto) return painel('e2', 'Dados Primários', 'opcionais no cadastro direto', '<p class="ptnote">Sem link para o cliente: preencha aqui o que souber. Nada é obrigatório.</p>' + secs2Cli().map(s => `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid" data-e2>${camposHtml(s.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`).join(''));
     if (!e2) return painel('e2', 'Dados Primários', '', '<p class="ptnote">O cliente ainda não enviou os Dados Primários.</p>');
     const hist = (e2.alteracoes || []).slice(-5).reverse().map(a => `<div>${esc(a.por)} alterou ${esc((a.campos || []).join(', '))} em ${esc(new Date(a.em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))}</div>`).join('');
     return painel('e2', 'Dados Primários', `preenchido pelo cliente${e2.em ? ' em ' + esc(fmtTs(e2.em)) : ''} · editável`, secs2Cli().map(s => `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid" data-e2>${camposHtml(s.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`).join('') + (hist ? `<div class="pthist">${hist}</div>` : '<p class="ptnote">Alterar um dado aqui corrige o dado original e registra quem alterou.</p>'));
@@ -530,6 +547,7 @@
   }
   const prefixar = (o, pre) => Object.fromEntries(Object.entries(o || {}).map(([k, v]) => [pre + k, v]));
   function painelContrato() {
+    if (C.direto) return painel('contrato', 'Contrato', 'não se aplica ao cadastro direto', '<p class="ptnote">Cadastro direto no TASK: o contrato não é obrigatório para seguir com a implantação.</p>');
     const p = C.p, l = (t, v) => `<div class="ptf"><span>${t}</span><div class="ptro">${v || '<small>—</small>'}</div></div>`;
     return painel('contrato', 'Contrato', 'contrato aceito fica só para leitura', `<div class="ptsec"><h5>Aceite do contrato</h5><div class="ptgrid">
       ${l('Aceito por', esc(p.ctAceitoNome))}${l('CPF', esc(p.ctAceitoCpf))}${l('Cargo', esc(p.ctAceitoCargo))}${l('Data do aceite', esc(fmtTs(p.ctAceitoEm)))}
@@ -623,8 +641,8 @@
   async function baixar(bt) {
     bt.disabled = true;
     try {
-      const { F, db, pid } = C, aid = bt.dataset.ptanexo, meta = (await F.getDoc(F.doc(db, 'propostas', pid, 'anexos', aid))).data();
-      const ps = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos', aid, 'partes'));
+      const { F, db } = C, R = raizC(), aid = bt.dataset.ptanexo, meta = (await F.getDoc(F.doc(db, ...R, 'anexos', aid))).data();
+      const ps = await F.getDocs(F.collection(db, ...R, 'anexos', aid, 'partes'));
       const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join(''), bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
       const url = URL.createObjectURL(new Blob([u8], { type: meta.tipo || 'application/octet-stream' })), l = document.createElement('a'); l.href = url; l.download = bt.dataset.nome || meta.nome || 'anexo'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000);
     } catch (e) { msg('Não foi possível baixar (' + (e.code || e.message) + ').'); }
@@ -654,8 +672,8 @@
     // 2) Dados primários (só o que mudou é gravado)
     const e2Lido = { valores: {}, legiveis: {} }; let faltaE2 = null, faltaE2c = null;
     if (C.e2) secs2().forEach(s => { const r = lerCampos(corpo, s.campos.filter(c => !ehComp(c)), 'e2:', C.anx), rc = lerCampos(corpo, s.campos.filter(ehComp), 'e2:', C.anx); [r, rc].forEach(x => { Object.assign(e2Lido.valores, x.valores); Object.assign(e2Lido.legiveis, x.legiveis); }); faltaE2 = faltaE2 || r.falta; faltaE2c = faltaE2c || rc.falta; });
-    if (faltaE2c) faltas.push(['e2c', 'campos obrigatórios dos Dados complementares']);
-    if (faltaE2) faltas.push(['e2', 'campos obrigatórios dos Dados Primários']);
+    if (faltaE2c && !C.direto) faltas.push(['e2c', 'campos obrigatórios dos Dados complementares']);
+    if (faltaE2 && !C.direto) faltas.push(['e2', 'campos obrigatórios dos Dados Primários']);
     // 3) Parâmetros Pré TASK (por filial quando for Central)
     const valores = {}, campos = {}, fila = []; let faltaP = null, abaP = null;
     const ps = secoesParam(C.cfg4), dadosFil = P.filiais.map(() => ({}));
@@ -706,7 +724,7 @@
     bt.disabled = true; document.querySelectorAll('#ptCorpo [data-ptparc]').forEach(x => { x.disabled = true; }); msg(parcial ? 'Salvando parcial…' : 'Salvando…');
     try {
       const { F, db, pid, perfil } = C;
-      await subirAnexos(F, db, pid, fila, msg);
+      await subirAnexos(F, db, raizC(), fila, msg);
       Object.values(C.anx).forEach(st => { st.novos = []; });
       const por = perfil.nome || perfil.email, filiais = P.filiais.map((f, j) => ({ cod: f.cod, tipo: f.tipo, cnpj: fmtCnpj(f.cnpj), razao: f.razao, cidade: f.cidade, uf: f.uf, info: f.info && dig(f.info.cnpj) === dig(f.cnpj) ? f.info : (f.info && !f.info.cnpj ? f.info : null), dados: Object.keys(dadosFil[j]).length ? dadosFil[j] : (f.dados || null), f100: central && f.cod === P.f100 }));
       const pre = { parcial: !!parcial, status: P.status || 'fut', dataBase: P.dataBase || '', start: P.start || '', modalidade: P.modalidade, tipoBase: P.tipoBase, inclusao: P.inclusao, centralExistente: P.inclusao === 'Filial Nova em Central' ? P.centralExistente : '', potencial: P.potencial, nome: P.nome, f100: central ? P.f100 : '', filiais };
@@ -719,6 +737,7 @@
       const secoes = [{ titulo: 'Status', labels: ['Status', 'Data da Base', 'Data do Start', 'Modalidade'] }, { titulo: central ? 'Central' : 'Base', labels: ['Tipo de Base', 'Inclusão', 'Central que recebe a filial', 'Cliente Potencial + de 5 Unidades', 'Nome da Central', 'Nome do Posto', 'Quantidade de Filiais', 'F100', 'Filiais', 'Unidade'] }]
         .concat(blocosBase().map(b => ({ titulo: b.titulo, labels: b.campos.flatMap(c => [c.label, c.label + ' - ' + (c.detalhe || '')]) }))).concat(ps.map(s => ({ titulo: s.titulo, labels: s.campos.flatMap(c => [c.label, ...Object.values(c.cond || {}).flatMap(l => (l || []).map(x => x.label))]) })));
       const doc = { pre, parcial: !!parcial, valores, campos: { ...cab, ...campos }, secoes, em: F.serverTimestamp(), por, porUid: perfil.uid, porEmail: perfil.email || '' };
+      if (C.direto) { await salvarDireto(doc, pre, e2Lido, parcial, por); return; }
       await F.setDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados'), doc);
       // Dados primários alterados: corrige o original e registra quem alterou
       if (C.e2) {
@@ -742,7 +761,7 @@
           const up = { preOk: true, status: pre.status, finalizado: fin, dataBase: pre.dataBase, start: pre.start, modalidade: pre.modalidade, central: centralDoPre(pre), respCadastro: { uid: perfil.uid, nome: por, email: perfil.email || '' }, preSync: Date.now(), alteradoEm: F.serverTimestamp(), alteradoPor: por };
           if (C.task && fin !== !!C.task.finalizado) up.finalizadoEm = fin ? F.serverTimestamp() : null;
           const ref = F.doc(db, 'tasks', tid), ex = await F.getDoc(ref);
-          if (ex.exists() && !ex.data().removido) { await F.updateDoc(ref, up); taskOk = true; }
+          if (ex.exists() && !ex.data().removido) { await F.updateDoc(ref, up); taskOk = true; if (ex.data().preOk !== true && window.TK_aoPronto) window.TK_aoPronto(tid, ex.data().apelido || C.p.cliente || ''); }
         } catch (e) { console.warn('Pré TASK: card do TASK', e); }
       }
       // Salvar parcial depois de um salvar final: o card volta a mostrar "Pré TASK" (só esse campo muda)
@@ -755,6 +774,33 @@
       msg(parcial ? 'Salvo parcial. Quando tudo estiver preenchido, use o salvar final.' : 'Pré TASK salvo' + (taskOk ? ' e card do TASK atualizado.' : '.'));
     } catch (err) { msg('Não foi possível salvar (' + (err.code || err.message) + ').'); }
     finally { bt.disabled = false; document.querySelectorAll('#ptCorpo [data-ptparc]').forEach(x => { x.disabled = false; }); }
+  }
+  // Cadastro direto: grava o Pré TASK dentro do próprio card do TASK (cria o card no primeiro salvar)
+  async function salvarDireto(doc, pre, e2Lido, parcial, por) {
+    const { F, db, perfil } = C, ref = F.doc(db, 'tasks', C.tid), fin = pre.status === 'fin';
+    const v2 = {}; Object.entries(e2Lido.valores || {}).forEach(([k, x]) => { if (x !== '' && x != null) v2[k.replace(/^e2:/, '')] = x; });
+    const f1 = (pre.filiais || []).find(f => f.f100) || (pre.filiais || [])[0] || {};
+    const vinc = (document.getElementById('ptVinc') || {}).value; if (vinc !== undefined) C.propostaVinc = vinc || '';
+    const pv = (C.propostasLivres || []).find(x => x.id === C.propostaVinc);
+    const card = {
+      origem: 'direto', pre4: { ...doc, v2 }, preOk: !parcial, preSync: Date.now(),
+      apelido: pre.nome || C.p.cliente || f1.razao || '', razao: f1.razao || v2.razao || '', cnpj: dig(f1.cnpj || ''), cidade: f1.cidade || v2.cidade || '', uf: String(f1.uf || v2.uf || '').toUpperCase(),
+      contato: v2.respNome || (C.task && C.task.contato) || '', email: v2.respEmail || v2.finEmail || (C.task && C.task.email) || '', fone: v2.respFone || (C.task && C.task.fone) || '',
+      status: pre.status, finalizado: fin, dataBase: pre.dataBase, start: pre.start, modalidade: pre.modalidade, central: centralDoPre(pre),
+      respCadastro: { uid: perfil.uid, nome: por, email: perfil.email || '' }, propostaVinc: C.propostaVinc || '', propostaNumero: pv ? pv.numero || '' : '',
+      alteradoEm: F.serverTimestamp(), alteradoPor: por
+    };
+    if (C.novo) Object.assign(card, { criado: F.serverTimestamp(), criadoPor: por, checklists: [], respStart: null, obs: '' });
+    if (C.task && fin !== !!C.task.finalizado) card.finalizadoEm = fin ? F.serverTimestamp() : null;
+    const jaPronto = !!(C.task && C.task.preOk === true);
+    await F.setDoc(ref, card, { merge: true });
+    if (!parcial && !jaPronto && window.TK_aoPronto) window.TK_aoPronto(C.tid, card.apelido);
+    C.novo = false; C.task = { ...(C.task || {}), ...card, id: C.tid };
+    C.e4 = { ...doc, em: { toDate: () => new Date() } }; C.v2 = v2;
+    document.getElementById('ptTit').textContent = 'Pré TASK · cadastro direto' + (card.apelido ? ' · ' + card.apelido : '');
+    if (C.aoSalvar && !parcial) C.aoSalvar(pre);
+    colherCampos(); desenhar();
+    msg(parcial ? 'Salvo parcial. O card já está no TASK como "Em preparação".' : 'Cadastro salvo. O card está pronto para as equipes.');
   }
   // Central no formato do card do TASK
   function centralDoPre(pre) {

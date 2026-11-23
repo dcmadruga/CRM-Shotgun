@@ -37,7 +37,7 @@ function iniciar() {
     aprovadas = qs.docs.map(d => ({ id: d.id, ...d.data() })); sincronizar(); desenhar();
   }, () => {});
   if (unsubMod) unsubMod();
-  unsubMod = F.onSnapshot(F.doc(db, 'config', 'modulos'), d => { try { const j = d && d.exists && d.exists() && d.data().json; if (j) MODS = JSON.parse(j); } catch (e) {} desenhar(); if ($('tkDlg').open && $('tkDlg').dataset.modo === 'mods') formMods($('tkMods').dataset.id, $('tkMods').dataset.mid); }, () => {});
+  unsubMod = F.onSnapshot(F.doc(db, 'config', 'modulos'), d => { try { const j = d && d.exists && d.exists() && d.data().json; if (j) MODS = JSON.parse(j); if (window.modulosCompletar) window.modulosCompletar(MODS); } catch (e) {} desenhar(); if ($('tkDlg').open && $('tkDlg').dataset.modo === 'mods') formMods($('tkMods').dataset.id, $('tkMods').dataset.mid); }, () => {});
   unsubM = F.onSnapshot(F.collection(db, 'taskTemplates'), qs => {
     templates = qs.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
     if ($('tkDlg').open && $('tkDlg').dataset.modo === 'templates') desenharTemplates();
@@ -53,7 +53,7 @@ function iniciar() {
 /* ---------- Lista ---------- */
 function filtrados(ignorarAba) {
   const b = $('tkBusca').value.trim().toLowerCase(), bd = dig(b), rc = $('tkRespCad').value, rs = $('tkRespStart').value;
-  return tasks.filter(t => (ignorarAba || aba === 'todos' || statusDe(t) === aba)
+  return tasks.filter(t => (ignorarAba || aba === 'todos' || (aba === 'prep' ? statusDe(t) !== 'fin' && !pronto(t) : statusDe(t) === aba))
     && (!rc || t.respCadastro?.uid === rc) && (!rs || t.respStart?.uid === rs)
     && (!b || [t.apelido, t.razao, t.cidade].join(' ').toLowerCase().includes(b) || (bd.length >= 3 && dig(t.cnpj).includes(bd))));
 }
@@ -76,7 +76,15 @@ function minhasTarefas() {
   const sel = `<label>Setor<select id="tkSetor">${meus.length > 1 ? opt('meus', 'Meus setores') : ''}${opt('', 'Todos os setores')}${top.map(m => opt(m.id, m.titulo)).join('')}</select></label>`;
   const nAtr = itens.filter(x => x.pz && x.pz < hj).length;
   return `<div class="mtwrap"><div class="mttopo">${sel}<span class="hint">${itens.length} processo${itens.length === 1 ? '' : 's'} pendente${itens.length === 1 ? '' : 's'}${nAtr ? ` · <b style="color:var(--danger)">${nAtr} atrasado${nAtr === 1 ? '' : 's'}</b>` : ''}</span></div>
-    <div class="mtlista">${itens.map(x => { const atr = x.pz && x.pz < hj; return `<button type="button" class="mtit${atr ? ' atr' : ''}${x.st === 'pa' ? ' pa' : x.st === 'an' || x.st === 'in' ? ' an' : ''}" data-mtid="${esc(x.t.id)}" data-mtmod="${esc(x.m.id)}"><span class="t">${esc(x.p.t)}</span><span class="st">${esc(PST[x.st] || '')}</span><span class="s">${esc(x.t.apelido || x.t.razao || '')} · ${esc(x.m.titulo)}${x.st === 'pa' && x.s.motivo ? ' · ' + esc(x.s.motivo) : ''}</span><span class="pz">${x.pz ? (atr ? 'atrasado · ' : 'prazo ') + fmtD(x.pz) : 'sem prazo'}</span></button>`; }).join('') || '<p class="hint">Nenhum processo pendente para este setor.</p>'}</div></div>`;
+    ${(() => {
+      // Fila do setor: separada em grupos, na ordem em que a equipe deve olhar
+      const it = x => { const atr = x.pz && x.pz < hj; return `<button type="button" class="mtit${atr ? ' atr' : ''}${x.st === 'pa' ? ' pa' : x.st === 'an' || x.st === 'in' ? ' an' : ''}" data-mtid="${esc(x.t.id)}" data-mtmod="${esc(x.m.id)}"><span class="t">${esc(x.p.t)}</span><span class="st">${esc(PST[x.st] || '')}</span><span class="s">${esc(x.t.apelido || x.t.razao || '')} · ${esc(x.m.titulo)}${x.pd ? ' · pendência com ' + esc(x.pd.com || 'equipe') + ': ' + esc(x.pd.txt) : x.st === 'pa' && x.s.motivo ? ' · ' + esc(x.s.motivo) : ''}</span><span class="pz">${x.pz ? (atr ? 'atrasado · ' : 'prazo ') + fmtD(x.pz) : 'sem prazo'}</span></button>`; };
+      itens.forEach(x => { x.lib = liberacao(x.t, x.m).ok; x.pd = pendsDe(x.t, x.m.id).find(q => q.st !== 're' && (q.pid === x.p.id || !q.pid)) || null; });
+      const G = [['Com pendência', x => x.lib && (x.st === 'pa' || x.pd)], ['Atrasados', x => x.lib && x.pz && x.pz < hj], ['Em andamento', x => x.lib && (x.st === 'an' || x.st === 'in')], ['Liberados, a iniciar', x => x.lib && x.st === 'ni'], ['Aguardando liberação', x => !x.lib]];
+      const usados = new Set();
+      const html = G.map(([nome, f]) => { const ls = itens.filter(x => !usados.has(x) && f(x)); ls.forEach(x => usados.add(x)); return ls.length ? `<div class="mtgrupo${nome === 'Aguardando liberação' ? ' ag' : ''}"><h4>${nome}<i>${ls.length}</i></h4><div class="mtlista">${ls.map(it).join('')}</div></div>` : ''; }).join('');
+      return html || '<p class="hint">Nenhum processo pendente para este setor.</p>';
+    })()}</div>`;
 }
 function desenhar() {
   if (!$('tkGrid')) return;
@@ -86,7 +94,7 @@ function desenhar() {
   $('tkRespCad').innerHTML = `<option value="">Todos (${base})</option>` + opcoesResp(null, rcV);
   $('tkRespStart').innerHTML = `<option value="">Todos (${base})</option>` + opcoesResp(null, rsV);
   const sem = filtrados(true);
-  const n = { todos: sem.length, and: 0, fut: 0, fin: 0 }; sem.forEach(t => n[statusDe(t)]++);
+  const n = { todos: sem.length, prep: 0, and: 0, fut: 0, fin: 0 }; sem.forEach(t => { n[statusDe(t)]++; if (statusDe(t) !== 'fin' && !pronto(t)) n.prep++; });
   document.querySelectorAll('#tkAbas [data-aba]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.aba === aba)); b.querySelector('i').textContent = n[b.dataset.aba]; });
   const vis = filtrados().sort((a, b) => statusDe(a) === 'fin' && statusDe(b) === 'fin' ? (b.finalizadoEm?.seconds || 0) - (a.finalizadoEm?.seconds || 0) : String(a.start || '9').localeCompare(String(b.start || '9')));
   $('tkGrid').innerHTML = vis.length ? vis.map(cartao).join('') : `<p class="hint">${tasks.length ? 'Nenhum cadastro com esse filtro.' : 'Nenhum cadastro ainda. Use "Novo cadastro" ou "Importar das propostas".'}</p>`;
@@ -94,10 +102,11 @@ function desenhar() {
 // Etapas da venda: proposta vinculada pelo id ou, nos cadastros manuais, pelo CNPJ
 function propostaDe(t) {
   const ps = aprovadas || [];
-  return ps.find(p => p.id === (t.propostaId || t.id)) || (dig(t.cnpj).length === 14 ? ps.filter(p => dig(p.cnpj) === dig(t.cnpj)).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0))[0] : null);
+  return ps.find(p => p.id === (t.propostaId || t.propostaVinc || t.id)) || (dig(t.cnpj).length === 14 ? ps.filter(p => dig(p.cnpj) === dig(t.cnpj)).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0))[0] : null);
 }
 function etapas(t) {
   const p = propostaDe(t);
+  if (direto(t) && !p) return `<div class="tketapas"><span class="tke none">Cadastro direto no TASK: proposta e contrato não se aplicam</span></div>`;
   if (!p) return `<div class="tketapas"><span class="tke none">${t.propostaId ? 'Proposta ainda não aprovada' : 'Sem proposta vinculada'}</span></div>`;
   const e = (n, nome, ok, quando, pend) => `<span class="tke ${ok ? 'ok' : pend ? 'pend' : 'none'}" title="${esc(nome + (quando ? ' em ' + quando : ''))}"><b>${ok ? '✓' : n}</b>${esc(nome)}${ok && quando ? `<small>${esc(quando)}</small>` : pend ? `<small>${esc(pend)}</small>` : ''}</span>`;
   const d = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString('pt-BR') : '';
@@ -106,10 +115,24 @@ function etapas(t) {
 // Pré TASK completo (salvar final com todos os obrigatórios): o botão do card passa de "Pré TASK" para "DADOS".
 // preOk é gravado pelo Pré TASK; cards antigos usam o passo 4 da proposta (e4Em só é marcado no salvar final).
 const preCompleto = t => t.preOk !== undefined ? !!t.preOk : !!(propostaDe(t) || {}).e4Em;
+// Cadastro direto no TASK (sem proposta). Cards manuais antigos também contam como diretos
+const direto = t => t.origem === 'direto' || (!t.propostaId && !t.auto);
+// TASK pronto: Pré TASK completo. Card manual antigo, sem a marca preOk, já estava em uso: conta como pronto
+const pronto = t => t.preOk !== undefined ? !!t.preOk : direto(t) ? true : preCompleto(t);
+// Por onde o cliente entrou: lead feito no CRM, proposta direta (lead criado pelo app) ou cadastro direto no TASK
+function origemDe(t) {
+  if (direto(t)) return { cls: 'dir', txt: 'Cadastro direto' };
+  const p = propostaDe(t) || {};
+  return p.leadId && !String(p.leadId).startsWith('auto-') ? { cls: 'lead', txt: 'Veio de Lead' } : { cls: 'prop', txt: 'Veio de Proposta' };
+}
+function faseHtml(t) {
+  if (statusDe(t) === 'fin') return '';
+  return pronto(t) ? '<span class="tkfase ok" title="Pré TASK completo: as equipes já podem trabalhar">Pronto para as equipes</span>' : '<span class="tkfase prep" title="Faltam dados obrigatórios no Pré TASK">Em preparação</span>';
+}
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
-    <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
+    <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${faseHtml(t)}<span class="tkorig ${origemDe(t).cls}">${origemDe(t).txt}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
     ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkbaserow"><span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>${(() => { const lk = linkBaseDe(t); return `<button type="button" class="tklink${lk ? '' : ' vazio'}" data-tk="linkbase" title="${lk ? 'Copiar link para baixar a base' : 'Link da base ainda não informado (Módulos › Implantação)'}" aria-label="${lk ? 'Copiar link da base' : 'Informar link da base'}"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>`; })()}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}${t.modalidade ? `<span class="tkstart tkmod">${esc(t.modalidade)}</span>` : ''}</div>` : ''}
     ${t.logo ? `<div class="tklogobox"><img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}"></div>` : ''}
     ${t.central ? '' : `<h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
@@ -118,7 +141,7 @@ function cartao(t) {
     ${etapas(t)}
     ${modsCard(t)}
     ${pr.total ? `<div class="tkprogtxt">Checklists antigos: ${pr.feitos} de ${pr.total} itens (${pct}%)</div>` : ''}
-    <div class="tkacts"><button type="button" data-tk="dados"${t.propostaId && preCompleto(t) ? ' title="Pré TASK completo: todos os obrigatórios lançados"' : ''}>${t.propostaId ? (preCompleto(t) ? 'DADOS' : 'Pré TASK') : 'Dados gerais'}</button><button type="button" class="primary" data-tk="mods">Módulos</button>${pr.total ? '<button type="button" data-tk="check">Checklists</button>' : ''}</div>
+    <div class="tkacts"><button type="button" data-tk="dados"${pronto(t) ? ' title="Pré TASK completo: todos os obrigatórios lançados"' : ''}>${pronto(t) ? 'DADOS' : 'Pré TASK'}</button><button type="button" class="primary" data-tk="mods">Módulos</button>${pr.total ? '<button type="button" data-tk="check">Checklists</button>' : ''}</div>
   </article>`;
 }
 
@@ -132,6 +155,58 @@ const topDe = m => (m && m.pai && (MODS.secoes || []).find(x => x.id === m.pai))
 const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
 // Quem não tem setor marcado (e o ADM) altera todos os módulos
 const podeMod = m => admin || !meusSetores().length || meusSetores().includes(topDe(m).id);
+/* ---------- Liberação, pendências e diário dos módulos ----------
+   Cada módulo principal é a área de trabalho de uma equipe. Ele fica "Aguardando liberação" até a regra dele valer
+   (TASK pronto, ou um processo de outro módulo finalizado: config "libera" em Parâmetros Pré TASK > Módulos).
+   Quando libera, o setor recebe aviso no sino. Pendências e diário ficam em tasks/{id}.mods[mid].pend e .hist. */
+const PEND_COM = window.PEND_COM || ['Cliente', 'Equipe interna', 'Outro setor', 'Banco', 'Adquirente', 'Bandeira', 'Fornecedor', 'Outro'];
+const topos = () => (MODS.secoes || []).filter(m => !m.pai);
+const regraDe = m => { const top = topDe(m); return (top && top.libera) || { tipo: 'pronto' }; };
+// Já começou (algum processo com status): continua liberado, para não travar quem já estava trabalhando
+const jaComecou = (t, top) => filhosDe(top).some(m => (m.processos || []).some(p => { const s = procDe(t, m.id, p.id); return s && s.st && s.st !== 'ni'; }));
+function liberacao(t, m) {
+  const top = topDe(m); if (!top) return { ok: true, txt: '' };
+  const x = ((t.mods || {})[top.id] || {}).lib, r = regraDe(top);
+  const mm = r.tipo === 'proc' ? (MODS.secoes || []).find(y => y.id === r.mid) : null, pp = mm && (mm.processos || []).find(y => y.id === r.pid);
+  const dep = mm ? topDe(mm) : null;
+  if (x && x.manual) return { ok: true, manual: true, txt: 'Liberado manualmente por ' + (x.por || ''), em: x.em, dep };
+  if (r.tipo === 'livre') return { ok: true, txt: 'Módulo sempre liberado' };
+  if (mm && pp) {
+    const s = procDe(t, mm.id, pp.id);
+    if (s && s.st === 'fi') return { ok: true, txt: `${mm.titulo} finalizou "${pp.t}"${s.por ? ' (' + s.por + ')' : ''}`, em: s.em, dep };
+    if (jaComecou(t, top)) return { ok: true, txt: 'Liberado: o trabalho já tinha começado', dep };
+    return { ok: false, txt: `Libera quando ${mm.titulo} finalizar "${pp.t}"`, dep };
+  }
+  if (pronto(t)) return { ok: true, txt: 'TASK pronto: Pré TASK completo' };
+  if (jaComecou(t, top)) return { ok: true, txt: 'Liberado: o trabalho já tinha começado' };
+  return { ok: false, txt: 'Libera quando o Pré TASK estiver completo' };
+}
+const pendsDe = (t, mid) => ((((t.mods || {})[mid] || {}).pend) || []);
+const pendAbertas = (t, lista) => lista.flatMap(m => pendsDe(t, m.id).filter(p => p.st !== 're').map(p => ({ ...p, mid: m.id, mt: m.titulo })));
+// Situação do módulo (com as etapas dele): Aguardando, Liberado, Em andamento, Com pendência, Concluído
+function estadoMod(t, m) {
+  const top = topDe(m), lista = m.pai ? [m] : filhosDe(top), c = contaMod(t, lista), pa = pendAbertas(t, lista).length;
+  if (c.tot && c.f === c.tot) return { k: 'co', txt: 'Concluído' };
+  if (!liberacao(t, m).ok) return { k: 'ag', txt: 'Aguardando' };
+  if (pa) return { k: 'pe', txt: pa + (pa > 1 ? ' pendências' : ' pendência') };
+  if (c.f || c.an || c.pa.length) return { k: 'an', txt: 'Em andamento' };
+  return { k: 'li', txt: 'Liberado' };
+}
+// Pode alterar: é do setor (ou ADM) e o módulo já foi liberado
+const podeEditar = (t, m) => podeMod(m) && (admin || liberacao(t, m).ok);
+// Quem libera na mão: ADM, ou quem é do setor que normalmente libera
+const podeLiberar = (t, m) => { const l = liberacao(t, m); return !l.ok && (admin || (l.dep && meusSetores().includes(l.dep.id))); };
+const quemSou = () => (perfil && (perfil.nome || perfil.email)) || '';
+const anotar = (mods, mid, txt) => { const x = mods[mid] = mods[mid] || {}; x.hist = (x.hist || []).concat([{ em: Date.now(), por: quemSou(), txt: String(txt).slice(0, 600) }]).slice(-200); };
+function avisarLiberado(t, m, txt) {
+  if (!window.shotgunNotificar) return;
+  window.shotgunNotificar({ titulo: `${m.titulo} liberado: ${t.apelido || t.razao || 'cadastro'}`, texto: (txt || '') + '. Abra o TASK › Módulos para começar.', setor: m.id, aba: 'tabTask' }).catch(e => console.warn('aviso de liberação', e));
+}
+// Chamado pelo Pré TASK quando o card fica pronto: avisa os setores liberados pelo "TASK pronto"
+window.TK_aoPronto = (tid, nome) => {
+  const t = tasks.find(x => x.id === tid) || { id: tid, apelido: nome || '', mods: {} };
+  topos().filter(m => regraDe(m).tipo === 'pronto' && !jaComecou(t, m)).forEach(m => avisarLiberado({ ...t, apelido: t.apelido || nome }, m, 'TASK pronto: Pré TASK completo'));
+};
 // Link para baixar a base: campo "Link da base" do módulo Implantação (ou de uma etapa dele), preenchido pelo setor de Implantação
 function linkBaseDe(t) {
   const ms = (MODS.secoes || []).filter(m => m.id === 'impl' || topDe(m).id === 'impl' || /implanta/i.test(topDe(m).titulo || ''));
@@ -153,25 +228,55 @@ function finalizarTodos(id, mid, url) {
     (m.processos || []).forEach(p => { const ant = x.proc[p.id] || {}; if (ant.st === 'fi') return; const exige = exigeLink(m, p); if (exige) lk = true; x.proc[p.id] = { st: 'fi', por: quem, em: agora, desde: agora, motivo: '', ...(exige ? { link: url } : {}) }; });
     if (lk && url) { const y = mods[cl.mid] = mods[cl.mid] || {}; y.dados = { ...(y.dados || {}), [cl.k]: url, [cl.lib]: 'Sim' }; }
     pedeLink = null;
-  }, mid).then(ok => { if (ok) dmsg('Todos os processos deste módulo foram finalizados.'); return ok; });
+  }, mid, 'finalizou todos os processos do módulo' + (url ? ' (link da base: ' + url + ')' : '') + '.').then(ok => { if (ok) dmsg('Todos os processos deste módulo foram finalizados.'); return ok; });
 }
 const prazoDe = (t, p) => { if (p.prazo === '' || p.prazo == null || !t.dataBase) return ''; const dt = new Date(t.dataBase + 'T12:00:00'); dt.setDate(dt.getDate() + (+p.prazo || 0)); return dt.toISOString().slice(0, 10); };
 function modsCard(t) {
   const top = (MODS.secoes || []).filter(m => !m.pai); if (!top.length) return '';
-  const linhas = top.map(m => { const c = contaMod(t, filhosDe(m)), pct = c.tot ? c.f * 100 / c.tot : 0, pa = c.tot ? c.an * 100 / c.tot : 0; return `<div class="tkmod${c.pa.length ? ' parado' : ''}" title="${esc(c.f + ' de ' + c.tot + ' processos finalizados' + (c.an ? ' · ' + c.an + ' em andamento' : ''))}"><span>${esc(m.titulo)}</span><i><b style="width:${pct}%"></b><b class="an" style="width:${pa}%"></b></i><em>${c.f}/${c.tot}</em></div>`; }).join('');
-  const pa = contaMod(t, MODS.secoes || []).pa;
-  return `<div class="tkmods">${linhas}</div>${pa.length ? `<div class="tkparado" title="${esc(pa.join('\n'))}">${pa.length} processo${pa.length > 1 ? 's' : ''} parado${pa.length > 1 ? 's' : ''} · ${esc(pa[0].split(':')[0])}</div>` : ''}`;
+  const linhas = top.map(m => { const c = contaMod(t, filhosDe(m)), pct = c.tot ? c.f * 100 / c.tot : 0, pa = c.tot ? c.an * 100 / c.tot : 0, e = estadoMod(t, m); return `<div class="tkmod est-${e.k}${c.pa.length ? ' parado' : ''}" title="${esc(e.txt + ' · ' + c.f + ' de ' + c.tot + ' processos finalizados' + (c.an ? ' · ' + c.an + ' em andamento' : ''))}"><span><span class="tkdot" aria-hidden="true"></span>${esc(m.titulo)}</span><i><b style="width:${pct}%"></b><b class="an" style="width:${pa}%"></b></i><em>${c.f}/${c.tot}</em></div>`; }).join('');
+  const pa = contaMod(t, MODS.secoes || []).pa, pe = pendAbertas(t, MODS.secoes || []), pc = pe.filter(x => x.com === 'Cliente').length;
+  return `<div class="tkmods">${linhas}</div>${pe.length ? `<div class="tkpend" title="${esc(pe.map(x => x.mt + ': ' + x.txt).join('\n'))}">${pe.length} pendência${pe.length > 1 ? 's' : ''} aberta${pe.length > 1 ? 's' : ''}${pc ? ' · ' + pc + ' com o cliente' : ''}</div>` : ''}${pa.length ? `<div class="tkparado" title="${esc(pa.join('\n'))}">${pa.length} processo${pa.length > 1 ? 's' : ''} parado${pa.length > 1 ? 's' : ''} · ${esc(pa[0].split(':')[0])}</div>` : ''}`;
 }
+const fmtQ = ms => ms ? new Date(ms).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
+function libHtml(t, m, lib) {
+  if (lib.ok) return `<div class="mdlib ok"><span class="dot"></span><div><b>Liberado${lib.em ? ' em ' + esc(fmtQ(lib.em)) : ''}</b><small>${esc(lib.txt)}</small></div></div>`;
+  return `<div class="mdlib ag"><span class="dot"></span><div><b>Aguardando liberação</b><small>${esc(lib.txt)}. Até lá a equipe só acompanha.</small></div>${podeLiberar(t, m) ? '<button type="button" data-mdlib="1">Liberar agora</button>' : ''}</div>`;
+}
+function pendHtml(t, m, pode) {
+  const L = pendsDe(t, m.id), ab = L.filter(p => p.st !== 're'), re = L.filter(p => p.st === 're').slice(-5).reverse(), hj = hoje();
+  const proc = pid => ((m.processos || []).find(p => p.id === pid) || {}).t || '';
+  const fone = dig(t.fone), wa = p => p.com === 'Cliente' && fone.length >= 10 ? `<a class="mdwa" target="_blank" rel="noopener" href="https://wa.me/${fone.length <= 11 ? '55' + fone : fone}?text=${encodeURIComponent(`Olá${t.contato ? ' ' + t.contato : ''}! Para seguirmos com a implantação, ainda falta: ${p.txt}. Pode nos ajudar?`)}">Cobrar no WhatsApp</a>` : '';
+  const linha = p => `<div class="mdpend${p.st === 're' ? ' re' : p.prazo && p.prazo < hj ? ' atr' : ''}"><div><div class="t">${esc(p.txt)}</div><div class="d">${esc(['Com ' + (p.com || 'Equipe interna'), p.prazo ? 'prazo ' + fmtD(p.prazo) : '', proc(p.pid) ? 'processo "' + proc(p.pid) + '"' : '', p.st === 're' ? 'resolvida em ' + fmtQ(p.resEm) + (p.resPor ? ' por ' + p.resPor : '') : 'aberta em ' + fmtQ(p.em) + (p.por ? ' por ' + p.por : '')].filter(Boolean).join(' · '))}</div></div>
+    <div class="mdpendacts">${p.st === 're' ? '<span class="mdtag ok">Resolvida</span>' : `${wa(p)}${pode ? `<button type="button" data-pdres="${esc(p.id)}">Resolver</button>` : '<span class="mdtag wa">Aberta</span>'}`}</div></div>`;
+  return `<div class="ptsec"><h5>Pendências<small>${ab.length ? ab.length + (ab.length > 1 ? ' abertas' : ' aberta') : 'nenhuma aberta'}</small></h5><div class="mdpends">
+    ${ab.map(linha).join('')}${re.length ? `<div class="mdsub">Resolvidas recentemente</div>${re.map(linha).join('')}` : ''}${!L.length ? '<p class="hint">O que estiver travando o trabalho (dado que falta, retorno do banco, credencial da bandeira…) entra aqui, com quem está e o prazo.</p>' : ''}
+    ${pode ? `<div class="mdpendnova"><input id="pdTxt" placeholder="O que está faltando? (ex.: cliente não enviou o modelo das maquininhas)" aria-label="Descrição da pendência" maxlength="300">
+      <label>Com quem está<select id="pdCom">${PEND_COM.map(x => `<option>${esc(x)}</option>`).join('')}</select></label>
+      <label>Prazo<input id="pdPrazo" type="date"></label>
+      <label>Processo<select id="pdProc"><option value="">Nenhum em especial</option>${(m.processos || []).filter(p => (procDe(t, m.id, p.id) || {}).st !== 'fi').map(p => `<option value="${esc(p.id)}">${esc(p.t)}</option>`).join('')}</select></label>
+      <button type="button" class="primary" data-pdadd="1">Abrir pendência</button>
+      <p class="hint">Ligada a um processo, a pendência deixa o processo como Parado até ser resolvida.</p></div>` : ''}
+  </div></div>`;
+}
+function diarioHtml(t, m) {
+  const H = ((((t.mods || {})[m.id] || {}).hist) || []).slice().reverse(), mais = !!(diarioTudo[t.id + m.id]), vis = mais ? H : H.slice(0, 12);
+  return `<div class="ptsec"><h5>Diário<small>histórico do módulo, com quem fez e quando</small></h5><div class="mddiario">
+    <div class="mdnota"><textarea id="hNota" rows="2" maxlength="600" placeholder="Anote uma conversa, combinado ou situação (ex.: falei com o gerente, ele envia as fotos amanhã)" aria-label="Anotação no diário"></textarea><button type="button" data-hnota="1">Anotar</button></div>
+    ${vis.length ? `<ul class="mdhist">${vis.map(h => `<li><time>${esc(fmtQ(h.em))}</time><span><b>${esc(h.por || '')}</b> ${esc(h.txt)}</span></li>`).join('')}</ul>` : '<p class="hint">Nada registrado ainda. Mudanças de status, liberações e pendências entram aqui sozinhas.</p>'}
+    ${H.length > vis.length ? `<button type="button" class="linkbtn" data-hmais="1">Ver tudo (${H.length})</button>` : ''}
+  </div></div>`;
+}
+const diarioTudo = {};
 function formMods(id, mid) {
   const t = tasks.find(x => x.id === id); if (!t) return;
   const L = MODS.secoes || [], ordem = []; L.filter(m => !m.pai).forEach(m => { ordem.push(m); L.filter(x => x.pai === m.id).forEach(x => ordem.push(x)); });
   const m = ordem.find(x => x.id === mid) || ordem[0]; if (pedeLink && (pedeLink.id !== id || !m || pedeLink.mid !== m.id)) pedeLink = null; if (!m) { abrirDlg('mods', 'Módulos', '<p class="hint">Nenhum módulo configurado. O administrador cria em Parâmetros Pré TASK.</p>'); return; }
   const d = dlg(), top = d.open ? d.scrollTop : 0;
-  const nav = x => { const c = contaMod(t, [x]); return `<button type="button" class="dgnav${x.pai ? ' sub' : ''}" data-md="${esc(x.id)}" aria-selected="${x.id === m.id}">${iconeDe(x.titulo)}<span>${esc(x.titulo)}</span><small class="mdn${c.pa.length ? ' pa' : c.tot && c.f === c.tot ? ' ok' : ''}">${c.f}/${c.tot}</small></button>`; };
+  const nav = x => { const c = contaMod(t, [x]), e = x.pai ? null : estadoMod(t, x); return `<button type="button" class="dgnav${x.pai ? ' sub' : ''}" data-md="${esc(x.id)}" aria-selected="${x.id === m.id}">${iconeDe(x.titulo)}<span>${esc(x.titulo)}${e ? `<em class="mdest ${e.k}">${esc(e.txt)}</em>` : ''}</span><small class="mdn${c.pa.length ? ' pa' : c.tot && c.f === c.tot ? ' ok' : ''}">${c.f}/${c.tot}</small></button>`; };
   const c = contaMod(t, [m]), pct = c.tot ? Math.round(c.f * 100 / c.tot) : 0, dados = ((t.mods || {})[m.id] || {}).dados || {};
   const fmtDia = ms => ms ? new Date(ms).toLocaleDateString('pt-BR') : '';
   const prazo = p => { const d = prazoDe(t, p); return d ? 'prazo ' + fmtD(d) : ''; };
-  const pode = podeMod(m), pend = (m.processos || []).filter(p => { const s = procDe(t, m.id, p.id); return !s || s.st !== 'fi'; }).length;
+  const pode = podeEditar(t, m), lib = liberacao(t, m), pend = (m.processos || []).filter(p => { const s = procDe(t, m.id, p.id); return !s || s.st !== 'fi'; }).length;
   const meta = (p, s) => { const st = s ? s.st : 'ni'; const quem = s && s.por ? ' · ' + s.por : ''; const txt = st === 'fi' ? `Finalizado em ${fmtDia(s.em)}${quem}` : st === 'pa' ? `Parado desde ${fmtDia(s.desde || s.em)}${quem}` : st === 'an' ? `Em andamento desde ${fmtDia(s.desde || s.em)}${quem}` : st === 'in' ? `Iniciado em ${fmtDia(s.desde || s.em)}${quem}` : 'Não iniciado'; return [txt, p.resp ? 'resp.: ' + p.resp : '', prazo(p)].filter(Boolean).join(' · '); };
   window.PtCampos && window.PtCampos.estilos();
   abrirDlg('mods', 'Módulos · ' + (t.apelido || t.razao || ''), `<div class="dgwrap" id="tkMods" data-id="${esc(id)}" data-mid="${esc(m.id)}">
@@ -180,10 +285,13 @@ function formMods(id, mid) {
       <div class="mdtopo"><h4>${esc(m.titulo)}${m.pai ? `<small>etapa de ${esc((L.find(x => x.id === m.pai) || {}).titulo || '')}</small>` : ''}</h4><span class="hint">${c.f} de ${c.tot} processos finalizados</span></div>
       <div class="tkprog"><span style="width:${pct}%"></span></div>
       ${(() => { const d = String(m.desc != null ? m.desc : (window.MODULO_DESC ? window.MODULO_DESC(m.id) : '') || '').trim(); return d ? `<div class="mddesc"><b>Responsabilidades do setor</b><p>${esc(d)}</p></div>` : ''; })()}
-      ${pode ? '' : `<p class="mdro">Só o setor ${esc(topDe(m).titulo)} altera este módulo. Você pode acompanhar.</p>`}
+      ${libHtml(t, m, lib)}
+      ${pode ? '' : podeMod(m) && !lib.ok ? '' : `<p class="mdro">Só o setor ${esc(topDe(m).titulo)} altera este módulo. Você pode acompanhar.</p>`}
       ${(m.campos || []).filter(x => x.show !== false).length ? `<div class="ptsec"><h5>Dados</h5><div class="ptgrid" id="mdDados">${window.PtCampos ? window.PtCampos.camposHtml((m.campos || []).filter(x => x.show !== false), '', dados, {}) : ''}${pode ? '<div class="ptbtns full"><button type="button" class="primary" data-mdsalvar="1">Salvar dados</button></div>' : ''}</div></div>` : ''}
       <div class="ptsec"><h5>Processos${pode && pend > 1 && !(pedeLink && pedeLink.todos && pedeLink.id === id && pedeLink.mid === m.id) ? `<button type="button" class="mdtodos" data-mdtodos="1" title="Marcar como Finalizado os ${pend} processos que ainda não foram finalizados">Finalizar todos</button>` : ''}</h5><div class="mdprocs">${(m.processos || []).map(p => { const s = procDe(t, m.id, p.id), st = s ? s.st : 'ni'; const lk = exigeLink(m, p), lkUrl = lk ? ((s && s.link) || (linkBaseDe(t) || {}).url || '') : '', pede = lk && pedeLink && pedeLink.id === id && pedeLink.mid === m.id && pedeLink.pid === p.id; return `<div class="mdproc" data-pid="${esc(p.id)}"><div><div class="t">${esc(p.t)}</div><div class="d">${esc(meta(p, s))}</div>${lk && st === 'fi' && lkUrl && !pede ? `<div class="mdlink"><span>Link da base:</span> <a href="${esc(lkUrl)}" target="_blank" rel="noopener">${esc(lkUrl)}</a>${pode ? `<button type="button" data-lkalt="${esc(p.id)}">Alterar</button>` : ''}</div>` : ''}${lk && !pede && st !== 'fi' ? `<div class="mdlkdica">Para finalizar, informe o link da base.</div>` : ''}${pede ? `<div class="mdmot mdlkbox"><input type="url" data-lk="${esc(p.id)}" value="${esc(lkUrl)}" placeholder="https://… link para acessar a base" aria-label="Link da base" inputmode="url"><button type="button" class="primary" data-lkok="${esc(p.id)}">${pedeLink.todos ? 'Finalizar todos com este link' : st === 'fi' ? 'Salvar link' : 'Finalizar com este link'}</button><button type="button" data-lkcanc="1">Cancelar</button></div>` : ''}${st === 'pa' ? `<div class="mdmot"><input data-mot="${esc(p.id)}" value="${esc(s.motivo || '')}" placeholder="Motivo da parada (ex.: aguardando o banco)" aria-label="Motivo da parada"><button type="button" data-motok="${esc(p.id)}">Salvar motivo</button></div>` : ''}</div>
         <div class="ptseg ps" role="group" aria-label="Status de ${esc(p.t)}">${Object.entries(PST).map(([k, n]) => `<button type="button" data-pst="${k}" data-pid="${esc(p.id)}" aria-pressed="${st === k}"${pode ? '' : ' disabled'}>${n}</button>`).join('')}</div></div>`; }).join('') || '<p class="hint">Nenhum processo neste módulo.</p>'}</div></div>
+      ${pendHtml(t, m, pode)}
+      ${diarioHtml(t, m)}
     </div></div>`);
   d.classList.add('largo');
   if (window.PtCampos && $('mdDados')) { window.PtCampos.ligarCampos($('mdDados')); window.PtCampos.sincronizar($('mdDados')); if (!pode) $('mdDados').querySelectorAll('input,select,textarea,button').forEach(x => { x.disabled = true; }); }
@@ -191,11 +299,21 @@ function formMods(id, mid) {
   d.scrollTop = top;
   const li = pedeLink && d.querySelector('[data-lk]'); if (li) { li.focus(); li.select(); }
 }
-async function salvarMods(id, fn, mid) {
+async function salvarMods(id, fn, mid, nota) {
   const t = tasks.find(x => x.id === id); if (!t) return;
   const mods = JSON.parse(JSON.stringify(t.mods || {}));
+  const antes = new Set(topos().filter(m => liberacao(t, m).ok).map(m => m.id));
   fn(mods);
-  try { await F.updateDoc(F.doc(db, 'tasks', id), { mods, alteradoEm: F.serverTimestamp(), alteradoPor: perfil.nome || perfil.email }); t.mods = mods; formMods(id, mid); return true; }
+  if (nota && mid) anotar(mods, mid, nota);
+  // Módulos que esta alteração libera: registra no diário deles e avisa o setor no sino
+  const depois = { ...t, mods }, novos = topos().filter(m => !antes.has(m.id) && liberacao(depois, m).ok);
+  novos.forEach(m => anotar(mods, m.id, 'Módulo liberado. ' + liberacao(depois, m).txt + '.'));
+  try {
+    await F.updateDoc(F.doc(db, 'tasks', id), { mods, alteradoEm: F.serverTimestamp(), alteradoPor: perfil.nome || perfil.email }); t.mods = mods;
+    novos.forEach(m => avisarLiberado(depois, m, liberacao(depois, m).txt));
+    formMods(id, mid); if (novos.length) setTimeout(() => { const ant = $('tkDlgMsg').textContent; dmsg((ant ? ant + ' ' : '') + 'Liberado para: ' + novos.map(m => m.titulo).join(', ') + '. O setor foi avisado no sino.'); }, 60);
+    return true;
+  }
   catch (e) { dmsg('Não foi possível salvar (' + (e.code || 'erro') + ').'); return false; }
 }
 
@@ -228,6 +346,14 @@ function formDados(t) {
   if (t && t.propostaId && window.PreTask) {
     if (dlg().open) dlg().close();
     return window.PreTask.abrir({ F, db, perfil, pid: t.propostaId, origem: 'task', task: t, podeTask: true, verContrato });
+  }
+  // Cadastro direto (perfis TASK e ADM): abre o Pré TASK completo, sem proposta nem contrato obrigatórios
+  if (window.PreTask) {
+    if (dlg().open) dlg().close();
+    const novo = !t, tk = t || { id: F.doc(F.collection(db, 'tasks')).id, respCadastro: { uid: perfil.uid, nome: perfil.nome || perfil.email } };
+    const usadas = new Set(tasks.flatMap(x => [x.propostaId, x.propostaVinc]).filter(Boolean));
+    const propostasLivres = (aprovadas || []).filter(p => !usadas.has(p.id) || p.id === tk.propostaVinc).map(p => ({ id: p.id, numero: p.numero || '', cliente: p.cliente || '' }));
+    return window.PreTask.abrir({ F, db, perfil, origem: 'task', task: tk, novo, podeTask: true, propostasLivres, propostaVinc: tk.propostaVinc || '' });
   }
   t = t || { respCadastro: { uid: perfil.uid, nome: perfil.nome || perfil.email } };
   const sel = (id, r) => `<select id="${id}"><option value="">Ninguém</option>${opcoesResp(null, r?.uid)}</select>`;
@@ -433,13 +559,14 @@ async function datasE4(pid) {
 // Logo do posto ou rede: anexo da Etapa 2 com "logo" no nome do campo, reduzido para uma miniatura
 async function logoDe(pid) {
   try {
-    const an = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos'));
+    const R = Array.isArray(pid) ? pid : ['propostas', pid]; // cadastro direto: ['tasks', id]
+    const an = await F.getDocs(F.collection(db, ...R, 'anexos'));
     // Aceita imagem pelo tipo ou pela extensão, e PDF (usa a primeira página)
     const ehImg = x => /^image\//.test(x.tipo || '') || /\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(x.nome || ''), ehPdf = x => /pdf/i.test(x.tipo || '') || /\.pdf$/i.test(x.nome || '');
     const lista = an.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => /logo|marca/i.test(x.campo || '') || /logo|marca/i.test(x.nome || ''));
     const a = lista.find(ehImg) || lista.find(ehPdf);
     if (!a) return '';
-    const ps = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos', a.id, 'partes'));
+    const ps = await F.getDocs(F.collection(db, ...R, 'anexos', a.id, 'partes'));
     const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join('');
     let src;
     if (ehImg(a)) { const ext = (String(a.nome || '').match(/\.(\w+)$/) || [])[1] || 'png'; const tipo = /^image\//.test(a.tipo || '') ? a.tipo : 'image/' + (/svg/i.test(ext) ? 'svg+xml' : /jpe?g/i.test(ext) ? 'jpeg' : ext.toLowerCase()); src = `data:${tipo};base64,` + b64; }
@@ -502,6 +629,11 @@ let todosU = [];
 const respE4 = d => { if (!d || !d.por) return null; const u = (d.porUid && todosU.find(x => x.uid === d.porUid)) || todosU.find(x => x.nome === d.por); return { uid: u ? u.uid : (d.porUid || 'nome:' + d.por), nome: u ? u.nome : d.por, email: d.porEmail || '' }; };
 const completando = new Set();
 function completarDatas() {
+  // Cadastro direto: só o logo (vem do anexo de logo do Pré TASK, guardado no próprio card)
+  tasks.filter(t => t.origem === 'direto' && t.pre4 && (t.logoV !== 3 || !t.logo) && !completando.has(t.id)).forEach(t => {
+    completando.add(t.id);
+    logoDe(['tasks', t.id]).then(lg => { if (lg !== (t.logo || '') || t.logoV !== 3) return F.updateDoc(F.doc(db, 'tasks', t.id), { logo: lg, logoV: 3 }); }).catch(() => {});
+  });
   // A Central é conferida uma vez por sessão, para refletir alterações feitas depois na Etapa 4
   tasks.filter(t => t.propostaId && !completando.has(t.id)).forEach(t => {
     completando.add(t.id);
@@ -535,6 +667,7 @@ async function criarDaProposta(pid, auto) {
     criado: F.serverTimestamp(), criadoPor: auto ? 'Automático (Etapa 4 concluída)' : (perfil.nome || perfil.email), auto: !!auto
   };
   await F.setDoc(ref, novo);
+  window.TK_aoPronto(pid, novo.apelido); // card nasce pronto (Pré TASK salvo): avisa quem é liberado pelo TASK pronto
   return novo;
 }
 // Remove o card (só ADM). Se veio de proposta, deixa a marca para o automático não recriar; a proposta volta para "Importar".
@@ -562,7 +695,7 @@ async function importar(pid, bt) {
 const criando = new Set();
 function sincronizar() {
   if (!tasksOk || !aprovadas) return;
-  const tem = new Set([...tasks.flatMap(t => [t.id, t.propostaId]).filter(Boolean), ...removidas]);
+  const tem = new Set([...tasks.flatMap(t => [t.id, t.propostaId, t.propostaVinc]).filter(Boolean), ...removidas]);
   aprovadas.filter(p => p.ctAceitoEm && p.e4Em && !tem.has(p.id) && !criando.has(p.id)).forEach(p => {
     criando.add(p.id);
     criarDaProposta(p.id, true).then(n => { if (n) msg(`Novo cadastro automático: ${n.apelido} (Etapa 4 concluída).`); })
@@ -691,18 +824,42 @@ function ligar() {
     const dg = e.target.closest('[data-dg]'); if (dg) return mostrarDg(dg.dataset.dg);
     const md = e.target.closest('[data-md]'); if (md) return formMods($('tkMods').dataset.id, md.dataset.md);
     const ps = e.target.closest('[data-pst]');
-    if ((ps || e.target.closest('[data-motok]') || e.target.closest('[data-mdsalvar]')) && $('tkMods') && !podeMod((MODS.secoes || []).find(x => x.id === $('tkMods').dataset.mid))) { dmsg('Só o setor responsável altera este módulo.'); return; }
+    const tkM = () => tasks.find(x => x.id === $('tkMods').dataset.id) || {}, mdM = () => (MODS.secoes || []).find(x => x.id === $('tkMods').dataset.mid);
+    if ((ps || e.target.closest('[data-motok]') || e.target.closest('[data-mdsalvar]') || e.target.closest('[data-pdadd]') || e.target.closest('[data-pdres]')) && $('tkMods') && !podeEditar(tkM(), mdM())) { dmsg(podeMod(mdM()) ? 'Este módulo ainda aguarda liberação.' : 'Só o setor responsável altera este módulo.'); return; }
+    // Liberar agora (ADM ou setor que normalmente libera)
+    if (e.target.closest('[data-mdlib]')) { const id = $('tkMods').dataset.id, m0 = topDe(mdM()); if (!podeLiberar(tkM(), m0)) return; return salvarMods(id, mods => { const x = mods[m0.id] = mods[m0.id] || {}; x.lib = { manual: true, em: Date.now(), por: quemSou() }; }, $('tkMods').dataset.mid); }
+    // Pendências
+    if (e.target.closest('[data-pdadd]')) {
+      const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, txt = $('pdTxt').value.trim(), com = $('pdCom').value, prazo = $('pdPrazo').value, pid = $('pdProc').value;
+      if (!txt) { dmsg('Descreva o que está faltando.'); $('pdTxt').focus(); return; }
+      const mm = mdM(), pp = pid && (mm.processos || []).find(x => x.id === pid);
+      return salvarMods(id, mods => { const x = mods[mid] = mods[mid] || {}; x.pend = (x.pend || []).concat([{ id: uid(), txt, com, prazo, pid: pid || '', st: 'ab', em: Date.now(), por: quemSou() }]);
+        if (pp) { x.proc = x.proc || {}; const ant = x.proc[pid] || {}; x.proc[pid] = { ...ant, st: 'pa', por: quemSou(), em: Date.now(), desde: ant.st === 'pa' ? (ant.desde || Date.now()) : Date.now(), motivo: txt }; } },
+        mid, `abriu pendência com ${com}: ${txt}${prazo ? ' (prazo ' + fmtD(prazo) + ')' : ''}${pp ? '. "' + pp.t + '" ficou Parado' : ''}.`).then(ok => { if (ok) dmsg('Pendência aberta.'); });
+    }
+    const pr = e.target.closest('[data-pdres]');
+    if (pr) {
+      const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, pdid = pr.dataset.pdres, p0 = pendsDe(tkM(), mid).find(x => x.id === pdid); if (!p0) return;
+      const mm = mdM(), pp = p0.pid && (mm.processos || []).find(x => x.id === p0.pid);
+      return salvarMods(id, mods => { const x = mods[mid] = mods[mid] || {}; x.pend = (x.pend || []).map(q => q.id === pdid ? { ...q, st: 're', resEm: Date.now(), resPor: quemSou() } : q);
+        const outras = x.pend.some(q => q.st !== 're' && q.pid === p0.pid); const pc = p0.pid && (x.proc || {})[p0.pid];
+        if (pc && pc.st === 'pa' && !outras) x.proc[p0.pid] = { ...pc, st: 'an', por: quemSou(), em: Date.now(), desde: Date.now(), motivo: '' }; },
+        mid, `resolveu a pendência: ${p0.txt}${pp ? '. "' + pp.t + '" voltou para Em andamento' : ''}.`).then(ok => { if (ok) dmsg('Pendência resolvida.'); });
+    }
+    // Diário: anotação livre (qualquer pessoa que abre o TASK)
+    if (e.target.closest('[data-hnota]')) { const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, v = $('hNota').value.trim(); if (!v) { $('hNota').focus(); return; } return salvarMods(id, () => {}, mid, 'anotou: ' + v).then(ok => { if (ok) dmsg('Anotado no diário.'); }); }
+    if (e.target.closest('[data-hmais]')) { diarioTudo[$('tkMods').dataset.id + $('tkMods').dataset.mid] = true; return formMods($('tkMods').dataset.id, $('tkMods').dataset.mid); }
     if (ps) {
       const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, pid = ps.dataset.pid, st = ps.dataset.pst, quem = perfil.nome || perfil.email;
       const mm = (MODS.secoes || []).find(x => x.id === mid), pp = mm && (mm.processos || []).find(x => x.id === pid);
       if (st === 'fi' && exigeLink(mm, pp)) { const t0 = tasks.find(x => x.id === id), s0 = t0 && procDe(t0, mid, pid); if (s0 && s0.st === 'fi') return; pedeLink = { id, mid, pid }; formMods(id, mid); dmsg('Informe o link da base para finalizar esta etapa.'); return; }
       if (pedeLink && pedeLink.pid === pid) pedeLink = null;
-      return salvarMods(id, mods => { const m = mods[mid] = mods[mid] || {}; m.proc = m.proc || {}; const ant = m.proc[pid] || {}; m.proc[pid] = { st, por: quem, em: Date.now(), desde: ant.st === st ? (ant.desde || ant.em || Date.now()) : Date.now(), motivo: st === 'pa' ? (ant.motivo || '') : '' }; }, mid).then(ok => { if (ok && st === 'pa') { const i = document.querySelector(`[data-mot="${CSS.escape(pid)}"]`); if (i) i.focus(); dmsg('Informe o motivo da parada.'); } });
+      return salvarMods(id, mods => { const m = mods[mid] = mods[mid] || {}; m.proc = m.proc || {}; const ant = m.proc[pid] || {}; m.proc[pid] = { st, por: quem, em: Date.now(), desde: ant.st === st ? (ant.desde || ant.em || Date.now()) : Date.now(), motivo: st === 'pa' ? (ant.motivo || '') : '' }; }, mid, `mudou "${pp ? pp.t : pid}" para ${PST[st] || st}.`).then(ok => { if (ok && st === 'pa') { const i = document.querySelector(`[data-mot="${CSS.escape(pid)}"]`); if (i) i.focus(); dmsg('Informe o motivo da parada.'); } });
     }
     const ft = e.target.closest('[data-mdtodos]');
     if (ft) {
       const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, t = tasks.find(x => x.id === id), mm = (MODS.secoes || []).find(x => x.id === mid);
-      if (!t || !mm || !podeMod(mm)) { dmsg('Só o setor responsável altera este módulo.'); return; }
+      if (!t || !mm || !podeEditar(t, mm)) { dmsg(mm && podeMod(mm) ? 'Este módulo ainda aguarda liberação.' : 'Só o setor responsável altera este módulo.'); return; }
       const pend = (mm.processos || []).filter(p => { const s = procDe(t, mid, p.id); return !s || s.st !== 'fi'; }); if (!pend.length) return;
       if (!confirmar(ft, 'todos' + id + mid, `Confirmar (${pend.length})`)) { const pa = pend.filter(p => (procDe(t, mid, p.id) || {}).st === 'pa').length; dmsg(`Finalizar ${pend.length} processo${pend.length > 1 ? 's' : ''} de uma vez${pa ? ` (${pa} parado${pa > 1 ? 's' : ''})` : ''}? Clique de novo para confirmar.`); return; }
       const pl = pend.find(p => exigeLink(mm, p));
@@ -714,22 +871,22 @@ function ligar() {
     if (e.target.closest('[data-lkcanc]')) { const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid; pedeLink = null; formMods(id, mid); return; }
     const lo = e.target.closest('[data-lkok]');
     if (lo) {
-      if (!podeMod((MODS.secoes || []).find(x => x.id === $('tkMods').dataset.mid))) { dmsg('Só o setor responsável altera este módulo.'); return; }
+      if (!podeEditar(tasks.find(x => x.id === $('tkMods').dataset.id) || {}, (MODS.secoes || []).find(x => x.id === $('tkMods').dataset.mid))) { dmsg('Só o setor responsável altera este módulo, depois de liberado.'); return; }
       const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, pid = lo.dataset.lkok, inp = document.querySelector(`[data-lk="${CSS.escape(pid)}"]`), url = comHttp(inp && inp.value), quem = perfil.nome || perfil.email;
       if (!url) { dmsg('Informe o link da base. Sem ele a etapa não é finalizada.'); if (inp) inp.focus(); return; }
       if (!urlOk(url)) { dmsg('Link inválido. Cole o endereço completo da base (ex.: https://…).'); if (inp) inp.focus(); return; }
       if (pedeLink && pedeLink.todos && pedeLink.id === id && pedeLink.mid === mid) return finalizarTodos(id, mid, url);
       const cl = campoLinkBase();
-      return salvarMods(id, mods => { const m = mods[mid] = mods[mid] || {}; m.proc = m.proc || {}; const ant = m.proc[pid] || {}; m.proc[pid] = ant.st === 'fi' ? { ...ant, link: url, linkPor: quem, linkEm: Date.now() } : { st: 'fi', por: quem, em: Date.now(), desde: Date.now(), motivo: '', link: url }; const x = mods[cl.mid] = mods[cl.mid] || {}; x.dados = { ...(x.dados || {}), [cl.k]: url, [cl.lib]: 'Sim' }; pedeLink = null; }, mid).then(ok => { if (ok) dmsg('Etapa finalizada com o link da base.'); });
+      return salvarMods(id, mods => { const m = mods[mid] = mods[mid] || {}; m.proc = m.proc || {}; const ant = m.proc[pid] || {}; m.proc[pid] = ant.st === 'fi' ? { ...ant, link: url, linkPor: quem, linkEm: Date.now() } : { st: 'fi', por: quem, em: Date.now(), desde: Date.now(), motivo: '', link: url }; const x = mods[cl.mid] = mods[cl.mid] || {}; x.dados = { ...(x.dados || {}), [cl.k]: url, [cl.lib]: 'Sim' }; pedeLink = null; }, mid, `finalizou com o link da base: ${url}`).then(ok => { if (ok) dmsg('Etapa finalizada com o link da base.'); });
     }
     const mk = e.target.closest('[data-motok]');
-    if (mk) { const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, pid = mk.dataset.motok, v = document.querySelector(`[data-mot="${CSS.escape(pid)}"]`).value.trim(); return salvarMods(id, mods => { const p = ((mods[mid] || {}).proc || {})[pid]; if (p) p.motivo = v; }, mid).then(ok => { if (ok) dmsg('Motivo salvo.'); }); }
+    if (mk) { const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, pid = mk.dataset.motok, v = document.querySelector(`[data-mot="${CSS.escape(pid)}"]`).value.trim(); return salvarMods(id, mods => { const p = ((mods[mid] || {}).proc || {})[pid]; if (p) p.motivo = v; }, mid, v ? 'informou o motivo da parada: ' + v : '').then(ok => { if (ok) dmsg('Motivo salvo.'); }); }
     const ms = e.target.closest('[data-mdsalvar]');
     if (ms) {
       const id = $('tkMods').dataset.id, mid = $('tkMods').dataset.mid, m = (MODS.secoes || []).find(x => x.id === mid), root = $('mdDados');
       const r = window.PtCampos.lerCampos(root, (m.campos || []).filter(x => x.show !== false), '', {});
       if (r.falta) { dmsg('Preencha os campos obrigatórios.'); r.falta.focus(); return; }
-      return salvarMods(id, mods => { const x = mods[mid] = mods[mid] || {}; x.dados = r.valores; x.dadosPor = perfil.nome || perfil.email; x.dadosEm = Date.now(); }, mid).then(ok => { if (ok) dmsg('Dados salvos.'); });
+      return salvarMods(id, mods => { const x = mods[mid] = mods[mid] || {}; x.dados = r.valores; x.dadosPor = perfil.nome || perfil.email; x.dadosEm = Date.now(); }, mid, 'salvou os dados do módulo.').then(ok => { if (ok) dmsg('Dados salvos.'); });
     }
     const cl = e.target.closest('[data-link]');
     if (cl) { try { await navigator.clipboard.writeText(cl.dataset.link); } catch (er) { const ta = document.createElement('textarea'); ta.value = cl.dataset.link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } cl.textContent = 'Link copiado ✓'; setTimeout(() => { cl.textContent = 'Copiar link'; }, 1800); return; }

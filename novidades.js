@@ -10,6 +10,15 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 207, data: '2026-11-23', titulo: 'Novo fluxo até o TASK pronto e Módulos por equipe', itens: [
+    'Toda proposta agora tem um lead no CRM. Se a proposta foi feita direto, sem vir de um lead, o app cria o lead sozinho (origem "Proposta direta"). Se já existe lead com o mesmo CNPJ, ele é aproveitado.',
+    'No TASK, o "+ Novo cadastro" (perfis TASK e Administrador) abre o Pré TASK completo. Proposta, Dados Primários e contrato não são obrigatórios nesse cadastro direto, e dá para vincular uma proposta aprovada depois.',
+    'Cada card do TASK mostra por onde o cliente entrou (Veio de Lead, Veio de Proposta ou Cadastro direto) e se está "Em preparação" ou "Pronto para as equipes". Há uma aba nova, Em preparação, com os cards que ainda têm o Pré TASK incompleto.',
+    'Módulos: cada equipe só começa quando o módulo dela é liberado. A Implantação libera quando o TASK fica pronto; TEF / PIX, Homologação de Boletos, Integração e Conciliação, quando a Implantação finaliza "Criar a base"; o Pós-vendas, no encerramento da implantação. O setor recebe aviso no sino. O administrador pode liberar na hora e mudar a ordem em Parâmetros Pré TASK > Módulos do TASK.',
+    'Pendências: registre o que está faltando, com quem está (cliente, banco, adquirente, bandeira…) e o prazo. Ligada a um processo, ela deixa o processo Parado até ser resolvida. Pendência com o cliente tem o atalho Cobrar no WhatsApp.',
+    'Diário: cada módulo guarda o histórico com quem fez e quando (status, liberações, pendências) e aceita anotações livres.',
+    'Novo módulo Pós-vendas, e o botão Minhas tarefas agora separa a fila do setor em Com pendência, Atrasados, Em andamento, Liberados e Aguardando liberação.'
+  ] },
   { v: 206, data: '2026-11-23', titulo: 'Pesquisar na ANP no Novo cadastro da TASK', itens: [
     'No Novo cadastro da TASK, aba Posto, apareceu o botão Pesquisar na ANP, no topo. Serve para quando você não sabe o CNPJ do posto.',
     'Filtre por nome, estado, cidade e bandeira e clique no posto: o app preenche CNPJ, razão social, cidade e UF, e sugere o nome do cadastro. E-mail e telefone vêm da Receita, quando houver.'

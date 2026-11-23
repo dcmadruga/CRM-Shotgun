@@ -37,3 +37,10 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 
 - `acao.html` é a página das ações de conta do Firebase (criar nova senha, confirmar e-mail), em português e com a marca Shotgun. O app pede os e-mails em `pt-BR`.
 - Configuração no Console do Firebase (idioma dos modelos e URL de ação): `docs/emails-firebase.md`.
+
+## Fluxo até o TASK pronto
+
+- O cliente entra por três caminhos: **Lead** (CRM), **Proposta** (o app cria o lead sozinho, `crm/auto-<id da proposta>`, origem "Proposta direta", se ainda não houver lead com o mesmo CNPJ ou nome) e **cadastro direto no TASK** (perfis TASK e ADM, sem proposta nem contrato). O card mostra a origem e a fase: "Em preparação" (Pré TASK incompleto) ou "Pronto para as equipes".
+- Cadastro direto: o "+ Novo cadastro" abre o Pré TASK completo. Tudo fica no próprio card (`tasks/{id}.pre4`, com os Dados Primários opcionais em `pre4.v2`); os anexos ficam em `tasks/{id}/anexos`, que precisa da regra de `docs/task-direto-firestore.rules`. Uma proposta aprovada pode ser vinculada depois (`propostaVinc`).
+- Módulos: cada módulo principal é a área de trabalho de uma equipe e fica "Aguardando liberação" até a regra `libera` valer (TASK pronto, processo de outro módulo finalizado ou sempre liberado; o ADM muda em Parâmetros Pré TASK > Módulos do TASK). Ao liberar, o setor recebe aviso no sino. Quem é do setor anterior ou o ADM pode "Liberar agora". Módulo que já tinha trabalho começado continua liberado.
+- Pendências (`mods[mid].pend`) e diário (`mods[mid].hist`, últimas 200 entradas) ficam no card. Pendência ligada a um processo deixa o processo Parado até ser resolvida.

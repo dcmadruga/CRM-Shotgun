@@ -186,7 +186,7 @@
     }
     ouvirAceitas();
     unsubLidas = F.onSnapshot(F.doc(db, 'notifLidas', uid), d => { const x = d.exists() ? d.data() : {}; lidas = { ate: ms(x.ate) || (x.ate === null ? Date.now() : 0), ids: Array.isArray(x.ids) ? x.ids : [] }; desenhar(); }, () => {});
-    unsubMod = F.onSnapshot(F.doc(db, 'config', 'modulos'), d => { try { const j = d.exists() && d.data().json; if (j) MODS = JSON.parse(j); } catch (e) {} desenhar(); }, () => {});
+    unsubMod = F.onSnapshot(F.doc(db, 'config', 'modulos'), d => { try { const j = d.exists() && d.data().json; if (j) MODS = JSON.parse(j); if (MODS && window.modulosCompletar) window.modulosCompletar(MODS); } catch (e) {} desenhar(); }, () => {});
   }
   setInterval(() => { if (aberto) desenhar(); }, 60000);
 
