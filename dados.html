@@ -644,14 +644,36 @@ function ligarAuto(){
     desenharArquivos(el);
   }));
 
-  // Contrato social: "Não tenho disponível agora" libera o envio sem o arquivo; o cliente preenche o representante legal à mão
+  // Contrato social: "Não tenho disponível agora" libera o envio sem o arquivo; o cliente preenche o representante legal à mão,
+  // com os sócios do CNPJ (quadro societário da Receita) como sugestão no topo do Responsável legal
   const csEl=f.elements.contratoSocial, csCb=$('#csManual');
   if(csEl && csCb && !csEl.disabled){
+    const box=$('#csSocios'), casa=box.parentNode, casaProx=box.nextSibling;
+    const secRespEl=()=>{ const r=secResp(); return r&&[...document.querySelectorAll('#secoes section.sec')].find(x=>x.querySelector('h2').textContent===r.titulo) };
+    let qsaId=0;
+    const sugerirQsa=async()=>{
+      const id=++qsaId, d=dig(f.elements.cnpj&&f.elements.cnpj.value||L.c);
+      SOCIOS=[]; QSA=true; desenharSocios();
+      if(d.length!==14){ $('#csManualMsg').textContent='Tudo bem. Preencha os dados do representante legal abaixo.'; return }
+      $('#csManualMsg').textContent='Tudo bem. Buscando os sócios do CNPJ na Receita…';
+      let j=null; try{ j=await consultarCnpj(d) }catch(_){}
+      if(id!==qsaId||!csCb.checked) return;
+      const q=(j&&j.qsa)||[], admin=n=>q.some(x=>String(x.nome_socio||x.nome||'').trim().toUpperCase()===n.toUpperCase()&&/administr/i.test(x.qualificacao_socio||x.qualificacao||''));
+      const capN=x=>/[a-zà-ú]/.test(x)?x:String(x).toLowerCase().replace(/(^|[\s\/(-])(\S)/g,(m,a,b)=>a+b.toUpperCase()).replace(/\s(D[aeo]s?|E|De)\s/g,m=>m.toLowerCase());
+      SOCIOS=((j&&j.socios)||[]).map(n=>({nome:capN(n), administrador:admin(n)}));
+      desenharSocios();
+      $('#csManualMsg').textContent=SOCIOS.length?'Tudo bem. No Responsável legal, marque quem vai assinar entre os sócios do CNPJ e complete os dados.':'Tudo bem. Preencha os dados do representante legal abaixo.';
+    };
     const sync=()=>{ const on=csCb.checked; csEl.dataset.manual=on?'1':''; csEl.required=!on; csEl.closest('label').classList.toggle('pend',on); $('#csManualMsg').hidden=!on;
-      if(on){ if(csEl.value){ csEl.value=''; desenharArquivos(csEl); leitura++; SOCIOS=[]; desenharSocios(); csStatus('') } const r=secResp(); const pc=r&&(r.campos||[]).find(c=>f.elements[c.k]&&!f.elements[c.k].value); if(pc) setTimeout(()=>{ f.elements[pc.k].focus(); f.elements[pc.k].scrollIntoView({block:'center',behavior:'smooth'}) },0) }
+      if(on){
+        if(csEl.value){ csEl.value=''; desenharArquivos(csEl); leitura++; csStatus('') }
+        const sr=secRespEl(); if(sr) sr.querySelector('.body').prepend(box);
+        sugerirQsa().then(()=>{ if(!csCb.checked) return; const alvo=SOCIOS.length?box:(()=>{ const r=secResp(); const pc=r&&(r.campos||[]).find(c=>f.elements[c.k]&&!f.elements[c.k].value); return pc&&f.elements[pc.k] })(); if(alvo) alvo.scrollIntoView({block:'center',behavior:'smooth'}) });
+      } else { qsaId++; QSA=false; SOCIOS=[]; desenharSocios(); casa.insertBefore(box,casaProx) }
       valida(csEl) };
     csCb.addEventListener('change',sync);
     csEl.addEventListener('change',()=>{ if(csEl.files.length && csCb.checked){ csCb.checked=false; sync() } });
+    if(f.elements.cnpj) f.elements.cnpj.addEventListener('change',()=>{ if(csCb.checked) sugerirQsa() });
   }
 
   // Anexo obrigatório: "Não tenho em mãos, mando mais tarde" libera o envio sem o arquivo (fica pendente na proposta)
@@ -678,7 +700,7 @@ function ligarAuto(){
 }
 
 /* Contrato social: lê o documento, lista os sócios e preenche o representante legal */
-let SOCIOS=[], leitura=0;
+let SOCIOS=[], leitura=0, QSA=false; // QSA: sócios vindos do CNPJ (cliente sem o contrato social em mãos)
 const fmtCpf=d=>String(d||'').replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');
 function csStatus(t,tipo){ const el=$('#csStatus'); el.hidden=!t; el.className='full hint'+(tipo?' '+tipo:''); el.innerHTML=(tipo==='lendo'?'<span class="spin" aria-hidden="true"></span>':'')+'<span>'+esc(t)+'</span>' }
 function secResp(){ const ss=CFG.secoes||[]; return ss.find(s=>s.id==='responsavel')||ss.find(s=>/respons|represent/i.test(s.titulo||'')) }
@@ -686,7 +708,7 @@ function desenharSocios(){
   const box=$('#csSocios'); if(!SOCIOS.length){ box.hidden=true; box.innerHTML=''; return }
   const atual=f.querySelector('input[name=_rep]:checked')?.value;
   box.hidden=false;
-  box.innerHTML=`<p>Quem é o representante legal que vai assinar?</p>`+SOCIOS.map((s,i)=>{
+  box.innerHTML=`<p>Quem é o representante legal que vai assinar?${QSA?'<small style="display:block;font-weight:400;color:var(--muted)">Sócios que constam no CNPJ (Receita Federal). Marque um e complete CPF e RG.</small>':''}</p>`+SOCIOS.map((s,i)=>{
     const l1=[s.cpf&&'CPF '+fmtCpf(s.cpf), s.rg&&'RG '+s.rg+(s.orgaoRg?' '+s.orgaoRg:''), !s.rg&&s.cnh&&'CNH '+s.cnh, s.nascimento&&'nasc. '+s.nascimento, s.estadoCivil, s.profissao, s.quotas&&s.quotas.toLocaleString('pt-BR')+' quotas'].filter(Boolean).join(' · ');
     const l2=[s.endereco, s.cep&&'CEP '+s.cep].filter(Boolean).join(', ');
     return `<label class="socio"><input type="radio" name="_rep" value="${i}"${atual===String(i)?' checked':''}><span><b>${esc(s.nome)}</b>${s.administrador?'<span class="tag">ADMINISTRADOR</span>':''}${l1?`<small>${esc(l1)}</small>`:''}${l2?`<small>${esc(l2)}</small>`:''}</span></label>`;
@@ -694,7 +716,7 @@ function desenharSocios(){
 }
 async function lerContrato(el){
   const fs=[...el.files].filter(x=>x.size<=MAXF); const id=++leitura;
-  SOCIOS=[]; desenharSocios();
+  SOCIOS=[]; QSA=false; desenharSocios();
   if(!fs.length){ csStatus(''); return }
   if(!window.ContratoSocial){ csStatus('Não foi possível ler o documento. Preencha os dados do representante legal abaixo.','bad'); return }
   csStatus('Lendo o contrato social…','lendo');
@@ -811,7 +833,7 @@ function montarTexto(o){
     if(c.k==='uf') v=v.toUpperCase();
     if(c.secao!==sec){ linhas.push('','*'+c.secao+'*'); sec=c.secao }
     linhas.push(c.label+': '+v);
-    if(c.k==='contratoSocial' && SOCIOS.length) linhas.push('Sócios no contrato: '+SOCIOS.map(x=>x.nome+(x.administrador?' (administrador)':'')).join('; '));
+    if(c.k==='contratoSocial' && SOCIOS.length) linhas.push((QSA?'Sócios no CNPJ: ':'Sócios no contrato: ')+SOCIOS.map(x=>x.nome+(x.administrador?' (administrador)':'')).join('; '));
   });
   return linhas.join('\n');
 }
@@ -881,8 +903,8 @@ async function salvarNoSistema(o, texto){
   pend.forEach(l=>{ campos[l]=PEND_TXT });
   if(f.elements.contratoSocial&&f.elements.contratoSocial.dataset.manual==='1') campos['Contrato social']='Não enviado: o cliente preencheu os dados do representante legal manualmente';
   const socios=SOCIOS.map(({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas})=>Object.fromEntries(Object.entries({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas}).filter(([k,v])=>v!=null&&v!=='')));
-  if(socios.length) campos['Sócios no contrato social']=socios.map(x=>x.nome).join('; ');
-  await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{campos, valores, texto, anexos, socios, em:F.serverTimestamp()});
+  if(socios.length) campos[QSA?'Sócios no CNPJ (Receita)':'Sócios no contrato social']=socios.map(x=>x.nome).join('; ');
+  await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{campos, valores, texto, anexos, socios:QSA?[]:socios, ...(QSA&&socios.length?{sociosCnpj:socios}:{}), em:F.serverTimestamp()});
   await F.updateDoc(F.doc(db,...pref),{e2Em:F.serverTimestamp(), e2Anexos:anexos.length});
   await marcarPendentes();
 }

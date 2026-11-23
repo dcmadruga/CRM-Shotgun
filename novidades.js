@@ -14,7 +14,7 @@ window.SHOTGUN_NOVIDADES = [
     'O link de dados que o cliente preenche não pede mais a "Data desejada para a implantação". O bloco Operação, que só tinha esse campo para o cliente, saiu da tela.',
     'O contrato passa a dizer que a licença será instalada em data a ser combinada entre as partes. Propostas antigas que já tinham a data continuam com ela no contrato.',
     'A data do Start continua sendo definida na Pré TASK.',
-    'Contrato social: novo botão "Não tenho disponível agora, vou lançar as informações manualmente". Com ele marcado, o arquivo deixa de ser obrigatório e o cliente preenche os dados do representante legal à mão. A proposta registra que o contrato social não foi enviado.'
+    'Contrato social: novo botão "Não tenho disponível agora, vou lançar as informações manualmente". Com ele marcado, o arquivo deixa de ser obrigatório e o cliente preenche os dados do representante legal à mão. No Responsável legal aparecem os sócios que constam no CNPJ (Receita Federal) para o cliente marcar quem vai assinar, e o nome já é preenchido. A proposta registra que o contrato social não foi enviado.'
   ] },
   { v: 218, data: '2026-11-23', titulo: 'Templates de proposta', itens: [
     'Nova proposta: no topo da tela há uma fileira de templates (Posto Simples, Loja Simples, Posto + Loja e Central). Escolha um e as licenças e mensalidades são preenchidas com os itens dele. Depois é só ajustar.',
