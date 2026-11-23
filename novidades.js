@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 206, data: '2026-11-23', titulo: 'Pesquisar na ANP no Novo cadastro da TASK', itens: [
+    'No Novo cadastro da TASK, aba Posto, apareceu o botão Pesquisar na ANP, no topo. Serve para quando você não sabe o CNPJ do posto.',
+    'Filtre por nome, estado, cidade e bandeira e clique no posto: o app preenche CNPJ, razão social, cidade e UF, e sugere o nome do cadastro. E-mail e telefone vêm da Receita, quando houver.'
+  ] },
   { v: 205, data: '2026-11-23', titulo: 'Cada setor do TASK explica pelo que é responsável', itens: [
     'Ao abrir os Módulos de um card no TASK, cada setor (Implantação, Pré Start, Start, Pós Start, Homologação de Boletos, TEF / PIX, Integração e Conciliação) mostra no topo um quadro com as responsabilidades e atribuições dele.',
     'O administrador ajusta esse texto em Parâmetros Pré TASK > Módulos do TASK, no campo Responsabilidades do setor de cada módulo, e publica.'

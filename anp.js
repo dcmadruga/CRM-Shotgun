@@ -120,6 +120,7 @@
     };
     if (!box.dataset.on) {
       box.dataset.on = '1';
+      box.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input')) e.preventDefault(); });
       box.addEventListener('input', e => { if (e.target.dataset.anp === 'nome') box._filtrar && box._filtrar(); });
       box.addEventListener('change', e => { const k = e.target.dataset.anp; if (k === 'uf') box._carregar(e.target.value); else if (k === 'cid' || k === 'band') box._filtrar(); });
       box.addEventListener('click', e => {

@@ -242,6 +242,7 @@ function formDados(t) {
       <label class="full">Observações<textarea id="tkObs" rows="3">${esc(t.obs || '')}</textarea></label>
       ${t.propostaId ? `<p class="hint full">Importado da proposta nº ${esc(t.propostaNumero || '')}.</p>` : ''}` },
     { id: 'posto', titulo: t.central && t.central.tipo !== 'simples' ? 'Central' : 'Posto', marca: marcaDe(cheios(t.apelido, t.cnpj, t.razao, t.cidade, t.uf), 5), html: `
+      <div class="full tkanp"><span class="anpacao tkanpacao"><button type="button" id="tkAnpBtn"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/></svg>Pesquisar na ANP</button><small>quando não souber o CNPJ</small></span><div id="tkAnpBusca" hidden></div></div>
       <label class="full">Nome do cadastro (como aparece no cartão)<input id="tkApelido" value="${esc(t.apelido || '')}" placeholder="Ex.: Rede - Filial 1 - POSTO CONTINENTAL" required></label>
       <label>CNPJ<span class="tkrow"><input id="tkCnpj" value="${esc(fmtCnpj(t.cnpj))}" inputmode="numeric" placeholder="00.000.000/0000-00"><button type="button" id="tkBuscaCnpj">Pesquisar</button></span></label>
       <label>Razão social<input id="tkRazao" value="${esc(t.razao || '')}"></label>
@@ -304,17 +305,36 @@ async function carregarDg(t, navItem, painel) {
   form.querySelector('.dgmais').innerHTML = secs.map(navItem).join('');
   form.querySelector('.dgmaisp').innerHTML = secs.map(painel).join('');
 }
-async function buscarCnpj() {
+// Pesquisar na ANP sem o CNPJ: ao escolher o posto, preenche CNPJ, razão social, cidade, UF e o nome do cadastro.
+// Depois completa e-mail e telefone pela Receita (só nos campos vazios).
+function pesquisarAnp() {
+  window.anpPesquisa && window.anpPesquisa($('tkAnpBusca'), $('tkUf').value.trim(), async cnpj => {
+    $('tkCnpj').value = fmtCnpj(cnpj);
+    let p = null; try { p = await window.anpPosto(cnpj); } catch (e) {}
+    if (p) {
+      if (p.razao) $('tkRazao').value = p.razao;
+      if (p.municipio) $('tkCidade').value = p.municipio;
+      if (p.uf) $('tkUf').value = p.uf;
+      if (!$('tkApelido').value.trim() && p.razao) $('tkApelido').value = p.razao;
+      dmsg('Preenchido com os dados da ANP. Confira.');
+    }
+    await buscarCnpj(!!p);
+    $('tkApelido').focus();
+  });
+}
+async function buscarCnpj(daAnp) {
+  // daAnp: veio da Pesquisar na ANP, que já preencheu o principal; a Receita só completa e não troca o aviso se falhar
   const d = dig($('tkCnpj').value); if (d.length !== 14) { dmsg('Digite um CNPJ com 14 números.'); return; }
-  dmsg('Pesquisando…');
+  if (!daAnp) dmsg('Pesquisando…');
+  const falha = t => { if (!daAnp) dmsg(t); };
   try {
-    const r = await fetch('https://brasilapi.com.br/api/cnpj/v1/' + d); if (!r.ok) { dmsg(r.status === 404 ? 'CNPJ não encontrado na Receita.' : 'Não foi possível pesquisar agora.'); return; }
+    const r = await fetch('https://brasilapi.com.br/api/cnpj/v1/' + d); if (!r.ok) { falha(r.status === 404 ? 'CNPJ não encontrado na Receita.' : 'Não foi possível pesquisar agora.'); return; }
     const j = await r.json(), set = (id, v) => { if (v && !$(id).value) $(id).value = v; };
     $('tkCnpj').value = fmtCnpj(d); set('tkRazao', j.razao_social); set('tkCidade', j.municipio); set('tkUf', j.uf); set('tkEmail', j.email && String(j.email).toLowerCase());
     set('tkApelido', j.nome_fantasia || j.razao_social);
     const f = dig(j.ddd_telefone_1); if (f.length >= 10) set('tkFone', f.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3'));
-    dmsg('Preenchido com os dados da Receita. Confira.');
-  } catch (e) { dmsg('Não foi possível pesquisar agora.'); }
+    dmsg(daAnp ? 'Preenchido com os dados da ANP e da Receita. Confira.' : 'Preenchido com os dados da Receita. Confira.');
+  } catch (e) { falha('Não foi possível pesquisar agora.'); }
 }
 const respDe = id => { const v = $(id).value; if (!v) return null; const r = resps.find(x => x.uid === v) || tasks.flatMap(t => [t.respCadastro, t.respStart]).find(x => x?.uid === v); return r ? { uid: r.uid, nome: r.nome } : null; };
 async function salvarDados(form) {
@@ -715,6 +735,7 @@ function ligar() {
     if (cl) { try { await navigator.clipboard.writeText(cl.dataset.link); } catch (er) { const ta = document.createElement('textarea'); ta.value = cl.dataset.link; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } cl.textContent = 'Link copiado ✓'; setTimeout(() => { cl.textContent = 'Copiar link'; }, 1800); return; }
     const b = e.target.closest('button'); if (!b) return;
     if (b.id === 'tkBuscaCnpj') return buscarCnpj();
+    if (b.id === 'tkAnpBtn') return pesquisarAnp();
     if (b.dataset.anexo) return baixarAnexo(b.dataset.pid || $('tkE2').dataset.pid, b.dataset.anexo, b);
     if (b.id === 'tkE2Copiar') { try { await navigator.clipboard.writeText($('tkE2').dataset.texto || ''); dmsg('Dados copiados.'); } catch (_) { dmsg('Não foi possível copiar.'); } return; }
     if (b.id === 'tkExcluir') { const id = $('tkForm').dataset.id; if (!confirmar(b, 'task' + id, 'Confirmar exclusão')) return; try { await removerTask(id); dlg().close(); msg('Cadastro excluído.'); } catch (er) { dmsg('Não foi possível excluir (' + (er.code || 'erro') + ').'); } return; }
