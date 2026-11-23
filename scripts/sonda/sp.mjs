@@ -13,11 +13,9 @@ async function pega(nome, url, opts = {}) {
 }
 const API = 'https://do-api-web-search.doe.sp.gov.br/';
 const adv = (terms, de = '2026-09-01', ate = '2026-11-22', n = 100) => `${API}v2/advanced-search/publications?${terms.map((t, i) => `Terms%5B${i}%5D=${encodeURIComponent(t)}`).join('&')}&FromDate=${de}&ToDate=${ate}&PageNumber=1&PageSize=${n}`;
-await pega('pmsp-noticia', 'https://prefeitura.sp.gov.br/web/controladoria_geral/w/prefeitura-amplia-transpar%C3%AAncia-ambiental-com-novas-bases-de-dados-sobre-licen%C3%A7as');
-await pega('ecetesb', 'https://e.cetesb.sp.gov.br/');
-await pega('ecetesb-consulta', 'https://e.cetesb.sp.gov.br/consulta-publica/');
-await pega('autent', 'https://autenticidade.cetesb.sp.gov.br/');
-await pega('cetesb-home', 'https://cetesb.sp.gov.br/');
-await pega('cetesb-lic-cons', 'https://licenciamento.cetesb.sp.gov.br/');
-await pega('qd-sp', `https://api.queridodiario.org.br/gazettes?querystring=${encodeURIComponent('"posto de combustíveis"')}&published_since=2026-01-01&size=3&excerpt_size=400&territory_ids=3550308`);
+const js = await pega('ecetesb-js', 'https://e.cetesb.sp.gov.br/portal-servicos-frontend/assets/index-BzvgjvH7.js');
+const achados = new Set();
+for (const m of js.matchAll(/["'`]([^"'`\s]{0,80}(?:api|consulta|publica|publico|processo)[^"'`\s]{0,120})["'`]/gi)) achados.add(m[1]);
+await writeFile('sp-sondas/ecetesb-rotas.txt', [...achados].join('\n'));
+for (const m of js.matchAll(/import\(["']\.\/([^"']+\.js)["']\)/g)) {}
 await writeFile('sp-sondas/resumo.tsv', resumo.join('\n') + '\n');
