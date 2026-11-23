@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 216, data: '2026-11-23', titulo: 'Templates de proposta', itens: [
+    'Nova proposta: no topo da tela há uma fileira de templates (Posto Simples, Loja Simples, Posto + Loja e Central). Escolha um e as licenças e mensalidades são preenchidas com os itens dele. Depois é só ajustar.',
+    'Se a proposta já tiver itens, o app pede um segundo toque para confirmar a troca.',
+    'Administração → Parâmetros Proposta → Templates de proposta: o administrador escolhe os itens do catálogo e a quantidade de cada template, cria templates novos e publica para a equipe.'
+  ] },
   { v: 215, data: '2026-11-23', titulo: 'Itens da proposta na página de aprovação', itens: [
     'A página que o cliente abre pelo link para aprovar a proposta agora mostra, abaixo dos totais, a lista dos itens: cada licença e cada mensalidade com quantidade, preço e total, igual ao PDF.',
     'Itens isentos aparecem com o valor riscado e o prazo da isenção. Itens ocultos na proposta continuam fora da lista.'

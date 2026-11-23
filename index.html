@@ -78,6 +78,19 @@ button.del{border:none;background:none;color:var(--danger);padding:6px;font-size
 .impseg button{border:0;border-radius:0;background:none;font:inherit;font-size:13px;font-weight:500;padding:7px 16px;color:var(--fg);cursor:pointer;min-height:0}
 .impseg button+button{border-left:1px solid var(--line)}
 .impseg button[aria-pressed=true]{background:var(--accent);color:var(--accent-fg);font-weight:600}
+.tplseg{display:flex;flex-wrap:wrap;gap:8px}
+.tplseg button{font:inherit;font-size:14px;font-weight:600;padding:9px 18px;border:1px solid var(--line);border-radius:999px;background:var(--field);color:var(--fg);cursor:pointer}
+.tplseg button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.tplseg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tplcard{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.tplhead{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px}.tplhead label{flex:1}
+.tplcols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.tplcols{grid-template-columns:1fr}}
+.tplcols h3{font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px;color:var(--muted)}
+.tplit{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px dashed var(--line);font-size:13px}
+.tplit label.chk{flex:1;display:flex;gap:8px;align-items:flex-start;font-weight:500}
+.tplit input[data-tq]{width:58px;text-align:center}
+.tplit .pr{color:var(--muted);white-space:nowrap}
 .imprem{border-left:3px solid #2f8f57;padding-left:8px}
 .impcomb{border-left:3px solid var(--sg-laranja);padding-left:8px}
 </style>
@@ -809,6 +822,11 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div id="anpInfo" hidden></div>
   </div></section>
 
+  <section class="sec" id="secTpl"><h2>Template <span>preenche licenças e mensalidades</span></h2><div class="body">
+    <div class="tplseg" id="tplSeg" role="group" aria-label="Template da proposta"></div>
+    <p class="hint" id="tplMsg">Escolha um template para trocar as licenças e mensalidades pelos itens dele. Depois é só ajustar.</p>
+  </div></section>
+
   <section class="sec"><h2>Licenças <span>Quantidade × Preço unitário</span></h2><div class="body">
     <div class="items" id="lic"></div>
     <div class="tools"><button type="button" data-add="lic">+ Item em branco</button><select id="pick-lic" aria-label="Adicionar licença do catálogo"></select></div>
@@ -940,6 +958,12 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   <section class="sec admin"><h2>Catálogo de mensalidades <span>quantidade vazia = “?”</span></h2><div class="body">
     <div class="items" id="catMen"></div>
     <div class="tools"><button type="button" data-add="catMen">+ Item no catálogo</button></div>
+  </div></section>
+
+  <section class="sec admin"><h2>Templates de proposta <span>itens do catálogo que cada template coloca na proposta</span></h2><div class="body">
+    <div id="catTpl"></div>
+    <div class="tools"><button type="button" id="addTpl">+ Template</button></div>
+    <p class="hint">Marque os itens de cada catálogo e a quantidade. Preço, observação e isenção vêm do catálogo acima.</p>
   </div></section>
 
   <section class="sec admin"><h2>Referências <span>página 2 do PDF</span></h2><div class="body">
@@ -1278,7 +1302,7 @@ let CFG = {...cfgModelo(), ...semVend(lsGet(CFG_KEY)||{}), ...vendData()};
 let cfgDirty = false;
 
 /* ---------- Proposta ---------- */
-const stripPadrao = rows => rows.map(({padrao,...r})=>r);
+const stripPadrao = rows => rows.map(({padrao,id,...r})=>r);
 function propExemplo(){
   return {cliente:'ALBERTI COMERCIO DE COMBUSTIVEIS LTDA', contato:'Pedro', data:'', validade:'',
     lic:stripPadrao(cfgModelo().catLic), men:stripPadrao(cfgModelo().catMen), base:'Nova Mutum - MT', km:317.5, dias:1, cidade:''};
@@ -1354,13 +1378,13 @@ Object.keys(LISTS).forEach(key=>{
   box.addEventListener('click',e=>{
     const d=e.target.dataset.del; if(d===undefined) return;
     L.get().splice(+d,1); L.persist(); renderItems(key);
-    if(L.cfg) renderPickers();
+    if(L.cfg){ renderPickers(); renderTplCfg() }
   });
 });
 document.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',()=>{
   const k=b.dataset.add, L=LISTS[k], men=(k==='men'||k==='catMen');
   const row={desc:'',sub:men?REAJ:'Parcela única',qty:'1',price:0,isento:false};
-  if(L.cfg) row.padrao=false;
+  if(L.cfg){ row.padrao=false; row.id=novoIdCat() }
   L.get().push(row); L.persist(); renderItems(k);
   $(`${k}-d-${L.get().length-1}`).focus();
 }));
@@ -1374,7 +1398,7 @@ function renderPickers(){
   const sel=$('pick-'+k);
   sel.addEventListener('change',()=>{
     if(sel.value==='') return;
-    const {padrao,...r}=CFG[k==='lic'?'catLic':'catMen'][+sel.value];
+    const {padrao,id,...r}=CFG[k==='lic'?'catLic':'catMen'][+sel.value];
     S[k].push(clone(r)); sel.value=''; save(); renderItems(k);
   });
 });
@@ -1432,10 +1456,104 @@ function parseRefs(v){
 }
 function renderImp(){ const r=impRemota(), c=impComb(), m=r?'Remota':c?'Combustível':'Presencial'; document.querySelectorAll('[data-imp]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.imp===m))); $('impPres').hidden=r; $('impRemMsg').hidden=!r; $('impCombMsg').hidden=!c; $('deslLinha').hidden=c }
 document.querySelectorAll('[data-imp]').forEach(b=>b.addEventListener('click',()=>{ S.implantacao=b.dataset.imp; save(); renderImp(); totals() }));
-function renderProp(){ PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderImp(); renderBases(); renderItems('lic'); renderItems('men'); setTimeout(()=>anpProposta(),0) }
+function renderProp(){ PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderImp(); renderTplSeg(); renderBases(); renderItems('lic'); renderItems('men'); setTimeout(()=>anpProposta(),0) }
 function aplicarLogo(){ $('logo').src=logoAtual(); $('logoPrev').src=logoAtual();
   const r=CFG.logoRev||''; $('logoRevPrev').hidden=!r; if(r) $('logoRevPrev').src=r; else $('logoRevPrev').removeAttribute('src'); $('logoRevVazio').hidden=!!r; $('btnLogoRevDel').hidden=!r }
-function renderCfg(){ aplicarLogo(); CFG.refs=parseRefs(CFG.refs); CFGF.forEach(id=>{ $('c-'+id).value=CFG[id]??'' }); renderRefs(); renderItems('catLic'); renderItems('catMen'); renderPickers(); renderBases(); totals() }
+function renderCfg(){ aplicarLogo(); CFG.refs=parseRefs(CFG.refs); garantirIdsCat(); CFGF.forEach(id=>{ $('c-'+id).value=CFG[id]??'' }); renderRefs(); renderItems('catLic'); renderItems('catMen'); renderPickers(); renderTplCfg(); renderTplSeg(); renderBases(); totals() }
+
+/* ---------- Templates de proposta (Posto Simples, Loja Simples, Posto + Loja, Central...) ---------- */
+// Ficam em CFG.templates, junto com os Parâmetros Proposta (cada revenda tem os seus).
+// Cada template aponta para itens do catálogo pelo id e guarda só a quantidade:
+// preço, observação e isenção vêm sempre do catálogo.
+const hashTxt = t => { let h=5381; for(const c of String(t)) h=((h<<5)+h+c.charCodeAt(0))|0; return (h>>>0).toString(36) };
+const novoIdCat = () => 'c'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function garantirIdsCat(){
+  // id determinístico pela descrição: todos os aparelhos chegam ao mesmo id antes do ADM publicar
+  ['catLic','catMen'].forEach(k=>{ const vistos=new Set(); (CFG[k]||[]).forEach(r=>{
+    if(!r.id || vistos.has(r.id)){ let id='d'+hashTxt(k+'|'+r.desc), n=2; while(vistos.has(id)) id='d'+hashTxt(k+'|'+r.desc+'|'+n++); r.id=id }
+    vistos.add(r.id);
+  }) });
+}
+function templatesPadrao(){
+  const acha = (k,ini) => { const r=(CFG[k]||[]).find(x=>String(x.desc||'').toLowerCase().startsWith(ini.toLowerCase())); return r ? r.id : null };
+  const it = (k,ini,qty) => { const ref=acha(k,ini); return ref ? {ref, qty:String(qty)} : null };
+  const L = (...a) => a.filter(Boolean);
+  const licPosto=['catLic','Licença Sistema Argo - Posto'], licLoja=['catLic','Licença Sistema Argo (Loja)'], licNfe=['catLic','Licença Biblioteca NFE'], licTef=['catLic','Licença e Implantação de TEF'];
+  const menPosto=['catMen','Mensalidade Sistema Argo - Posto'], menLoja=['catMen','Mensalidade Sistema Argo - Loja'], menTef=['catMen','Mensalidade TEF'], menPdv=['catMen','Mensalidade PDV Móvel'];
+  return [
+    {id:'posto', nome:'Posto Simples', lic:L(it(...licPosto,1),it(...licNfe,1),it(...licTef,1)), men:L(it(...menPosto,1),it(...menTef,1),it(...menPdv,''))},
+    {id:'loja', nome:'Loja Simples', lic:L(it(...licLoja,1),it(...licNfe,1),it(...licTef,1)), men:L(it(...menLoja,1),it(...menTef,1),it(...menPdv,''))},
+    {id:'postoloja', nome:'Posto + Loja', lic:L(it(...licPosto,1),it(...licLoja,1),it(...licNfe,2),it(...licTef,2)), men:L(it(...menPosto,1),it(...menLoja,1),it(...menTef,1),it(...menPdv,''))},
+    {id:'central', nome:'Central', lic:[], men:[]},
+  ];
+}
+const tplLista = () => Array.isArray(CFG.templates) ? CFG.templates : templatesPadrao();
+const tplEditavel = () => { if(!Array.isArray(CFG.templates)) CFG.templates=templatesPadrao(); return CFG.templates };
+function tplItens(t,k){
+  const cat=CFG[k==='lic'?'catLic':'catMen']||[];
+  return (t[k]||[]).map(x=>{ const r=cat.find(c=>c.id===x.ref); if(!r) return null; const {padrao,id,...o}=clone(r); if(x.qty!==undefined) o.qty=x.qty; return o }).filter(Boolean);
+}
+const tplMsg = t => { $('tplMsg').textContent=t };
+function renderTplSeg(){
+  const box=$('tplSeg'); if(!box) return;
+  const ts=tplLista();
+  $('secTpl').hidden=!ts.length;
+  box.innerHTML=ts.map(t=>`<button type="button" data-tpl="${esc(t.id)}" aria-pressed="${S.template===t.id}">${esc(t.nome||'(sem nome)')}</button>`).join('');
+}
+const tplArm={id:'',t:0};
+$('tplSeg').addEventListener('click',e=>{
+  const b=e.target.closest('[data-tpl]'); if(!b) return;
+  const t=tplLista().find(x=>x.id===b.dataset.tpl); if(!t) return;
+  const lic=tplItens(t,'lic'), men=tplItens(t,'men');
+  const temItens=(S.lic||[]).length+(S.men||[]).length>0;
+  const igual=JSON.stringify([S.lic,S.men])===JSON.stringify([lic,men]);
+  if(temItens && !igual && S.template!==t.id && !(tplArm.id===t.id && Date.now()-tplArm.t<5000)){
+    tplArm.id=t.id; tplArm.t=Date.now();
+    tplMsg(`Toque de novo em ${t.nome} para confirmar: as licenças e mensalidades atuais serão trocadas pelas do template.`); return;
+  }
+  tplArm.id='';
+  S.lic=lic; S.men=men; S.template=t.id; save();
+  renderItems('lic'); renderItems('men'); renderTplSeg();
+  tplMsg(lic.length+men.length ? `Template ${t.nome} aplicado: ${lic.length} licença(s) e ${men.length} mensalidade(s). Ajuste o que precisar.` : `O template ${t.nome} ainda não tem itens. O administrador define em Parâmetros Proposta.`);
+});
+function renderTplCfg(){
+  const box=$('catTpl'); if(!box) return;
+  const ts=tplLista();
+  const col=(t,ti,k,tit)=>{
+    const cat=CFG[k==='lic'?'catLic':'catMen']||[];
+    return `<div><h3>${tit}</h3>${cat.length?cat.map(c=>{ const x=(t[k]||[]).find(y=>y.ref===c.id); const uid=`tpl-${ti}-${k}-${esc(c.id)}`;
+      return `<div class="tplit"><label class="chk" for="${uid}"><input type="checkbox" id="${uid}" data-tk="${k}" data-ref="${esc(c.id)}" ${x?'checked':''}><span>${esc(c.desc||'(sem descrição)')}</span></label><span class="pr">${c.isento?'Isento':brl(c.price)}</span><input data-tq="${k}" data-ref="${esc(c.id)}" aria-label="Quantidade" inputmode="decimal" placeholder="?" value="${esc(x?x.qty:c.qty)}" ${x?'':'disabled'}></div>` }).join(''):'<p class="hint">Catálogo vazio.</p>'}</div>`;
+  };
+  box.innerHTML = ts.length ? ts.map((t,ti)=>`<div class="tplcard" data-ti="${ti}">
+    <div class="tplhead"><label>Nome do template<input data-tn id="tpl-n-${ti}" value="${esc(t.nome)}"></label><button type="button" class="del" data-tdel="${ti}" aria-label="Remover template">×</button></div>
+    <div class="tplcols">${col(t,ti,'lic','Licenças')}${col(t,ti,'men','Mensalidades')}</div>
+  </div>`).join('') : '<p class="hint">Nenhum template. Clique em + Template.</p>';
+}
+$('catTpl').addEventListener('input',e=>{
+  const card=e.target.closest('.tplcard'); if(!card) return;
+  const t=tplEditavel()[+card.dataset.ti]; const el=e.target;
+  if(el.dataset.tn!==undefined){ t.nome=el.value; markCfg(); renderTplSeg(); return }
+  const k=el.dataset.tk||el.dataset.tq, ref=el.dataset.ref; if(!k||!ref) return;
+  t[k]=t[k]||[];
+  if(el.dataset.tk){
+    const q=card.querySelector(`[data-tq="${k}"][data-ref="${CSS.escape(ref)}"]`);
+    if(el.checked){ if(!t[k].some(y=>y.ref===ref)){ const cat=CFG[k==='lic'?'catLic':'catMen']; t[k].splice(cat.findIndex(c=>c.id===ref),0,{ref,qty:q.value}); ordenarTpl(t,k) } q.disabled=false }
+    else { t[k]=t[k].filter(y=>y.ref!==ref); q.disabled=true }
+  } else { const x=t[k].find(y=>y.ref===ref); if(x) x.qty=el.value }
+  markCfg();
+});
+function ordenarTpl(t,k){ const ids=(CFG[k==='lic'?'catLic':'catMen']||[]).map(c=>c.id); t[k].sort((a,b)=>ids.indexOf(a.ref)-ids.indexOf(b.ref)) }
+$('catTpl').addEventListener('click',e=>{
+  const d=e.target.dataset.tdel; if(d===undefined) return;
+  tplEditavel().splice(+d,1); markCfg(); renderTplCfg(); renderTplSeg();
+});
+$('addTpl').addEventListener('click',()=>{
+  tplEditavel().push({id:'t'+Date.now().toString(36), nome:'Novo template', lic:[], men:[]});
+  markCfg(); renderTplCfg(); renderTplSeg();
+  const n=$('tpl-n-'+(CFG.templates.length-1)); n.focus(); n.select();
+});
+// o catálogo mudou de nome/preço: atualiza a lista do editor de templates
+['catLic','catMen'].forEach(k=>$(k).addEventListener('change',()=>renderTplCfg()));
 
 /* ---------- Abas ---------- */
 function showTab(cfg){
@@ -1471,7 +1589,7 @@ $('btnNova').addEventListener('click',()=>{
   const validade=calcValidade(iso(t));
   S={cliente:'',contato:'',data:iso(t),validade,
      lic:stripPadrao(CFG.catLic.filter(r=>r.padrao)).map(clone), men:stripPadrao(CFG.catMen.filter(r=>r.padrao)).map(clone),
-     base:basesList()[0]||'', km:0, dias:1, cidade:'', implantacao:'Presencial'};
+     base:basesList()[0]||'', km:0, dias:1, cidade:'', implantacao:'Presencial', template:''};
   save(); renderProp(); $('exNote').hidden=true; showTab(false); msg('Nova proposta iniciada com os itens padrão dos Parâmetros.'); $('cliente').focus();
 });
 $('btnEx').addEventListener('click',()=>{ S=propExemplo(); save(); renderProp(); $('exNote').hidden=false; msg('Exemplo da Alberti recarregado.') });
