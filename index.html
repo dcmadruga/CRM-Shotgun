@@ -1484,7 +1484,8 @@ function templatesPadrao(){
     {id:'posto', nome:'Posto Simples', lic:L(it(...licPosto,1),it(...licNfe,1),it(...licTef,1)), men:L(it(...menPosto,1),it(...menTef,1),it(...menPdv,''))},
     {id:'loja', nome:'Loja Simples', lic:L(it(...licLoja,1),it(...licNfe,1),it(...licTef,1)), men:L(it(...menLoja,1),it(...menTef,1),it(...menPdv,''))},
     {id:'postoloja', nome:'Posto + Loja', lic:L(it(...licPosto,1),it(...licLoja,1),it(...licNfe,2),it(...licTef,2)), men:L(it(...menPosto,1),it(...menLoja,1),it(...menTef,1),it(...menPdv,''))},
-    {id:'central', nome:'Central', lic:[], men:[]},
+    // Central: mesmos itens do Posto + Loja; as mensalidades vêm com quantidade 2 (uma por posto da rede, ajustável)
+    {id:'central', nome:'Central', lic:L(it(...licPosto,1),it(...licLoja,1),it(...licNfe,2),it(...licTef,2)), men:L(it(...menPosto,2),it(...menLoja,2),it(...menTef,2),it(...menPdv,''))},
   ];
 }
 const tplLista = () => Array.isArray(CFG.templates) ? CFG.templates : templatesPadrao();
