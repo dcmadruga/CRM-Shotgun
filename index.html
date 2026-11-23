@@ -381,7 +381,10 @@ body.fb .nofb{display:none!important}
 .linkbtn{background:none!important;border:0!important;color:var(--purple)!important;padding:6px 8px;font-weight:600;cursor:pointer}
 #fotoBox{overflow-y:auto;align-items:flex-start}#fotoBox .fotoCard{margin:auto 0}.fotoCard{max-width:420px}.cadBloco{display:flex;flex-direction:column;gap:6px}.cadRot{font-size:12px;font-weight:500;line-height:16px;color:var(--muted)}.cadRot small{font-weight:400;margin-left:4px}.cadDica{margin:0}.cadUfs{max-width:none}.cadUfs .uuf span{padding:9px 0;font-size:12.5px}.cadFotoBtns{justify-content:center}.cadMsg{margin:0;font-size:13px;min-height:0;color:var(--danger)}.cadMsg:empty{display:none}.cadMsg.ok{color:var(--muted)}.fotoArea{position:relative;width:240px;height:240px;margin:6px auto;border-radius:50%;overflow:hidden;background:#111}
 .fotoArea video,.fotoArea img{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}.fotoArea img{transform:none}
-.fotoOval{position:absolute;inset:18px 38px;border:2px dashed rgba(255,255,255,.7);border-radius:50%}
+.fotoOval{position:absolute;inset:18px 38px;border:2px dashed rgba(255,255,255,.7);border-radius:50%;transition:border-color var(--mov,180ms),box-shadow var(--mov,180ms)}
+.fotoArea.is-piscar .fotoOval{border:3px solid var(--sg-laranja,#FF6A00)}.fotoArea.is-pronto .fotoOval{border:3px solid var(--sg-sucesso,#22C55E);box-shadow:0 0 0 999px rgba(34,197,94,.10)}
+.fotoGuia{margin:0;min-height:20px;text-align:center;font-size:13px;font-weight:600;line-height:20px;color:var(--fg)}.fotoGuia:empty{visibility:hidden}
+.fotoArq[hidden]{display:none}
 .fotoOk{display:flex;flex-direction:row;align-items:flex-start;gap:8px;font-size:13px;font-weight:500;line-height:1.35}.fotoOk input{width:18px;height:18px;flex:none;margin:1px 0 0;appearance:auto;-webkit-appearance:checkbox}
 .fotoArq{display:block;text-align:center;cursor:pointer}.ufoto{width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--line);display:inline-block;vertical-align:middle}
 #loginBox,#senhaBox,#fotoBox{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:16px}
@@ -1177,9 +1180,10 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   <div class="cadBloco"><span class="cadRot">Estado de atuação <small id="cadUfN">marque um ou mais</small></span><div class="uufs cadUfs" id="cadUfs"></div></div>
   <div class="cadBloco"><span class="cadRot">Foto do rosto (selfie)</span>
     <p class="hint cadDica">Fique de frente, em um lugar com boa luz, sem óculos escuros ou boné.</p>
-    <div class="fotoArea"><video id="fotoVideo" playsinline muted autoplay></video><img id="fotoPrev" alt="Prévia da foto" hidden><div class="fotoOval" aria-hidden="true"></div></div>
+    <div class="fotoArea" id="fotoArea"><video id="fotoVideo" playsinline muted autoplay></video><img id="fotoPrev" alt="Prévia da foto" hidden><div class="fotoOval" aria-hidden="true"></div></div>
+    <p class="fotoGuia" id="fotoGuia" aria-live="polite"></p>
     <div class="tools cadFotoBtns"><button type="button" id="btnFotoTirar">Tirar foto</button><button type="button" id="btnFotoRefazer" hidden>Tirar outra</button></div>
-    <label class="linkbtn fotoArq">Sem câmera? Enviar uma foto<input type="file" id="fotoArq" accept="image/*" capture="user" hidden></label>
+    <label class="linkbtn fotoArq" id="fotoArqBox" hidden>Sem câmera? Enviar uma foto<input type="file" id="fotoArq" accept="image/*" capture="user" hidden></label>
   </div>
   <label class="fotoOk"><input type="checkbox" id="fotoAceite"> Autorizo o uso desta foto para a minha identificação no Shotgun.</label>
   <p class="cadMsg" id="fotoMsg" role="status"></p>
