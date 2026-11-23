@@ -1,0 +1,26 @@
+// Regras do cadastro de Revendas (Administração > Revendas) e dos Parâmetros Proposta de cada revenda.
+// Cole estes blocos DENTRO do "match /databases/{database}/documents { ... }" das regras atuais do Firestore
+// (console do Firebase > Firestore Database > Regras) e clique em Publicar. Não apague as regras que já existem:
+// estes blocos só ACRESCENTAM permissões (no Firestore, basta uma regra permitir).
+//
+// revendas/{rid}: nome, estados (UFs de atuação) e gerente (uid). Só o ADM cria, altera e exclui.
+// O vínculo de cada pessoa fica no cadastro dela (usuarios/{uid}.revenda), gravado pelo ADM com as regras que já existem.
+// revendas/{rid}/parametros/proposta: Parâmetros Proposta próprios da revenda. Os usuários da revenda leem;
+// o gerente dela publica; o ADM também pode apagar (volta para os parâmetros gerais).
+
+    function rvEu() { return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data; }
+    function rvAtivo() { return request.auth != null && rvEu().ativo == true; }
+    function rvAdm() { return rvAtivo() && (rvEu().get('papel', '') == 'adm' || 'adm' in rvEu().get('papeis', [])); }
+    function rvMembro(rid) { return rvAtivo() && rvEu().get('revenda', '') == rid; }
+    function rvGerente(rid) { return rvMembro(rid) && get(/databases/$(database)/documents/revendas/$(rid)).data.get('gerente', '') == request.auth.uid; }
+
+    match /revendas/{rid} {
+      allow read: if rvAdm() || rvMembro(rid);
+      allow write: if rvAdm();
+
+      match /parametros/{pid} {
+        allow read: if rvAdm() || rvMembro(rid);
+        allow create, update: if pid == 'proposta' && (rvAdm() || rvGerente(rid));
+        allow delete: if rvAdm();
+      }
+    }

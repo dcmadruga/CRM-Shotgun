@@ -141,7 +141,12 @@ table.refs td:last-child{width:34px}
 body:not(.is-admin) .admin{display:none!important}
 body.is-admin .noadmin{display:none!important}
 /* Parametrização: só administrador (no modo com login) */
-body.fb:not(.is-admin) .cfgtab,body.fb:not(.is-admin) #viewCfg{display:none!important}
+body.fb:not(.is-admin):not(.is-gerente) .cfgtab,body.fb:not(.is-admin):not(.is-gerente) #viewCfg{display:none!important}
+/* Gerente de revenda: edita e publica os Parâmetros Proposta da própria revenda */
+body.is-gerente:not(.is-admin) #viewCfg .admin{display:revert!important}
+body.is-gerente:not(.is-admin) #viewCfg .noadmin{display:none!important}
+#viewCfg .sogerente{display:none}body.is-gerente:not(.is-admin) #viewCfg .sogerente{display:revert}
+body.is-gerente:not(.is-admin) #viewCfg .soadm{display:none!important}
 body:not(.is-admin):not(.is-task):not(.tem-task) .tasktab{display:none!important}
 .ulista{display:flex;flex-direction:column}
 .ucard{display:grid;grid-template-columns:48px minmax(0,1.4fr) minmax(0,.8fr) auto;grid-template-areas:"f n t a" "f n t b" "f p p p";gap:8px 16px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--line)}
@@ -706,6 +711,28 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .crmcol[data-etapa=salva] h4 span{color:var(--warn-text)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pill.pend{color:var(--sg-disparo)}}:root[data-theme="dark"] .pill.pend{color:var(--sg-disparo)}
 .ucard.upend{background:color-mix(in srgb,var(--sg-disparo) 5%,transparent);border-radius:12px}
+/* Revendas (ADM) */
+.rvlista{display:flex;flex-direction:column;gap:12px}
+.rvvazio{color:var(--muted);font-size:14px;padding:8px 2px}
+.rvcard{border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 24px;background:var(--surface)}
+.rvtopo{grid-column:1/-1;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.rvtopo .ulab{flex:1 1 240px}
+.rvtopo .ulab input{font-size:16px;font-weight:600}
+.rvtopo .pill{margin-bottom:8px}
+.rvtopo .danger{margin-left:auto}
+.rvbloco{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rvbloco select{width:100%;max-width:420px}
+.rvmembros{display:flex;flex-wrap:wrap;gap:6px}
+.rvmembro{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 4px 3px 10px;font-size:13px;color:var(--fg);background:var(--field)}
+.rvmembro.ger{border-color:var(--accent)}
+.rvmembro em{font-style:normal;font-size:11px;font-weight:600;color:var(--accent-text)}
+.rvmembro button{min-height:0;width:24px;height:24px;padding:0;border:0;border-radius:50%;background:transparent;color:var(--muted);display:inline-flex;align-items:center;justify-content:center}
+.rvmembro button:hover{color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,transparent)}
+.rvmembro button svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.rvaviso{margin:0;font-size:12.5px;color:var(--muted)}
+.rvaviso b{color:var(--accent-text);font-weight:600}
+.urev select{width:100%;max-width:280px}
+@media (max-width:760px){.rvcard{grid-template-columns:minmax(0,1fr);padding:14px}.rvtopo .danger{margin-left:0}}
 .marcs{display:flex;flex-wrap:wrap;gap:6px}
 .marcs button{font-size:12px;padding:4px 8px}
 .marcs .mg{width:100%;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:4px}
@@ -786,6 +813,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
 </div>
 <div class="subtabs" id="subParam" hidden><div class="wrap" role="tablist" aria-label="Administração">
   <button type="button" role="tab" id="tabUsers" aria-selected="false" class="admin fbonly">Usuários</button>
+  <button type="button" role="tab" id="tabRev" aria-selected="false" class="admin fbonly">Revendas</button>
   <button type="button" role="tab" id="tabCfg" aria-selected="false" class="cfgtab">Parâmetros Proposta</button>
   <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Parâmetros Dados Primários</button>
   <button type="button" role="tab" id="tabE3" aria-selected="false" class="admin fbonly">Parâmetros Contrato</button>
@@ -873,7 +901,8 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
       </div>
     </details>
     <div class="admin">
-      <p class="hint"><span class="ok">Modo administrador.</span> Edite os parâmetros abaixo e clique em <b>Publicar para a equipe</b>. Todos recebem na próxima vez que abrirem o app.</p>
+      <p class="hint soadm"><span class="ok">Modo administrador.</span> Edite os parâmetros abaixo e clique em <b>Publicar para a equipe</b>. Todos recebem na próxima vez que abrirem o app.</p>
+      <p class="hint sogerente"><span class="ok">Gerente da revenda <b id="cfgRevNome"></b>.</span> Edite os parâmetros abaixo e clique em <b>Publicar para a revenda</b>. Só os usuários da sua revenda recebem, na próxima vez que abrirem o app.</p>
       <div class="row">
         <button type="button" class="primary" id="btnPublish">Publicar para a equipe</button>
         <button type="button" id="btnExportCfg" class="nofb">Exportar parametros.json</button>
@@ -1148,6 +1177,18 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div id="usersBody" class="ulista"></div>
     <p class="hint">Bloquear corta o acesso na hora, sem apagar o cadastro. Excluir corta o acesso na hora e apaga a conta do Firebase em até 1 hora. "Nova senha" manda um e-mail para a pessoa criar outra senha.</p>
   </div></section>
+</main>
+<main id="viewRev" hidden>
+  <section class="sec"><h2>Nova revenda <span>só o administrador vê esta tela</span></h2><div class="body">
+    <div class="grid">
+      <label>Nome da revenda<input id="r-nome" autocomplete="off" maxlength="80"></label>
+    </div>
+    <div class="tools"><button type="button" class="primary" id="btnAddRev">Cadastrar revenda</button><span id="rStatus" class="hint" role="status"></span></div>
+  </div></section>
+  <section class="sec"><h2>Revendas cadastradas <span id="rCount"></span></h2><div class="body">
+    <div id="revBody" class="rvlista"></div>
+    <p class="hint">Cada usuário pertence a uma revenda só: ao adicionar alguém que já está em outra revenda, ele muda de revenda. O gerente da revenda tem acesso aos Parâmetros Proposta. Tudo é salvo na hora.</p>
+  </div></section>
 </main></div>
 
 <div id="loginBox" hidden><form id="loginForm" class="loginCard" novalidate>
@@ -1220,7 +1261,7 @@ if(!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey)&&/\.github\.io$/.tes
 <script>
 /* Menu Administração: abre a primeira subaba e mostra a linha de subabas enquanto uma delas estiver aberta */
 (function(){
-  const ids=['tabUsers','tabCfg','tabE2','tabE4','tabE3'], el=id=>document.getElementById(id), sub=el('subParam'), bt=el('tabParam');
+  const ids=['tabUsers','tabRev','tabCfg','tabE2','tabE4','tabE3'], el=id=>document.getElementById(id), sub=el('subParam'), bt=el('tabParam');
   const sync=()=>{ const on=ids.some(id=>el(id).getAttribute('aria-selected')==='true'); sub.hidden=!on; bt.setAttribute('aria-selected',String(on)); bt.setAttribute('aria-expanded',String(on)) };
   bt.addEventListener('click',()=>{ const ab=ids.map(el).find(b=>b.getAttribute('aria-selected')==='true'); (ab||(document.body.classList.contains('is-admin')?el('tabUsers'):el('tabCfg'))).click() });
   new MutationObserver(sync).observe(sub,{subtree:true,attributes:true,attributeFilter:['aria-selected']}); sync();
@@ -1450,7 +1491,7 @@ window.addEventListener('hashchange',()=>showTab(location.hash==='#parametros'))
 /* ---------- Salvar parâmetros ---------- */
 let db=null;
 const status = t => { $('cfgStatus').textContent=t };
-function markCfg(){ cfgDirty=true; lsSet(CFG_KEY,CFG); if(isAdmin()){ lsSet(PEND_KEY,true); status('Alterações ainda não publicadas.') } renderPickersSoon() }
+function markCfg(){ cfgDirty=true; lsSet(CFG_KEY,CFG); if(isAdmin()||(window.argoFb&&argoFb.gerente)){ lsSet(PEND_KEY,true); status('Alterações ainda não publicadas.') } renderPickersSoon() }
 let pickT; function renderPickersSoon(){ clearTimeout(pickT); pickT=setTimeout(renderPickers,300) }
 $('btnSaveCfg').addEventListener('click', async ()=>{
   lsSet(CFG_KEY,CFG);
@@ -2052,6 +2093,7 @@ $('btnNova').addEventListener('click',()=>{ $('waCli').value=''; formMsg('O clie
     tabTask:'<path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/>',
     tabParam:'<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
     tabUsers:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    tabRev:'<path d="M15 21v-5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v5"/><path d="M17.774 10.31a1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.451 0 1.12 1.12 0 0 0-1.548 0 2.5 2.5 0 0 1-3.452 0 1.12 1.12 0 0 0-1.549 0 2.5 2.5 0 0 1-3.77-3.248l2.889-4.184A2 2 0 0 1 7 2h10a2 2 0 0 1 1.653.873l2.895 4.192a2.5 2.5 0 0 1-3.774 3.244"/><path d="M4 10.95V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8.05"/>',
     tabCfg:'<path d="M21 4h-7M10 4H3m18 8h-9m-4 0H3m18 8h-5m-4 0H3M14 2v4m-6 4v4m8 4v4"/>',
     tabE2:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
     tabE3:'<path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/>',
