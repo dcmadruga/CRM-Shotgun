@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 215, data: '2026-11-23', titulo: 'Itens da proposta na página de aprovação', itens: [
+    'A página que o cliente abre pelo link para aprovar a proposta agora mostra, abaixo dos totais, a lista dos itens: cada licença e cada mensalidade com quantidade, preço e total, igual ao PDF.',
+    'Itens isentos aparecem com o valor riscado e o prazo da isenção. Itens ocultos na proposta continuam fora da lista.'
+  ] },
   { v: 214, data: '2026-11-23', titulo: 'Postos em construção em São Paulo', itens: [
     'Telemetria → Postos em construção: São Paulo (SP) já pode ser escolhido no filtro de Estado, com o filtro de Cidade.',
     'Em SP o Radar lê o Diário Oficial do Estado: as licenças e os pedidos de licença de posto que a CETESB publica ali, o parecer técnico levado ao CONSEMA e as publicações de empresas e prefeituras. Compras de combustível e contratos ficam de fora.',

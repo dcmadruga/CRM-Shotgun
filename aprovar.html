@@ -66,6 +66,21 @@ button.sec2{background:var(--surface);color:var(--purple)}
 .check input{width:auto;margin-top:3px}
 .ok{background:var(--surface);border:1px solid #1f7a46;border-left:4px solid #1f7a46;border-radius:6px;padding:14px}
 .warn{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--danger);border-radius:6px;padding:14px}
+.itens{border-top:1px solid var(--line);padding:4px 14px 6px}
+.itens h3{font-family:var(--display);font-weight:600;font-size:14px;margin:12px 0 2px;color:var(--purple)}
+.itens ul{list-style:none;margin:0;padding:0}
+.itens li{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line)}
+.itens .d{min-width:0;overflow-wrap:anywhere}
+.itens .d small{display:block;color:var(--muted);font-size:12.5px;font-style:italic}
+.itens .d em{display:block;color:var(--muted);font-size:12.5px}
+.itens .v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.itens .v small{display:block;color:var(--muted);font-size:12px}
+.itens .v strong{font-weight:600}
+.itens .v s{color:var(--muted)}
+.itens:not([hidden])+.body{padding-top:14px!important}
+.itens .tot{display:flex;justify-content:space-between;gap:12px;padding:8px 0 4px;font-weight:600;font-variant-numeric:tabular-nums}
+.itens .tot span:last-child{font-family:var(--display)}
+@media (max-width:420px){.itens li{flex-direction:column;gap:2px}.itens .v{text-align:left;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}}
 </style>
 </head><body>
 <header><div class="wrap">
@@ -84,6 +99,7 @@ button.sec2{background:var(--surface);color:var(--purple)}
         <div><small>Mensalidade</small><strong id="vMen"></strong></div>
         <div><small>Deslocamento da implantação</small><strong id="vDes"></strong></div>
       </div>
+      <div class="itens" id="itens" hidden></div>
       <div class="body" style="padding-top:0">
         <p class="hint full" id="validade"></p>
         <div class="row full"><button type="button" id="btnVer">Ver proposta completa (PDF)</button></div>
@@ -129,6 +145,27 @@ const fmtD=iso=>{ if(!iso) return ''; const [y,m,d]=String(iso).split('-'); retu
 const hoje=()=>{ const t=new Date(); return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}-${String(t.getDate()).padStart(2,'0')}` };
 const erro=t=>{ $('carregando').hidden=true; $('erro').hidden=false; $('erro').textContent=t };
 let P=null, pdfB64=null;
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num=v=>{ const n=parseFloat(String(v??'').replace(',','.')); return isNaN(n)?0:n };
+const qtyNum=q=>{ const s=String(q??'').trim(); return s===''||s==='?'?null:num(s) };
+function montarItens(D){
+  if(!D) return;
+  const grupo=(titulo, rows, mensal, total)=>{
+    rows=(rows||[]).filter(r=>r && !r.oculto && String(r.desc||'').trim());
+    if(!rows.length) return '';
+    const li=rows.map(r=>{
+      const q=qtyNum(r.qty), integral=(q===null?1:q)*num(r.price);
+      const dias=mensal&&r.isento?Math.round(num(r.diasIsento)):0;
+      const qtd=q===null?'Quantidade a definir':(q!==1?String(r.qty).trim()+' × '+brl(r.price):'');
+      const val=r.isento?`<s>${brl(integral)}</s> <strong>${dias>0?'Isento '+dias+' dias':'Isento'}</strong>`:q===null?`<strong>${brl(r.price)} cada</strong>`:`<strong>${brl(integral)}${mensal?'/mês':''}</strong>`;
+      const nota=dias>0?`<em>Após ${dias} dia${dias>1?'s':''}: ${brl(integral)}/mês</em>`:'';
+      return `<li><div class="d">${esc(r.desc)}${r.sub?`<small>${esc(r.sub)}</small>`:''}${nota}</div><div class="v">${qtd?`<small>${esc(qtd)}</small>`:''}${val}</div></li>`;
+    }).join('');
+    return `<h3>${titulo}</h3><ul>${li}</ul><div class="tot"><span>Total ${titulo.toLowerCase()}</span><span>${brl(total)}${mensal?'/mês':''}</span></div>`;
+  };
+  const h=grupo('Licenças', D.lic, false, P.totLic)+grupo('Mensalidades', D.men, true, P.totMen);
+  if(h){ $('itens').innerHTML=h; $('itens').hidden=false }
+}
 
 function abrirWa(num, texto){ const url='https://wa.me/'+(num||'')+'?text='+encodeURIComponent(texto); window.open(url,'_blank') || (location.href=url) }
 const vendNum=()=>{ const d=String(P.vendedorFone||'').replace(/\D/g,''); return d.length>=10&&d.length<=11?'55'+d:d };
@@ -147,6 +184,8 @@ const vendNum=()=>{ const d=String(P.vendedorFone||'').replace(/\D/g,''); return
     $('sub').textContent=`Nº ${P.numero} · consultor: ${P.vendedor}`;
     $('tit').textContent=P.cliente;
     $('vLic').textContent=brl(P.totLic); $('vMen').textContent=brl(P.totMen); $('vDes').textContent=P.implantacao==='Remota'?'Implantação remota · sem custo':P.implantacao==='Combustível'?'Só combustível'+(P.dados&&P.dados.km?' · '+Number(P.dados.km).toLocaleString('pt-BR',{maximumFractionDigits:1})+' km':''):brl(P.totDes);
+    // Resumo dos itens (mesma lista do PDF: só o que não está oculto)
+    try{ montarItens(P.dados) }catch(e){}
     $('validade').textContent=`Proposta emitida em ${fmtD(P.data)}`+(P.validade?`, condição válida até ${fmtD(P.validade)}.`:'.');
     $('carregando').hidden=true; $('conteudo').hidden=false;
     // Sugestão: o contato informado na proposta (o cliente pode trocar)
