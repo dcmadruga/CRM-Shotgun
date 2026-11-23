@@ -78,7 +78,7 @@ input[readonly]{opacity:.8}
 label.pendo{margin-top:-6px;padding:9px 12px;border:1px dashed var(--line);border-radius:8px;background:var(--field)}label.pendo:has(input:checked){border-style:solid;border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
 label.pendo input{width:18px;height:18px;flex:none;accent-color:var(--purple)}
 .pendmsg{margin-top:-6px;font-size:13px;color:var(--purple);font-weight:500}
-label.pend input[type=file]{opacity:.45}label.pend>.hint:not(.files){text-decoration:line-through}
+label.pend>span:first-child>b{display:none}label.pend input[type=file]{opacity:.45}label.pend>.hint:not(.files){text-decoration:line-through}
 .pendtopo{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:6px;padding:12px 14px;margin:0 0 4px}.pendtopo b{font-family:var(--display);font-weight:600}
 label.mesmo{flex-direction:row;align-items:center;gap:8px;margin-top:6px;font-size:14px;font-weight:500;color:var(--fg);letter-spacing:0;cursor:pointer}
 label.mesmo input{width:auto;margin:0}
@@ -127,6 +127,8 @@ label.socio small{display:block;color:var(--muted);font-size:13px;overflow-wrap:
   <div style="display:flex;flex-direction:column;gap:18px">
   <section class="sec" id="secContrato" hidden><h2>Contrato social</h2><div class="body">
     <label class="full"><span>Contrato social (com a última alteração) <b>*</b></span><input type="file" name="contratoSocial" data-v="arquivo" accept="application/pdf,image/*" multiple required><span class="hint">Envie o PDF ou fotos de todas as páginas. Vamos ler o documento aqui mesmo no seu aparelho para encontrar os sócios e já preencher os dados do representante legal.</span><span class="files hint"></span></label>
+    <label class="mesmo pendo full" id="csManualBox"><input type="checkbox" id="csManual"> <span>Não tenho disponível agora, vou lançar as informações manualmente</span></label>
+    <p class="pendmsg full" id="csManualMsg" hidden>Tudo bem. Preencha os dados do representante legal abaixo.</p>
     <p id="csStatus" class="full hint" role="status" hidden></p>
     <div id="csSocios" class="full socios" hidden></div>
   </div></section>
@@ -262,8 +264,9 @@ function montar(){
   const cs=CFG.contratoSocial!==false && !PEND; $('#secContrato').hidden=!cs; f.elements.contratoSocial.disabled=!cs; f.elements.contratoSocial.required=cs;
   if(cs) CAMPOS.push({k:'contratoSocial', label:'Contrato social', tipo:'arquivo', req:true, secao:'Contrato social'});
   // Campos marcados "Pré TASK" nos Parâmetros não aparecem para o cliente: o vendedor completa na Pré TASK
+  // A data desejada para a implantação não é mais pedida ao cliente (a data do Start fica na Pré TASK); o bloco some se ficar vazio
   $('#secoes').innerHTML=(CFG.secoes||[]).map(s=>{
-    const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(c.pretask&&!c.fixo) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||'')) && (!PEND || (c.tipo==='arquivo' && PEND.includes(c.label)))); if(!cs.length) return '';
+    const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(c.pretask&&!c.fixo) && !(c.k==='dataImpl'||/data desejada.*implanta/i.test(c.label||'')) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||'')) && (!PEND || (c.tipo==='arquivo' && PEND.includes(c.label)))); if(!cs.length) return '';
     cs.forEach(c=>CAMPOS.push({...c, secao:s.titulo}));
     // Sim/Não que abre os campos seguintes da seção (padrão quando é o primeiro campo)
     // Cada Sim/Não que abre vira uma linha: a pergunta à esquerda e os campos dela ao lado, até o próximo Sim/Não que abre
@@ -641,6 +644,16 @@ function ligarAuto(){
     desenharArquivos(el);
   }));
 
+  // Contrato social: "Não tenho disponível agora" libera o envio sem o arquivo; o cliente preenche o representante legal à mão
+  const csEl=f.elements.contratoSocial, csCb=$('#csManual');
+  if(csEl && csCb && !csEl.disabled){
+    const sync=()=>{ const on=csCb.checked; csEl.dataset.manual=on?'1':''; csEl.required=!on; csEl.closest('label').classList.toggle('pend',on); $('#csManualMsg').hidden=!on;
+      if(on){ if(csEl.value){ csEl.value=''; desenharArquivos(csEl); leitura++; SOCIOS=[]; desenharSocios(); csStatus('') } const r=secResp(); const pc=r&&(r.campos||[]).find(c=>f.elements[c.k]&&!f.elements[c.k].value); if(pc) setTimeout(()=>{ f.elements[pc.k].focus(); f.elements[pc.k].scrollIntoView({block:'center',behavior:'smooth'}) },0) }
+      valida(csEl) };
+    csCb.addEventListener('change',sync);
+    csEl.addEventListener('change',()=>{ if(csEl.files.length && csCb.checked){ csCb.checked=false; sync() } });
+  }
+
   // Anexo obrigatório: "Não tenho em mãos, mando mais tarde" libera o envio sem o arquivo (fica pendente na proposta)
   f.querySelectorAll('#secoes [data-v=arquivo]').forEach(el=>{
     if(!el.required) return; const lab=el.closest('label');
@@ -792,7 +805,7 @@ function montarTexto(o){
   let sec=null;
   CAMPOS.forEach(c=>{
     let v=o[c.k];
-    if(c.tipo==='arquivo'){ const el=f.elements[c.k]; const fs=el&&!el.disabled?arqs(el):[]; if(elPend(el)) v='vou enviar depois'; else { if(!fs.length) return; v=fs.map(x=>x.name).join(', ')+(L.p?' (anexado no sistema)':'') } }
+    if(c.tipo==='arquivo'){ const el=f.elements[c.k]; const fs=el&&!el.disabled?arqs(el):[]; if(elPend(el)) v='vou enviar depois'; else if(el&&el.dataset.manual==='1') v='não enviado, dados preenchidos manualmente'; else { if(!fs.length) return; v=fs.map(x=>x.name).join(', ')+(L.p?' (anexado no sistema)':'') } }
     if(!v) return;
     if(c.tipo==='data') v=fmtData(v);
     if(c.k==='uf') v=v.toUpperCase();
@@ -866,6 +879,7 @@ async function salvarNoSistema(o, texto){
   }
   const campos={}, valores={}; CAMPOS.forEach(c=>{ if(c.tipo!=='arquivo' && o[c.k]){ campos[c.label]=o[c.k]; valores[c.k]=o[c.k] } });
   pend.forEach(l=>{ campos[l]=PEND_TXT });
+  if(f.elements.contratoSocial&&f.elements.contratoSocial.dataset.manual==='1') campos['Contrato social']='Não enviado: o cliente preencheu os dados do representante legal manualmente';
   const socios=SOCIOS.map(({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas})=>Object.fromEntries(Object.entries({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas}).filter(([k,v])=>v!=null&&v!=='')));
   if(socios.length) campos['Sócios no contrato social']=socios.map(x=>x.nome).join('; ');
   await F.setDoc(F.doc(db,...pref,'etapa2','resposta'),{campos, valores, texto, anexos, socios, em:F.serverTimestamp()});

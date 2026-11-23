@@ -13,7 +13,7 @@ CONTRATANTE: {razao}, pessoa jurídica de direito privado, devidamente inscrita 
 
 CONTRATADA: ARGO SISTEMAS LTDA., inscrita no CNPJ nº 24.961.335/0001-34, com sede na Rua DOMINGOS OLIVA DOS SANTOS, 90, Oitavo andar, CEP 95012-320, Bairro Sanvitto, Caxias do Sul - RS, neste ato representada por RODRIGO GRILLO POLICASTRO, brasileiro, casado, administrador de empresas, inscrito no CPF/MF sob o nº 004.611.810-10, portador da carteira de identidade RG nº 1074407659, com endereço na Rua Domingos Santos Oliva, 90, Oitavo andar, CEP 95012-320, Bairro Sanvitto, Caxias do Sul - RS, (PP - LUISA CARLA VANZIN, brasileira, solteira, inscrita no CPF sob o nº 802.033.880-20, portadora da carteira de identidade RG nº 1074065581, com endereço na Av. São Leopoldo, nº 203/302, Bairro São Leopoldo, Caxias do Sul/RS - CEP 95097-350).
 
-LOCAL E DATA: A licença referente a este contrato será instalada na data prevista de {dataImpl}.
+LOCAL E DATA: A licença referente a este contrato será instalada em data a ser combinada entre as partes.
 
 # DO OBJETO DA COMPRA E VENDA E DA PRESTAÇÃO DE SERVIÇOS
 

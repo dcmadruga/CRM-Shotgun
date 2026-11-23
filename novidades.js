@@ -10,6 +10,12 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 219, data: '2026-11-23', titulo: 'Link de dados do cliente mais simples', itens: [
+    'O link de dados que o cliente preenche não pede mais a "Data desejada para a implantação". O bloco Operação, que só tinha esse campo para o cliente, saiu da tela.',
+    'O contrato passa a dizer que a licença será instalada em data a ser combinada entre as partes. Propostas antigas que já tinham a data continuam com ela no contrato.',
+    'A data do Start continua sendo definida na Pré TASK.',
+    'Contrato social: novo botão "Não tenho disponível agora, vou lançar as informações manualmente". Com ele marcado, o arquivo deixa de ser obrigatório e o cliente preenche os dados do representante legal à mão. A proposta registra que o contrato social não foi enviado.'
+  ] },
   { v: 218, data: '2026-11-23', titulo: 'Templates de proposta', itens: [
     'Nova proposta: no topo da tela há uma fileira de templates (Posto Simples, Loja Simples, Posto + Loja e Central). Escolha um e as licenças e mensalidades são preenchidas com os itens dele. Depois é só ajustar.',
     'Se a proposta já tiver itens, o app pede um segundo toque para confirmar a troca.',

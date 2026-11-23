@@ -1097,7 +1097,9 @@ async function iniciar() {
       argo_razao: ar.razao || '', argo_cnpj: ar.cnpj || '', argo_endereco: ar.endereco || '', argo_representante: ar.representante || '', argo_foro: ar.foro || ''
     };
   }
-  const preencherModelo = (modelo, V) => String(modelo || '').replace(/\{([A-Za-z0-9_]+)\}/g, (_, k) => V[k] == null ? '' : String(V[k]));
+  // Sem a data desejada (o cliente não informa mais), a frase do contrato fala em data combinada entre as partes
+  const semDataImpl = (modelo, V) => V.dataImpl ? String(modelo || '') : String(modelo || '').replace(/na data prevista de \{dataImpl\}/gi, 'em data a ser combinada entre as partes').replace(/\{dataImpl\}/g, 'a combinar');
+  const preencherModelo = (modelo, V) => semDataImpl(modelo, V).replace(/\{([A-Za-z0-9_]+)\}/g, (_, k) => V[k] == null ? '' : String(V[k]));
   async function gerarContrato(p) {
     const cfg = cfgE3();
     const texto = preencherModelo(cfg.modelo, await valoresContrato(p));
@@ -1126,6 +1128,8 @@ async function iniciar() {
     // o modelo do contrato publicado decide o que precisa ficar com o cliente
     if (E2 && !E2.divisaoPretask && !E3) try { const s3 = await F.getDoc(F.doc(db, 'publico', 'etapa3')); if (s3.exists() && s3.data().json && !E3) E3PUB = JSON.parse(s3.data().json); } catch (e) {}
     if (dividirE2(E2)) { marcarE2(); e2Status('Divisão nova aplicada: os campos que não entram no contrato passaram para a Pré TASK (coluna "Pré TASK"). Confira e toque em Publicar para valer no link do cliente.'); }
+    // a data desejada para a implantação saiu da Etapa 2 (o link do cliente já a ignora); some do editor e sai do formulário no próximo Publicar
+    (E2.secoes || []).forEach(s => { s.campos = (s.campos || []).filter(c => !(c.k === 'dataImpl' || /data desejada.*implanta/i.test(c.label || ''))); });
     desenharE2();
   }
   function marcarE2() { e2Sujo = true; e2Status('Alterações ainda não publicadas.'); }
