@@ -1,0 +1,11 @@
+200 https://do-api-web-search.doe.sp.gov.br/v2/advanced-search/publications?periodStartingDate=2026-11-01&periodEndingDate=2026-11-22&Terms%5B0%5D=posto%20de%20combust%C3%ADveis&PageNumber=1&PageSize=20
+api-supported-versions: 2
+connection: keep-alive
+content-length: 116
+content-type: application/json; charset=utf-8
+date: Mon, 23 Nov 2026 20:29:41 GMT
+server: nginx/1.22.1
+server-timing: dtSInfo;desc="0", dtRpid;desc="623578047"
+set-cookie: dtCookie=v_4_srv_17_sn_F137E7783938F729C89269AC9DA14273_perc_100000_ol_0_mul_1_app-3Af53754e3cd8268f5_0_rcs-3Acss_0; Path=/; Domain=.doe.sp.gov.br
+
+{"items":[],"currentPage":1,"totalPages":0,"totalItems":0,"pageSize":20,"hasPreviousPage":false,"hasNextPage":false}

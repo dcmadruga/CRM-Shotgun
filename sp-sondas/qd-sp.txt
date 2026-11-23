@@ -1,0 +1,22 @@
+200 https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22%20CETESB&published_since=2026-08-01&size=5&excerpt_size=500&territory_ids=3550308
+access-control-allow-credentials: true
+access-control-allow-origin: *
+access-control-expose-headers: Content-Length,Content-Range
+alt-svc: h3=":443"; ma=86400
+cf-cache-status: DYNAMIC
+cf-ray: a5f2ed84e8e3a961-ARN
+connection: keep-alive
+content-length: 34
+content-type: application/json
+date: Mon, 23 Nov 2026 20:30:11 GMT
+nel: {"report_to":"cf-nel","success_fraction":0.0,"max_age":604800}
+referrer-policy: strict-origin-when-cross-origin
+report-to: {"group":"cf-nel","max_age":604800,"endpoints":[{"url":"https://a.nel.cloudflare.com/report/v4?s=iIoSYdDJM5PQg%2FdrHQBxBzx%2FaLivpjYS6qqVjsD0lx9eq%2B37KD6mGhIawdiFdfGlqGYTsLEEAhIM3NgwXMjTeZsAM21f0STaZxQKcSBz0ZYt0hwtFPDFVJQq6fUihbBNPc5XT6PBZtqw3vM%3D"}]}
+server: cloudflare
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+
+{"total_gazettes":0,"gazettes":[]}

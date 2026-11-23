@@ -1,0 +1,15 @@
+200 https://www.doe.sp.gov.br/_next/static/zaCymMlg7J-hypjSAmUg-/_ssgManifest.js
+accept-ranges: bytes
+cache-control: public, max-age=31536000, immutable
+connection: keep-alive
+content-length: 76
+content-type: application/javascript; charset=UTF-8
+date: Mon, 23 Nov 2026 20:29:41 GMT
+etag: W/"4c-1a1e83fff62"
+last-modified: Tue, 17 Nov 2026 06:44:30 GMT
+server: nginx/1.22.1
+server-timing: dtSInfo;desc="0", dtRpid;desc="1540066355"
+set-cookie: dtCookie=v_4_srv_17_sn_60B730221E0ED7CAEDAB40210939E549_perc_100000_ol_0_mul_1_app-3Af53754e3cd8268f5_0_rcs-3Acss_0; Path=/; Domain=.doe.sp.gov.br
+vary: Accept-Encoding
+
+self.__SSG_MANIFEST=new Set,self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()

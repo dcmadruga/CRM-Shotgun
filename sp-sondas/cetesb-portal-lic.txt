@@ -1,0 +1,13 @@
+202 https://cetesb.sp.gov.br/licenciamento/
+access-control-allow-methods: OPTIONS,GET,POST
+access-control-allow-origin: *
+access-control-expose-headers: x-amzn-waf-action
+access-control-max-age: 86400
+cache-control: no-store, max-age=0
+connection: keep-alive
+content-length: 0
+content-type: text/html; charset=UTF-8
+date: Mon, 23 Nov 2026 20:29:44 GMT
+server: awselb/2.0
+x-amzn-waf-action: challenge
+

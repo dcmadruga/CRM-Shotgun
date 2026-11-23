@@ -1,0 +1,21 @@
+200 https://autenticidade.cetesb.sp.gov.br/
+accept-ranges: bytes
+connection: Keep-Alive
+content-length: 150
+content-type: text/html; charset=ISO-8859-1
+date: Mon, 23 Nov 2026 20:29:43 GMT
+etag: "c2f64f842f3cdc1:0"
+keep-alive: timeout=2, max=500
+last-modified: Mon, 13 Oct 2025 10:52:49 GMT
+server: Microsoft-IIS/7.5
+strict-transport-security: max-age=63072000; includeSubDomains; preload
+x-powered-by: ASP.NET
+
+<html>
+<head>
+<title>CETESB - Autenticidade</title>
+<meta http-equiv="refresh" content="0; url=autentica.php">
+</head>
+<body>
+</body>
+</html>
