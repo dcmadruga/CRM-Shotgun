@@ -508,14 +508,14 @@
       <div class="ptf"><span>Cliente Potencial + de 5 Unidades <b>*</b></span>${seg('potencial', ['Sim', 'Não'], P.potencial)}</div>
       ${P.inclusao === 'Filial Nova em Central' ? `<label class="ptf"><span>Central que recebe a filial <b>*</b></span>${C.centrais.length ? `<select data-hk="centralExistente"><option value="">Escolha a Central</option>${C.centrais.map(n => `<option${n === P.centralExistente ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>` : `<input data-hk="centralExistente" value="${esc(P.centralExistente || '')}" placeholder="Nome da Central já existente">`}</label>` : ''}
     </div></div>
+    ${blocosBase().map(b => `<div class="ptsec"${b.band ? ' data-ptband' : ''}><h5>${esc(b.titulo)}</h5><div class="ptgrid">${camposHtml(b.campos, '', C.v, C.anx)}</div></div>`).join('')}
     ${central || simples ? `<div class="ptsec"><h5>${central ? 'Central' : 'Posto simples'}${f100 ? `<small>F100 = ${esc(f100.cod)}${f100.cidade ? ' · ' + esc(f100.cidade) : ''}</small>` : ''}</h5><div class="ptgrid">
       <label class="ptf"><span>${central ? 'Nome da Central' : 'Nome do Posto'} <b>*</b></span><input data-hk="nome" value="${esc(P.nome || '')}"></label>
       ${central ? `<label class="ptf"><span>Quantidade de Filiais <b>*</b></span><input type="number" min="1" max="60" data-hk="qtd" value="${P.filiais.length || ''}"></label>` : ''}
       <div class="ptf full"><span>${central ? 'Filiais' : 'Unidade'}</span>${tabela}
         <p class="ptnote">${central ? 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas. Marque qual filial é a F100: ela aparece no topo e no card do TASK.' : 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas.'}</p></div>
     </div></div>` : '<p class="ptnote">Escolha o Tipo de Base para informar o posto ou as filiais.</p>'}
-    ${anexos || ''}
-    ${blocosBase().map(b => `<div class="ptsec"${b.band ? ' data-ptband' : ''}><h5>${esc(b.titulo)}</h5><div class="ptgrid">${camposHtml(b.campos, '', C.v, C.anx)}</div></div>`).join('')}`);
+    ${anexos || ''}`);
   }
   function painelProposta() {
     if (C.direto) {
@@ -734,8 +734,10 @@
       cab[central ? 'Filiais' : 'Unidade'] = filiais.map(f => [f.cod, f.tipo, f.cnpj, f.razao, [f.cidade, f.uf].filter(Boolean).join(' - ')].filter(Boolean).join(' - ') + (f.f100 ? ' (F100)' : '')).join('\n');
       Object.keys(cab).forEach(k => { if (!cab[k]) delete cab[k]; });
       valores.base__fil = filiais;
-      const secoes = [{ titulo: 'Status', labels: ['Status', 'Data da Base', 'Data do Start', 'Modalidade'] }, { titulo: central ? 'Central' : 'Base', labels: ['Tipo de Base', 'Inclusão', 'Central que recebe a filial', 'Cliente Potencial + de 5 Unidades', 'Nome da Central', 'Nome do Posto', 'Quantidade de Filiais', 'F100', 'Filiais', 'Unidade'] }]
-        .concat(blocosBase().map(b => ({ titulo: b.titulo, labels: b.campos.flatMap(c => [c.label, c.label + ' - ' + (c.detalhe || '')]) }))).concat(ps.map(s => ({ titulo: s.titulo, labels: s.campos.flatMap(c => [c.label, ...Object.values(c.cond || {}).flatMap(l => (l || []).map(x => x.label))]) })));
+      const secoes = [{ titulo: 'Status', labels: ['Status', 'Data da Base', 'Data do Start', 'Modalidade'] }, { titulo: 'Base', labels: ['Tipo de Base', 'Inclusão', 'Central que recebe a filial', 'Cliente Potencial + de 5 Unidades'] }]
+        // Conversão de Dados logo abaixo da Base, antes do Posto simples / Central (mesma ordem do formulário)
+        .concat(blocosBase().map(b => ({ titulo: b.titulo, labels: b.campos.flatMap(c => [c.label, c.label + ' - ' + (c.detalhe || '')]) })))
+        .concat([{ titulo: central ? 'Central' : 'Posto simples', labels: ['Nome da Central', 'Nome do Posto', 'Quantidade de Filiais', 'F100', 'Filiais', 'Unidade'] }]).concat(ps.map(s => ({ titulo: s.titulo, labels: s.campos.flatMap(c => [c.label, ...Object.values(c.cond || {}).flatMap(l => (l || []).map(x => x.label))]) })));
       const doc = { pre, parcial: !!parcial, valores, campos: { ...cab, ...campos }, secoes, em: F.serverTimestamp(), por, porUid: perfil.uid, porEmail: perfil.email || '' };
       if (C.direto) { await salvarDireto(doc, pre, e2Lido, parcial, por); return; }
       await F.setDoc(F.doc(db, 'propostas', pid, 'etapa4', 'dados'), doc);

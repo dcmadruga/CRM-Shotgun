@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 208, data: '2026-11-23', titulo: 'Conversão de Dados logo abaixo da Base', itens: [
+    'No Pré TASK, aba Implantação, o bloco Conversão de Dados agora fica logo abaixo do bloco Base, antes do Posto simples ou da Central. No TASK, os dados aparecem na mesma ordem.'
+  ] },
   { v: 207, data: '2026-11-23', titulo: 'Novo fluxo até o TASK pronto e Módulos por equipe', itens: [
     'Toda proposta agora tem um lead no CRM. Se a proposta foi feita direto, sem vir de um lead, o app cria o lead sozinho (origem "Proposta direta"). Se já existe lead com o mesmo CNPJ, ele é aproveitado.',
     'No TASK, o "+ Novo cadastro" (perfis TASK e Administrador) abre o Pré TASK completo. Proposta, Dados Primários e contrato não são obrigatórios nesse cadastro direto, e dá para vincular uma proposta aprovada depois.',
