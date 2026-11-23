@@ -10,6 +10,12 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 210, data: '2026-11-23', titulo: 'Postos em construção em São Paulo', itens: [
+    'Telemetria → Postos em construção: São Paulo (SP) já pode ser escolhido no filtro de Estado, com o filtro de Cidade.',
+    'Em SP o Radar lê o Diário Oficial do Estado: as licenças e os pedidos de licença de posto que a CETESB publica ali, o parecer técnico levado ao CONSEMA e as publicações de empresas e prefeituras. Compras de combustível e contratos ficam de fora.',
+    'A CETESB só publica no Diário os licenciamentos com estudo de impacto, então em SP aparecem poucos casos por essa fonte. Os diários das prefeituras entram pelo Querido Diário assim que a API dele voltar a responder.',
+    'O portal da CETESB não aceita consulta automática e o e-CETESB exige login, por isso aparecem na tela como fonte não monitorada.'
+  ] },
   { v: 209, data: '2026-11-23', titulo: 'Excluir usuário apaga a conta de vez', itens: [
     'Em Administração > Usuários, o botão Excluir agora também apaga a conta da pessoa no Firebase, sem você precisar abrir o console. O acesso continua sendo cortado na hora; a conta some do Firebase em até 1 hora.',
     'Se precisar cadastrar o mesmo e-mail de novo depois, é só usar o cadastro normal.'

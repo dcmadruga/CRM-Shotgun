@@ -1,6 +1,6 @@
-# Radar de Novos Postos – MT, RS, SC e PR
+# Radar de Novos Postos – MT, RS, SC, PR e SP
 
-Módulo da aba **Telemetria → Postos em construção** (Estados MT, RS, SC e PR) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso, no Rio Grande do Sul, em Santa Catarina e no Paraná. Acima da tela, além do Estado, há um filtro de Cidade que vale para todas as partes do Radar. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
+Módulo da aba **Telemetria → Postos em construção** (Estados MT, RS, SC, PR e SP) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso, no Rio Grande do Sul, em Santa Catarina, no Paraná e em São Paulo. Acima da tela, além do Estado, há um filtro de Cidade que vale para todas as partes do Radar. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
 
 Nada é inventado: cada registro vem de um documento público, com link para o original e o trecho de texto que o sustenta. Campo que não aparece no documento fica como "pendente de confirmação".
 
@@ -61,6 +61,19 @@ Pela Resolução CEMA, o IAT (Instituto Água e Terra) publica de forma automát
 
 **Teste real (nov/2026, 12 meses):** o DIOE devolveu 732 licenças de posto concedidas pelo IAT, que viraram 658 empreendimentos: 119 novos postos (63 com LP e 50 com LI), 64 ampliações, 354 renovações e 121 outros (LO, regularização, autorização). 390 tiveram o CNPJ achado na base da ANP.
 
+### São Paulo
+
+Em SP quem licencia posto é a CETESB, mas ela não publica no Diário Oficial cada licença de posto: no DOE-SP saem só as súmulas dos licenciamentos com estudo de impacto (Diretoria de Avaliação de Impacto Ambiental), que raramente envolvem posto. O pedido de licença do empreendedor costuma sair em jornal local, não no Diário do Estado.
+
+| Fonte | Situação | Observação |
+| --- | --- | --- |
+| Diário Oficial do Estado (DOE-SP), `doe.sp.gov.br` | Integrada | Usa a pesquisa pública do site (sem login nem CAPTCHA). Pesquisa termos de posto em 12 meses e lê inteiras só as matérias da CETESB, do CONSEMA, de "Atos Empresariais" e das prefeituras; compras de combustível, credenciamentos e contratos ficam de fora. As súmulas da CETESB ("torna público que concedeu, para EMPRESA, a Licença Ambiental Prévia nº ...", "recebeu o pedido de Licença ...") e o parecer técnico levado ao CONSEMA viram registros com empresa, município, número da licença e processo e-ambiente. O resto vai para o classificador de texto. |
+| Querido Diário (diários próprios das cidades) | Integrada | Mesma fonte dos outros Estados, filtrada pelos 645 códigos IBGE de SP. No dia do teste a API respondia 503. |
+| Base de postos da ANP | Integrada (cruzamento) | Mesma base, filtrada por SP (8.395 postos). |
+| CETESB: portal e e-CETESB | Não integrada | O site da CETESB devolve resposta vazia para acesso automático, a consulta antiga de processos foi desligada (404) e o e-CETESB só consulta com login ou com o número do documento. O robô não contorna essas restrições. |
+
+**Teste real (nov/2026, 12 meses):** o DOE-SP devolveu 302 matérias com termos de posto; 11 vieram de seções de licenciamento e 1 empreendimento de posto: NOVO CENTRO COMERCIAL R P LTDA, em Ribeirão Preto, com Licença Ambiental Prévia nº 3119 de 30/10/2026 para reativar dois postos (processo CETESB.069613/2025-84, com parecer técnico publicado em 07/10/2026). O Querido Diário estava fora do ar (503), então os diários das prefeituras de SP ainda não foram lidos.
+
 Uma fonte só aparece como "Monitorada" no app depois de uma execução real com sucesso.
 
 ## Como funciona
@@ -76,6 +89,7 @@ GitHub Actions (a cada 15 min)
        ├─ fontes/sinfat.mjs  → SC: requerimentos de licença das prefeituras (CIGA SINFAT, já estruturados)
        ├─ fontes/domsc.mjs   → SC: publicações de licenciamento do Diário dos Municípios
        ├─ fontes/dioepr.mjs  → PR: súmulas de licença do IAT no Diário Oficial do Estado (já estruturadas)
+       ├─ fontes/doesp.mjs   → SP: Diário Oficial do Estado (súmulas da CETESB estruturadas; o resto vai ao classificador)
        ├─ classificar.mjs    → separa os avisos, decide se é posto, extrai os campos, classifica
        ├─ fontes/anp.mjs     → confirma o CNPJ e acha CNPJ pelo nome + município
        ├─ deduplica (CNPJ; sem CNPJ, razão social + município; processo = órgão + número)
@@ -130,6 +144,6 @@ Sem o segredo, o agendamento não faz nada, e o push de código roda em **modo d
 - **Nova fonte:** criar `scripts/radar/fontes/<id>.mjs` exportando `info` ({ id, uf, nome, url, tipo }) e `coletar(de, ate, log)` que devolva `{ docs: [{ id, titulo, entidade, texto, data, url, local }], consultas }`; acrescentar em `FONTES` no `radar.mjs` e na lista de fontes do Estado no `radar.js`.
 - **Novo Estado:** acrescentar em `UFS` (`municipios.mjs`), em `ATIVOS` (`telemetria.js`) e em `NOME_UF`/`CENTRO_UF` (`radar.js`). Ela só aparece como monitorada depois da primeira coleta com sucesso.
 - **Novas expressões de busca:** `TERMOS` em `fontes/iomat.mjs`.
-- **Regras de classificação:** `classificar.mjs`. Para testar sem gravar: `RADAR_TESTE=true node scripts/radar/radar.mjs` (`RADAR_FONTES=famurs,doe-rs,querido-rs` limita às fontes do RS `RADAR_FONTES=sinfat-sc,dom-sc,querido-sc` às de SC e `RADAR_FONTES=dioe-pr,querido-pr` às do PR; `RADAR_AMOSTRA_LOG=1` mostra no log o que cada fonte devolveu) (precisa de internet para o IOMAT e o IBGE).
+- **Regras de classificação:** `classificar.mjs`. Para testar sem gravar: `RADAR_TESTE=true node scripts/radar/radar.mjs` (`RADAR_FONTES=famurs,doe-rs,querido-rs` limita às fontes do RS `RADAR_FONTES=sinfat-sc,dom-sc,querido-sc` às de SC e `RADAR_FONTES=dioe-pr,querido-pr` às do PR e `RADAR_FONTES=doe-sp,querido-sp` às de SP; `RADAR_AMOSTRA_LOG=1` mostra no log o que cada fonte devolveu) (precisa de internet para o IOMAT e o IBGE).
 - **Erros:** aparecem em Fontes e execuções (no app) e no log da execução no GitHub Actions. Se o IOMAT mudar o formato da busca, a fonte fica "Com erro" e o cursor de datas não avança, então nada se perde: a próxima rodada boa recupera o período.
 - **Custo:** o GitHub Actions é gratuito para repositório público; cada checagem sem trabalho leva poucos segundos.

@@ -51,7 +51,7 @@ const FONTES_SP = [
   { id: 'doe-sp', nome: 'Diário Oficial do Estado de SP (DOE-SP)', url: 'https://www.doe.sp.gov.br/' },
   { id: 'querido-sp', nome: 'Querido Diário (diários próprios das cidades de SP)', url: 'https://queridodiario.ok.org.br/' },
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
-  { id: 'cetesb', nome: 'CETESB: licenças ambientais de posto', url: 'https://e.cetesb.sp.gov.br/', obs: 'O portal da CETESB bloqueia o acesso automático, o e-CETESB só consulta com login ou com o número do documento, e as licenças de posto não saem no Diário Oficial. Não monitorada' }
+  { id: 'cetesb', nome: 'CETESB: licenças ambientais de posto', url: 'https://e.cetesb.sp.gov.br/', obs: 'Bloqueia acesso automático e o e-CETESB exige login. Não monitorada' }
 ];
 const FONTES_PREVISTAS_MT = [
   { id: 'iomat', nome: 'Diário Oficial de MT (IOMAT)', url: 'https://iomat.mt.gov.br/' },
