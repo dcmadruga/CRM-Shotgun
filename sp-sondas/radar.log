@@ -1,0 +1,22 @@
+Modo de teste (RADAR_TESTE=true): nada será gravado.
+Gatilho: push · fontes: doe-sp (2025-11-23 a 2026-11-23), querido-sp (2025-11-23 a 2026-11-23)
+Municípios de SP: 645 · postos de SP na base da ANP: 8395
+DOE-SP "posto de combustíveis": 14 matéria(s) no período
+DOE-SP "postos de combustíveis": 184 matéria(s) no período
+DOE-SP "posto de combustível": 31 matéria(s) no período
+DOE-SP "comércio varejista de combustíveis": 11 matéria(s) no período
+DOE-SP "posto revendedor": 31 matéria(s) no período
+DOE-SP "posto de abastecimento": 30 matéria(s) no período
+DOE-SP "revenda de combustíveis": 1 matéria(s) no período
+DOE-SP "tanques subterrâneos": 0 matéria(s) no período
+DOE-SP: 302 resultado(s), 11 matéria(s) de seções de licenciamento lidas inteiras, 1 súmula(s) de posto da CETESB
+Diário Oficial do Estado de SP (DOE-SP): 20 consultas, 3 páginas/matérias lidas, 2 documentos de posto
+Error: Querido Diário: HTTP 503 (https://api.queridodiario.org.br/gazettes?querystring=%22posto+de+combust%C3%ADveis%22&published_since=2025-11-23&published_until=2026-11-23&excerpt_size=1500&n)
+    at json (file:///home/runner/work/CRM-Shotgun/CRM-Shotgun/scripts/radar/fontes/querido.mjs:21:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Object.coletar (file:///home/runner/work/CRM-Shotgun/CRM-Shotgun/scripts/radar/fontes/querido.mjs:37:19)
+    at async file:///home/runner/work/CRM-Shotgun/CRM-Shotgun/scripts/radar/radar.mjs:82:17
+Resultado: 2 avisos únicos · 2 empreendimentos · 2 novos · 0 atualizados · 2 documentos novos · 0 alertas
+
+Novos/ampliações/tanques (1):
+  SP · 2026-10-07 · Instalação de tanques · Solicitação de Licença de Instalação · SEI/GESP · sem CNPJ · Ribeirão Preto · possivel
