@@ -48,7 +48,6 @@ window.ETAPA2_PADRAO = {
       { k: 'pdvMoveis', label: 'Quantidade de PDVs móveis', tipo: 'numero', req: false, show: true, pretask: true },
       { k: 'tef', label: 'Usa TEF (cartão integrado)?', tipo: 'simnao', req: true, show: true, pretask: true },
       { k: 'sistemaAtual', label: 'Sistema atual (que será substituído)', tipo: 'texto', req: false, show: true, pretask: true },
-      { k: 'dataImpl', label: 'Data desejada para a implantação', tipo: 'data', req: true, show: true },
       { k: 'obs', label: 'Observações', tipo: 'textolongo', req: false, show: true, full: true, pretask: true }
     ] }
   ]
