@@ -10,10 +10,19 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 216, data: '2026-11-23', titulo: 'Templates de proposta', itens: [
+  { v: 218, data: '2026-11-23', titulo: 'Templates de proposta', itens: [
     'Nova proposta: no topo da tela há uma fileira de templates (Posto Simples, Loja Simples, Posto + Loja e Central). Escolha um e as licenças e mensalidades são preenchidas com os itens dele. Depois é só ajustar.',
     'Se a proposta já tiver itens, o app pede um segundo toque para confirmar a troca.',
     'Administração → Parâmetros Proposta → Templates de proposta: o administrador escolhe os itens do catálogo e a quantidade de cada template, cria templates novos e publica para a equipe.'
+  ] },
+  { v: 217, data: '2026-11-23', titulo: 'Cadastro de revendas', itens: [
+    'Administração → Revendas (só o administrador): cadastre cada revenda com o nome, os estados de atuação, o gerente e os usuários que fazem parte dela. Cada usuário pertence a uma revenda só, e a tela Usuários também mostra e troca a revenda de cada um.',
+    'O gerente da revenda ganha o menu Administração → Parâmetros Proposta: ajusta preços, textos e referências e clica em Publicar para a revenda. Só os usuários da revenda dele recebem esses valores; quem não tem revenda continua com os parâmetros gerais.',
+    'Na tela Revendas o administrador vê quando o gerente publicou os parâmetros da revenda e pode voltar a revenda para os parâmetros gerais.'
+  ] },
+  { v: 216, data: '2026-11-23', titulo: 'Itens da aprovação em blocos separados', itens: [
+    'Na página de aprovação que o cliente abre pelo link, Licenças e Mensalidades agora ficam em blocos separados, cada um com cabeçalho e total em destaque.',
+    'Novo bloco Deslocamento da implantação: mostra os km rodados (com a rota ida e volta), o valor por km e o total. Em implantação remota aparece "Sem custo".'
   ] },
   { v: 215, data: '2026-11-23', titulo: 'Itens da proposta na página de aprovação', itens: [
     'A página que o cliente abre pelo link para aprovar a proposta agora mostra, abaixo dos totais, a lista dos itens: cada licença e cada mensalidade com quantidade, preço e total, igual ao PDF.',

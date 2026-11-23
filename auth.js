@@ -30,7 +30,9 @@ async function iniciar() {
   const PARAM = F.doc(db, 'config', 'parametros');
   let perfil = null;
 
-  const fb = window.argoFb = { admin: false, carregar, publicar };
+  const fb = window.argoFb = { admin: false, gerente: false, revenda: null, carregar, publicar };
+  // Parâmetros Proposta próprios de uma revenda (publicados pelo gerente dela)
+  const paramRev = rid => F.doc(db, 'revendas', rid, 'parametros', 'proposta');
 
   /* ---------- Login ---------- */
   const box = $('loginBox'), lmsg = t => { $('loginMsg').textContent = t };
@@ -240,7 +242,7 @@ async function iniciar() {
     tu.title = [perfil.nome, perfil.email].filter(Boolean).join(' · ');
   }
   A.onAuthStateChanged(auth, async user => {
-    perfil = null; fb.admin = false; fb.task = false; fb.temTask = false; body.classList.remove('is-admin', 'is-task', 'tem-task'); window.dispatchEvent(new Event('argo-sair'));
+    perfil = null; fb.admin = false; fb.task = false; fb.temTask = false; fb.gerente = false; fb.revenda = null; body.classList.remove('is-admin', 'is-task', 'tem-task', 'is-gerente'); window.dispatchEvent(new Event('argo-sair'));
     if (!user) { sbox.hidden = true; trocaOk = null; fbox.hidden = true; fotoOk = null; cadCtx = null; pararCam(); }
     if (!user) { mostrarLogin('Entre com o seu e-mail e a sua senha.'); return; }
     try {
@@ -272,6 +274,15 @@ async function iniciar() {
     fb.temTask = !fb.admin && papeis.includes('task');
     fb.task = fb.temTask && !papeis.includes('vendedor'); // só TASK
     body.classList.toggle('is-task', fb.task); body.classList.toggle('tem-task', fb.temTask);
+    // Revenda da pessoa: quem é o gerente dela ajusta e publica os Parâmetros Proposta da revenda
+    if (perfil.revenda) {
+      try { const rs = await F.getDoc(F.doc(db, 'revendas', perfil.revenda)); if (rs.exists()) fb.revenda = { id: rs.id, ...rs.data() }; }
+      catch (e) { /* regras ainda não publicadas: segue com os parâmetros gerais */ }
+      if (auth.currentUser?.uid !== user.uid) return;
+    }
+    fb.gerente = !fb.admin && !fb.task && !!fb.revenda && fb.revenda.gerente === user.uid;
+    body.classList.toggle('is-gerente', fb.gerente);
+    { const n = $('cfgRevNome'); if (n) n.textContent = fb.revenda?.nome || ''; const b = $('btnPublish'); if (b) b.textContent = fb.gerente ? 'Publicar para a revenda' : 'Publicar para a equipe'; }
     if (fb.task) {
       box.hidden = true; body.classList.remove('locked');
       mostrarUsuario();
@@ -286,7 +297,7 @@ async function iniciar() {
     window.dispatchEvent(new CustomEvent('shotgun-entrou', { detail: { uid: user.uid } })); // abre as Novidades se a versão é nova
     aplicarModo();
     await carregar(false);
-    if (fb.admin) { ouvirUsuarios(); carregarE2(); carregarE3(); }
+    if (fb.admin) { ouvirUsuarios(); ouvirRevendas(); carregarE2(); carregarE3(); }
     carregarE4(); if (fb.admin) { carregarMod(); carregarBand(); }
     ouvirPropostas();
     window.dispatchEvent(new CustomEvent('shotgun-crm', { detail: { F, db, perfil, admin: fb.admin, temTask: fb.temTask } }));
@@ -305,34 +316,46 @@ async function iniciar() {
   /* ---------- Parâmetros da equipe ---------- */
   async function carregar(forcar) {
     if (!perfil) return;
-    if (fb.admin && lsGet(PEND_KEY) && !forcar) { teamStatus('Você tem alterações ainda não publicadas neste aparelho.'); return; }
+    if ((fb.admin || fb.gerente) && lsGet(PEND_KEY) && !forcar) { teamStatus('Você tem alterações ainda não publicadas neste aparelho.'); return; }
     try {
+      // Quem é de uma revenda com parâmetros próprios usa os dela; os outros (e o ADM) usam os gerais
+      let rsnap = null;
+      if (!fb.admin && fb.revenda) try { rsnap = await F.getDoc(paramRev(fb.revenda.id)); } catch (e) { rsnap = null; }
+      if (rsnap && rsnap.exists()) {
+        const j = rsnap.data();
+        CFG = { ...cfgModelo(), ...semVend(j), ...vendData() };
+        lsSet(CFG_KEY, CFG); if (forcar) lsSet(PEND_KEY, false); cfgDirty = false;
+        renderCfg(); aplicarValidade(); totals(); aplicarPerfil();
+        teamStatus('Parâmetros da revenda ' + fb.revenda.nome + (j._publicado ? ' (publicados em ' + fmtQuando(j._publicado) + (j._por ? ' por ' + j._por : '') + ').' : '.'));
+        return;
+      }
       const snap = await F.getDoc(PARAM);
       if (!snap.exists()) { teamStatus(fb.admin ? 'Ainda não há parâmetros publicados. Revise abaixo e clique em Publicar para a equipe.' : 'O administrador ainda não publicou os parâmetros.'); return; }
       const j = snap.data();
       CFG = { ...cfgModelo(), ...semVend(j), ...vendData() };
       lsSet(CFG_KEY, CFG); if (forcar) lsSet(PEND_KEY, false); cfgDirty = false;
       renderCfg(); aplicarValidade(); totals(); aplicarPerfil();
-      teamStatus(j._publicado ? 'Parâmetros da equipe atualizados (publicados em ' + fmtQuando(j._publicado) + (j._por ? ' por ' + j._por : '') + ').' : 'Parâmetros da equipe carregados.');
+      teamStatus(fb.gerente ? 'Sua revenda ainda usa os parâmetros gerais. Ajuste o que precisar e clique em Publicar para a revenda: daí em diante só a sua equipe recebe os seus valores.' : j._publicado ? 'Parâmetros da equipe atualizados (publicados em ' + fmtQuando(j._publicado) + (j._por ? ' por ' + j._por : '') + ').' : 'Parâmetros da equipe carregados.');
     } catch (e) {
       teamStatus('Sem conexão: usando os últimos parâmetros baixados neste aparelho.');
     }
   }
   async function publicar() {
-    if (!fb.admin) return;
+    if (!fb.admin && !fb.gerente) return;
     const btn = $('btnPublish'); btn.disabled = true; pubStatus('Publicando…');
     try {
       const dados = JSON.parse(JSON.stringify(cfgParaPublicar()));
-      await F.setDoc(PARAM, dados);
+      if (fb.gerente) dados._porUid = perfil.uid;
+      await F.setDoc(fb.admin ? PARAM : paramRev(fb.revenda.id), dados);
       lsSet(PEND_KEY, false); cfgDirty = false; status('');
-      pubStatus('Publicado em ' + fmtQuando(dados._publicado) + '. A equipe recebe na próxima vez que abrir o app.');
-      teamStatus('Parâmetros da equipe publicados por você.');
+      pubStatus('Publicado em ' + fmtQuando(dados._publicado) + (fb.admin ? '. A equipe recebe na próxima vez que abrir o app.' : '. Os usuários da revenda recebem na próxima vez que abrirem o app.'));
+      teamStatus(fb.admin ? 'Parâmetros da equipe publicados por você.' : 'Parâmetros da revenda ' + fb.revenda.nome + ' publicados por você.');
     } catch (e) { pubStatus('Não foi possível publicar (' + (e.code || e.message) + ').'); }
     finally { btn.disabled = false; }
   }
 
   /* ---------- Abas ---------- */
-  const EXTRA = { tabHoje: 'viewHoje', tabTask: 'viewTask', tabUsers: 'viewUsers', tabList: 'viewList', tabCrm: 'viewCrm', tabTele: 'viewTele', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4' };
+  const EXTRA = { tabHoje: 'viewHoje', tabTask: 'viewTask', tabUsers: 'viewUsers', tabRev: 'viewRev', tabList: 'viewList', tabCrm: 'viewCrm', tabTele: 'viewTele', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4' };
   function abrirAba(tab) {
     Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
     document.body.classList.toggle('semBarra', !!EXTRA[tab]);
@@ -1471,7 +1494,7 @@ async function iniciar() {
     if (unsub) return;
     unsub = F.onSnapshot(F.collection(db, 'usuarios'), qs => {
       lista = qs.docs.map(d => ({ uid: d.id, ...d.data() })).filter(u => !u.excluido).sort((a, b) => (pend(b) - pend(a)) || String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
-      desenharUsuarios();
+      desenharUsuarios(); desenharRevendas();
     }, () => uStatus('Não foi possível carregar a lista de usuários.'));
   }
   A.onAuthStateChanged(auth, u => { if (!u && unsub) { unsub(); unsub = null; } });
@@ -1488,13 +1511,19 @@ async function iniciar() {
         <div class="ucol0">${fotosU[u.uid] ? `<img class="ufoto" src="${fotosU[u.uid]}" alt="Foto de ${esc(u.nome)}">` : `<span class="ufoto" title="${fotosU[u.uid] === '' ? 'Ainda não enviou a foto' : 'Carregando'}"></span>`}</div>
         <div class="ucol1"><label class="ulab">Nome<input data-f="nome" value="${esc(u.nome)}" aria-label="Nome"></label><span class="umail">${esc(u.email)}</span></div>
         <label class="ulab ucol2">Telefone<input data-f="fone" value="${esc(u.fone)}" aria-label="Telefone" inputmode="tel"></label>
-        <div class="ucol3"><span class="ulabt">Perfil</span>${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; return `<div class="upapeis">${[['vendedor', 'Vendedor'], ['task', 'TASK'], ['adm', 'Administrador']].map(([k, l]) => `<label class="uchip"><input type="checkbox" data-papel="${k}"${ps.includes(k) ? ' checked' : ''}${eu ? ' disabled' : ''}> ${l}</label>`).join('')}</div>`; })()}${(() => { const ss = Array.isArray(u.setores) ? u.setores : [], top = ((MOD || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai); return top.length ? `<span class="ulabt" style="display:block;margin-top:8px">Setor no TASK</span><div class="upapeis">${top.map(m => `<label class="uchip"><input type="checkbox" data-setor="${esc(m.id)}"${ss.includes(m.id) ? ' checked' : ''}> ${esc(m.titulo)}</label>`).join('')}</div>` : ''; })()}${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; if (!ps.includes('vendedor')) return ''; const us = Array.isArray(u.estados) ? u.estados : []; return `<span class="ulabt" style="display:block;margin-top:8px">Estados de atuação <small class="uufn">${us.length ? us.length + (us.length === 1 ? ' estado' : ' estados') : 'nenhum marcado'}</small></span><div class="uufs">${UFS.map(uf => `<label class="uuf" title="${UF_NOMES[uf]}"><input type="checkbox" data-uf="${uf}"${us.includes(uf) ? ' checked' : ''}><span>${uf}</span></label>`).join('')}</div>`; })()}</div>
+        <div class="ucol3"><span class="ulabt">Perfil</span>${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; return `<div class="upapeis">${[['vendedor', 'Vendedor'], ['task', 'TASK'], ['adm', 'Administrador']].map(([k, l]) => `<label class="uchip"><input type="checkbox" data-papel="${k}"${ps.includes(k) ? ' checked' : ''}${eu ? ' disabled' : ''}> ${l}</label>`).join('')}</div>`; })()}${(() => { const ss = Array.isArray(u.setores) ? u.setores : [], top = ((MOD || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai); return top.length ? `<span class="ulabt" style="display:block;margin-top:8px">Setor no TASK</span><div class="upapeis">${top.map(m => `<label class="uchip"><input type="checkbox" data-setor="${esc(m.id)}"${ss.includes(m.id) ? ' checked' : ''}> ${esc(m.titulo)}</label>`).join('')}</div>` : ''; })()}${(() => { const ps = Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor']; if (!ps.includes('vendedor')) return ''; const us = Array.isArray(u.estados) ? u.estados : []; return `<span class="ulabt" style="display:block;margin-top:8px">Estados de atuação <small class="uufn">${us.length ? us.length + (us.length === 1 ? ' estado' : ' estados') : 'nenhum marcado'}</small></span><div class="uufs">${UFS.map(uf => `<label class="uuf" title="${UF_NOMES[uf]}"><input type="checkbox" data-uf="${uf}"${us.includes(uf) ? ' checked' : ''}><span>${uf}</span></label>`).join('')}</div>`; })()}${revendas.length ? `<label class="ulab urev" style="margin-top:8px">Revenda<select data-rev aria-label="Revenda"><option value="">Sem revenda</option>${revendas.map(r => `<option value="${esc(r.id)}"${u.revenda === r.id ? ' selected' : ''}>${esc(r.nome)}${r.gerente === u.uid ? ' (gerente)' : ''}</option>`).join('')}</select></label>` : ''}</div>
         <div class="ucol4"><span class="pill ${u.ativo ? '' : pend(u) ? 'pend' : 'off'}">${u.ativo ? 'Liberado' : pend(u) ? 'Aguardando liberação' : 'Bloqueado'}</span>${eu ? '<span class="hint">você</span>' : ''}</div>
         <div class="uacts">${eu ? '' : `<button type="button" data-a="toggle"${pend(u) ? ' class="primary"' : ''}>${u.ativo ? 'Bloquear' : 'Liberar'}</button><button type="button" data-a="excluir" class="danger">Excluir</button>`}<button type="button" data-a="reset">Nova senha</button>${fotosU[u.uid] ? '<button type="button" data-a="novafoto">Pedir nova foto</button>' : ''}</div></div>`;
     }).join('');
     lista.filter(u => !(u.uid in fotosU)).forEach(u => { fotosU[u.uid] = ''; F.getDoc(F.doc(db, 'fotos', u.uid)).then(sn => { if (sn.exists()) { fotosU[u.uid] = sn.data().b64 || ''; desenharUsuarios(); } }).catch(() => {}); });
   }
   $('usersBody').addEventListener('change', async e => {
+    if ('rev' in e.target.dataset) {
+      const tr = e.target.closest('[data-uid]');
+      try { await vincularRevenda(tr.dataset.uid, e.target.value); const r = revendas.find(x => x.id === e.target.value); uStatus(r ? 'Agora faz parte da revenda ' + r.nome + '.' : 'Saiu da revenda.'); }
+      catch (err) { uStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); desenharUsuarios(); }
+      return;
+    }
     if (e.target.dataset.uf) {
       const tr = e.target.closest('[data-uid]'), estados = [...tr.querySelectorAll('[data-uf]:checked')].map(x => x.dataset.uf), u = lista.find(x => x.uid === tr.dataset.uid);
       const n = tr.querySelector('.uufn'); if (n) n.textContent = estados.length ? estados.length + (estados.length === 1 ? ' estado' : ' estados') : 'nenhum marcado';
@@ -1535,6 +1564,127 @@ async function iniciar() {
       if (a === 'novafoto') { await F.deleteDoc(F.doc(db, 'fotos', u.uid)); delete fotosU[u.uid]; fotosU[u.uid] = ''; desenharUsuarios(); uStatus(`${u.nome} vai tirar uma foto nova no próximo acesso.`); }
       if (a === 'reset') { await A.sendPasswordResetEmail(auth, u.email); uStatus(`E-mail para criar nova senha enviado para ${u.email}.`); }
     } catch (err) { uStatus('Não foi possível concluir (' + (err.code || 'erro') + ').'); }
+  });
+
+
+  /* ---------- Revendas (ADM) ----------
+     revendas/{id}: nome, estados (UFs de atuação), gerente (uid). O vínculo de cada pessoa fica no cadastro dela (usuarios/{uid}.revenda),
+     então cada usuário pertence a uma revenda só. O gerente tem acesso aos Parâmetros Proposta. */
+  let unsubR = null, revendas = [], excluirRevArm = {}, geraisArm = {};
+  const revPar = {}; // parâmetros próprios publicados por revenda (null = usa os gerais)
+  const rStatus = t => { $('rStatus').textContent = t };
+  const ativos = () => lista.filter(u => u.ativo === true);
+  const nomeU = uid => (lista.find(u => u.uid === uid) || {}).nome || 'Usuário';
+  function ouvirRevendas() {
+    if (unsubR) return;
+    unsubR = F.onSnapshot(F.collection(db, 'revendas'), qs => {
+      revendas = qs.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+      desenharRevendas(); desenharUsuarios();
+      revendas.filter(r => !(r.id in revPar)).forEach(r => { revPar[r.id] = undefined; F.getDoc(paramRev(r.id)).then(sn => { revPar[r.id] = sn.exists() ? sn.data() : null; desenharRevendas(); }).catch(() => {}); });
+    }, err => { revendas = []; desenharRevendas(); rStatus(err.code === 'permission-denied' ? 'As regras do Firestore ainda não liberam as revendas. Publique as regras de docs/revendas-firestore.rules.' : 'Não foi possível carregar as revendas.'); });
+  }
+  A.onAuthStateChanged(auth, u => { if (!u && unsubR) { unsubR(); unsubR = null; revendas = []; } });
+  // Muda a revenda de uma pessoa; quem sai deixa de ser gerente da revenda antiga
+  async function vincularRevenda(uid, rid) {
+    const u = lista.find(x => x.uid === uid), antes = u && u.revenda || '';
+    if (antes === rid) return;
+    const lote = F.writeBatch(db);
+    lote.update(F.doc(db, 'usuarios', uid), { revenda: rid || F.deleteField() });
+    const velha = revendas.find(r => r.id === antes);
+    if (velha && velha.gerente === uid) lote.update(F.doc(db, 'revendas', velha.id), { gerente: '', atualizado: F.serverTimestamp() });
+    await lote.commit();
+    if (u) { if (rid) u.revenda = rid; else delete u.revenda; }
+  }
+  function desenharRevendas() {
+    const el = $('revBody'); if (!el) return;
+    $('rCount').textContent = revendas.length ? revendas.length + (revendas.length === 1 ? ' revenda' : ' revendas') : '';
+    if (!revendas.length) { el.innerHTML = '<p class="rvvazio">Nenhuma revenda cadastrada ainda. Comece pelo nome, logo acima.</p>'; return; }
+    const xis = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+    el.innerHTML = revendas.map(r => {
+      const membros = lista.filter(u => u.revenda === r.id).sort((a, b) => (b.uid === r.gerente) - (a.uid === r.gerente) || String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+      const es = Array.isArray(r.estados) ? r.estados : [];
+      const fora = es.length ? membros.map(u => ({ u, f: (Array.isArray(u.estados) ? u.estados : []).filter(x => !es.includes(x)) })).filter(x => x.f.length) : [];
+      const outros = ativos().filter(u => u.revenda !== r.id);
+      const ger = lista.find(u => u.uid === r.gerente);
+      return `<div class="rvcard" data-rid="${esc(r.id)}">
+        <div class="rvtopo"><label class="ulab">Nome da revenda<input data-rf="nome" value="${esc(r.nome)}" maxlength="80" aria-label="Nome da revenda"></label>
+          <span class="pill">${membros.length} ${membros.length === 1 ? 'usuário' : 'usuários'}</span>
+          <button type="button" class="danger" data-ra="excluir">Excluir revenda</button></div>
+        <div class="rvbloco"><label class="ulab">Gerente da revenda<select data-rf="gerente" aria-label="Gerente da revenda"><option value="">Sem gerente</option>${ativos().map(u => `<option value="${esc(u.uid)}"${u.uid === r.gerente ? ' selected' : ''}>${esc(u.nome)}${u.revenda && u.revenda !== r.id ? ' · ' + esc((revendas.find(x => x.id === u.revenda) || {}).nome || 'outra revenda') : ''}</option>`).join('')}${ger && ger.ativo !== true ? `<option value="${esc(ger.uid)}" selected>${esc(ger.nome)} (bloqueado)</option>` : ''}</select></label>
+          <p class="rvaviso">${r.gerente ? 'Acessa os Parâmetros Proposta da revenda.' : 'Escolha quem vai ajustar os Parâmetros Proposta desta revenda.'}</p>
+          <p class="rvaviso">${revPar[r.id] ? `Parâmetros próprios publicados${revPar[r.id]._publicado ? ' em ' + esc(fmtQuando(revPar[r.id]._publicado)) : ''}${revPar[r.id]._por ? ' por ' + esc(revPar[r.id]._por) : ''}. <button type="button" class="lnk" data-ra="gerais">Voltar aos parâmetros gerais</button>` : revPar[r.id] === null ? 'Usa os parâmetros gerais até o gerente publicar os da revenda.' : ''}</p>
+          <span class="ulabt" style="margin-top:8px">Usuários da revenda</span>
+          <div class="rvmembros">${membros.map(u => `<span class="rvmembro${u.uid === r.gerente ? ' ger' : ''}">${esc(u.nome)}${u.uid === r.gerente ? ' <em>Gerente</em>' : ''}${u.ativo === true ? '' : ' <em>bloqueado</em>'}<button type="button" data-ra="tirar" data-uid="${esc(u.uid)}" aria-label="Tirar ${esc(u.nome)} da revenda" title="Tirar da revenda">${xis}</button></span>`).join('') || '<span class="rvaviso">Nenhum usuário vinculado.</span>'}</div>
+          ${outros.length ? `<select data-ra="add" aria-label="Adicionar usuário à revenda"><option value="">+ Adicionar usuário…</option>${outros.map(u => `<option value="${esc(u.uid)}">${esc(u.nome)}${u.revenda ? ' · sai de ' + esc((revendas.find(x => x.id === u.revenda) || {}).nome || 'outra revenda') : ''}</option>`).join('')}</select>` : ''}</div>
+        <div class="rvbloco"><span class="ulabt">Estados de atuação <small class="uufn">${es.length ? es.length + (es.length === 1 ? ' estado' : ' estados') : 'nenhum marcado'}</small></span>
+          <div class="uufs">${UFS.map(uf => `<label class="uuf" title="${UF_NOMES[uf]}"><input type="checkbox" data-ruf="${uf}"${es.includes(uf) ? ' checked' : ''}><span>${uf}</span></label>`).join('')}</div>
+          ${fora.length ? `<p class="rvaviso">${fora.map(x => `<b>${esc(String(x.u.nome).split(' ')[0])}</b> também atua em ${x.f.join(', ')}`).join('; ')}, fora dos estados da revenda.</p>` : ''}</div>
+      </div>`;
+    }).join('');
+  }
+  $('btnAddRev').addEventListener('click', async () => {
+    const nome = $('r-nome').value.trim().replace(/\s+/g, ' ');
+    if (!nome) { rStatus('Informe o nome da revenda.'); $('r-nome').focus(); return; }
+    if (revendas.some(r => String(r.nome).toLowerCase() === nome.toLowerCase())) { rStatus('Já existe uma revenda com esse nome.'); return; }
+    const btn = $('btnAddRev'); btn.disabled = true;
+    try { await F.addDoc(F.collection(db, 'revendas'), { nome, estados: [], gerente: '', criado: F.serverTimestamp(), atualizado: F.serverTimestamp() }); $('r-nome').value = ''; rStatus(`Revenda ${nome} cadastrada. Agora escolha o gerente, os usuários e os estados de atuação.`); }
+    catch (err) { rStatus('Não foi possível cadastrar (' + (err.code || 'erro') + ').'); }
+    finally { btn.disabled = false; }
+  });
+  $('r-nome').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnAddRev').click(); });
+  $('revBody').addEventListener('change', async e => {
+    const card = e.target.closest('[data-rid]'); if (!card) return;
+    const r = revendas.find(x => x.id === card.dataset.rid); if (!r) return;
+    const ref = F.doc(db, 'revendas', r.id);
+    try {
+      if (e.target.dataset.ruf) {
+        const estados = [...card.querySelectorAll('[data-ruf]:checked')].map(x => x.dataset.ruf);
+        await F.updateDoc(ref, { estados, atualizado: F.serverTimestamp() });
+        rStatus(estados.length ? `Estados de ${r.nome}: ${estados.join(', ')}.` : `${r.nome} ficou sem estado de atuação.`); return;
+      }
+      if (e.target.dataset.rf === 'nome') {
+        const nome = e.target.value.trim().replace(/\s+/g, ' ');
+        if (!nome) { e.target.value = r.nome; rStatus('A revenda precisa de um nome.'); return; }
+        await F.updateDoc(ref, { nome, atualizado: F.serverTimestamp() }); rStatus('Nome salvo.'); return;
+      }
+      if (e.target.dataset.rf === 'gerente') {
+        const uid = e.target.value, lote = F.writeBatch(db);
+        lote.update(ref, { gerente: uid, atualizado: F.serverTimestamp() });
+        // o gerente passa a fazer parte da revenda (e deixa de gerenciar a antiga)
+        const u = lista.find(x => x.uid === uid);
+        if (u && u.revenda !== r.id) {
+          lote.update(F.doc(db, 'usuarios', uid), { revenda: r.id });
+          const velha = revendas.find(x => x.id === u.revenda && x.gerente === uid);
+          if (velha) lote.update(F.doc(db, 'revendas', velha.id), { gerente: '', atualizado: F.serverTimestamp() });
+        }
+        await lote.commit(); if (u) u.revenda = r.id;
+        rStatus(uid ? `${nomeU(uid)} é o gerente de ${r.nome}. Vale no próximo acesso da pessoa.` : `${r.nome} ficou sem gerente.`); return;
+      }
+      if (e.target.dataset.ra === 'add' && e.target.value) {
+        const uid = e.target.value; await vincularRevenda(uid, r.id); desenharRevendas();
+        rStatus(`${nomeU(uid)} agora faz parte de ${r.nome}.`); return;
+      }
+    } catch (err) { rStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); desenharRevendas(); }
+  });
+  $('revBody').addEventListener('click', async e => {
+    const b = e.target.closest('button[data-ra]'), card = e.target.closest('[data-rid]'); if (!b || !card) return;
+    const r = revendas.find(x => x.id === card.dataset.rid); if (!r) return;
+    try {
+      if (b.dataset.ra === 'tirar') { const uid = b.dataset.uid; await vincularRevenda(uid, ''); desenharRevendas(); rStatus(`${nomeU(uid)} saiu de ${r.nome}.`); return; }
+      if (b.dataset.ra === 'gerais') {
+        if (geraisArm.id !== r.id || Date.now() - geraisArm.t > 5000) { geraisArm = { id: r.id, t: Date.now() }; b.textContent = 'Confirmar: apagar os parâmetros da revenda'; rStatus(`Clique de novo para apagar os parâmetros próprios de ${r.nome}. A equipe volta a usar os parâmetros gerais.`); return; }
+        geraisArm = {}; await F.deleteDoc(paramRev(r.id)); revPar[r.id] = null; desenharRevendas(); rStatus(`${r.nome} voltou a usar os parâmetros gerais.`); return;
+      }
+      if (b.dataset.ra === 'excluir') {
+        if (excluirRevArm.id !== r.id || Date.now() - excluirRevArm.t > 5000) { excluirRevArm = { id: r.id, t: Date.now() }; b.textContent = 'Confirmar exclusão'; rStatus(`Clique de novo em "Confirmar exclusão" para excluir ${r.nome}. Os usuários continuam cadastrados, só ficam sem revenda.`); return; }
+        excluirRevArm = {};
+        const lote = F.writeBatch(db);
+        lista.filter(u => u.revenda === r.id).forEach(u => lote.update(F.doc(db, 'usuarios', u.uid), { revenda: F.deleteField() }));
+        if (revPar[r.id]) lote.delete(paramRev(r.id));
+        lote.delete(F.doc(db, 'revendas', r.id));
+        await lote.commit(); rStatus(`Revenda ${r.nome} excluída.`);
+      }
+    } catch (err) { rStatus('Não foi possível concluir (' + (err.code || 'erro') + ').'); }
   });
 
   // Cadastro: usa uma segunda instância para não deslogar o administrador.
