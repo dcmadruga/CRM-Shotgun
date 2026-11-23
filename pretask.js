@@ -761,7 +761,7 @@
           const up = { preOk: true, status: pre.status, finalizado: fin, dataBase: pre.dataBase, start: pre.start, modalidade: pre.modalidade, central: centralDoPre(pre), respCadastro: { uid: perfil.uid, nome: por, email: perfil.email || '' }, preSync: Date.now(), alteradoEm: F.serverTimestamp(), alteradoPor: por };
           if (C.task && fin !== !!C.task.finalizado) up.finalizadoEm = fin ? F.serverTimestamp() : null;
           const ref = F.doc(db, 'tasks', tid), ex = await F.getDoc(ref);
-          if (ex.exists() && !ex.data().removido) { await F.updateDoc(ref, up); taskOk = true; }
+          if (ex.exists() && !ex.data().removido) { await F.updateDoc(ref, up); taskOk = true; if (ex.data().preOk !== true && window.TK_aoPronto) window.TK_aoPronto(tid, ex.data().apelido || C.p.cliente || ''); }
         } catch (e) { console.warn('Pré TASK: card do TASK', e); }
       }
       // Salvar parcial depois de um salvar final: o card volta a mostrar "Pré TASK" (só esse campo muda)
@@ -792,7 +792,9 @@
     };
     if (C.novo) Object.assign(card, { criado: F.serverTimestamp(), criadoPor: por, checklists: [], respStart: null, obs: '' });
     if (C.task && fin !== !!C.task.finalizado) card.finalizadoEm = fin ? F.serverTimestamp() : null;
+    const jaPronto = !!(C.task && C.task.preOk === true);
     await F.setDoc(ref, card, { merge: true });
+    if (!parcial && !jaPronto && window.TK_aoPronto) window.TK_aoPronto(C.tid, card.apelido);
     C.novo = false; C.task = { ...(C.task || {}), ...card, id: C.tid };
     C.e4 = { ...doc, em: { toDate: () => new Date() } }; C.v2 = v2;
     document.getElementById('ptTit').textContent = 'Pré TASK · cadastro direto' + (card.apelido ? ' · ' + card.apelido : '');
