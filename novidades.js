@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 204, data: '2026-11-23', titulo: 'Propostas dentro do CRM', itens: [
+    'As propostas agora ficam no CRM, num bloco abaixo do funil de vendas. Tudo continua igual: quadro por etapa, lista, busca e filtro.',
+    'O item Propostas saiu do menu lateral. Abra o CRM e role a tela até o bloco Propostas.',
+    'Os atalhos do painel Hoje, do sino de notificações e dos cards do CRM levam direto ao bloco Propostas.'
+  ] },
   { v: 203, data: '2026-11-22', titulo: 'O app lembra o seu tema claro ou escuro', itens: [
     'O tema que você escolher no botão de sol e lua, no cabeçalho, fica guardado no seu usuário. Se fechou o app no escuro, ele abre no escuro; se fechou no claro, abre no claro.',
     'Vale em todos os aparelhos em que você entrar com o seu e-mail, e cada pessoa que usa o mesmo aparelho tem o seu próprio tema.'

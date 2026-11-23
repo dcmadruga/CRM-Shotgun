@@ -393,7 +393,7 @@ async function iniciar() {
     try {
       const r = await salvarProposta(v.n);
       abrirWa(v.n, textoAprov({ ...r.meta, id: r.id }), janela);
-      aprovMsg(`Proposta nº ${r.meta.numero} salva e enviada. Acompanhe na aba Propostas.`);
+      aprovMsg(`Proposta nº ${r.meta.numero} salva e enviada. Acompanhe no CRM, no bloco Propostas.`);
     } catch (e) {
       if (janela) janela.close();
       aprovMsg('Não foi possível enviar: ' + (e.code || e.message) + '.');
@@ -416,7 +416,7 @@ async function iniciar() {
     const btn = $('btnAprovSalvar'); btn.disabled = true; aprovMsg('Salvando a proposta…');
     try {
       const r = await salvarProposta(v.n, false);
-      aprovMsg(r.meta.erroPend ? `Proposta nº ${r.meta.numero} salva, mas não consegui marcá-la como pendente de envio (${r.meta.erroPend}). Ela aparece como Aguardando aprovação.` : ehPend(r.meta) ? `Proposta nº ${r.meta.numero} salva como pendente de envio. Ela fica na aba Propostas: envie quando quiser, por aqui ou por lá.` : `A proposta nº ${r.meta.numero} já foi salva e enviada sem mudanças desde então.`);
+      aprovMsg(r.meta.erroPend ? `Proposta nº ${r.meta.numero} salva, mas não consegui marcá-la como pendente de envio (${r.meta.erroPend}). Ela aparece como Aguardando aprovação.` : ehPend(r.meta) ? `Proposta nº ${r.meta.numero} salva como pendente de envio. Ela fica no CRM, no bloco Propostas: envie quando quiser, por aqui ou por lá.` : `A proposta nº ${r.meta.numero} já foi salva e enviada sem mudanças desde então.`);
     } catch (e) { aprovMsg('Não foi possível salvar: ' + (e.code || e.message) + '.'); }
     finally { btn.disabled = false; }
   });
@@ -480,9 +480,12 @@ async function iniciar() {
   $('pModoQuadro').addEventListener('click', () => { modoQuadro = true; try { localStorage.setItem('argo-pmodo', 'quadro'); } catch (_) {} desenharPropostas(); });
   $('pModoLista').addEventListener('click', () => { modoQuadro = false; foco = null; try { localStorage.setItem('argo-pmodo', 'lista'); } catch (_) {} desenharPropostas(); });
   $('pBoard').addEventListener('click', e => { const b = e.target.closest('[data-foco]'); if (!b) return; foco = foco === b.dataset.foco ? null : b.dataset.foco; desenharPropostas(); if (foco) setTimeout(() => $('pList').scrollIntoView({ block: 'start', behavior: 'smooth' }), 0); });
+  // Propostas fica no CRM, num bloco abaixo do funil. Se o aparelho ainda tiver o index.html antigo (sem o bloco no CRM), usa a aba antiga.
+  function abrirPropostas() { const noCrm = $('viewCrm') && $('viewCrm').contains($('pBoard')); abrirAba(noCrm ? 'tabCrm' : 'tabList'); return noCrm; }
+  window.shotgunAbrirPropostas = () => { if (abrirPropostas()) setTimeout(() => { const s = $('secPropostas'); if (s) s.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 0); };
   function abrirJornada(id, passo) {
     passoSel[id] = passo; foco = id; $('pBusca').value = ''; $('pFiltro').value = '';
-    abrirAba('tabList'); desenharPropostas();
+    abrirPropostas(); desenharPropostas();
     setTimeout(() => { const c = $('pList').querySelector(`.pcard[data-id="${CSS.escape(id)}"]`); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 0);
   }
   // O sino de notificações (notificacoes.js) abre a proposta aceita no quadro de Propostas
@@ -1481,7 +1484,7 @@ async function iniciar() {
     try {
       if (a === 'toggle') { await F.updateDoc(F.doc(db, 'usuarios', u.uid), u.ativo ? { ativo: false } : { ativo: true, pendente: false, liberadoEm: F.serverTimestamp() }); uStatus(u.ativo ? `${u.nome} bloqueado.` : `${u.nome} liberado.`); }
       if (a === 'excluir') {
-        if (excluirArm.uid !== u.uid || Date.now() - excluirArm.t > 5000) { excluirArm = { uid: u.uid, t: Date.now() }; e.target.textContent = 'Confirmar exclusão'; uStatus(`Clique de novo em "Confirmar exclusão" para excluir ${u.nome}. As propostas dele continuam na aba Propostas.`); return; }
+        if (excluirArm.uid !== u.uid || Date.now() - excluirArm.t > 5000) { excluirArm = { uid: u.uid, t: Date.now() }; e.target.textContent = 'Confirmar exclusão'; uStatus(`Clique de novo em "Confirmar exclusão" para excluir ${u.nome}. As propostas dele continuam no CRM, no bloco Propostas.`); return; }
         excluirArm = {};
         await F.updateDoc(F.doc(db, 'usuarios', u.uid), { ativo: false, excluido: true, excluidoEm: F.serverTimestamp() });
         uStatus(`${u.nome} excluído. O acesso foi cortado na hora.`);
