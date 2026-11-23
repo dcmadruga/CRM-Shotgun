@@ -1,3 +1,0 @@
-200 https://do-api-web-search.doe.sp.gov.br/v2/advanced-search/filters
-
-{"publicationTypes":[],"secondLevelSections":[],"thirdLevelSections":[]}
