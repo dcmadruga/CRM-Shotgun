@@ -1,3 +1,0 @@
-503 https://api.queridodiario.org.br/cities?levels=3
-
-no available server
