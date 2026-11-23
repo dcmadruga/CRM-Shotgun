@@ -1,0 +1,3 @@
+400 https://do-api-web-search.doe.sp.gov.br/v2/advanced-search/publications?Terms%5B0%5D=com%C3%A9rcio%20varejista%20de%20combust%C3%ADveis%20para%20ve%C3%ADculos%20automotores&FromDate=2026-06-01&ToDate=2026-11-22&PageNumber=1&PageSize=100
+
+{"traceIdentifier":"0HNQ5BBM3DVTM:00000001","errors":{"Terms":["A busca deve conter até 5 termos não nulos com no máximo 50 caracteres cada."]},"validationErrors":{"Terms":["A busca deve conter até 5 termos não nulos com no máximo 50 caracteres cada."]},"type":"https://www.rfc-editor.org/rfc/rfc7231#section-6.5.1","title":"HTTP 400 Bad Request","status":400,"detail":"Um erro ou condição inesperada ocorreu durante a execução desta requisição.","instance":"/v2/advanced-search/publications"}
