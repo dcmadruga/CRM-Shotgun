@@ -1,3 +1,0 @@
-200 https://www.doe.sp.gov.br/_next/static/chunks/pages/%5Bjournal%5D/%5Bsection%5D/%5BtitleId%5D-d2c49aed801eaebb.js
-
-(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[890],{64667:function(a,b,c){(window.__NEXT_P=window.__NEXT_P||[]).push(["/[journal]/[section]/[titleId]",function(){return c(83696)}])},83696:function(a,b,c){"use strict";c.r(b),c.d(b,{default:function(){return f}});var d=c(85893);c(67294);var e=c(48028).Z,f=function(){return(0,d.jsx)(e,{})}}},function(a){a.O(0,[389,274,28,774,888,179],function(){var b;return a(a.s=64667)}),_N_E=a.O()}])

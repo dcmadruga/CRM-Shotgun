@@ -1,3 +1,0 @@
-200 https://do-api-web-search.doe.sp.gov.br/v2/advanced-search/publications?Terms%5B0%5D=requereu%20%C3%A0%20CETESB&FromDate=2026-06-01&ToDate=2026-11-22&PageNumber=1&PageSize=100
-
-{"items":[],"currentPage":1,"totalPages":0,"totalItems":0,"pageSize":100,"hasPreviousPage":false,"hasNextPage":false}
