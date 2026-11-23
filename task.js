@@ -53,7 +53,7 @@ function iniciar() {
 /* ---------- Lista ---------- */
 function filtrados(ignorarAba) {
   const b = $('tkBusca').value.trim().toLowerCase(), bd = dig(b), rc = $('tkRespCad').value, rs = $('tkRespStart').value;
-  return tasks.filter(t => (ignorarAba || aba === 'todos' || statusDe(t) === aba)
+  return tasks.filter(t => (ignorarAba || aba === 'todos' || (aba === 'prep' ? statusDe(t) !== 'fin' && !pronto(t) : statusDe(t) === aba))
     && (!rc || t.respCadastro?.uid === rc) && (!rs || t.respStart?.uid === rs)
     && (!b || [t.apelido, t.razao, t.cidade].join(' ').toLowerCase().includes(b) || (bd.length >= 3 && dig(t.cnpj).includes(bd))));
 }
@@ -86,7 +86,7 @@ function desenhar() {
   $('tkRespCad').innerHTML = `<option value="">Todos (${base})</option>` + opcoesResp(null, rcV);
   $('tkRespStart').innerHTML = `<option value="">Todos (${base})</option>` + opcoesResp(null, rsV);
   const sem = filtrados(true);
-  const n = { todos: sem.length, and: 0, fut: 0, fin: 0 }; sem.forEach(t => n[statusDe(t)]++);
+  const n = { todos: sem.length, prep: 0, and: 0, fut: 0, fin: 0 }; sem.forEach(t => { n[statusDe(t)]++; if (statusDe(t) !== 'fin' && !pronto(t)) n.prep++; });
   document.querySelectorAll('#tkAbas [data-aba]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.aba === aba)); b.querySelector('i').textContent = n[b.dataset.aba]; });
   const vis = filtrados().sort((a, b) => statusDe(a) === 'fin' && statusDe(b) === 'fin' ? (b.finalizadoEm?.seconds || 0) - (a.finalizadoEm?.seconds || 0) : String(a.start || '9').localeCompare(String(b.start || '9')));
   $('tkGrid').innerHTML = vis.length ? vis.map(cartao).join('') : `<p class="hint">${tasks.length ? 'Nenhum cadastro com esse filtro.' : 'Nenhum cadastro ainda. Use "Novo cadastro" ou "Importar das propostas".'}</p>`;
@@ -94,10 +94,11 @@ function desenhar() {
 // Etapas da venda: proposta vinculada pelo id ou, nos cadastros manuais, pelo CNPJ
 function propostaDe(t) {
   const ps = aprovadas || [];
-  return ps.find(p => p.id === (t.propostaId || t.id)) || (dig(t.cnpj).length === 14 ? ps.filter(p => dig(p.cnpj) === dig(t.cnpj)).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0))[0] : null);
+  return ps.find(p => p.id === (t.propostaId || t.propostaVinc || t.id)) || (dig(t.cnpj).length === 14 ? ps.filter(p => dig(p.cnpj) === dig(t.cnpj)).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0))[0] : null);
 }
 function etapas(t) {
   const p = propostaDe(t);
+  if (direto(t) && !p) return `<div class="tketapas"><span class="tke none">Cadastro direto no TASK: proposta e contrato não se aplicam</span></div>`;
   if (!p) return `<div class="tketapas"><span class="tke none">${t.propostaId ? 'Proposta ainda não aprovada' : 'Sem proposta vinculada'}</span></div>`;
   const e = (n, nome, ok, quando, pend) => `<span class="tke ${ok ? 'ok' : pend ? 'pend' : 'none'}" title="${esc(nome + (quando ? ' em ' + quando : ''))}"><b>${ok ? '✓' : n}</b>${esc(nome)}${ok && quando ? `<small>${esc(quando)}</small>` : pend ? `<small>${esc(pend)}</small>` : ''}</span>`;
   const d = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString('pt-BR') : '';
@@ -106,10 +107,24 @@ function etapas(t) {
 // Pré TASK completo (salvar final com todos os obrigatórios): o botão do card passa de "Pré TASK" para "DADOS".
 // preOk é gravado pelo Pré TASK; cards antigos usam o passo 4 da proposta (e4Em só é marcado no salvar final).
 const preCompleto = t => t.preOk !== undefined ? !!t.preOk : !!(propostaDe(t) || {}).e4Em;
+// Cadastro direto no TASK (sem proposta). Cards manuais antigos também contam como diretos
+const direto = t => t.origem === 'direto' || (!t.propostaId && !t.auto);
+// TASK pronto: Pré TASK completo. Card manual antigo, sem a marca preOk, já estava em uso: conta como pronto
+const pronto = t => t.preOk !== undefined ? !!t.preOk : direto(t) ? true : preCompleto(t);
+// Por onde o cliente entrou: lead feito no CRM, proposta direta (lead criado pelo app) ou cadastro direto no TASK
+function origemDe(t) {
+  if (direto(t)) return { cls: 'dir', txt: 'Cadastro direto' };
+  const p = propostaDe(t) || {};
+  return p.leadId && !String(p.leadId).startsWith('auto-') ? { cls: 'lead', txt: 'Veio de Lead' } : { cls: 'prop', txt: 'Veio de Proposta' };
+}
+function faseHtml(t) {
+  if (statusDe(t) === 'fin') return '';
+  return pronto(t) ? '<span class="tkfase ok" title="Pré TASK completo: as equipes já podem trabalhar">Pronto para as equipes</span>' : '<span class="tkfase prep" title="Faltam dados obrigatórios no Pré TASK">Em preparação</span>';
+}
 function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
-    <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
+    <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${faseHtml(t)}<span class="tkorig ${origemDe(t).cls}">${origemDe(t).txt}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
     ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkbaserow"><span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>${(() => { const lk = linkBaseDe(t); return `<button type="button" class="tklink${lk ? '' : ' vazio'}" data-tk="linkbase" title="${lk ? 'Copiar link para baixar a base' : 'Link da base ainda não informado (Módulos › Implantação)'}" aria-label="${lk ? 'Copiar link da base' : 'Informar link da base'}"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>`; })()}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}${t.modalidade ? `<span class="tkstart tkmod">${esc(t.modalidade)}</span>` : ''}</div>` : ''}
     ${t.logo ? `<div class="tklogobox"><img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}"></div>` : ''}
     ${t.central ? '' : `<h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
@@ -118,7 +133,7 @@ function cartao(t) {
     ${etapas(t)}
     ${modsCard(t)}
     ${pr.total ? `<div class="tkprogtxt">Checklists antigos: ${pr.feitos} de ${pr.total} itens (${pct}%)</div>` : ''}
-    <div class="tkacts"><button type="button" data-tk="dados"${t.propostaId && preCompleto(t) ? ' title="Pré TASK completo: todos os obrigatórios lançados"' : ''}>${t.propostaId ? (preCompleto(t) ? 'DADOS' : 'Pré TASK') : 'Dados gerais'}</button><button type="button" class="primary" data-tk="mods">Módulos</button>${pr.total ? '<button type="button" data-tk="check">Checklists</button>' : ''}</div>
+    <div class="tkacts"><button type="button" data-tk="dados"${pronto(t) ? ' title="Pré TASK completo: todos os obrigatórios lançados"' : ''}>${pronto(t) ? 'DADOS' : 'Pré TASK'}</button><button type="button" class="primary" data-tk="mods">Módulos</button>${pr.total ? '<button type="button" data-tk="check">Checklists</button>' : ''}</div>
   </article>`;
 }
 
@@ -228,6 +243,14 @@ function formDados(t) {
   if (t && t.propostaId && window.PreTask) {
     if (dlg().open) dlg().close();
     return window.PreTask.abrir({ F, db, perfil, pid: t.propostaId, origem: 'task', task: t, podeTask: true, verContrato });
+  }
+  // Cadastro direto (perfis TASK e ADM): abre o Pré TASK completo, sem proposta nem contrato obrigatórios
+  if (window.PreTask) {
+    if (dlg().open) dlg().close();
+    const novo = !t, tk = t || { id: F.doc(F.collection(db, 'tasks')).id, respCadastro: { uid: perfil.uid, nome: perfil.nome || perfil.email } };
+    const usadas = new Set(tasks.flatMap(x => [x.propostaId, x.propostaVinc]).filter(Boolean));
+    const propostasLivres = (aprovadas || []).filter(p => !usadas.has(p.id) || p.id === tk.propostaVinc).map(p => ({ id: p.id, numero: p.numero || '', cliente: p.cliente || '' }));
+    return window.PreTask.abrir({ F, db, perfil, origem: 'task', task: tk, novo, podeTask: true, propostasLivres, propostaVinc: tk.propostaVinc || '' });
   }
   t = t || { respCadastro: { uid: perfil.uid, nome: perfil.nome || perfil.email } };
   const sel = (id, r) => `<select id="${id}"><option value="">Ninguém</option>${opcoesResp(null, r?.uid)}</select>`;
@@ -433,13 +456,14 @@ async function datasE4(pid) {
 // Logo do posto ou rede: anexo da Etapa 2 com "logo" no nome do campo, reduzido para uma miniatura
 async function logoDe(pid) {
   try {
-    const an = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos'));
+    const R = Array.isArray(pid) ? pid : ['propostas', pid]; // cadastro direto: ['tasks', id]
+    const an = await F.getDocs(F.collection(db, ...R, 'anexos'));
     // Aceita imagem pelo tipo ou pela extensão, e PDF (usa a primeira página)
     const ehImg = x => /^image\//.test(x.tipo || '') || /\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(x.nome || ''), ehPdf = x => /pdf/i.test(x.tipo || '') || /\.pdf$/i.test(x.nome || '');
     const lista = an.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => /logo|marca/i.test(x.campo || '') || /logo|marca/i.test(x.nome || ''));
     const a = lista.find(ehImg) || lista.find(ehPdf);
     if (!a) return '';
-    const ps = await F.getDocs(F.collection(db, 'propostas', pid, 'anexos', a.id, 'partes'));
+    const ps = await F.getDocs(F.collection(db, ...R, 'anexos', a.id, 'partes'));
     const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join('');
     let src;
     if (ehImg(a)) { const ext = (String(a.nome || '').match(/\.(\w+)$/) || [])[1] || 'png'; const tipo = /^image\//.test(a.tipo || '') ? a.tipo : 'image/' + (/svg/i.test(ext) ? 'svg+xml' : /jpe?g/i.test(ext) ? 'jpeg' : ext.toLowerCase()); src = `data:${tipo};base64,` + b64; }
@@ -502,6 +526,11 @@ let todosU = [];
 const respE4 = d => { if (!d || !d.por) return null; const u = (d.porUid && todosU.find(x => x.uid === d.porUid)) || todosU.find(x => x.nome === d.por); return { uid: u ? u.uid : (d.porUid || 'nome:' + d.por), nome: u ? u.nome : d.por, email: d.porEmail || '' }; };
 const completando = new Set();
 function completarDatas() {
+  // Cadastro direto: só o logo (vem do anexo de logo do Pré TASK, guardado no próprio card)
+  tasks.filter(t => t.origem === 'direto' && t.pre4 && (t.logoV !== 3 || !t.logo) && !completando.has(t.id)).forEach(t => {
+    completando.add(t.id);
+    logoDe(['tasks', t.id]).then(lg => { if (lg !== (t.logo || '') || t.logoV !== 3) return F.updateDoc(F.doc(db, 'tasks', t.id), { logo: lg, logoV: 3 }); }).catch(() => {});
+  });
   // A Central é conferida uma vez por sessão, para refletir alterações feitas depois na Etapa 4
   tasks.filter(t => t.propostaId && !completando.has(t.id)).forEach(t => {
     completando.add(t.id);
@@ -562,7 +591,7 @@ async function importar(pid, bt) {
 const criando = new Set();
 function sincronizar() {
   if (!tasksOk || !aprovadas) return;
-  const tem = new Set([...tasks.flatMap(t => [t.id, t.propostaId]).filter(Boolean), ...removidas]);
+  const tem = new Set([...tasks.flatMap(t => [t.id, t.propostaId, t.propostaVinc]).filter(Boolean), ...removidas]);
   aprovadas.filter(p => p.ctAceitoEm && p.e4Em && !tem.has(p.id) && !criando.has(p.id)).forEach(p => {
     criando.add(p.id);
     criarDaProposta(p.id, true).then(n => { if (n) msg(`Novo cadastro automático: ${n.apelido} (Etapa 4 concluída).`); })

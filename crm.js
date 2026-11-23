@@ -2,7 +2,7 @@
 // Dados: crm/{id} com tipo 'lead' (contatos antes da proposta) ou 'cliente' (anotações da ficha do cliente).
 // O funil e a lista de clientes também usam as propostas (coleção propostas), sem copiar os dados delas.
 let F, db, perfil, admin = false, temTask = false, unsubC = null, unsubP = null;
-let docs = [], props = [], tasksCache = null, aba = 'funil';
+let docs = [], props = [], tasksCache = null, aba = 'funil', docsOk = false, propsOk = false;
 // Filtros da lista: usuário responsável (só ADM vê de todos) e estado (UF da cidade do lead ou da proposta)
 let fUser = '', fUf = '', usuarios = {};
 const $ = id => document.getElementById(id);
@@ -27,12 +27,12 @@ const ETAPAS = [
   { id: 'contrato', nome: 'Contrato aceito' },
   { id: 'perdido', nome: 'Perdido' }
 ];
-const ORIGENS = ['Indicação', 'Site', 'Evento', 'Prospecção ativa', 'Telemetria ANP', 'Redes sociais', 'Cliente antigo', 'Outro'];
+const ORIGENS = ['Indicação', 'Site', 'Evento', 'Prospecção ativa', 'Telemetria ANP', 'Redes sociais', 'Cliente antigo', 'Proposta direta', 'Outro'];
 const MOTIVOS = ['Preço', 'Escolheu concorrente', 'Sem interesse no momento', 'Sem retorno', 'Fora do perfil', 'Outro'];
 const TIPOS_NOTA = ['Ligação', 'WhatsApp', 'Visita', 'E-mail', 'Reunião', 'Anotação'];
 
 window.addEventListener('shotgun-crm', e => { ({ F, db, perfil, admin, temTask } = e.detail); iniciar(); });
-window.addEventListener('argo-sair', () => { if (unsubC) unsubC(); if (unsubP) unsubP(); unsubC = unsubP = null; docs = []; props = []; tasksCache = null; fUser = fUf = ''; usuarios = {}; });
+window.addEventListener('argo-sair', () => { if (unsubC) unsubC(); if (unsubP) unsubP(); unsubC = unsubP = null; docs = []; props = []; tasksCache = null; docsOk = propsOk = false; fUser = fUf = ''; usuarios = {}; });
 
 function iniciar() {
   // Logos das Bandeiras publicados pelo ADM: usados no cartão da ANP e na lista de leads
@@ -42,13 +42,14 @@ function iniciar() {
   }).catch(() => {});
   if (unsubC) unsubC();
   if (unsubP) unsubP();
+  docsOk = propsOk = false;
   const col = F.collection(db, 'crm');
   unsubC = F.onSnapshot(admin ? col : F.query(col, F.where('owner', '==', perfil.uid)), qs => {
-    docs = qs.docs.map(d => ({ id: d.id, ...d.data() })); desenhar();
+    docs = qs.docs.map(d => ({ id: d.id, ...d.data() })); docsOk = true; desenhar(); leadsAutomaticos();
   }, e => msg('Não foi possível carregar o CRM (' + (e.code || 'erro') + ').' + (e.code === 'permission-denied' ? ' As regras do banco ainda não liberam o CRM.' : '')));
   const pc = F.collection(db, 'propostas');
   unsubP = F.onSnapshot(admin ? F.query(pc, F.orderBy('criado', 'desc'), F.limit(500)) : F.query(pc, F.where('owner', '==', perfil.uid)), qs => {
-    props = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.status !== 'substituida').sort((a, b) => (b.criado?.seconds || 9e9) - (a.criado?.seconds || 9e9)); desenhar();
+    props = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.status !== 'substituida').sort((a, b) => (b.criado?.seconds || 9e9) - (a.criado?.seconds || 9e9)); propsOk = true; desenhar(); leadsAutomaticos();
   }, () => {});
   $('crmUsuario').hidden = !admin;
   fUser = fUf = ''; usuarios = {};
@@ -58,6 +59,36 @@ function iniciar() {
     desenhar();
   }).catch(() => {});
   desenhar();
+}
+
+/* ---------- Lead automático ----------
+   Toda proposta tem um lead por trás. Proposta feita direto (sem vir de um lead) ganha um lead criado pelo app,
+   com origem "Proposta direta". Se já existe lead com o mesmo CNPJ (ou nome, sem CNPJ), não duplica: o funil já liga
+   os dois pela chave. Cada pessoa cria os leads das próprias propostas (o lead fica dela), inclusive as antigas.
+   O id do lead é fixo pela proposta (auto-<id>), então dois aparelhos abertos ao mesmo tempo não criam dois
+   (o lead é da própria pessoa, então já aparece na lista docs se existir). */
+const criandoLead = new Set();
+async function leadsAutomaticos() {
+  if (!docsOk || !propsOk || !perfil) return;
+  const chaves = new Set(docs.filter(d => d.tipo === 'lead').map(l => chave(l.cnpj, l.empresa)));
+  const ids = new Set(docs.map(d => d.id));
+  const faltam = props.filter(p => p.owner === perfil.uid && !p.leadId && String(p.cliente || '').trim()
+    && !ids.has('auto-' + p.id) && !criandoLead.has(p.id) && !chaves.has(chave(p.cnpj, p.cliente)));
+  const vistas = new Set();
+  for (const p of faltam) {
+    const k = chave(p.cnpj, p.cliente); if (vistas.has(k)) continue; vistas.add(k); // duas versões da mesma empresa: um lead só
+    criandoLead.add(p.id);
+    const fone = dig(p.waCli).replace(/^55(?=\d{10,11}$)/, '');
+    const lead = { tipo: 'lead', auto: true, propostaId: p.id, empresa: String(p.cliente || '').trim(), cnpj: dig(p.cnpj).length === 14 ? dig(p.cnpj) : '', cidade: p.cidade || '',
+      contato: p.contato || '', fone, email: '', contatos: p.contato || fone ? [{ nome: p.contato || '', fone, email: '' }] : [], origem: 'Proposta direta', etapa: 'qualificado', motivo: '',
+      notas: [], owner: perfil.uid, vendedor: p.vendedor || quem(), criado: F.serverTimestamp(), criadoPor: 'Automático (proposta nº ' + (p.numero || '') + ')' };
+    try {
+      const ref = F.doc(db, 'crm', 'auto-' + p.id);
+      await F.setDoc(ref, lead);
+      F.updateDoc(F.doc(db, 'propostas', p.id), { leadId: ref.id }).catch(() => {}); // o vínculo pela chave já basta se a regra não deixar
+    } catch (e) { console.warn('Lead automático', p.id, e.code || e); }
+    finally { criandoLead.delete(p.id); }
+  }
 }
 
 /* ---------- Dados derivados ---------- */
