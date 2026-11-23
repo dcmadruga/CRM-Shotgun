@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 217, data: '2026-11-23', titulo: 'Cadastro de revendas', itens: [
+    'Administração → Revendas (só o administrador): cadastre cada revenda com o nome, os estados de atuação, o gerente e os usuários que fazem parte dela. Cada usuário pertence a uma revenda só, e a tela Usuários também mostra e troca a revenda de cada um.',
+    'O gerente da revenda ganha o menu Administração → Parâmetros Proposta: ajusta preços, textos e referências e clica em Publicar para a revenda. Só os usuários da revenda dele recebem esses valores; quem não tem revenda continua com os parâmetros gerais.',
+    'Na tela Revendas o administrador vê quando o gerente publicou os parâmetros da revenda e pode voltar a revenda para os parâmetros gerais.'
+  ] },
   { v: 216, data: '2026-11-23', titulo: 'Itens da aprovação em blocos separados', itens: [
     'Na página de aprovação que o cliente abre pelo link, Licenças e Mensalidades agora ficam em blocos separados, cada um com cabeçalho e total em destaque.',
     'Novo bloco Deslocamento da implantação: mostra os km rodados (com a rota ida e volta), o valor por km e o total. Em implantação remota aparece "Sem custo".'

@@ -28,6 +28,12 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 - Na tela de login, "Me cadastrar" cria a conta (e-mail e senha) e leva para o cadastro. Quem entra com uma conta que ainda não está cadastrada em Usuários preenche os mesmos dados e fica "Aguardando liberação": o cadastro aparece no topo da tela Usuários, com a foto, e o administrador clica em Liberar.
 - Precisa das regras de `docs/cadastro-firestore.rules` publicadas no Firestore.
 
+## Revendas
+
+- Administração > Revendas (só ADM): `revendas/{id}` guarda `nome`, `estados` (UFs de atuação) e `gerente` (uid). O vínculo de cada pessoa fica no cadastro dela (`usuarios/{uid}.revenda`), então cada usuário pertence a uma revenda só. A tela Usuários também troca a revenda.
+- O gerente da revenda vê Parâmetros Proposta e publica em `revendas/{id}/parametros/proposta` (cópia completa dos parâmetros). Os usuários da revenda carregam esse documento; se ele não existir, usam `config/parametros`. O ADM sempre edita os gerais e pode apagar os da revenda ("Voltar aos parâmetros gerais").
+- Precisa das regras de `docs/revendas-firestore.rules` publicadas no Firestore.
+
 ## Novidades a cada versão
 
 - `novidades.js` guarda o que mudou em cada versão, em linguagem de usuário. Quando o app atualiza, a janela "Novidades" abre sozinha uma vez (por usuário, em cada aparelho), depois do login. Tocar em "Versão N" no cabeçalho reabre a janela, que também tem o botão "Forçar atualização do app".
