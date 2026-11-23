@@ -20,14 +20,17 @@ const COMPRA = /licita[çc][ãa]o|preg[ãa]o|credenciamento|chamamento|chamada\s
 const CONCEDEU = /Processo\s+n[º°o.]\s*([\d/]+)\s*\((CETESB\.[\d./-]+)\)\s*A\s+Cetesb[^,]{0,80},\s*torna\s+p[úu]blico\s+que\s+concedeu,?\s+para\s+(.{2,160}?),\s+a\s+Licen[çc]a\s+Ambiental\s+(Pr[ée]via|de\s+Instala[çc][ãa]o|de\s+Opera[çc][ãa]o)\s+n[º°o.]\s*([\d.]+),\s+de\s+(\d{2}\/\d{2}\/\d{4}),\s+para\s+(.{3,300}?),\s+localizad[oa]s?\s+n[oa]s?\s+munic[íi]pios?\s+de\s+(.{2,120}?)\/SP/g;
 const RECEBEU = /Processo\s+n[º°o.]\s*([\d/]+)\s*\((CETESB\.[\d./-]+)\)\s*A\s+Cetesb[^,]{0,80},\s*torna\s+p[úu]blico\s+que\s+recebeu\s+o\s+pedido\s+de\s+Licen[çc]a\s+Ambiental\s+(Pr[ée]via|de\s+Instala[çc][ãa]o|de\s+Opera[çc][ãa]o)\s+de\s+(.{2,160}?)\s+para\s+(.{3,300}?),\s+(?:localizad[oa]s?\s+)?n[oa]s?\s+munic[íi]pios?\s+de\s+(.{2,120}?)\/SP/g;
 const ATIV = /posto|combust[ií]ve|abastecimento/i;
+// súmula do parecer técnico da CETESB levada ao CONSEMA (etapa do mesmo licenciamento com estudo de impacto)
+const PARECER = /PROCESSO:\s*IMPACTO\s+([\d/]+)\s*\(e-ambiente\s+(CETESB\.[\d./-]+)\)\s*INTERESSADO:\s*(.{2,160}?)\s+ASSUNTO:\s*(.{3,300}?)\s+MUNIC[ÍI]PIO:\s*(.{2,80}?)\s+(?=INTRODU|[A-ZÇÃÉ]{6,}\s)/;
+const empresaNome = s => limpa(s).replace(/\bLIMITADA\b/i, 'LTDA').replace(/\s*\.$/, '');
 
 const ENT = { nbsp: ' ', amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', deg: '°', ordm: 'º', ordf: 'ª', ndash: '–', mdash: '—', hellip: '…', laquo: '«', raquo: '»', ldquo: '“', rdquo: '”', lsquo: '‘', rsquo: '’', sect: '§', middot: '·', shy: '' };
 const MARCA = { acute: '́', grave: '̀', circ: '̂', tilde: '̃', uml: '̈', cedil: '̧' };
 export function texto(html) {
-  return limpa(String(html || '').replace(/<(style|script)[^>]*>[^]*?<\/\1>/gi, ' ').replace(/^\s*SEI\/GESP\s*-\s*\d+\s*-\s*DOE:[^)]*\)/, '').replace(/<(br|\/p|\/div|\/li|\/tr|\/h\d)[^>]*>/gi, ' \n').replace(/<[^>]+>/g, ' ')
+  return limpa(String(html || '').replace(/<(style|script)[^>]*>[^]*?<\/\1>/gi, ' ').replace(/<(br|\/p|\/div|\/li|\/tr|\/h\d)[^>]*>/gi, ' \n').replace(/<[^>]+>/g, ' ')
     .replace(/&#x([0-9a-f]+);/gi, (_, h) => String.fromCodePoint(parseInt(h, 16))).replace(/&#(\d+);/g, (_, d) => String.fromCodePoint(+d))
     .replace(/&([A-Za-z])(acute|grave|circ|tilde|uml|cedil);/g, (_, l, m) => (l + MARCA[m]).normalize('NFC'))
-    .replace(/&([a-z]+);/gi, (m, n) => ENT[n.toLowerCase()] ?? m));
+    .replace(/&([a-z]+);/gi, (m, n) => ENT[n.toLowerCase()] ?? m)).replace(/^SEI\/GESP\s*-\s*\d+\s*-\s*DOE:[^)]*\)\s*/, '');
 }
 
 async function json(u) {
@@ -47,12 +50,20 @@ const ORGAO = 'CETESB (Companhia Ambiental do Estado de SP)';
 // transforma as súmulas da CETESB de um texto em registros do Radar (mesmos campos do classificador)
 export function registrosCetesb(t, municipios) {
   const out = [];
+  const pm = t.match(PARECER);
+  if (pm && ATIV.test(pm[4])) {
+    const [, , eamb, razao, ativ, munNome] = pm, sigla = /pr[ée]vi/i.test(ativ) ? 'LP' : /instala/i.test(ativ) ? 'LI' : /opera/i.test(ativ) ? 'LO' : '';
+    const mun = municipios?.achar(`municipio de ${munNome} sp`);
+    out.push({ chave: `parecer-${eamb}`, tipoDoc: 'requerimento', evento: { LP: 'req_lp', LI: 'req_li', LO: 'req_lo' }[sigla] || 'req_outro', categoria: cat(ativ, sigla), situacao: 'solicitado',
+      razao: empresaNome(razao), fantasia: '', cnpj: '', municipio: mun?.nome || '', ibge: mun?.ibge || '', endereco: '', coord: null, processo: eamb,
+      atividade: limpa(ativ).slice(0, 200), orgao: ORGAO, esfera: 'estadual', confianca: 'confirmado', fase: 'Parecer técnico da CETESB (em análise no CONSEMA)', trecho: limpa(t.slice(pm.index, pm.index + 1500)) });
+  }
   for (const m of t.matchAll(CONCEDEU)) {
     const [, proc, eamb, razao, tipoTxt, numero, emissao, ativ, munNome] = m;
     if (!ATIV.test(ativ)) continue;
     const sigla = SIGLA(tipoTxt), mun = municipios?.achar(`municipio de ${munNome} sp`);
     out.push({ chave: `${sigla}-${numero}`, tipoDoc: 'licenca_emitida', evento: { LP: 'emitida_lp', LI: 'emitida_li', LO: 'emitida_lo' }[sigla], categoria: cat(ativ, sigla), situacao: 'aprovado',
-      razao: limpa(razao), fantasia: '', cnpj: '', municipio: mun?.nome || '', ibge: mun?.ibge || '', endereco: '', coord: null, processo: limpa(proc),
+      razao: empresaNome(razao), fantasia: '', cnpj: '', municipio: mun?.nome || '', ibge: mun?.ibge || '', endereco: '', coord: null, processo: eamb,
       licencas: [{ tipo: sigla, numero: limpa(numero), sigla, emissao: br2iso(emissao) }], atividade: limpa(ativ).slice(0, 200), orgao: ORGAO, esfera: 'estadual',
       confianca: 'confirmado', fase: `Licença Ambiental ${limpa(tipoTxt)} nº ${numero}`, trecho: limpa(m[0]).slice(0, 1500), eAmbiente: eamb });
   }
@@ -61,7 +72,7 @@ export function registrosCetesb(t, municipios) {
     if (!ATIV.test(ativ)) continue;
     const sigla = SIGLA(tipoTxt), mun = municipios?.achar(`municipio de ${munNome} sp`);
     out.push({ chave: `req-${eamb}`, tipoDoc: 'requerimento', evento: { LP: 'req_lp', LI: 'req_li', LO: 'req_lo' }[sigla], categoria: cat(ativ, sigla), situacao: 'solicitado',
-      razao: limpa(razao), fantasia: '', cnpj: '', municipio: mun?.nome || '', ibge: mun?.ibge || '', endereco: '', coord: null, processo: limpa(proc),
+      razao: empresaNome(razao), fantasia: '', cnpj: '', municipio: mun?.nome || '', ibge: mun?.ibge || '', endereco: '', coord: null, processo: eamb,
       atividade: limpa(ativ).slice(0, 200), orgao: ORGAO, esfera: 'estadual', confianca: 'confirmado', fase: `Pedido de Licença Ambiental ${limpa(tipoTxt)}`, trecho: limpa(m[0]).slice(0, 1500), eAmbiente: eamb });
   }
   return out;
@@ -90,7 +101,7 @@ export async function coletar(de, ate, log = console.log, ctx = {}) {
     const data = String(d.date || i.date).slice(0, 10);
     const secao = i.hierarchy.split(' > ').pop().trim();
     const url = SITE + (d.slug || i.slug), local = `DOE-SP de ${data.split('-').reverse().join('/')}, ${i.hierarchy.split(' > ')[0]} › ${secao}`;
-    const regs = /Companhia Ambiental/.test(i.hierarchy) ? registrosCetesb(t, ctx.mun) : [];
+    const regs = /Companhia Ambiental|Conselho Estadual do Meio Ambiente/.test(i.hierarchy) ? registrosCetesb(t, ctx.mun) : [];
     for (const { chave, eAmbiente, ...r } of regs) { if (vistos.has(chave)) continue; vistos.add(chave); registros.push({ ...r, id: `${i.id}-${chave.replace(/[^\w-]+/g, '')}`, data, url, pdf: url, local }); }
     if (regs.length) continue;
     docs.push({ id: i.id, titulo: limpa(d.title || i.title), entidade: /^Munic/.test(i.hierarchy) ? `Prefeitura Municipal de ${i.hierarchy.split(' > ')[2].trim()}` : '', data, texto: t, trecho: t.slice(0, 300), url: SITE + (d.slug || i.slug), pdf: SITE + (d.slug || i.slug), local: `DOE-SP de ${data.split('-').reverse().join('/')}, ${i.hierarchy.split(' > ').slice(0, 1)[0]} › ${secao}` });
