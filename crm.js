@@ -393,7 +393,7 @@ function gerarProposta(l) {
 
 function verProposta(p) {
   if (dlg().open) dlg().close();
-  $('tabList').click();
+  if (window.shotgunAbrirPropostas) window.shotgunAbrirPropostas(); else $('tabList').click();
   const b = $('pBusca'); if (b) { b.value = p.numero || p.cliente || ''; b.dispatchEvent(new Event('input', { bubbles: true })); }
 }
 
@@ -408,7 +408,7 @@ function formProp(p) {
     </div>
     ${p.crmPerdida ? '' : `<label>Motivo da perda<select id="crmPMot"><option value="">Escolha…</option>${MOTIVOS.map(m => `<option>${m}</option>`).join('')}</select></label>`}
     <div class="tools crmacts">
-      <button type="button" class="primary" data-a="verprop" data-id="${esc(p.id)}">Abrir na aba Propostas</button>
+      <button type="button" class="primary" data-a="verprop" data-id="${esc(p.id)}">Abrir em Propostas</button>
       ${p.crmPerdida ? `<button type="button" data-a="reabrir" data-id="${esc(p.id)}">Reabrir no funil</button>` : `<button type="button" class="danger" data-a="perder" data-id="${esc(p.id)}">Marcar como perdida</button>`}
     </div>`);
   dlg().dataset.modo = 'prop';

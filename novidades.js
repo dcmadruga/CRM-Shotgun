@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 203, data: '2026-11-23', titulo: 'Propostas dentro do CRM', itens: [
+    'As propostas agora ficam no CRM, num bloco abaixo do funil de vendas. Tudo continua igual: quadro por etapa, lista, busca e filtro.',
+    'O item Propostas saiu do menu lateral. Abra o CRM e role a tela até o bloco Propostas.',
+    'Os atalhos do painel Hoje, do sino de notificações e dos cards do CRM levam direto ao bloco Propostas.'
+  ] },
   { v: 202, data: '2026-11-22', titulo: 'Correção: menus e usuário sumindo depois de uma atualização', itens: [
     'Logo depois de uma atualização, o app às vezes abria sem o usuário e só com Nova proposta e Administração. Corrigido: se algum arquivo não chegar, o app usa a cópia guardada no aparelho.',
     'Se mesmo assim o app não carregar por completo, aparece um aviso com o botão Recarregar o app.'

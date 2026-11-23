@@ -737,7 +737,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   <button type="button" role="tab" id="tabProp" aria-selected="true">+ Nova proposta</button>
   <button type="button" role="tab" id="tabHoje" aria-selected="false" class="fbonly">Hoje</button>
   <button type="button" role="tab" id="tabCrm" aria-selected="false" class="fbonly">CRM</button>
-  <button type="button" role="tab" id="tabList" aria-selected="false" class="fbonly">Propostas</button>
+  <button type="button" role="tab" id="tabList" aria-selected="false" class="fbonly" hidden style="display:none">Propostas</button>
   <button type="button" role="tab" id="tabTask" aria-selected="false" class="fbonly tasktab">TASK</button>
   <button type="button" role="tab" id="tabTele" aria-selected="false" class="fbonly">Telemetria</button>
   <button type="button" role="tab" id="tabParam" aria-selected="false" aria-expanded="false" aria-controls="subParam" class="cfgtab">Administração ▾</button>
@@ -800,10 +800,10 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div class="grid">
       <label>WhatsApp do contato do cliente<input id="waAprov" inputmode="tel" placeholder="(65) 99999-0000" autocomplete="off"></label>
     </div>
-    <div class="tools"><button type="button" class="primary" id="btnAprov">Enviar pelo WhatsApp</button><button type="button" id="btnAprovCopy">Copiar link da proposta</button><button type="button" id="btnAprovSalvar" title="Guarda a proposta na aba Propostas como pendente de envio, para mandar depois">Salvar proposta</button></div>
+    <div class="tools"><button type="button" class="primary" id="btnAprov">Enviar pelo WhatsApp</button><button type="button" id="btnAprovCopy">Copiar link da proposta</button><button type="button" id="btnAprovSalvar" title="Guarda a proposta no CRM, no bloco Propostas, como pendente de envio, para mandar depois">Salvar proposta</button></div>
     <div class="tools" id="aprovLinkRow" hidden><input id="aprovLink" readonly aria-label="Link da proposta" style="flex:1;min-width:200px"><button type="button" id="btnAprovLinkCopy">Copiar</button></div>
     <p class="refaz" id="refazInfo" hidden></p>
-    <p class="hint" id="aprovMsg">A proposta fica salva na aba Propostas. Ainda não vai enviar? Use Salvar proposta: ela fica como PENDENTE DE ENVIO e você envia depois. Quando o cliente aprovar pelo link, ela aparece como APROVADA e a Etapa 2 é liberada.</p>
+    <p class="hint" id="aprovMsg">A proposta fica salva no CRM, no bloco Propostas. Ainda não vai enviar? Use Salvar proposta: ela fica como PENDENTE DE ENVIO e você envia depois. Quando o cliente aprovar pelo link, ela aparece como APROVADA e a Etapa 2 é liberada.</p>
   </div></section>
 
   <section class="sec nofb"><h2>Etapa 2 · Dados complementares obrigatórios <span>depois que o cliente aprovar</span></h2><div class="body">
@@ -956,15 +956,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div id="crm-leads" hidden></div>
     <div id="crm-clientes" hidden></div>
   </div></section>
-  <dialog id="crmDlg" class="tkdlg" aria-labelledby="crmDlgTit">
-    <div class="tkdlghead"><h3 id="crmDlgTit"></h3><button type="button" id="crmDlgFechar" aria-label="Fechar">✕</button></div>
-    <div id="crmDlgBody"></div>
-    <p id="crmDlgMsg" class="hint" role="status"></p>
-  </dialog>
-</main>
-
-<main id="viewList" hidden>
-  <section class="sec"><h2>Propostas <span id="pCount"></span></h2><div class="body">
+  <section class="sec" id="secPropostas"><h2>Propostas <span id="pCount"></span></h2><div class="body">
     <div class="tools ptools">
       <input id="pBusca" placeholder="Buscar por cliente, CNPJ ou número" autocomplete="off">
       <span class="pmodo" role="group" aria-label="Modo de exibição"><button type="button" id="pModoQuadro" aria-pressed="true">Quadro</button><button type="button" id="pModoLista" aria-pressed="false">Lista</button></span>
@@ -974,7 +966,15 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div id="pList" class="plist"></div>
     <p class="hint" id="pMsg"></p>
   </div></section>
+  <dialog id="crmDlg" class="tkdlg" aria-labelledby="crmDlgTit">
+    <div class="tkdlghead"><h3 id="crmDlgTit"></h3><button type="button" id="crmDlgFechar" aria-label="Fechar">✕</button></div>
+    <div id="crmDlgBody"></div>
+    <p id="crmDlgMsg" class="hint" role="status"></p>
+  </dialog>
 </main>
+
+<!-- Propostas agora fica dentro do CRM, no bloco abaixo do funil. A aba antiga continua aqui vazia para o app não quebrar num aparelho com arquivos de versões diferentes. -->
+<main id="viewList" hidden></main>
 
 <main id="viewE2" hidden>
   <div class="savebar">
