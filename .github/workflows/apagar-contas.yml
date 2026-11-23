@@ -1,0 +1,43 @@
+name: Apagar contas excluídas no app
+
+# Quando um administrador exclui alguém na tela de Usuários, o app corta o acesso na hora e marca o cadastro.
+# Este robô confere a cada 15 minutos e apaga essas contas de vez no Firebase Authentication, com o segredo
+# FIREBASE_SERVICE_ACCOUNT (o mesmo do Radar). Num push de código roda em modo de teste: só lista, não apaga.
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      teste:
+        description: 'Modo de teste (só lista, não apaga)'
+        type: boolean
+        default: false
+  push:
+    paths:
+      - 'scripts/contas/**'
+      - '.github/workflows/apagar-contas.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apagar-contas
+  cancel-in-progress: false
+
+jobs:
+  apagar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Apagar contas
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          CONTAS_TESTE: ${{ github.event_name == 'push' || inputs.teste == true }}
+        run: node scripts/contas/apagar-contas.mjs

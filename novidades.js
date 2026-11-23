@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 209, data: '2026-11-23', titulo: 'Excluir usuário apaga a conta de vez', itens: [
+    'Em Administração > Usuários, o botão Excluir agora também apaga a conta da pessoa no Firebase, sem você precisar abrir o console. O acesso continua sendo cortado na hora; a conta some do Firebase em até 1 hora.',
+    'Se precisar cadastrar o mesmo e-mail de novo depois, é só usar o cadastro normal.'
+  ] },
   { v: 208, data: '2026-11-23', titulo: 'Conversão de Dados logo abaixo da Base', itens: [
     'No Pré TASK, aba Implantação, o bloco Conversão de Dados agora fica logo abaixo do bloco Base, antes do Posto simples ou da Central. No TASK, os dados aparecem na mesma ordem.'
   ] },
