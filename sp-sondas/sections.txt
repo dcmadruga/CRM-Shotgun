@@ -1,0 +1,3 @@
+400 https://do-api-web-search.doe.sp.gov.br/v2/sections
+
+{"traceIdentifier":"0HNQ98NSUDOEI:00000001","errors":{"JournalId":["O identificador do Caderno é inválido."]},"validationErrors":{"JournalId":["O identificador do Caderno é inválido."]},"type":"https://www.rfc-editor.org/rfc/rfc7231#section-6.5.1","title":"HTTP 400 Bad Request","status":400,"detail":"Um erro ou condição inesperada ocorreu durante a execução desta requisição.","instance":"/v2/sections"}
