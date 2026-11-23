@@ -1,4 +1,4 @@
-// Radar de Novos Postos – MT, RS, SC e PR (aba Telemetria → Postos em construção). Lê o que o robô diário grava no Firestore (coleções radar_*)
+// Radar de Novos Postos – MT, RS, SC, PR e SP (aba Telemetria → Postos em construção). Lê o que o robô diário grava no Firestore (coleções radar_*)
 // e deixa o administrador revisar, configurar fontes e pedir uma pesquisa na hora.
 // O robô é scripts/radar/radar.mjs, rodado pelo GitHub Actions (.github/workflows/radar-postos.yml).
 let F, db, perfil, admin = false, temTask = false, unsub = [], uf = 'MT';
@@ -23,8 +23,8 @@ export const CONFIANCA = { confirmado: 'Processo confirmado', possivel: 'Possív
 // Registro antigo, sem Estado, é de MT (o Radar começou por lá)
 const ufDe = x => x?.uf || 'MT';
 const daUF = x => ufDe(x) === uf;
-const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', PR: 'Paraná' };
-const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7], PR: [[-24.6, -51.4], 7] };
+const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', PR: 'Paraná', SP: 'São Paulo' };
+const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7], PR: [[-24.6, -51.4], 7], SP: [[-22.3, -48.6], 7] };
 const FONTES_RS = [
   { id: 'famurs', nome: 'Diário Oficial dos Municípios do RS (FAMURS)', url: 'https://www.diariomunicipal.com.br/famurs/' },
   { id: 'doe-rs', nome: 'Diário Oficial do Estado do RS (DOE-RS)', url: 'https://www.diariooficial.rs.gov.br/' },
@@ -46,6 +46,12 @@ const FONTES_PR = [
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
   { id: 'sga-iat', nome: 'IAT: consulta de processos no SGA', url: 'https://www.sga.pr.gov.br/', obs: 'Exige CAPTCHA: não monitorada' },
   { id: 'amp-pr', nome: 'Diário Oficial dos Municípios do Paraná (AMP)', url: 'https://www.diariomunicipal.com.br/amp/', obs: 'Testada: só trouxe compras de combustível e leis, nenhuma licença de posto. Não monitorada' }
+];
+const FONTES_SP = [
+  { id: 'doe-sp', nome: 'Diário Oficial do Estado de SP (DOE-SP)', url: 'https://www.doe.sp.gov.br/' },
+  { id: 'querido-sp', nome: 'Querido Diário (diários próprios das cidades de SP)', url: 'https://queridodiario.ok.org.br/' },
+  { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
+  { id: 'cetesb', nome: 'CETESB: licenças ambientais de posto', url: 'https://e.cetesb.sp.gov.br/', obs: 'Bloqueia acesso automático e o e-CETESB exige login. Não monitorada' }
 ];
 const FONTES_PREVISTAS_MT = [
   { id: 'iomat', nome: 'Diário Oficial de MT (IOMAT)', url: 'https://iomat.mt.gov.br/' },
@@ -78,7 +84,7 @@ const ativos = () => doUF().filter(e => !filtro.mun || e.ibge === filtro.mun);
 const daCidade = x => !filtro.mun || x.ibge === filtro.mun || (x.eid && ativos().some(e => e.id === x.eid));
 const alertasUF = () => alertas.filter(a => daUF(a) && daCidade(a));
 const naoLidos = () => alertasUF().filter(a => !(a.lidoPor || []).includes(perfil?.uid));
-const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : uf === 'PR' ? FONTES_PR : FONTES_PREVISTAS_MT;
+const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : uf === 'PR' ? FONTES_PR : uf === 'SP' ? FONTES_SP : FONTES_PREVISTAS_MT;
 const fontesUF = () => fontes.filter(f => f.id === 'anp' ? true : f.uf ? f.uf === uf : uf === 'MT');
 const ultimaExec = () => execs[0];
 
