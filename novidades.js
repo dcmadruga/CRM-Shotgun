@@ -15,6 +15,10 @@ window.SHOTGUN_NOVIDADES = [
     'O item Propostas saiu do menu lateral. Abra o CRM e role a tela até o bloco Propostas.',
     'Os atalhos do painel Hoje, do sino de notificações e dos cards do CRM levam direto ao bloco Propostas.'
   ] },
+  { v: 203, data: '2026-11-22', titulo: 'O app lembra o seu tema claro ou escuro', itens: [
+    'O tema que você escolher no botão de sol e lua, no cabeçalho, fica guardado no seu usuário. Se fechou o app no escuro, ele abre no escuro; se fechou no claro, abre no claro.',
+    'Vale em todos os aparelhos em que você entrar com o seu e-mail, e cada pessoa que usa o mesmo aparelho tem o seu próprio tema.'
+  ] },
   { v: 202, data: '2026-11-22', titulo: 'Correção: menus e usuário sumindo depois de uma atualização', itens: [
     'Logo depois de uma atualização, o app às vezes abria sem o usuário e só com Nova proposta e Administração. Corrigido: se algum arquivo não chegar, o app usa a cópia guardada no aparelho.',
     'Se mesmo assim o app não carregar por completo, aparece um aviso com o botão Recarregar o app.'
