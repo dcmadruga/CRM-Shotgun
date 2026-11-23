@@ -15,6 +15,7 @@ window.SHOTGUN_NOVIDADES = [
     'Em SP o Radar lê o Diário Oficial do Estado: as licenças e os pedidos de licença de posto que a CETESB publica ali, o parecer técnico levado ao CONSEMA e as publicações de empresas e prefeituras. Compras de combustível e contratos ficam de fora.',
     'A CETESB só publica no Diário os licenciamentos com estudo de impacto, então em SP aparecem poucos casos por essa fonte. Os diários das prefeituras entram pelo Querido Diário assim que a API dele voltar a responder.',
     'O portal da CETESB não aceita consulta automática e o e-CETESB exige login, por isso aparecem na tela como fonte não monitorada.'
+  ] },
   { v: 212, data: '2026-11-23', titulo: 'Selfie do cadastro só aceita um rosto de verdade', itens: [
     'No primeiro acesso, a selfie agora confere o rosto antes de liberar o "Tirar foto": precisa ter uma pessoa só, com o rosto dentro do oval e de frente para a câmera. O oval fica laranja quando o rosto está no lugar e verde quando a foto pode ser tirada.',
     'Para provar que é uma pessoa de verdade, o app pede para piscar os olhos. Foto impressa ou na tela de outro celular não passa.',
