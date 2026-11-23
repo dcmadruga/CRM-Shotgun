@@ -131,13 +131,36 @@ async function iniciar() {
   $('cadUfs').addEventListener('change', cadUfConta);
   const nomeCompleto = n => String(n || '').trim().split(/\s+/).filter(p => p.length >= 2).length >= 2;
   const limpaNome = n => String(n || '').replace(/\s+/g, ' ').trim();
-  let fotoOk = null, fotoStream = null, fotoDado = '', cadCtx = null;
-  const pararCam = () => { if (fotoStream) fotoStream.getTracks().forEach(t => t.stop()); fotoStream = null; };
-  function modoFoto(tirada) { $('fotoVideo').hidden = tirada; $('fotoPrev').hidden = !tirada; $('btnFotoTirar').hidden = tirada; $('btnFotoRefazer').hidden = !tirada; }
+  // Telefone / WhatsApp: máscara (00) 00000-0000; aceita o que o navegador sugere (+55 51 9…) e tira o 55
+  const foneDig = v => { let d = String(v || '').replace(/\D/g, ''); if (d.length > 11 && d.startsWith('55')) d = d.slice(2); if (d.length > 11 && d.startsWith('0')) d = d.replace(/^0+/, ''); return d.slice(0, 11); };
+  const foneFmt = v => { const d = foneDig(v); if (!d) return ''; if (d.length <= 2) return '(' + d; const n = d.slice(2), corte = d.length === 11 ? 5 : 4; return '(' + d.slice(0, 2) + ') ' + n.slice(0, corte) + (n.length > corte ? '-' + n.slice(corte) : ''); };
+  const foneOk = v => { const d = foneDig(v); return (d.length === 10 || d.length === 11) && +d.slice(0, 2) >= 11 && (d.length === 10 || d[2] === '9'); };
+  $('cadFone').addEventListener('input', e => { const el = e.target, f = foneFmt(el.value); if (el.value !== f) el.value = f; });
+  // Android (Chrome): deixa escolher um número da agenda do aparelho, inclusive o próprio cartão "Eu"
+  if ('contacts' in navigator && 'select' in navigator.contacts) {
+    $('btnCadContato').hidden = false;
+    $('btnCadContato').addEventListener('click', async () => {
+      try { const [c] = await navigator.contacts.select(['tel'], { multiple: false }); const t = c && (c.tel || []).find(x => foneDig(x).length >= 10); if (t) { $('cadFone').value = foneFmt(t); fmsg(''); } else if (c) fmsg('Esse contato não tem um celular válido.'); } catch (e) { /* cancelou */ }
+    });
+  }
+  let fotoOk = null, fotoStream = null, fotoDado = '', fotoVerif = null, cadCtx = null, vigia = null, camVez = 0;
+  // Verificação do rosto (rosto.js): só libera "Tirar foto" com um rosto de verdade, centralizado e piscando
+  const rosto = () => import('./rosto.js');
+  const guia = (t, fase) => { $('fotoGuia').textContent = t || ''; const a = $('fotoArea'); a.classList.toggle('is-piscar', fase === 'piscar'); a.classList.toggle('is-pronto', fase === 'pronto'); };
+  const pararCam = () => { camVez++; if (vigia) vigia.parar(); vigia = null; if (fotoStream) fotoStream.getTracks().forEach(t => t.stop()); fotoStream = null; };
+  function modoFoto(tirada) { $('fotoVideo').hidden = tirada; $('fotoPrev').hidden = !tirada; $('btnFotoTirar').hidden = tirada; $('btnFotoRefazer').hidden = !tirada; if (tirada) guia(''); }
   async function ligarCam() {
-    modoFoto(false); fotoDado = ''; fmsg('');
-    try { fotoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 720 } }, audio: false }); $('fotoVideo').srcObject = fotoStream; $('btnFotoTirar').disabled = false; }
-    catch (e) { $('btnFotoTirar').disabled = true; fmsg('Não foi possível abrir a câmera. Libere a câmera no navegador ou use "Enviar uma foto".'); }
+    pararCam(); const vez = camVez;
+    modoFoto(false); fotoDado = ''; fotoVerif = null; fmsg(''); $('btnFotoTirar').disabled = true; $('fotoArqBox').hidden = true;
+    guia('Abrindo a câmera…');
+    try { fotoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 720 } }, audio: false }); }
+    catch (e) { if (vez !== camVez) return; guia(''); $('fotoArqBox').hidden = false; $('btnFotoTirar').hidden = true; fmsg('Não foi possível abrir a câmera. Libere a câmera no navegador ou use "Enviar uma foto".'); return; }
+    if (vez !== camVez) { fotoStream.getTracks().forEach(t => t.stop()); return; }
+    $('fotoVideo').srcObject = fotoStream; guia('Preparando a verificação do rosto…');
+    try {
+      const v = await (await rosto()).vigiar($('fotoVideo'), e => { guia(e.txt, e.fase); $('btnFotoTirar').disabled = !e.pronto; });
+      if (vez !== camVez) v.parar(); else vigia = v;
+    } catch (e) { if (vez !== camVez) return; console.error(e); guia(''); fmsg('Não foi possível carregar a verificação do rosto. Confira a internet e toque em "Tentar de novo".'); $('btnFotoRefazer').hidden = false; $('btnFotoRefazer').textContent = 'Tentar de novo'; }
   }
   // Recorta o centro em quadrado e reduz para 360 px em JPEG
   function reduzir(src, w, h, espelhar) {
@@ -155,6 +178,8 @@ async function iniciar() {
     $('cadIntro').textContent = novo ? `Primeiro acesso com ${ctx.user.email}. Preencha seus dados e envie: o administrador confere e libera o seu acesso.` : 'Antes de entrar, confirme seus dados. É rápido e só acontece uma vez.';
     $('btnFotoSalvar').textContent = novo ? 'Enviar cadastro' : 'Salvar e entrar';
     $('cadNome').value = nomeCompleto(p.nome) ? p.nome : '';
+    // Telefone só no cadastro novo (quem já tem cadastro tem o telefone ajustado pelo administrador em Usuários)
+    $('cadFoneBloco').hidden = !novo; $('cadFone').value = foneFmt(p.fone);
     const ufs = Array.isArray(p.estados) ? p.estados : [];
     $('cadUfs').querySelectorAll('input').forEach(i => { i.checked = ufs.includes(i.dataset.uf); }); cadUfConta();
     $('fotoAceite').checked = !!ctx.foto;
@@ -162,18 +187,32 @@ async function iniciar() {
     setTimeout(() => { if (!$('cadNome').value) $('cadNome').focus(); }, 50);
     return new Promise(res => { fotoOk = res; });
   }
-  $('btnFotoTirar').addEventListener('click', () => { const v = $('fotoVideo'); if (!v.videoWidth) return; fotoDado = reduzir(v, v.videoWidth, v.videoHeight, true); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); fmsg(''); });
-  $('btnFotoRefazer').addEventListener('click', ligarCam);
+  $('btnFotoTirar').addEventListener('click', () => {
+    const v = $('fotoVideo'); if (!v.videoWidth || !vigia) return;
+    if (!vigia.agora()) { fmsg('Mantenha o rosto no oval, de frente e com os olhos abertos.'); return; }
+    fotoDado = reduzir(v, v.videoWidth, v.videoHeight, true); fotoVerif = { origem: 'camera', rosto: true, vivacidade: true };
+    $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); fmsg('');
+  });
+  $('btnFotoRefazer').addEventListener('click', () => { $('btnFotoRefazer').textContent = 'Tirar outra'; ligarCam(); });
+  // Sem câmera: a foto enviada também precisa ter um rosto só, inteiro e de frente (só aparece quando a câmera não abre)
   $('fotoArq').addEventListener('change', e => {
-    const f = e.target.files[0]; if (!f) return; const img = new Image();
-    img.onload = () => { fotoDado = reduzir(img, img.naturalWidth, img.naturalHeight, false); URL.revokeObjectURL(img.src); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); fmsg(''); };
-    img.onerror = () => fmsg('Esse arquivo não é uma imagem válida.'); img.src = URL.createObjectURL(f); e.target.value = '';
+    const f = e.target.files[0]; if (!f) return; const img = new Image(); e.target.value = '';
+    img.onload = async () => {
+      fmsg('Conferindo o rosto na foto…', true);
+      let r; try { r = await (await rosto()).conferirFoto(img); } catch (err) { console.error(err); r = { ok: false, txt: 'Não foi possível conferir a foto. Confira a internet e tente de novo.' }; }
+      if (!r.ok) { URL.revokeObjectURL(img.src); fmsg(r.txt + ' A foto precisa mostrar o seu rosto, de frente.'); return; }
+      fotoDado = reduzir(img, img.naturalWidth, img.naturalHeight, false); fotoVerif = { origem: 'arquivo', rosto: true, vivacidade: false };
+      URL.revokeObjectURL(img.src); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); fmsg('');
+    };
+    img.onerror = () => fmsg('Esse arquivo não é uma imagem válida.'); img.src = URL.createObjectURL(f);
   });
   $('btnFotoSair').addEventListener('click', () => { pararCam(); fbox.hidden = true; fotoOk = null; cadCtx = null; A.signOut(auth); });
   $('btnFotoSalvar').addEventListener('click', async () => {
     const ctx = cadCtx, u = auth.currentUser; if (!ctx || !u) return;
     const nome = limpaNome($('cadNome').value), estados = cadUfsMarcadas();
     if (!nomeCompleto(nome)) { fmsg('Digite seu nome completo (nome e sobrenome).'); $('cadNome').focus(); return; }
+    const fone = foneFmt($('cadFone').value);
+    if (!ctx.perfil && !foneOk(fone)) { fmsg('Digite seu celular com DDD, o número do WhatsApp. Ex.: (51) 99999-9999.'); $('cadFone').focus(); return; }
     if (!estados.length) { fmsg('Marque pelo menos um estado de atuação.'); return; }
     if (!fotoDado) { fmsg('Tire uma foto do rosto (ou envie uma) para continuar.'); return; }
     if (!$('fotoAceite').checked) { fmsg('Marque a autorização da foto para continuar.'); return; }
@@ -181,10 +220,10 @@ async function iniciar() {
     try {
       if (!ctx.perfil && !ctx.criado) {
         // Sem cadastro: cria como vendedor, bloqueado e aguardando o administrador liberar
-        await F.setDoc(F.doc(db, 'usuarios', u.uid), { nome, email: (u.email || '').toLowerCase(), fone: '', papel: 'vendedor', papeis: ['vendedor'], estados, ativo: false, pendente: true, criado: F.serverTimestamp(), cadastroEm: F.serverTimestamp() });
+        await F.setDoc(F.doc(db, 'usuarios', u.uid), { nome, email: (u.email || '').toLowerCase(), fone, papel: 'vendedor', papeis: ['vendedor'], estados, ativo: false, pendente: true, criado: F.serverTimestamp(), cadastroEm: F.serverTimestamp() });
         ctx.criado = true;
       }
-      if (fotoDado !== ctx.foto) await F.setDoc(F.doc(db, 'fotos', u.uid), { b64: fotoDado, em: F.serverTimestamp(), aceite: true });
+      if (fotoDado !== ctx.foto) await F.setDoc(F.doc(db, 'fotos', u.uid), { b64: fotoDado, em: F.serverTimestamp(), aceite: true, verificacao: fotoVerif || { origem: 'desconhecida', rosto: false, vivacidade: false } });
       if (ctx.perfil) await F.updateDoc(F.doc(db, 'usuarios', u.uid), { nome, estados, cadastroEm: F.serverTimestamp() });
       pararCam(); fbox.hidden = true; const r = fotoOk; fotoOk = null; cadCtx = null; if (r) r({ nome, estados });
     } catch (err) {

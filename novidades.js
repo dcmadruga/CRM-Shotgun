@@ -10,11 +10,23 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 210, data: '2026-11-23', titulo: 'Postos em construção em São Paulo', itens: [
+  { v: 213, data: '2026-11-23', titulo: 'Postos em construção em São Paulo', itens: [
     'Telemetria → Postos em construção: São Paulo (SP) já pode ser escolhido no filtro de Estado, com o filtro de Cidade.',
     'Em SP o Radar lê o Diário Oficial do Estado: as licenças e os pedidos de licença de posto que a CETESB publica ali, o parecer técnico levado ao CONSEMA e as publicações de empresas e prefeituras. Compras de combustível e contratos ficam de fora.',
     'A CETESB só publica no Diário os licenciamentos com estudo de impacto, então em SP aparecem poucos casos por essa fonte. Os diários das prefeituras entram pelo Querido Diário assim que a API dele voltar a responder.',
     'O portal da CETESB não aceita consulta automática e o e-CETESB exige login, por isso aparecem na tela como fonte não monitorada.'
+  { v: 212, data: '2026-11-23', titulo: 'Selfie do cadastro só aceita um rosto de verdade', itens: [
+    'No primeiro acesso, a selfie agora confere o rosto antes de liberar o "Tirar foto": precisa ter uma pessoa só, com o rosto dentro do oval e de frente para a câmera. O oval fica laranja quando o rosto está no lugar e verde quando a foto pode ser tirada.',
+    'Para provar que é uma pessoa de verdade, o app pede para piscar os olhos. Foto impressa ou na tela de outro celular não passa.',
+    'A opção "Enviar uma foto" só aparece quando a câmera não abre, e a foto enviada também precisa mostrar um rosto, inteiro e de frente.'
+  ] },
+  { v: 211, data: '2026-11-23', titulo: 'Cadastro novo pede o telefone / WhatsApp', itens: [
+    'Quem entra pela primeira vez e cria o próprio cadastro agora informa o celular com DDD (o WhatsApp). O campo já formata o número e, no celular, sugere os números salvos na conta Google do aparelho.',
+    'O telefone chega junto com o pedido de acesso e aparece em Administração > Usuários, pronto para sair nas propostas.'
+  ] },
+  { v: 210, data: '2026-11-23', titulo: 'Novo cadastro do TASK pede os dados obrigatórios do Pré TASK', itens: [
+    'No TASK, o "+ Novo cadastro" agora exige os mesmos dados obrigatórios do Pré TASK de uma proposta, incluindo os Dados Primários e os Dados complementares. O Salvar final só libera com tudo preenchido; o Salvar parcial continua guardando o card em "Em preparação".',
+    'Os Dados Primários aparecem logo abaixo de Implantação e já vêm com o CNPJ, a razão social, a cidade e o CEP do posto informado. Proposta e contrato continuam opcionais nesse cadastro.'
   ] },
   { v: 209, data: '2026-11-23', titulo: 'Excluir usuário apaga a conta de vez', itens: [
     'Em Administração > Usuários, o botão Excluir agora também apaga a conta da pessoa no Firebase, sem você precisar abrir o console. O acesso continua sendo cortado na hora; a conta some do Firebase em até 1 hora.',
