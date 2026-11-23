@@ -370,7 +370,7 @@
     if (!d.open) d.showModal();
     const { F, db, pid } = ctx;
     // Cadastro direto no TASK (perfis TASK e ADM): sem proposta nem contrato. Tudo fica no próprio card
-    // (tasks/{id}.pre4: cabeçalho, valores e Dados Primários opcionais; anexos em tasks/{id}/anexos)
+    // (tasks/{id}.pre4: cabeçalho, valores e Dados Primários; anexos em tasks/{id}/anexos)
     const direto = !pid && !!ctx.task; if (direto) { C.direto = true; C.tid = ctx.task.id; d.querySelector('#ptSalvar').textContent = 'Salvar final'; }
     const ler = async (...c) => { try { const r = await F.getDoc(F.doc(db, ...c)); return r.exists() ? r.data() : null; } catch (e) { return null; } };
     const json = x => { try { return x && x.json ? JSON.parse(x.json) : null; } catch (e) { return null; } };
@@ -432,7 +432,8 @@
     const base = [P.tipoBase, P.inclusao, P.potencial, P.nome].filter(Boolean).length + (P.filiais.length && P.filiais.every(f => dig(f.cnpj).length === 14 && f.tipo) ? 1 : 0) + (P.tipoBase !== 'Central' || P.f100 ? 1 : 0);
     const m = { status: marca(nStatus, 4), base: marca(base, 6), proposta: marca(1, 1), contrato: marca(C.p.ctAceitoEm || C.direto ? 1 : 0, 1) };
     const conta2 = ss => { let ok = 0, tot = 0; ss.forEach(s => { const r = contar(s.campos, '', C.v2); ok += r.ok; tot += r.tot; }); return marca(ok, tot); };
-    m.e2 = C.direto ? marca(1, 1) : conta2(secs2Cli()); m.e2c = C.direto ? marca(1, 1) : C.e2 ? conta2(secs2Comp()) : marca(0, 1);
+    // cadastro direto também exige os obrigatórios dos Dados Primários e complementares (só proposta e contrato ficam de fora)
+    m.e2 = C.direto || C.e2 ? conta2(secs2Cli()) : marca(0, 1); m.e2c = C.e2 ? conta2(secs2Comp()) : marca(0, 1);
     const vv = { ...C.v }; Object.entries(C.anx || {}).forEach(([k, st]) => { if (st && st.salvos) vv[k] = st.salvos.concat(st.novos || []); }); // anexos escolhidos e ainda não salvos também contam
     secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
     m.anexos = marca(1, 1);
@@ -440,20 +441,29 @@
     secoesParam(C.cfg4).forEach((s, i) => { if (ehSecAnx(s) && !/dgm ok/.test(m['p' + i]) && /dgm ok/.test(m.base)) m.base = marca(0, 1).replace('falta', 'parcial'); });
     return m;
   }
+  // Cadastro direto: o que já se sabe do posto (F100 ou F1, com a consulta do CNPJ) entra nos Dados Primários vazios
+  function e2DoPosto() {
+    if (!C.direto) return;
+    const fs = C.pre.filiais || [], f = fs.find(x => x.cod === C.pre.f100) || fs[0]; if (!f) return;
+    const i = f.info || {}, v = C.v2, put = (k, x) => { if (x && !String(v[k] || '').trim()) v[k] = x; };
+    if (dig(f.cnpj).length === 14) put('cnpj', fmtCnpj(f.cnpj));
+    put('razao', f.razao || i.razao); put('fantasia', i.fantasia); put('cidade', f.cidade || i.municipio); put('uf', f.uf || i.uf); put('cep', i.cep);
+  }
   function desenhar() {
+    e2DoPosto();
     const body = document.getElementById('ptBody'), M = marcadores(), ps = secoesParam(C.cfg4);
     const nav = (id, t, ic) => `<button type="button" class="dgnav" data-pt="${id}" aria-selected="false">${ICO(ic || t)}<span>${esc(t)}</span>${M[id] || ''}</button>`;
     const g = t => `<span class="ptnote" style="padding:10px 14px 2px;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;font-weight:600">${t}</span>`;
     body.innerHTML = `<div class="dgwrap" id="ptWrap">
-      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${secs2Comp().length ? nav('e2c', 'Dados complementares', 'contato') : ''}${ps.map((s, i) => !ehSecAnx(s) && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
-        ${g('Dos passos anteriores')}${nav('proposta', 'Proposta', 'lista')}${nav('e2', 'Dados Primários', 'pessoas')}${nav('contrato', 'Contrato', 'lista')}
+      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${C.direto ? nav('e2', 'Dados Primários', 'pessoas') : ''}${secs2Comp().length ? nav('e2c', 'Dados complementares', 'contato') : ''}${ps.map((s, i) => !ehSecAnx(s) && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
+        ${g('Dos passos anteriores')}${nav('proposta', 'Proposta', 'lista')}${C.direto ? '' : nav('e2', 'Dados Primários', 'pessoas')}${nav('contrato', 'Contrato', 'lista')}
         ${ps.some(s => !ehSecAnx(s) && !ehSecVal(s)) ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => ehSecAnx(s) || ehSecVal(s) ? '' : nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
       <div class="dgcorpo" id="ptCorpo">
         ${painelStatus()}${painelBase(ps.map((s, i) => ehSecAnx(s) ? painelParam(s, i, true) : '').join(''))}${painelE2c()}${painelProposta()}${painelE2()}${painelContrato()}${ps.map((s, i) => ehSecAnx(s) ? '' : painelParam(s, i)).join('')}
       </div></div>`;
     const corpo = document.getElementById('ptCorpo');
     // Salvar parcial também no fim de cada tela de Validação
-    corpo.querySelectorAll(':scope > [data-ptp]').forEach(pn => { const id = pn.dataset.ptp; if (id !== 'status' && id !== 'base' && !(id === 'e2c' && C.e2) && !/^p\d+$/.test(id)) return; pn.insertAdjacentHTML('beforeend', '<div class="ptpfoot"><span class="hint" role="status"></span><button type="button" data-ptparc="1">Salvar parcial</button></div>'); });
+    corpo.querySelectorAll(':scope > [data-ptp]').forEach(pn => { const id = pn.dataset.ptp; if (id !== 'status' && id !== 'base' && !(id === 'e2c' && C.e2) && !(id === 'e2' && C.direto) && !/^p\d+$/.test(id)) return; pn.insertAdjacentHTML('beforeend', '<div class="ptpfoot"><span class="hint" role="status"></span><button type="button" data-ptparc="1">Salvar parcial</button></div>'); });
     corpo.addEventListener('click', ev => { if (ev.target.closest('[data-ptparc]')) salvar(true); });
     ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo);
     corpo.addEventListener('pt-mudou', ev => { cabecalhoMudou(ev); conferirFinal(); });
@@ -467,6 +477,8 @@
   function mostrar(id) {
     const emb = document.querySelector(`#ptCorpo .ptemb[data-ptp="${id}"]`);
     if (emb) id = 'base';
+    // cadastro direto: ao abrir os Dados Primários, traz o CNPJ, a razão social e a cidade do posto já informados na Implantação
+    if (id === 'e2' && C.direto && document.getElementById('ptCorpo')) { colherCabecalho(); colherCampos(); const antes = JSON.stringify(C.v2); e2DoPosto(); if (JSON.stringify(C.v2) !== antes) { C.aba = 'e2'; desenhar(); return; } }
     C.aba = id;
     if (emb) setTimeout(() => emb.scrollIntoView({ block: 'start', behavior: 'smooth' }), 0);
     document.querySelectorAll('#ptWrap .dgnav').forEach(b => b.setAttribute('aria-selected', String(b.dataset.pt === id)));
@@ -534,7 +546,7 @@
   }
   function painelE2() {
     const e2 = C.e2;
-    if (C.direto) return painel('e2', 'Dados Primários', 'opcionais no cadastro direto', '<p class="ptnote">Sem link para o cliente: preencha aqui o que souber. Nada é obrigatório.</p>' + secs2Cli().map(s => `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid" data-e2>${camposHtml(s.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`).join(''));
+    if (C.direto) return painel('e2', 'Dados Primários', 'preenchidos aqui no cadastro direto', '<p class="ptnote">Sem link para o cliente: confirme os dados com ele e preencha aqui. Os campos com * são obrigatórios para o salvar final, como no Pré TASK de uma proposta.</p>' + secs2Cli().map(s => `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid" data-e2>${camposHtml(s.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`).join(''));
     if (!e2) return painel('e2', 'Dados Primários', '', '<p class="ptnote">O cliente ainda não enviou os Dados Primários.</p>');
     const hist = (e2.alteracoes || []).slice(-5).reverse().map(a => `<div>${esc(a.por)} alterou ${esc((a.campos || []).join(', '))} em ${esc(new Date(a.em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))}</div>`).join('');
     return painel('e2', 'Dados Primários', `preenchido pelo cliente${e2.em ? ' em ' + esc(fmtTs(e2.em)) : ''} · editável`, secs2Cli().map(s => `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid" data-e2>${camposHtml(s.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`).join('') + (hist ? `<div class="pthist">${hist}</div>` : '<p class="ptnote">Alterar um dado aqui corrige o dado original e registra quem alterou.</p>'));
@@ -672,8 +684,8 @@
     // 2) Dados primários (só o que mudou é gravado)
     const e2Lido = { valores: {}, legiveis: {} }; let faltaE2 = null, faltaE2c = null;
     if (C.e2) secs2().forEach(s => { const r = lerCampos(corpo, s.campos.filter(c => !ehComp(c)), 'e2:', C.anx), rc = lerCampos(corpo, s.campos.filter(ehComp), 'e2:', C.anx); [r, rc].forEach(x => { Object.assign(e2Lido.valores, x.valores); Object.assign(e2Lido.legiveis, x.legiveis); }); faltaE2 = faltaE2 || r.falta; faltaE2c = faltaE2c || rc.falta; });
-    if (faltaE2c && !C.direto) faltas.push(['e2c', 'campos obrigatórios dos Dados complementares']);
-    if (faltaE2 && !C.direto) faltas.push(['e2', 'campos obrigatórios dos Dados Primários']);
+    const fE2 = faltaE2 ? [['e2', 'campos obrigatórios dos Dados Primários']] : [], fE2c = faltaE2c ? [['e2c', 'campos obrigatórios dos Dados complementares']] : [];
+    faltas.push(...(C.direto ? fE2.concat(fE2c) : fE2c.concat(fE2))); // na ordem do menu
     // 3) Parâmetros Pré TASK (por filial quando for Central)
     const valores = {}, campos = {}, fila = []; let faltaP = null, abaP = null;
     const ps = secoesParam(C.cfg4), dadosFil = P.filiais.map(() => ({}));
@@ -716,7 +728,7 @@
     const bt = document.getElementById(parcial ? 'ptParcial' : 'ptSalvar');
     const { P, central, faltas, e2Lido, valores, campos, fila, ps, dadosFil, abaP } = validar(!parcial);
     if (!parcial && faltas.length) {
-      const [aba] = faltas[0]; mostrar(aba);
+      const [aba] = faltas[0]; mostrar(aba); validar(true); // marca de novo (abrir os Dados Primários pode redesenhar a tela)
       if (abaP && aba === abaP.aba && abaP.fi != null) document.querySelector(`#ptCorpo [data-ptp="${aba}"] [data-ptfi="${abaP.fi}"]`)?.click();
       msg(faltaTxt(faltas) + ' Para guardar assim mesmo, use "Salvar parcial".'); return;
     }
