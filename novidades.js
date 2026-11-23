@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 203, data: '2026-11-22', titulo: 'O app lembra o seu tema claro ou escuro', itens: [
+    'O tema que você escolher no botão de sol e lua, no cabeçalho, fica guardado no seu usuário. Se fechou o app no escuro, ele abre no escuro; se fechou no claro, abre no claro.',
+    'Vale em todos os aparelhos em que você entrar com o seu e-mail, e cada pessoa que usa o mesmo aparelho tem o seu próprio tema.'
+  ] },
   { v: 202, data: '2026-11-22', titulo: 'Correção: menus e usuário sumindo depois de uma atualização', itens: [
     'Logo depois de uma atualização, o app às vezes abria sem o usuário e só com Nova proposta e Administração. Corrigido: se algum arquivo não chegar, o app usa a cópia guardada no aparelho.',
     'Se mesmo assim o app não carregar por completo, aparece um aviso com o botão Recarregar o app.'

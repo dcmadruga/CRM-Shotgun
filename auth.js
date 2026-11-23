@@ -227,6 +227,8 @@ async function iniciar() {
       }
       if (snap.data().ativo !== true) { await A.signOut(auth); mostrarLogin(snap.data().pendente ? 'Seu cadastro está aguardando a liberação do administrador.' : 'Seu acesso não está liberado. Fale com o administrador.'); return; }
       perfil = { uid: user.uid, ...snap.data() };
+      // Tema claro/escuro da pessoa: aplica o do cadastro e grava lá quando ela trocar
+      try { window.sgTemaEntrou?.(user.uid, perfil.tema, t => F.updateDoc(ref, { tema: t })); } catch (e) { /* só aparência */ }
     } catch (e) {
       mostrarLogin(e.code === 'unavailable' ? 'Sem internet. Conecte-se para entrar.' : 'Não foi possível verificar seu acesso (' + (e.code || 'erro') + ').'); return;
     }
