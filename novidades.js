@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 216, data: '2026-11-23', titulo: 'Itens da aprovação em blocos separados', itens: [
+    'Na página de aprovação que o cliente abre pelo link, Licenças e Mensalidades agora ficam em blocos separados, cada um com cabeçalho e total em destaque.',
+    'Novo bloco Deslocamento da implantação: mostra os km rodados (com a rota ida e volta), o valor por km e o total. Em implantação remota aparece "Sem custo".'
+  ] },
   { v: 215, data: '2026-11-23', titulo: 'Itens da proposta na página de aprovação', itens: [
     'A página que o cliente abre pelo link para aprovar a proposta agora mostra, abaixo dos totais, a lista dos itens: cada licença e cada mensalidade com quantidade, preço e total, igual ao PDF.',
     'Itens isentos aparecem com o valor riscado e o prazo da isenção. Itens ocultos na proposta continuam fora da lista.'

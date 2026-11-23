@@ -66,21 +66,24 @@ button.sec2{background:var(--surface);color:var(--purple)}
 .check input{width:auto;margin-top:3px}
 .ok{background:var(--surface);border:1px solid #1f7a46;border-left:4px solid #1f7a46;border-radius:6px;padding:14px}
 .warn{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--danger);border-radius:6px;padding:14px}
-.itens{border-top:1px solid var(--line);padding:4px 14px 6px}
-.itens h3{font-family:var(--display);font-weight:600;font-size:14px;margin:12px 0 2px;color:var(--purple)}
-.itens ul{list-style:none;margin:0;padding:0}
-.itens li{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line)}
-.itens .d{min-width:0;overflow-wrap:anywhere}
-.itens .d small{display:block;color:var(--muted);font-size:12.5px;font-style:italic}
-.itens .d em{display:block;color:var(--muted);font-size:12.5px}
-.itens .v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.itens .v small{display:block;color:var(--muted);font-size:12px}
-.itens .v strong{font-weight:600}
-.itens .v s{color:var(--muted)}
-.itens:not([hidden])+.body{padding-top:14px!important}
-.itens .tot{display:flex;justify-content:space-between;gap:12px;padding:8px 0 4px;font-weight:600;font-variant-numeric:tabular-nums}
-.itens .tot span:last-child{font-family:var(--display)}
-@media (max-width:420px){.itens li{flex-direction:column;gap:2px}.itens .v{text-align:left;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}}
+.itens{border-top:1px solid var(--line);padding:14px;display:flex;flex-direction:column;gap:14px}
+.grp{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.grp>header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:#7030a0;color:#fff;padding:9px 12px}
+.grp>header h3{margin:0;font-family:var(--display);font-weight:600;font-size:15px}
+.grp>header span{font-size:12px;opacity:.85;white-space:nowrap}
+.grp ul{list-style:none;margin:0;padding:0 12px}
+.grp li{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.grp li:last-child{border-bottom:0}
+.grp .d{min-width:0;overflow-wrap:anywhere}
+.grp .d small{display:block;color:var(--muted);font-size:12.5px;font-style:italic}
+.grp .d em{display:block;color:var(--muted);font-size:12.5px}
+.grp .v{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.grp .v small{display:block;color:var(--muted);font-size:12px}
+.grp .v strong{font-weight:600}
+.grp .v s{color:var(--muted)}
+.grp .tot{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 12px;background:var(--field);border-top:2px solid var(--purple);font-weight:600;font-variant-numeric:tabular-nums}
+.grp .tot b{font-family:var(--display);font-size:18px;color:var(--purple)}
+@media (max-width:420px){.grp li{flex-direction:column;gap:2px}.grp .v{text-align:left;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}}
 </style>
 </head><body>
 <header><div class="wrap">
@@ -148,9 +151,12 @@ let P=null, pdfB64=null;
 const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const num=v=>{ const n=parseFloat(String(v??'').replace(',','.')); return isNaN(n)?0:n };
 const qtyNum=q=>{ const s=String(q??'').trim(); return s===''||s==='?'?null:num(s) };
+const km1=n=>(Number(n)||0).toLocaleString('pt-BR',{maximumFractionDigits:1});
+const soCidade=t=>{ const m=String(t||'').trim().match(/^(.*?)\s*[-\/,]\s*([A-Za-z]{2})$/); return (m?m[1]:String(t||'')).trim() };
 function montarItens(D){
   if(!D) return;
-  const grupo=(titulo, rows, mensal, total)=>{
+  const bloco=(titulo, nota, li, rotTot, total)=>`<div class="grp"><header><h3>${titulo}</h3>${nota?`<span>${nota}</span>`:''}</header><ul>${li}</ul><div class="tot"><span>${rotTot}</span><b>${total}</b></div></div>`;
+  const grupo=(titulo, nota, rows, mensal, total)=>{
     rows=(rows||[]).filter(r=>r && !r.oculto && String(r.desc||'').trim());
     if(!rows.length) return '';
     const li=rows.map(r=>{
@@ -158,12 +164,25 @@ function montarItens(D){
       const dias=mensal&&r.isento?Math.round(num(r.diasIsento)):0;
       const qtd=q===null?'Quantidade a definir':(q!==1?String(r.qty).trim()+' × '+brl(r.price):'');
       const val=r.isento?`<s>${brl(integral)}</s> <strong>${dias>0?'Isento '+dias+' dias':'Isento'}</strong>`:q===null?`<strong>${brl(r.price)} cada</strong>`:`<strong>${brl(integral)}${mensal?'/mês':''}</strong>`;
-      const nota=dias>0?`<em>Após ${dias} dia${dias>1?'s':''}: ${brl(integral)}/mês</em>`:'';
-      return `<li><div class="d">${esc(r.desc)}${r.sub?`<small>${esc(r.sub)}</small>`:''}${nota}</div><div class="v">${qtd?`<small>${esc(qtd)}</small>`:''}${val}</div></li>`;
+      const ni=dias>0?`<em>Após ${dias} dia${dias>1?'s':''}: ${brl(integral)}/mês</em>`:'';
+      return `<li><div class="d">${esc(r.desc)}${r.sub?`<small>${esc(r.sub)}</small>`:''}${ni}</div><div class="v">${qtd?`<small>${esc(qtd)}</small>`:''}${val}</div></li>`;
     }).join('');
-    return `<h3>${titulo}</h3><ul>${li}</ul><div class="tot"><span>Total ${titulo.toLowerCase()}</span><span>${brl(total)}${mensal?'/mês':''}</span></div>`;
+    return bloco(titulo, nota, li, 'Total '+titulo.toLowerCase(), brl(total)+(mensal?'/mês':''));
   };
-  const h=grupo('Licenças', D.lic, false, P.totLic)+grupo('Mensalidades', D.men, true, P.totMen);
+  // Deslocamento da implantação: rota, km rodados e valor por km (o mesmo cálculo do PDF)
+  const base=esc(soCidade(D.base)), cid=esc(soCidade(D.cidade))||'Cliente', km=num(D.km);
+  const rota=base?`${base} → ${cid} → ${base}`:'';
+  let imp='';
+  if(P.implantacao==='Remota') imp=bloco('Implantação','',`<li><div class="d">Implantação remota<small>Sem deslocamento de técnico</small></div><div class="v"><strong>Sem custo</strong></div></li>`,'Total implantação','Sem custo');
+  else if(km>0 || Number(P.totDes)>0){
+    const vkm=km>0?Number(P.totDes)/km:0;
+    const det=P.implantacao==='Combustível'?'Cobrado apenas o valor do combustível':`${km1(km)} km × ${brl(vkm)} por km`;
+    imp=bloco('Deslocamento da implantação','valor aproximado',
+      `<li><div class="d">KM rodados${rota?`<small>${rota} (ida e volta)</small>`:''}</div><div class="v"><strong>${km1(km)} km</strong></div></li>`+
+      `<li><div class="d">Valor do deslocamento<small>${det}</small></div><div class="v"><strong>${P.implantacao==='Combustível'?'Só combustível':brl(P.totDes)}</strong></div></li>`,
+      'Total deslocamento', P.implantacao==='Combustível'?'Só combustível':brl(P.totDes));
+  }
+  const h=grupo('Licenças','parcela única', D.lic, false, P.totLic)+grupo('Mensalidades','valores mensais', D.men, true, P.totMen)+imp;
   if(h){ $('itens').innerHTML=h; $('itens').hidden=false }
 }
 
