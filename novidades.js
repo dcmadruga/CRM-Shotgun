@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 205, data: '2026-11-23', titulo: 'Cada setor do TASK explica pelo que é responsável', itens: [
+    'Ao abrir os Módulos de um card no TASK, cada setor (Implantação, Pré Start, Start, Pós Start, Homologação de Boletos, TEF / PIX, Integração e Conciliação) mostra no topo um quadro com as responsabilidades e atribuições dele.',
+    'O administrador ajusta esse texto em Parâmetros Pré TASK > Módulos do TASK, no campo Responsabilidades do setor de cada módulo, e publica.'
+  ] },
   { v: 204, data: '2026-11-23', titulo: 'Propostas dentro do CRM', itens: [
     'As propostas agora ficam no CRM, num bloco abaixo do funil de vendas. Tudo continua igual: quadro por etapa, lista, busca e filtro.',
     'O item Propostas saiu do menu lateral. Abra o CRM e role a tela até o bloco Propostas.',
