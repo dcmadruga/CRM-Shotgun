@@ -1,0 +1,31 @@
+200 https://e.cetesb.sp.gov.br/portal-servicos-frontend/
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0F91DC" />
+  <meta name="description" content="e-CETESB - Portal de Licenciamento Ambiental" />
+  <link rel="icon" href="/portal-servicos-frontend/favicon.ico" sizes="48x48" />
+  <link rel="icon" href="/portal-servicos-frontend/logo.svg" sizes="any" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/portal-servicos-frontend/apple-touch-icon-180x180.png" />
+  <!-- Lacuna Web PKI para Assinatura Digital ICP-Brasil -->
+  <script src="https://cdn.lacunasoftware.com/libs/web-pki/lacuna-web-pki-2.16.5.min.js"></script>
+  <title>e-CETESB - Portal de Licenciamento Ambiental</title>
+  <script type="module" crossorigin src="/portal-servicos-frontend/assets/index-BzvgjvH7.js"></script>
+  <link rel="stylesheet" crossorigin href="/portal-servicos-frontend/assets/index-qv-Gj7aQ.css">
+  <script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();window.__vite_is_modern_browser=true</script>
+  <script type="module">!function(){if(window.__vite_is_modern_browser)return;console.warn("vite: loading legacy chunks, syntax error above and the same error below should be ignored");var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script>
+<link rel="manifest" href="/portal-servicos-frontend/manifest.webmanifest"></head>
+
+<body>
+  <noscript>Você precisa habilitar o Javascript para usar este site.</noscript>
+  <div id="root"></div>
+  <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
+  <script nomodule crossorigin id="vite-legacy-polyfill" src="/portal-servicos-frontend/assets/polyfills-legacy-Bq9v1UO8.js"></script>
+  <script nomodule crossorigin id="vite-legacy-entry" data-src="/portal-servicos-frontend/assets/index-legacy-DP5Sc7gw.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
+</body>
+
+</html>

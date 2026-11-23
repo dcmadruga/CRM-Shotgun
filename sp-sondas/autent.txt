@@ -1,0 +1,10 @@
+200 https://autenticidade.cetesb.sp.gov.br/
+
+<html>
+<head>
+<title>CETESB - Autenticidade</title>
+<meta http-equiv="refresh" content="0; url=autentica.php">
+</head>
+<body>
+</body>
+</html>

@@ -1,0 +1,7 @@
+pmsp-noticia	200	190510	https://prefeitura.sp.gov.br/web/controladoria_geral/w/prefeitura-amplia-transpar%C3%AAncia-ambiental-com-novas-bases-de-dados-sobre-licen%C3%A7as
+ecetesb	200	2455	https://e.cetesb.sp.gov.br/portal-servicos-frontend/
+ecetesb-consulta	404	153	https://e.cetesb.sp.gov.br/consulta-publica/
+autent	200	150	https://autenticidade.cetesb.sp.gov.br/
+cetesb-home	202	0	https://cetesb.sp.gov.br/
+cetesb-lic-cons	200	23382	https://licenciamento.cetesb.sp.gov.br/
+qd-sp	503	20	https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-01-01&size=3&excerpt_size=400&territory_ids=3550308
