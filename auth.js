@@ -143,13 +143,24 @@ async function iniciar() {
       try { const [c] = await navigator.contacts.select(['tel'], { multiple: false }); const t = c && (c.tel || []).find(x => foneDig(x).length >= 10); if (t) { $('cadFone').value = foneFmt(t); fmsg(''); } else if (c) fmsg('Esse contato não tem um celular válido.'); } catch (e) { /* cancelou */ }
     });
   }
-  let fotoOk = null, fotoStream = null, fotoDado = '', cadCtx = null;
-  const pararCam = () => { if (fotoStream) fotoStream.getTracks().forEach(t => t.stop()); fotoStream = null; };
-  function modoFoto(tirada) { $('fotoVideo').hidden = tirada; $('fotoPrev').hidden = !tirada; $('btnFotoTirar').hidden = tirada; $('btnFotoRefazer').hidden = !tirada; }
+  let fotoOk = null, fotoStream = null, fotoDado = '', fotoVerif = null, cadCtx = null, vigia = null, camVez = 0;
+  // Verificação do rosto (rosto.js): só libera "Tirar foto" com um rosto de verdade, centralizado e piscando
+  const rosto = () => import('./rosto.js');
+  const guia = (t, fase) => { $('fotoGuia').textContent = t || ''; const a = $('fotoArea'); a.classList.toggle('is-piscar', fase === 'piscar'); a.classList.toggle('is-pronto', fase === 'pronto'); };
+  const pararCam = () => { camVez++; if (vigia) vigia.parar(); vigia = null; if (fotoStream) fotoStream.getTracks().forEach(t => t.stop()); fotoStream = null; };
+  function modoFoto(tirada) { $('fotoVideo').hidden = tirada; $('fotoPrev').hidden = !tirada; $('btnFotoTirar').hidden = tirada; $('btnFotoRefazer').hidden = !tirada; if (tirada) guia(''); }
   async function ligarCam() {
-    modoFoto(false); fotoDado = ''; fmsg('');
-    try { fotoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 720 } }, audio: false }); $('fotoVideo').srcObject = fotoStream; $('btnFotoTirar').disabled = false; }
-    catch (e) { $('btnFotoTirar').disabled = true; fmsg('Não foi possível abrir a câmera. Libere a câmera no navegador ou use "Enviar uma foto".'); }
+    pararCam(); const vez = camVez;
+    modoFoto(false); fotoDado = ''; fotoVerif = null; fmsg(''); $('btnFotoTirar').disabled = true; $('fotoArqBox').hidden = true;
+    guia('Abrindo a câmera…');
+    try { fotoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: { ideal: 720 }, height: { ideal: 720 } }, audio: false }); }
+    catch (e) { if (vez !== camVez) return; guia(''); $('fotoArqBox').hidden = false; $('btnFotoTirar').hidden = true; fmsg('Não foi possível abrir a câmera. Libere a câmera no navegador ou use "Enviar uma foto".'); return; }
+    if (vez !== camVez) { fotoStream.getTracks().forEach(t => t.stop()); return; }
+    $('fotoVideo').srcObject = fotoStream; guia('Preparando a verificação do rosto…');
+    try {
+      const v = await (await rosto()).vigiar($('fotoVideo'), e => { guia(e.txt, e.fase); $('btnFotoTirar').disabled = !e.pronto; });
+      if (vez !== camVez) v.parar(); else vigia = v;
+    } catch (e) { if (vez !== camVez) return; console.error(e); guia(''); fmsg('Não foi possível carregar a verificação do rosto. Confira a internet e toque em "Tentar de novo".'); $('btnFotoRefazer').hidden = false; $('btnFotoRefazer').textContent = 'Tentar de novo'; }
   }
   // Recorta o centro em quadrado e reduz para 360 px em JPEG
   function reduzir(src, w, h, espelhar) {
@@ -176,12 +187,24 @@ async function iniciar() {
     setTimeout(() => { if (!$('cadNome').value) $('cadNome').focus(); }, 50);
     return new Promise(res => { fotoOk = res; });
   }
-  $('btnFotoTirar').addEventListener('click', () => { const v = $('fotoVideo'); if (!v.videoWidth) return; fotoDado = reduzir(v, v.videoWidth, v.videoHeight, true); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); fmsg(''); });
-  $('btnFotoRefazer').addEventListener('click', ligarCam);
+  $('btnFotoTirar').addEventListener('click', () => {
+    const v = $('fotoVideo'); if (!v.videoWidth || !vigia) return;
+    if (!vigia.agora()) { fmsg('Mantenha o rosto no oval, de frente e com os olhos abertos.'); return; }
+    fotoDado = reduzir(v, v.videoWidth, v.videoHeight, true); fotoVerif = { origem: 'camera', rosto: true, vivacidade: true };
+    $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); fmsg('');
+  });
+  $('btnFotoRefazer').addEventListener('click', () => { $('btnFotoRefazer').textContent = 'Tirar outra'; ligarCam(); });
+  // Sem câmera: a foto enviada também precisa ter um rosto só, inteiro e de frente (só aparece quando a câmera não abre)
   $('fotoArq').addEventListener('change', e => {
-    const f = e.target.files[0]; if (!f) return; const img = new Image();
-    img.onload = () => { fotoDado = reduzir(img, img.naturalWidth, img.naturalHeight, false); URL.revokeObjectURL(img.src); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); fmsg(''); };
-    img.onerror = () => fmsg('Esse arquivo não é uma imagem válida.'); img.src = URL.createObjectURL(f); e.target.value = '';
+    const f = e.target.files[0]; if (!f) return; const img = new Image(); e.target.value = '';
+    img.onload = async () => {
+      fmsg('Conferindo o rosto na foto…', true);
+      let r; try { r = await (await rosto()).conferirFoto(img); } catch (err) { console.error(err); r = { ok: false, txt: 'Não foi possível conferir a foto. Confira a internet e tente de novo.' }; }
+      if (!r.ok) { URL.revokeObjectURL(img.src); fmsg(r.txt + ' A foto precisa mostrar o seu rosto, de frente.'); return; }
+      fotoDado = reduzir(img, img.naturalWidth, img.naturalHeight, false); fotoVerif = { origem: 'arquivo', rosto: true, vivacidade: false };
+      URL.revokeObjectURL(img.src); $('fotoPrev').src = fotoDado; pararCam(); modoFoto(true); fmsg('');
+    };
+    img.onerror = () => fmsg('Esse arquivo não é uma imagem válida.'); img.src = URL.createObjectURL(f);
   });
   $('btnFotoSair').addEventListener('click', () => { pararCam(); fbox.hidden = true; fotoOk = null; cadCtx = null; A.signOut(auth); });
   $('btnFotoSalvar').addEventListener('click', async () => {
@@ -200,7 +223,7 @@ async function iniciar() {
         await F.setDoc(F.doc(db, 'usuarios', u.uid), { nome, email: (u.email || '').toLowerCase(), fone, papel: 'vendedor', papeis: ['vendedor'], estados, ativo: false, pendente: true, criado: F.serverTimestamp(), cadastroEm: F.serverTimestamp() });
         ctx.criado = true;
       }
-      if (fotoDado !== ctx.foto) await F.setDoc(F.doc(db, 'fotos', u.uid), { b64: fotoDado, em: F.serverTimestamp(), aceite: true });
+      if (fotoDado !== ctx.foto) await F.setDoc(F.doc(db, 'fotos', u.uid), { b64: fotoDado, em: F.serverTimestamp(), aceite: true, verificacao: fotoVerif || { origem: 'desconhecida', rosto: false, vivacidade: false } });
       if (ctx.perfil) await F.updateDoc(F.doc(db, 'usuarios', u.uid), { nome, estados, cadastroEm: F.serverTimestamp() });
       pararCam(); fbox.hidden = true; const r = fotoOk; fotoOk = null; cadCtx = null; if (r) r({ nome, estados });
     } catch (err) {

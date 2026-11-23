@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 212, data: '2026-11-23', titulo: 'Selfie do cadastro só aceita um rosto de verdade', itens: [
+    'No primeiro acesso, a selfie agora confere o rosto antes de liberar o "Tirar foto": precisa ter uma pessoa só, com o rosto dentro do oval e de frente para a câmera. O oval fica laranja quando o rosto está no lugar e verde quando a foto pode ser tirada.',
+    'Para provar que é uma pessoa de verdade, o app pede para piscar os olhos. Foto impressa ou na tela de outro celular não passa.',
+    'A opção "Enviar uma foto" só aparece quando a câmera não abre, e a foto enviada também precisa mostrar um rosto, inteiro e de frente.'
+  ] },
   { v: 211, data: '2026-11-23', titulo: 'Cadastro novo pede o telefone / WhatsApp', itens: [
     'Quem entra pela primeira vez e cria o próprio cadastro agora informa o celular com DDD (o WhatsApp). O campo já formata o número e, no celular, sugere os números salvos na conta Google do aparelho.',
     'O telefone chega junto com o pedido de acesso e aparece em Administração > Usuários, pronto para sair nas propostas.'
