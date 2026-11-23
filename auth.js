@@ -131,18 +131,11 @@ async function iniciar() {
   $('cadUfs').addEventListener('change', cadUfConta);
   const nomeCompleto = n => String(n || '').trim().split(/\s+/).filter(p => p.length >= 2).length >= 2;
   const limpaNome = n => String(n || '').replace(/\s+/g, ' ').trim();
-  // Telefone / WhatsApp: máscara (00) 00000-0000; aceita o que o navegador sugere (+55 51 9…) e tira o 55
+  // Telefone / WhatsApp: máscara (00) 00000-0000; se colarem com +55, tira o 55
   const foneDig = v => { let d = String(v || '').replace(/\D/g, ''); if (d.length > 11 && d.startsWith('55')) d = d.slice(2); if (d.length > 11 && d.startsWith('0')) d = d.replace(/^0+/, ''); return d.slice(0, 11); };
   const foneFmt = v => { const d = foneDig(v); if (!d) return ''; if (d.length <= 2) return '(' + d; const n = d.slice(2), corte = d.length === 11 ? 5 : 4; return '(' + d.slice(0, 2) + ') ' + n.slice(0, corte) + (n.length > corte ? '-' + n.slice(corte) : ''); };
   const foneOk = v => { const d = foneDig(v); return (d.length === 10 || d.length === 11) && +d.slice(0, 2) >= 11 && (d.length === 10 || d[2] === '9'); };
   $('cadFone').addEventListener('input', e => { const el = e.target, f = foneFmt(el.value); if (el.value !== f) el.value = f; });
-  // Android (Chrome): deixa escolher um número da agenda do aparelho, inclusive o próprio cartão "Eu"
-  if ('contacts' in navigator && 'select' in navigator.contacts) {
-    $('btnCadContato').hidden = false;
-    $('btnCadContato').addEventListener('click', async () => {
-      try { const [c] = await navigator.contacts.select(['tel'], { multiple: false }); const t = c && (c.tel || []).find(x => foneDig(x).length >= 10); if (t) { $('cadFone').value = foneFmt(t); fmsg(''); } else if (c) fmsg('Esse contato não tem um celular válido.'); } catch (e) { /* cancelou */ }
-    });
-  }
   let fotoOk = null, fotoStream = null, fotoDado = '', fotoVerif = null, cadCtx = null, vigia = null, camVez = 0;
   // Verificação do rosto (rosto.js): só libera "Tirar foto" com um rosto de verdade, centralizado e piscando
   const rosto = () => import('./rosto.js');
