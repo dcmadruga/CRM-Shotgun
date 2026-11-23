@@ -1495,10 +1495,10 @@ async function iniciar() {
     try {
       if (a === 'toggle') { await F.updateDoc(F.doc(db, 'usuarios', u.uid), u.ativo ? { ativo: false } : { ativo: true, pendente: false, liberadoEm: F.serverTimestamp() }); uStatus(u.ativo ? `${u.nome} bloqueado.` : `${u.nome} liberado.`); }
       if (a === 'excluir') {
-        if (excluirArm.uid !== u.uid || Date.now() - excluirArm.t > 5000) { excluirArm = { uid: u.uid, t: Date.now() }; e.target.textContent = 'Confirmar exclusão'; uStatus(`Clique de novo em "Confirmar exclusão" para excluir ${u.nome}. As propostas dele continuam no CRM, no bloco Propostas.`); return; }
+        if (excluirArm.uid !== u.uid || Date.now() - excluirArm.t > 5000) { excluirArm = { uid: u.uid, t: Date.now() }; e.target.textContent = 'Confirmar exclusão'; uStatus(`Clique de novo em "Confirmar exclusão" para excluir ${u.nome}. O acesso é cortado na hora e a conta é apagada do Firebase em até 1 hora. As propostas continuam no CRM, no bloco Propostas.`); return; }
         excluirArm = {};
         await F.updateDoc(F.doc(db, 'usuarios', u.uid), { ativo: false, excluido: true, excluidoEm: F.serverTimestamp() });
-        uStatus(`${u.nome} excluído. O acesso foi cortado na hora.`);
+        uStatus(`${u.nome} excluído. O acesso foi cortado na hora e a conta será apagada do Firebase em até 1 hora, sem precisar abrir o console.`);
       }
       if (a === 'novafoto') { await F.deleteDoc(F.doc(db, 'fotos', u.uid)); delete fotosU[u.uid]; fotosU[u.uid] = ''; desenharUsuarios(); uStatus(`${u.nome} vai tirar uma foto nova no próximo acesso.`); }
       if (a === 'reset') { await A.sendPasswordResetEmail(auth, u.email); uStatus(`E-mail para criar nova senha enviado para ${u.email}.`); }
