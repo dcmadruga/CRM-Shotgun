@@ -1,4 +1,0 @@
-401 https://diof.ro.gov.br/wp-json/wp/v2/search?search=posto%20de%20combust%C3%ADveis&per_page=5
-application/json; charset=UTF-8
-
- {"code":"rest_cannot_access","message":"DRA: Only authenticated users can access the REST API.","data":{"status":401}}
