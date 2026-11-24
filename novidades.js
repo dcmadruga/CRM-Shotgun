@@ -10,6 +10,12 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 227, data: '2026-11-24', titulo: 'Templates e referências no cadastro da revenda', itens: [
+    'Cada revenda agora tem os próprios Templates de proposta e a própria lista de Referências (página 2 do PDF). O administrador edita em Administração → Revendas, nos botões Editar templates e Editar referências.',
+    'O gerente da revenda edita os dois em Parâmetros Proposta → Valores de base, e eles valem na hora para a equipe dele, sem precisar publicar. "Usar os gerais" volta para a lista geral.',
+    'Os Templates e Referências de Parâmetros Proposta continuam valendo para quem não tem revenda.',
+    'No bloco Logo da revenda tem a opção "Não vincular logo da revenda nas propostas". Marcada, os PDFs da revenda saem só com o logo principal, mesmo com logo cadastrado.'
+  ] },
   { v: 226, data: '2026-11-24', titulo: 'Dados do vendedor vêm do cadastro', itens: [
     'Parâmetros Proposta: saiu o bloco Seus dados (Nome, Telefone e E-mail). O cabeçalho do PDF já usa o nome, o telefone e o e-mail do cadastro de cada usuário, ajustados pelo administrador em Usuários.',
     'No lugar fica só o Logo do PDF, para o administrador.'

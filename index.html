@@ -742,6 +742,14 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .rvlogo .logoprev img{max-width:96px;max-height:44px;object-fit:contain}
 .rvlogo .logoprev span{font-size:12px;color:#9E9E9E}
 .rvlogo .tools{gap:8px}
+.rvlogo .rvsemlogo{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:8px;margin-top:10px;white-space:normal;cursor:pointer}
+.rvlogo .rvsemlogo input{width:auto;flex:none;margin:0}
+.rvlogo .rvsemlogo+.hint{display:block;margin-top:4px}
+.rvlogo.off .logoprev img{opacity:.35}
+.rvtpl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.rvtpl b{font-size:14px}
+.rvtpl .hint{margin:0}
+.tplrevacts{align-items:center;flex-wrap:wrap}
 .rvbase{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:14px}
 .rvbasegrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .rvbase input,.rvbase textarea{width:100%;font-size:14px;font-weight:500;color:var(--fg)}
@@ -1015,15 +1023,16 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div class="tools"><button type="button" data-add="catMen">+ Item no catálogo</button></div>
   </div></section>
 
-  <section class="sec admin"><h2>Templates de proposta <span>itens do catálogo que cada template coloca na proposta</span></h2><div class="body">
+  <section class="sec admin soadm"><h2>Templates de proposta <span>gerais, para quem não tem revenda</span></h2><div class="body">
     <div id="catTpl"></div>
     <div class="tools"><button type="button" id="addTpl">+ Template</button></div>
-    <p class="hint">Marque os itens de cada catálogo e a quantidade. Preço, observação e isenção vêm do catálogo acima.</p>
+    <p class="hint">Marque os itens de cada catálogo e a quantidade. Preço, observação e isenção vêm do catálogo acima. Cada revenda pode ter os próprios templates, no cadastro dela em Administração → Revendas.</p>
   </div></section>
 
-  <section class="sec admin"><h2>Referências <span>página 2 do PDF</span></h2><div class="body">
+  <section class="sec admin soadm"><h2>Referências <span>página 2 do PDF, gerais para quem não tem revenda</span></h2><div class="body">
     <div class="refwrap"><table class="refs"><thead><tr><th>Rede / posto</th><th class="n">Nº de postos</th><th>Região</th><th>Contato</th><th>Telefone</th><th><span class="sr">Remover</span></th></tr></thead><tbody id="refsBody"></tbody></table></div>
     <div class="tools"><button type="button" id="addRef">+ Referência</button></div>
+    <p class="hint">Cada revenda pode ter a própria lista de referências, no cadastro dela em Administração → Revendas.</p>
   </div></section>
 
   <section class="sec admin"><h2>Textos padrão <span>observações</span></h2><div class="body">
@@ -1092,6 +1101,17 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <p id="crmDlgMsg" class="hint" role="status"></p>
   </dialog>
 </main>
+
+  <dialog id="tplRevDlg" class="tkdlg largo novdlg" aria-labelledby="tplRevTit">
+    <div class="tkdlghead"><h3 id="tplRevTit">Templates de proposta</h3><button type="button" id="tplRevFechar" aria-label="Fechar">✕</button></div>
+    <div class="body">
+      <p class="hint" id="tplRevSub"></p>
+      <div id="tplRevBox"></div>
+      <div class="tools"><button type="button" id="tplRevAdd">+ Template</button></div>
+      <p class="hint" id="tplRevMsg" role="status"></p>
+      <div class="tools tplrevacts"><button type="button" id="tplRevGeral">Usar os templates gerais</button><span style="flex:1"></span><button type="button" id="tplRevCancelar">Cancelar</button><button type="button" class="primary" id="tplRevSalvar">Salvar templates</button></div>
+    </div>
+  </dialog>
 
 <!-- Propostas agora fica dentro do CRM, no bloco abaixo do funil. A aba antiga continua aqui vazia para o app não quebrar num aparelho com arquivos de versões diferentes. -->
 <main id="viewList" hidden></main>
@@ -1528,11 +1548,10 @@ function totals(){
   $('kmInfo').textContent=`(R$ ${dec(CFG.vkm)} por km, definido em Parâmetros)`;
 }
 const REF_F=['nome','postos','regiao','contato','fone'];
-function renderRefs(){
-  const tb=$('refsBody');
-  tb.innerHTML = CFG.refs.length ? CFG.refs.map((r,i)=>`<tr data-i="${i}">${REF_F.map(f=>`<td${f==='postos'?' class="n"':''}><input data-f="${f}" id="ref-${f}-${i}" aria-label="${f}" value="${esc(r[f])}"${f==='postos'?' inputmode="numeric"':''}></td>`).join('')}<td><button type="button" class="del" data-del="${i}" aria-label="Remover referência">×</button></td></tr>`).join('')
+const refsLinhas = (refs,pref) => refs.length ? refs.map((r,i)=>`<tr data-i="${i}">${REF_F.map(f=>`<td${f==='postos'?' class="n"':''}><input data-f="${f}" id="${pref}-${f}-${i}" aria-label="${f}" value="${esc(r[f])}"${f==='postos'?' inputmode="numeric"':''}></td>`).join('')}<td><button type="button" class="del" data-del="${i}" aria-label="Remover referência">×</button></td></tr>`).join('')
     : '<tr><td colspan="6" class="hint">Nenhuma referência. Clique em + Referência.</td></tr>';
-}
+const REFS_HEAD = '<thead><tr><th>Rede / posto</th><th class="n">Nº de postos</th><th>Região</th><th>Contato</th><th>Telefone</th><th><span class="sr">Remover</span></th></tr></thead>';
+function renderRefs(){ $('refsBody').innerHTML = refsLinhas(CFG.refs,'ref') }
 $('refsBody').addEventListener('input',e=>{ const f=e.target.dataset.f; if(!f) return; CFG.refs[+e.target.closest('tr').dataset.i][f]=e.target.value; markCfg() });
 $('refsBody').addEventListener('click',e=>{ const d=e.target.dataset.del; if(d===undefined) return; CFG.refs.splice(+d,1); markCfg(); renderRefs() });
 $('addRef').addEventListener('click',()=>{ CFG.refs.push({nome:'',postos:'',regiao:'',contato:'',fone:''}); markCfg(); renderRefs(); $('ref-nome-'+(CFG.refs.length-1)).focus() });
@@ -1606,44 +1625,84 @@ $('tplSeg').addEventListener('click',e=>{
   renderItems('lic'); renderItems('men'); renderTplSeg();
   tplMsg(lic.length+men.length ? `Template ${t.nome} aplicado: ${lic.length} licença(s) e ${men.length} mensalidade(s). Ajuste o que precisar.` : `O template ${t.nome} ainda não tem itens. O administrador define em Parâmetros Proposta.`);
 });
-function renderTplCfg(){
-  const box=$('catTpl'); if(!box) return;
-  const ts=tplLista();
+// Editor de templates reaproveitável: Parâmetros Proposta (gerais) e o cadastro de cada revenda (janela).
+// ctx: lista() = array editável, cat(k) = catálogo ('lic'|'men'), mudou(tipo) = 'nome'|'item'|'del', pref = prefixo dos ids
+const tplCatDe = k => CFG[k==='lic'?'catLic':'catMen']||[];
+function tplEditorHTML(ts,cat,pref){
   const col=(t,ti,k,tit)=>{
-    const cat=CFG[k==='lic'?'catLic':'catMen']||[];
-    return `<div><h3>${tit}<span>Preço · Qtd.</span></h3>${cat.length?cat.map(c=>{ const x=(t[k]||[]).find(y=>y.ref===c.id); const uid=`tpl-${ti}-${k}-${esc(c.id)}`;
+    const c0=cat(k);
+    return `<div><h3>${tit}<span>Preço · Qtd.</span></h3>${c0.length?c0.map(c=>{ const x=(t[k]||[]).find(y=>y.ref===c.id); const uid=`${pref}-${ti}-${k}-${esc(c.id)}`;
       return `<div class="tplit"><label class="chk" for="${uid}"><input type="checkbox" id="${uid}" data-tk="${k}" data-ref="${esc(c.id)}" ${x?'checked':''}><span>${esc(c.desc||'(sem descrição)')}</span></label><span class="pr">${c.isento?'Isento':brl(c.price)}</span><input data-tq="${k}" data-ref="${esc(c.id)}" aria-label="Quantidade" inputmode="decimal" placeholder="?" value="${esc(x?x.qty:c.qty)}" ${x?'':'disabled'}></div>` }).join(''):'<p class="hint">Catálogo vazio.</p>'}</div>`;
   };
-  box.innerHTML = ts.length ? ts.map((t,ti)=>`<div class="tplcard" data-ti="${ti}">
-    <div class="tplhead"><label>Nome do template<input data-tn id="tpl-n-${ti}" value="${esc(t.nome)}"></label><button type="button" class="del" data-tdel="${ti}" aria-label="Remover template">×</button></div>
+  return ts.length ? ts.map((t,ti)=>`<div class="tplcard" data-ti="${ti}">
+    <div class="tplhead"><label>Nome do template<input data-tn id="${pref}-n-${ti}" value="${esc(t.nome)}"></label><button type="button" class="del" data-tdel="${ti}" aria-label="Remover template">×</button></div>
     <div class="tplcols">${col(t,ti,'lic','Licenças')}${col(t,ti,'men','Mensalidades')}</div>
   </div>`).join('') : '<p class="hint">Nenhum template. Clique em + Template.</p>';
 }
-$('catTpl').addEventListener('input',e=>{
-  const card=e.target.closest('.tplcard'); if(!card) return;
-  const t=tplEditavel()[+card.dataset.ti]; const el=e.target;
-  if(el.dataset.tn!==undefined){ t.nome=el.value; markCfg(); renderTplSeg(); return }
-  const k=el.dataset.tk||el.dataset.tq, ref=el.dataset.ref; if(!k||!ref) return;
-  t[k]=t[k]||[];
-  if(el.dataset.tk){
-    const q=card.querySelector(`[data-tq="${k}"][data-ref="${CSS.escape(ref)}"]`);
-    if(el.checked){ if(!t[k].some(y=>y.ref===ref)){ const cat=CFG[k==='lic'?'catLic':'catMen']; t[k].splice(cat.findIndex(c=>c.id===ref),0,{ref,qty:q.value}); ordenarTpl(t,k) } q.disabled=false }
-    else { t[k]=t[k].filter(y=>y.ref!==ref); q.disabled=true }
-  } else { const x=t[k].find(y=>y.ref===ref); if(x) x.qty=el.value }
-  markCfg();
-});
-function ordenarTpl(t,k){ const ids=(CFG[k==='lic'?'catLic':'catMen']||[]).map(c=>c.id); t[k].sort((a,b)=>ids.indexOf(a.ref)-ids.indexOf(b.ref)) }
-$('catTpl').addEventListener('click',e=>{
-  const d=e.target.dataset.tdel; if(d===undefined) return;
-  tplEditavel().splice(+d,1); markCfg(); renderTplCfg(); renderTplSeg();
-});
+function ordenarTpl(t,k,cat){ const ids=(cat||tplCatDe)(k).map(c=>c.id); t[k].sort((a,b)=>ids.indexOf(a.ref)-ids.indexOf(b.ref)) }
+function ligarTplEditor(box,ctx){
+  box.addEventListener('input',e=>{
+    const card=e.target.closest('.tplcard'); if(!card) return;
+    const t=ctx.lista()[+card.dataset.ti]; const el=e.target; if(!t) return;
+    if(el.dataset.tn!==undefined){ t.nome=el.value; ctx.mudou('nome'); return }
+    const k=el.dataset.tk||el.dataset.tq, ref=el.dataset.ref; if(!k||!ref) return;
+    t[k]=t[k]||[];
+    if(el.dataset.tk){
+      const q=card.querySelector(`[data-tq="${k}"][data-ref="${CSS.escape(ref)}"]`);
+      if(el.checked){ if(!t[k].some(y=>y.ref===ref)){ t[k].push({ref,qty:q.value}); ordenarTpl(t,k,ctx.cat) } q.disabled=false }
+      else { t[k]=t[k].filter(y=>y.ref!==ref); q.disabled=true }
+    } else { const x=t[k].find(y=>y.ref===ref); if(x) x.qty=el.value }
+    ctx.mudou('item');
+  });
+  box.addEventListener('click',e=>{
+    const d=e.target.dataset.tdel; if(d===undefined) return;
+    ctx.lista().splice(+d,1); ctx.mudou('del');
+  });
+}
+const novoTpl = () => ({id:'t'+Date.now().toString(36), nome:'Novo template', lic:[], men:[]});
+function renderTplCfg(){
+  const box=$('catTpl'); if(!box) return;
+  box.innerHTML=tplEditorHTML(tplLista(),tplCatDe,'tpl');
+}
+ligarTplEditor($('catTpl'),{lista:tplEditavel, cat:tplCatDe, mudou:tipo=>{ markCfg(); if(tipo!=='item') renderTplSeg(); if(tipo==='del') renderTplCfg() }});
 $('addTpl').addEventListener('click',()=>{
-  tplEditavel().push({id:'t'+Date.now().toString(36), nome:'Novo template', lic:[], men:[]});
+  tplEditavel().push(novoTpl());
   markCfg(); renderTplCfg(); renderTplSeg();
   const n=$('tpl-n-'+(CFG.templates.length-1)); n.focus(); n.select();
 });
 // o catálogo mudou de nome/preço: atualiza a lista do editor de templates
 ['catLic','catMen'].forEach(k=>$(k).addEventListener('change',()=>renderTplCfg()));
+// Janela de templates de uma revenda (aberta pelo cadastro da revenda e pelo gerente). Edita uma cópia e só grava em Salvar.
+// modo 'tpl' = templates; modo 'ref' = referências (página 2 do PDF)
+const tplDlg={modo:'tpl',lista:[],cat:tplCatDe,salvar:null,mexeu:false};
+function tplDlgRender(){ $('tplRevBox').innerHTML = tplDlg.modo==='ref' ? `<div class="refwrap"><table class="refs">${REFS_HEAD}<tbody>${refsLinhas(tplDlg.lista,'refr')}</tbody></table></div>` : tplEditorHTML(tplDlg.lista,tplDlg.cat,'tplr') }
+const tplDlgMexeu = () => { tplDlg.mexeu=true; $('tplRevMsg').textContent='Alterações ainda não salvas.' };
+ligarTplEditor($('tplRevBox'),{lista:()=>tplDlg.modo==='tpl'?tplDlg.lista:[], cat:k=>tplDlg.cat(k), mudou:tipo=>{ tplDlgMexeu(); if(tipo==='del') tplDlgRender() }});
+$('tplRevBox').addEventListener('input',e=>{ const f=e.target.dataset.f; if(tplDlg.modo!=='ref'||!f) return; tplDlg.lista[+e.target.closest('tr').dataset.i][f]=e.target.value; tplDlgMexeu() });
+$('tplRevBox').addEventListener('click',e=>{ const d=e.target.dataset.del; if(tplDlg.modo!=='ref'||d===undefined) return; tplDlg.lista.splice(+d,1); tplDlgMexeu(); tplDlgRender() });
+function abrirTplDlg(o){
+  tplDlg.modo=o.modo||'tpl'; tplDlg.lista=clone(o.lista||[]); tplDlg.cat=o.cat||tplCatDe; tplDlg.salvar=o.salvar; tplDlg.mexeu=false;
+  $('tplRevAdd').textContent = tplDlg.modo==='ref' ? '+ Referência' : '+ Template';
+  $('tplRevSalvar').textContent = tplDlg.modo==='ref' ? 'Salvar referências' : 'Salvar templates';
+  $('tplRevGeral').textContent = tplDlg.modo==='ref' ? 'Usar as referências gerais' : 'Usar os templates gerais';
+  $('tplRevTit').textContent=o.titulo||'Templates de proposta';
+  $('tplRevSub').textContent=o.sub||'';
+  $('tplRevMsg').textContent='';
+  $('tplRevGeral').hidden=!o.podeGeral;
+  tplDlgRender(); $('tplRevDlg').showModal();
+}
+$('tplRevAdd').addEventListener('click',()=>{ if(tplDlg.modo==='ref'){ tplDlg.lista.push({nome:'',postos:'',regiao:'',contato:'',fone:''}); tplDlgMexeu(); tplDlgRender(); $('refr-nome-'+(tplDlg.lista.length-1)).focus(); return } tplDlg.lista.push(novoTpl()); tplDlg.mexeu=true; tplDlgRender(); const n=$('tplr-n-'+(tplDlg.lista.length-1)); n.focus(); n.select() });
+const tplDlgFechar=()=>{ if(tplDlg.mexeu && !$('tplRevMsg').dataset.arm){ $('tplRevMsg').dataset.arm='1'; $('tplRevMsg').textContent='Há alterações não salvas. Toque de novo para fechar sem salvar.'; setTimeout(()=>delete $('tplRevMsg').dataset.arm,5000); return } delete $('tplRevMsg').dataset.arm; $('tplRevDlg').close() };
+$('tplRevFechar').addEventListener('click',tplDlgFechar); $('tplRevCancelar').addEventListener('click',tplDlgFechar);
+async function tplDlgGravar(arr){
+  const b1=$('tplRevSalvar'), b2=$('tplRevGeral'); b1.disabled=b2.disabled=true; $('tplRevMsg').textContent='Salvando...';
+  try{ await tplDlg.salvar(arr); tplDlg.mexeu=false; $('tplRevDlg').close() }
+  catch(err){ $('tplRevMsg').textContent='Não foi possível salvar ('+(err.code||err.message||'erro')+').' }
+  finally{ b1.disabled=b2.disabled=false }
+}
+$('tplRevSalvar').addEventListener('click',()=>{ if(tplDlg.modo==='ref'){ tplDlgGravar(tplDlg.lista.filter(r=>REF_F.some(f=>String(r[f]||'').trim()))); return } const sem=tplDlg.lista.find(t=>!String(t.nome||'').trim()); if(sem){ $('tplRevMsg').textContent='Dê um nome a cada template.'; return } tplDlgGravar(tplDlg.lista) });
+$('tplRevGeral').addEventListener('click',()=>tplDlgGravar(null));
+
 
 /* ---------- Abas ---------- */
 function showTab(cfg){

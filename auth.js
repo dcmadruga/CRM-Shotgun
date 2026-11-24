@@ -37,7 +37,7 @@ async function iniciar() {
   const BASE_REV = ['vkm', 'validDias', 'portePeq', 'porteMed', 'bases'];
   // Logo da revenda (cabeçalho do PDF): vem só do cadastro da revenda; quem não tem revenda fica sem
   const LOGO_REV = ['logoRev', 'logoRevW', 'logoRevH'];
-  const comBaseRev = c => { fb.geral = BASE_REV.reduce((o, k) => (o[k] = c[k], o), {}); const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); if (!fb.revenda) return c; BASE_REV.forEach(k => { if (b[k] !== undefined && b[k] !== null && String(b[k]).trim() !== '') c[k] = b[k]; }); return c; };
+  const comBaseRev = c => { fb.geral = BASE_REV.reduce((o, k) => (o[k] = c[k], o), {}); const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && !b.semLogo && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); fb.tplSemRev = c.templates; fb.refsSemRev = c.refs; if (!fb.revenda) return c; if (Array.isArray(b.templates)) c.templates = JSON.parse(JSON.stringify(b.templates)); if (Array.isArray(b.refs)) c.refs = JSON.parse(JSON.stringify(b.refs)); BASE_REV.forEach(k => { if (b[k] !== undefined && b[k] !== null && String(b[k]).trim() !== '') c[k] = b[k]; }); return c; };
 
   /* ---------- Login ---------- */
   const box = $('loginBox'), lmsg = t => { $('loginMsg').textContent = t };
@@ -345,7 +345,7 @@ async function iniciar() {
       teamStatus('Sem conexão: usando os últimos parâmetros baixados neste aparelho.');
     }
   }
-  const semLogoRev = c => { const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); return c; };
+  const semLogoRev = c => { const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && !b.semLogo && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); return c; };
   // Lê uma imagem de logo, reduz para no máximo 256 px e devolve { url, w, h } (mesmo limite do logo principal)
   const lerImagemLogo = f => new Promise((ok, falha) => {
     if (!f || !/^image\/(png|jpeg|webp)$/.test(f.type)) return falha(new Error('Use uma imagem PNG ou JPG.'));
@@ -357,9 +357,16 @@ async function iniciar() {
       ok({ url, w: c.width, h: c.height }); }; img.onerror = () => falha(new Error('Não consegui ler essa imagem. Tente outro arquivo PNG ou JPG.')); img.src = rd.result; };
     rd.readAsDataURL(f);
   });
-  const blocoLogoRev = (b, attr) => `<div class="rvlogo"><div class="logoprev">${b.logoRev ? `<img src="${esc(b.logoRev)}" alt="Logo da revenda">` : '<span>sem logo</span>'}</div>
+  const blocoLogoRev = (b, attr) => `<div class="rvlogo${b.semLogo ? ' off' : ''}"><div class="logoprev">${b.logoRev ? `<img src="${esc(b.logoRev)}" alt="Logo da revenda">` : '<span>sem logo</span>'}</div>
     <div><b>Logo da revenda</b> <span class="hint">aparece no cabeçalho do PDF, ao lado do logo principal</span>
-    <div class="tools"><label class="btn up">${b.logoRev ? 'Trocar logo' : 'Carregar logo'}<input type="file" ${attr}="up" accept="image/png,image/jpeg,image/webp" hidden></label>${b.logoRev ? `<button type="button" ${attr}="del">Remover</button>` : ''}</div></div></div>`;
+    <div class="tools"><label class="btn up">${b.logoRev ? 'Trocar logo' : 'Carregar logo'}<input type="file" ${attr}="up" accept="image/png,image/jpeg,image/webp" hidden></label>${b.logoRev ? `<button type="button" ${attr}="del">Remover</button>` : ''}</div>
+    <label class="chk rvsemlogo"><input type="checkbox" ${attr}="off"${b.semLogo ? ' checked' : ''}> Não vincular logo da revenda nas propostas</label>${b.semLogo ? '<span class="hint">Os PDFs desta revenda saem só com o logo principal.</span>' : ''}</div></div>`;
+  // Templates de proposta da revenda: base.templates (lista própria). Sem a lista, a equipe usa os templates gerais.
+  const blocoTplRev = (b, attr) => `<div class="rvtpl"><b>Templates de proposta</b><span class="hint">${Array.isArray(b.templates) ? `${b.templates.length} template(s) próprio(s) da revenda: ${esc(b.templates.map(t => t.nome).join(', ') || 'nenhum')}` : 'usa os templates gerais'}</span><button type="button" ${attr}="tpl">Editar templates</button></div>
+    <div class="rvtpl"><b>Referências</b><span class="hint">${Array.isArray(b.refs) ? `${b.refs.length} referência(s) própria(s) da revenda, na página 2 do PDF` : 'usa as referências gerais'}</span><button type="button" ${attr}="ref">Editar referências</button></div>`;
+  const gravarTplRev = (rid, arr) => F.updateDoc(F.doc(db, 'revendas', rid), { 'base.templates': arr ? JSON.parse(JSON.stringify(arr)) : F.deleteField(), atualizado: F.serverTimestamp() });
+  const gravarRefsRev = (rid, arr) => F.updateDoc(F.doc(db, 'revendas', rid), { 'base.refs': arr ? JSON.parse(JSON.stringify(arr)) : F.deleteField(), atualizado: F.serverTimestamp() });
+  const gravarSemLogo = (rid, sim) => F.updateDoc(F.doc(db, 'revendas', rid), { 'base.semLogo': sim ? true : F.deleteField(), atualizado: F.serverTimestamp() });
   async function gravarLogoRev(rid, dados) {
     const up = dados ? { 'base.logoRev': dados.url, 'base.logoRevW': dados.w, 'base.logoRevH': dados.h } : { 'base.logoRev': F.deleteField(), 'base.logoRevW': F.deleteField(), 'base.logoRevH': F.deleteField() };
     await F.updateDoc(F.doc(db, 'revendas', rid), { ...up, atualizado: F.serverTimestamp() });
@@ -369,7 +376,7 @@ async function iniciar() {
     const el = $('baseRevInfo'); if (!el) return;
     if (!fb.gerente) { el.innerHTML = ''; return; }
     const bs = (fb.revenda && fb.revenda.base) || {}, v = k => bs[k] === undefined || bs[k] === null ? '' : esc(bs[k]), ph = k => esc(String((fb.geral || {})[k] ?? ''));
-    el.innerHTML = blocoLogoRev(bs, 'data-glogo') + `<div class="grid" style="margin-top:14px">
+    el.innerHTML = blocoLogoRev(bs, 'data-glogo') + blocoTplRev(bs, 'data-gtpl') + `<div class="grid" style="margin-top:14px">
       <label>Deslocamento (R$ por km)<input data-gb="vkm" type="number" step="0.01" min="0" value="${v('vkm')}" placeholder="${ph('vkm')}"></label>
       <label>Validade da condição (dias)<input data-gb="validDias" type="number" step="1" min="0" value="${v('validDias')}" placeholder="${ph('validDias')}"></label>
       <label>Porte Pequeno: tancagem até (m³)<input data-gb="portePeq" type="number" step="1" min="1" value="${v('portePeq')}" placeholder="${ph('portePeq')}"></label>
@@ -389,8 +396,44 @@ async function iniciar() {
       msg(dados ? 'Logo da revenda salvo. Já sai nos próximos PDFs da sua equipe.' : 'Logo da revenda removido.');
     } catch (err) { msg('Não foi possível salvar o logo (' + (err.code || err.message || 'erro') + ').'); }
   }
-  $('baseRevInfo')?.addEventListener('click', e => { if (e.target.dataset.glogo === 'del' && fb.gerente && fb.revenda) logoGerente(null); });
+  $('baseRevInfo')?.addEventListener('click', e => {
+    if (e.target.dataset.glogo === 'del' && fb.gerente && fb.revenda) logoGerente(null);
+    if (e.target.dataset.gtpl === 'ref' && fb.gerente && fb.revenda) {
+      const bs = fb.revenda.base || {}, proprio = Array.isArray(bs.refs);
+      abrirTplDlg({ modo: 'ref', titulo: 'Referências · ' + (fb.revenda.nome || 'sua revenda'), sub: 'Saem na página 2 do PDF das propostas da sua equipe e são salvas na hora, sem precisar publicar.',
+        lista: proprio ? bs.refs : parseRefs(CFG.refs), podeGeral: proprio,
+        salvar: async arr => {
+          await gravarRefsRev(fb.revenda.id, arr);
+          const b2 = fb.revenda.base = { ...(fb.revenda.base || {}) }; if (arr) b2.refs = JSON.parse(JSON.stringify(arr)); else delete b2.refs;
+          if (arr) CFG.refs = JSON.parse(JSON.stringify(arr)); else CFG.refs = parseRefs(fb.refsSemRev);
+          lsSet(CFG_KEY, CFG); mostrarBaseRev();
+          const m = $('baseRevMsg'); if (m) m.textContent = arr ? 'Referências da revenda salvas. Já saem nos PDFs da sua equipe.' : 'A sua equipe volta a usar as referências gerais.';
+        } });
+    }
+    if (e.target.dataset.gtpl === 'tpl' && fb.gerente && fb.revenda) {
+      const bs = fb.revenda.base || {}, proprio = Array.isArray(bs.templates);
+      abrirTplDlg({ titulo: 'Templates de proposta · ' + (fb.revenda.nome || 'sua revenda'), sub: 'Valem para as propostas da sua equipe e são salvos na hora, sem precisar publicar. Preço, observação e isenção vêm do catálogo dos Parâmetros Proposta.',
+        lista: proprio ? bs.templates : tplLista(), cat: tplCatDe, podeGeral: proprio,
+        salvar: async arr => {
+          await gravarTplRev(fb.revenda.id, arr);
+          const b2 = fb.revenda.base = { ...(fb.revenda.base || {}) }; if (arr) b2.templates = JSON.parse(JSON.stringify(arr)); else delete b2.templates;
+          if (arr) CFG.templates = JSON.parse(JSON.stringify(arr)); else if (fb.tplSemRev !== undefined) CFG.templates = fb.tplSemRev; else delete CFG.templates;
+          lsSet(CFG_KEY, CFG); try { renderTplSeg(); } catch (er) {} mostrarBaseRev();
+          const m = $('baseRevMsg'); if (m) m.textContent = arr ? 'Templates da revenda salvos. Já valem para a sua equipe.' : 'A sua equipe volta a usar os templates gerais.';
+        } });
+    }
+  });
   $('baseRevInfo')?.addEventListener('change', async e => {
+    if (e.target.dataset.glogo === 'off') {
+      if (!fb.gerente || !fb.revenda) return; const sim = e.target.checked, m = $('baseRevMsg');
+      try {
+        await gravarSemLogo(fb.revenda.id, sim);
+        const bs = fb.revenda.base = { ...(fb.revenda.base || {}) }; if (sim) bs.semLogo = true; else delete bs.semLogo;
+        comBaseRev(CFG); lsSet(CFG_KEY, CFG); try { aplicarLogo(); } catch (er) {} mostrarBaseRev();
+        const m2 = $('baseRevMsg'); if (m2) m2.textContent = sim ? 'Pronto: as propostas da sua equipe saem só com o logo principal.' : 'Pronto: o logo da revenda volta a sair nas propostas.';
+      } catch (err) { e.target.checked = !sim; if (m) m.textContent = 'Não foi possível salvar (' + (err.code || err.message || 'erro') + ').'; }
+      return;
+    }
     if (e.target.dataset.glogo === 'up') { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f || !fb.gerente) return; try { await logoGerente(await lerImagemLogo(f)); } catch (err) { const m = $('baseRevMsg'); if (m) m.textContent = err.message; } return; }
     const k = e.target.dataset.gb; if (!k || !fb.gerente || !fb.revenda) return;
     const msg = t => { const m = $('baseRevMsg'); if (m) m.textContent = t; };
@@ -1744,7 +1787,7 @@ async function iniciar() {
         <div class="rvbloco"><span class="ulabt">Estados de atuação <small class="uufn">${es.length ? es.length + (es.length === 1 ? ' estado' : ' estados') : 'nenhum marcado'}</small></span>
           <div class="uufs">${UFS.map(uf => `<label class="uuf" title="${UF_NOMES[uf]}"><input type="checkbox" data-ruf="${uf}"${es.includes(uf) ? ' checked' : ''}><span>${uf}</span></label>`).join('')}</div>
           ${fora.length ? `<p class="rvaviso">${fora.map(x => `<b>${esc(String(x.u.nome).split(' ')[0])}</b> também atua em ${x.f.join(', ')}`).join('; ')}, fora dos estados da revenda.</p>` : ''}</div>
-        ${(() => { const b = r.base || {}, v = k => b[k] === undefined || b[k] === null ? '' : esc(b[k]), ph = k => esc(String(((typeof CFG === 'object' && CFG) || {})[k] ?? '')); return `<div class="rvbase">${blocoLogoRev(b, 'data-rlogo')}<span class="ulabt" style="margin-top:8px">Valores de base <small class="uufn">usados no cálculo e nas observações da proposta</small></span>
+        ${(() => { const b = r.base || {}, v = k => b[k] === undefined || b[k] === null ? '' : esc(b[k]), ph = k => esc(String(((typeof CFG === 'object' && CFG) || {})[k] ?? '')); return `<div class="rvbase">${blocoLogoRev(b, 'data-rlogo')}${blocoTplRev(b, 'data-rtpl')}<span class="ulabt" style="margin-top:8px">Valores de base <small class="uufn">usados no cálculo e nas observações da proposta</small></span>
           <div class="rvbasegrid">
             <label class="ulab">Deslocamento (R$ por km)<input data-rb="vkm" type="number" step="0.01" min="0" value="${v('vkm')}" placeholder="${ph('vkm')}"></label>
             <label class="ulab">Validade da condição (dias)<input data-rb="validDias" type="number" step="1" min="0" value="${v('validDias')}" placeholder="${ph('validDias')}"></label>
@@ -1775,6 +1818,10 @@ async function iniciar() {
         const estados = [...card.querySelectorAll('[data-ruf]:checked')].map(x => x.dataset.ruf);
         await F.updateDoc(ref, { estados, atualizado: F.serverTimestamp() });
         rStatus(estados.length ? `Estados de ${r.nome}: ${estados.join(', ')}.` : `${r.nome} ficou sem estado de atuação.`); return;
+      }
+      if (e.target.dataset.rlogo === 'off') {
+        const sim = e.target.checked; await gravarSemLogo(r.id, sim);
+        rStatus(sim ? 'Propostas de ' + r.nome + ' saem só com o logo principal.' : 'Logo de ' + r.nome + ' volta a sair nas propostas.'); return;
       }
       if (e.target.dataset.rlogo === 'up') {
         const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
@@ -1812,11 +1859,29 @@ async function iniciar() {
     } catch (err) { rStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); desenharRevendas(); }
   });
   $('revBody').addEventListener('click', async e => {
-    const b = e.target.closest('button[data-ra],button[data-rlogo]'), card = e.target.closest('[data-rid]'); if (!b || !card) return;
+    const b = e.target.closest('button[data-ra],button[data-rlogo],button[data-rtpl]'), card = e.target.closest('[data-rid]'); if (!b || !card) return;
     const r = revendas.find(x => x.id === card.dataset.rid); if (!r) return;
     try {
       if (b.dataset.ra === 'tirar') { const uid = b.dataset.uid; await vincularRevenda(uid, ''); desenharRevendas(); rStatus(`${nomeU(uid)} saiu de ${r.nome}.`); return; }
       if (b.dataset.rlogo === 'del') { await gravarLogoRev(r.id, null); rStatus('Logo de ' + r.nome + ' removido.'); return; }
+      if (b.dataset.rtpl === 'ref') {
+        let pr = null; try { const sn = await F.getDoc(paramRev(r.id)); if (sn.exists()) pr = sn.data(); } catch (er) {}
+        const b0 = r.base || {}, proprio = Array.isArray(b0.refs);
+        abrirTplDlg({ modo: 'ref', titulo: 'Referências · ' + r.nome, sub: 'Saem na página 2 do PDF das propostas da equipe de ' + r.nome + '. Quem não tem revenda continua com as referências gerais.',
+          lista: proprio ? b0.refs : parseRefs(pr && pr.refs ? pr.refs : CFG.refs), podeGeral: proprio,
+          salvar: async arr => { await gravarRefsRev(r.id, arr); rStatus(arr ? 'Referências de ' + r.nome + ' salvas. Valem para a equipe no próximo acesso.' : r.nome + ' volta a usar as referências gerais.'); } });
+        return;
+      }
+      if (b.dataset.rtpl === 'tpl') {
+        // catálogo da revenda: o dos Parâmetros Proposta dela, se o gerente publicou; senão o geral
+        let pr = null; try { const sn = await F.getDoc(paramRev(r.id)); if (sn.exists()) pr = sn.data(); } catch (er) {}
+        const temCat = pr && Array.isArray(pr.catLic) && Array.isArray(pr.catMen) && [...pr.catLic, ...pr.catMen].every(c => c && c.id);
+        const cat = temCat ? (k => pr[k === 'lic' ? 'catLic' : 'catMen']) : tplCatDe, b0 = r.base || {}, proprio = Array.isArray(b0.templates);
+        abrirTplDlg({ titulo: 'Templates de proposta · ' + r.nome, sub: 'Valem para as propostas da equipe de ' + r.nome + '. Itens e preços vêm do catálogo ' + (temCat ? 'dos Parâmetros Proposta da revenda.' : 'geral dos Parâmetros Proposta.'),
+          lista: proprio ? b0.templates : (pr && Array.isArray(pr.templates) ? pr.templates : tplLista()), cat, podeGeral: proprio,
+          salvar: async arr => { await gravarTplRev(r.id, arr); rStatus(arr ? 'Templates de ' + r.nome + ' salvos. Valem para a equipe no próximo acesso.' : r.nome + ' volta a usar os templates gerais.'); } });
+        return;
+      }
       if (b.dataset.ra === 'gerais') {
         if (geraisArm.id !== r.id || Date.now() - geraisArm.t > 5000) { geraisArm = { id: r.id, t: Date.now() }; b.textContent = 'Confirmar: apagar os parâmetros da revenda'; rStatus(`Clique de novo para apagar os parâmetros próprios de ${r.nome}. A equipe volta a usar os parâmetros gerais.`); return; }
         geraisArm = {}; await F.deleteDoc(paramRev(r.id)); revPar[r.id] = null; desenharRevendas(); rStatus(`${r.nome} voltou a usar os parâmetros gerais.`); return;
