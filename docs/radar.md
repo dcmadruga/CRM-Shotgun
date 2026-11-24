@@ -1,6 +1,6 @@
-# Radar de Novos Postos – MT, RS, SC, PR e SP
+# Radar de Novos Postos – MT, RS, SC, PR, SP, SE, PA, TO e RO
 
-Módulo da aba **Telemetria → Postos em construção** (Estados MT, RS, SC, PR e SP) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso, no Rio Grande do Sul, em Santa Catarina, no Paraná e em São Paulo. Acima da tela, além do Estado, há um filtro de Cidade que vale para todas as partes do Radar. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
+Módulo da aba **Telemetria → Postos em construção** (Estados MT, RS, SC, PR, SP, SE, PA, TO e RO) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso, no Rio Grande do Sul, em Santa Catarina, no Paraná, em São Paulo, em Sergipe, no Pará, no Tocantins e em Rondônia. Acima da tela, além do Estado, há um filtro de Cidade que vale para todas as partes do Radar. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
 
 Nada é inventado: cada registro vem de um documento público, com link para o original e o trecho de texto que o sustenta. Campo que não aparece no documento fica como "pendente de confirmação".
 
@@ -74,6 +74,35 @@ Em SP quem licencia posto é a CETESB, mas ela não publica no Diário Oficial c
 
 **Teste real (nov/2026, 12 meses):** o DOE-SP devolveu 302 matérias com termos de posto; 11 vieram de seções de licenciamento e 1 empreendimento de posto: NOVO CENTRO COMERCIAL R P LTDA, em Ribeirão Preto, com Licença Ambiental Prévia nº 3119 de 30/10/2026 para reativar dois postos (processo CETESB.069613/2025-84, com parecer técnico publicado em 07/10/2026). O Querido Diário estava fora do ar (503), então os diários das prefeituras de SP ainda não foram lidos.
 
+### Pará
+
+No Pará a SEMAS licencia os postos maiores e os municípios habilitados licenciam os de impacto local (Resolução COEMA nº 162/2021). Por isso entram as duas pontas: a consulta pública de processos da SEMAS e os diários das prefeituras.
+
+| Fonte | Situação | Observação |
+| --- | --- | --- |
+| SEMAS-PA: consulta pública de processos (SIMLAM), `monitoramento.semas.pa.gov.br/simlam` | Integrada | Usa a mesma consulta pública do site (sem login nem CAPTCHA): pesquisa por ano do processo e nome do empreendimento ("posto", "combust", "petro", "abastec", "derivad"), abre cada processo e fica só com os de licenciamento cuja atividade licenciada é de posto (310, 314, 316, 317 e afins) ou de troca de tanques (312). Processos de posto com a atividade 2303 (transporte de produtos perigosos, ou seja, o caminhão-tanque), descomissionamento e processos infracionais ficam de fora. A consulta não mostra município, CNPJ nem endereço: ficam "pendente de confirmação" e o núcleo regional vai no trecho. A data é a do protocolo; quando já há licença emitida ou indeferimento, a da última movimentação. |
+| Diário Oficial dos Municípios do Pará (FAMEP, SIGPub) | Integrada | Mesmo coletor da FAMURS. Traz as licenças das secretarias municipais e as resoluções do conselho municipal (ex.: CONSEMMA de Canaã dos Carajás aprovando LP e LI de posto). Matérias com várias licenças juntas são lidas uma a uma. |
+| Querido Diário (diários próprios das cidades) | Integrada | Cobre só 3 cidades do PA (Belém, Garrafão do Norte e Santana do Araguaia); no teste não trouxe nada. |
+| Base de postos da ANP | Integrada (cruzamento) | Filtrada por PA (1.768 postos). |
+| Diário Oficial do Estado (IOEPA) | Não integrada | A pesquisa por texto do site devolve erro 500. |
+
+**Teste real (nov/2026, 12 meses):** 89 empreendimentos de posto no PA. A SEMAS devolveu 495 processos com os nomes pesquisados, dos quais 64 são licenciamento de posto (2 com Licença de Instalação emitida). A FAMEP trouxe 40 publicações de posto, quase todas de Canaã dos Carajás, Dom Eliseu, Marabá e Conceição do Araguaia, com 14 novos postos (LP ou LI emitida, ou pedido de LP), por exemplo Martins e Pimentel Combustíveis, Auto Posto Prime, R. E. I. Monteiro Comércio de Combustíveis, Posto Avenida Pará e W de Souza Comércio de Combustível.
+
+### Tocantins, Rondônia e Sergipe
+
+| Estado | Fonte | Situação | Observação |
+| --- | --- | --- | --- |
+| TO | Querido Diário (26 cidades, inclusive Palmas) | Integrada | No teste trouxe 3 publicações de Palmas (2 pedidos de licença de posto à Fundação Municipal de Meio Ambiente e 1 trecho a revisar). |
+| TO | NATURATINS e Diário Oficial do Estado | Não integradas | Os sites recusam conexão de servidores fora do Brasil (tempo esgotado). O robô não contorna restrições de acesso. |
+| RO | Diário Oficial dos Municípios de Rondônia (AROM, SIGPub) | Integrada | No teste achou 67 matérias com termos de posto, nenhuma licença de posto (eram compras e leis). |
+| RO | Querido Diário (só Jaru) | Integrada | Nada no período. |
+| RO | SEDAM (transparência e SOLAR) e DIOF-RO | Não integradas | A SEDAM recusa conexão de fora do Brasil; o DIOF responde de forma instável e não tem busca aberta. |
+| SE | Diário Oficial dos Municípios de Sergipe (SIGPub) | Integrada | Nenhuma matéria com termos de posto no período. |
+| SE | Querido Diário (29 cidades, inclusive Aracaju) | Integrada | 23 trechos, nenhum de licença de posto. |
+| SE | ADEMA (licenciamento estadual) | Não integrada | Recusa conexão de servidores fora do Brasil. |
+
+Nos três Estados a base da ANP também entra no cruzamento (TO 482, RO 543 e SE 339 postos).
+
 Uma fonte só aparece como "Monitorada" no app depois de uma execução real com sucesso.
 
 ## Como funciona
@@ -83,18 +112,19 @@ GitHub Actions (a cada 15 min)
   └─ scripts/radar/radar.mjs  (uma rodada cobre todas as fontes; cada uma tem o seu cursor de datas)
        ├─ lê radar_config/geral (frequência, "Pesquisar agora")
        ├─ fontes/iomat.mjs   → MT: páginas do diário com as expressões pesquisadas
-       ├─ fontes/famurs.mjs  → RS: matérias do Diário dos Municípios
+       ├─ fontes/famurs.mjs  → RS: matérias do Diário dos Municípios (o mesmo coletor SIGPub serve FAMEP-PA, AROM-RO e Sergipe)
        ├─ fontes/doers.mjs   → RS: matérias do Diário Oficial do Estado
-       ├─ fontes/querido.mjs → RS, SC e PR: trechos dos diários próprios das cidades (Querido Diário)
+       ├─ fontes/querido.mjs → RS, SC, PR, SP, SE, PA, TO e RO: trechos dos diários próprios das cidades (Querido Diário)
        ├─ fontes/sinfat.mjs  → SC: requerimentos de licença das prefeituras (CIGA SINFAT, já estruturados)
        ├─ fontes/domsc.mjs   → SC: publicações de licenciamento do Diário dos Municípios
        ├─ fontes/dioepr.mjs  → PR: súmulas de licença do IAT no Diário Oficial do Estado (já estruturadas)
        ├─ fontes/doesp.mjs   → SP: Diário Oficial do Estado (súmulas da CETESB estruturadas; o resto vai ao classificador)
+       ├─ fontes/simlampa.mjs → PA: processos de licenciamento de posto na consulta pública da SEMAS-PA (já estruturados)
        ├─ classificar.mjs    → separa os avisos, decide se é posto, extrai os campos, classifica
        ├─ fontes/anp.mjs     → confirma o CNPJ e acha CNPJ pelo nome + município
        ├─ deduplica (CNPJ; sem CNPJ, razão social + município; processo = órgão + número)
        └─ firestore.mjs      → grava as coleções radar_* (API REST, conta de serviço)
-App (radar.js, aba Telemetria → Postos em construção → MT, RS, SC ou PR, e Cidade) lê as coleções e permite revisão, filtros, mapa e alertas.
+App (radar.js, aba Telemetria → Postos em construção → Estado e Cidade) lê as coleções e permite revisão, filtros, mapa e alertas.
 ```
 
 O agendamento confere a cada 15 minutos, mas só pesquisa quando passou o tempo configurado no app (padrão 24 h) ou quando um administrador usa **Pesquisar agora**. Isso roda no GitHub, mesmo com o app fechado.
@@ -107,7 +137,7 @@ O agendamento confere a cada 15 minutos, mas só pesquisa quando passou o tempo 
 - **Confiança**: *processo confirmado* (atividade de posto explícita + CNPJ ou nº de processo), *possível novo empreendimento* (posto sem CNPJ nem processo), *documento aguardando análise* (ponto de abastecimento de fazenda, texto truncado), *informação não confirmada* (campo deduzido, como CNPJ achado pelo nome na ANP).
 - Pedido de LP/LI de um CNPJ que já é posto autorizado na ANP é tratado como ampliação/reforma.
 
-Cada registro tem o campo `uf` (MT, RS, SC ou PR). Registros antigos sem `uf` são de MT.
+Cada registro tem o campo `uf` (MT, RS, SC, PR, SP, SE, PA, TO ou RO). Registros antigos sem `uf` são de MT.
 
 ## Coleções no Firestore
 
@@ -144,6 +174,6 @@ Sem o segredo, o agendamento não faz nada, e o push de código roda em **modo d
 - **Nova fonte:** criar `scripts/radar/fontes/<id>.mjs` exportando `info` ({ id, uf, nome, url, tipo }) e `coletar(de, ate, log)` que devolva `{ docs: [{ id, titulo, entidade, texto, data, url, local }], consultas }`; acrescentar em `FONTES` no `radar.mjs` e na lista de fontes do Estado no `radar.js`.
 - **Novo Estado:** acrescentar em `UFS` (`municipios.mjs`), em `ATIVOS` (`telemetria.js`) e em `NOME_UF`/`CENTRO_UF` (`radar.js`). Ela só aparece como monitorada depois da primeira coleta com sucesso.
 - **Novas expressões de busca:** `TERMOS` em `fontes/iomat.mjs`.
-- **Regras de classificação:** `classificar.mjs`. Para testar sem gravar: `RADAR_TESTE=true node scripts/radar/radar.mjs` (`RADAR_FONTES=famurs,doe-rs,querido-rs` limita às fontes do RS `RADAR_FONTES=sinfat-sc,dom-sc,querido-sc` às de SC e `RADAR_FONTES=dioe-pr,querido-pr` às do PR e `RADAR_FONTES=doe-sp,querido-sp` às de SP; `RADAR_AMOSTRA_LOG=1` mostra no log o que cada fonte devolveu) (precisa de internet para o IOMAT e o IBGE).
+- **Regras de classificação:** `classificar.mjs`. Para testar sem gravar: `RADAR_TESTE=true node scripts/radar/radar.mjs` (`RADAR_FONTES=famurs,doe-rs,querido-rs` limita às fontes do RS `RADAR_FONTES=sinfat-sc,dom-sc,querido-sc` às de SC e `RADAR_FONTES=dioe-pr,querido-pr` às do PR e `RADAR_FONTES=doe-sp,querido-sp` às de SP; `RADAR_FONTES=simlam-pa,famep,querido-pa` às do PA, `dom-se,querido-se` às de SE, `querido-to` às do TO e `arom,querido-ro` às de RO; `RADAR_AMOSTRA_LOG=1` mostra no log o que cada fonte devolveu) (precisa de internet para o IOMAT e o IBGE).
 - **Erros:** aparecem em Fontes e execuções (no app) e no log da execução no GitHub Actions. Se o IOMAT mudar o formato da busca, a fonte fica "Com erro" e o cursor de datas não avança, então nada se perde: a próxima rodada boa recupera o período.
 - **Custo:** o GitHub Actions é gratuito para repositório público; cada checagem sem trabalho leva poucos segundos.

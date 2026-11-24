@@ -1,4 +1,4 @@
-// Robô do Radar de Novos Postos (MT, RS, SC, PR e SP). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
+// Robô do Radar de Novos Postos (MT, RS, SC, PR, SP, SE, PA, TO e RO). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
 // 1) decide se é hora de pesquisar (frequência e "Pesquisar agora" ficam em radar_config/geral);
 // 2) coleta as fontes integradas; 3) separa e classifica os avisos; 4) cruza com a ANP;
 // 5) deduplica e grava empreendimentos, processos, documentos, histórico, alertas e a execução.
@@ -7,15 +7,17 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { firestore } from './firestore.mjs';
 import { municipiosUF } from './municipios.mjs';
-import { avisosDaPagina, analisarAviso, analisarEmitidas, analisarLicenca, hash, slug } from './classificar.mjs';
+import { avisosDaPagina, analisarAviso, analisarEmitidas, analisarLicenca, separarPublicacoes, hash, slug } from './classificar.mjs';
 import * as iomat from './fontes/iomat.mjs';
 import * as famurs from './fontes/famurs.mjs';
+import { paraSigpub } from './fontes/famurs.mjs';
 import * as doers from './fontes/doers.mjs';
 import * as querido from './fontes/querido.mjs';
 import * as sinfat from './fontes/sinfat.mjs';
 import * as domsc from './fontes/domsc.mjs';
 import * as dioepr from './fontes/dioepr.mjs';
 import * as doesp from './fontes/doesp.mjs';
+import * as simlampa from './fontes/simlampa.mjs';
 import * as anpFonte from './fontes/anp.mjs';
 
 const inicio = new Date();
@@ -28,8 +30,12 @@ const gatilhoBase = process.env.RADAR_GATILHO || 'agendado';
 // Fontes de diário oficial integradas, por Estado. RADAR_FONTES (ex.: "famurs,doe-rs") limita a rodada.
 const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }, { mod: querido, uf: 'RS' }, { mod: sinfat, uf: 'SC' }, { mod: domsc, uf: 'SC' }, { mod: querido.paraUF('SC', 'SC'), uf: 'SC' },
   { mod: dioepr, uf: 'PR' }, { mod: querido.paraUF('PR', 'PR'), uf: 'PR' },
-  { mod: doesp, uf: 'SP' }, { mod: querido.paraUF('SP', 'SP'), uf: 'SP' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
-const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ', SP: 'SÃO PAULO' };
+  { mod: doesp, uf: 'SP' }, { mod: querido.paraUF('SP', 'SP'), uf: 'SP' },
+  { mod: paraSigpub('sergipe', 'SE', 'Diário Oficial dos Municípios de Sergipe (SIGPub)', 'dom-se', 'DOM-SE'), uf: 'SE' }, { mod: querido.paraUF('SE', 'SE'), uf: 'SE' },
+  { mod: simlampa, uf: 'PA' }, { mod: paraSigpub('famep', 'PA', 'Diário Oficial dos Municípios do Pará (FAMEP)'), uf: 'PA' }, { mod: querido.paraUF('PA', 'PA'), uf: 'PA' },
+  { mod: querido.paraUF('TO', 'TO'), uf: 'TO' },
+  { mod: paraSigpub('arom', 'RO', 'Diário Oficial dos Municípios de Rondônia (AROM)'), uf: 'RO' }, { mod: querido.paraUF('RO', 'RO'), uf: 'RO' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
+const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ', SP: 'SÃO PAULO', SE: 'SERGIPE', PA: 'PARÁ', TO: 'TOCANTINS', RO: 'RONDÔNIA' };
 
 const PRIOR_CAT = ['novo', 'tanques', 'ampliacao', 'reforma', 'renovacao', 'titularidade', 'ponto_proprio', 'outro'];
 const PRIOR_CONF = ['confirmado', 'possivel', 'analise', 'nao_confirmado'];
@@ -88,7 +94,12 @@ for (const { mod, uf } of FONTES) {
       lidos += (r.registros || []).length;
       for (const d of r.docs) {
         const lic = analisarLicenca(d.texto, mun[uf], { titulo: d.titulo, uf, entidade: d.entidade });
-        const rs = lic ? [lic] : avisosDaPagina(d.texto).map(a => analisarAviso(a.texto, mun[uf], uf)).filter(Boolean);
+        // matéria com várias publicações juntas ("A Secretaria ... torna público que CONCEDEU ..." uma atrás da outra):
+        // se alguma delas é licença de posto, lê uma por uma; senão segue a separação de avisos de sempre
+        const partes = lic ? [] : separarPublicacoes(d.texto);
+        const licPartes = partes.map(p => analisarLicenca(p, mun[uf], { uf, entidade: d.entidade }));
+        const rs = lic ? [lic] : licPartes.some(Boolean) ? partes.map((p, i) => licPartes[i] || analisarAviso(p, mun[uf], uf)).filter(Boolean)
+          : avisosDaPagina(d.texto).map(a => analisarAviso(a.texto, mun[uf], uf)).filter(Boolean);
         for (const x of rs) {
           // publicação de lista do órgão (ex.: "licenças concedidas pela Fundação X"): o nome achado é o do órgão, não o da empresa
           if (x.razao && (/^(funda[cç][aã]o|prefeitura|munic[ií]pio|instituto|secretaria|departamento)\b/i.test(x.razao) || (d.entidade && slug(d.entidade).includes(slug(x.razao))))) { x.razao = ''; x.confianca = 'analise'; }

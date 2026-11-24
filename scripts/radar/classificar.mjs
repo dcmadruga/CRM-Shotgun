@@ -24,8 +24,8 @@ export const cnpjValido = c => {
 // Coordenadas em graus/minutos/segundos ("15°4’1.20”S e 57° 10’43.10”O") ou decimais negativas
 function coordenadas(t) {
   const dms = [...t.matchAll(/(\d{1,2})\s*[°º]\s*(\d{1,2})\s*['’′]\s*([\d.,]+)\s*(?:["”″]|['’′]{2})?\s*([NSOWL])/gi)].map(m => { const v = +m[1] + +m[2] / 60 + parseFloat(m[3].replace(',', '.')) / 3600; return /[SOW]/i.test(m[4]) ? -v : v; });
-  if (dms.length >= 2) { const [a, b] = dms; const lat = Math.abs(a) < Math.abs(b) ? a : b, lng = lat === a ? b : a; if ((lat < -6 && lat > -19 && lng < -50 && lng > -62) || (lat < -22.4 && lat > -34 && lng < -48 && lng > -58) || (lat < -19.6 && lat > -25.4 && lng < -44 && lng > -53.2)) return [+lat.toFixed(6), +lng.toFixed(6)]; }
-  const dec = t.match(/(-1\d|-[6-9]|-2\d|-3[0-3])[.,](\d{3,})\D{1,20}(-4[4-9]|-5\d|-6[01])[.,](\d{3,})/);
+  if (dms.length >= 2) { const [a, b] = dms; const lat = Math.abs(a) < Math.abs(b) ? a : b, lng = lat === a ? b : a; if ((lat < -6 && lat > -19 && lng < -50 && lng > -62) || (lat < -22.4 && lat > -34 && lng < -48 && lng > -58) || (lat < -19.6 && lat > -25.4 && lng < -44 && lng > -53.2) || (lat < 2.7 && lat > -14 && lng < -45 && lng > -67) || (lat < -9.4 && lat > -11.7 && lng < -36.3 && lng > -38.3)) return [+lat.toFixed(6), +lng.toFixed(6)]; }
+  const dec = t.match(/(-1\d|-[0-9]|-2\d|-3[0-3])[.,](\d{3,})\D{1,20}(-3[6-9]|-4\d|-5\d|-6[0-7])[.,](\d{3,})/);
   if (dec) return [+(dec[1] + '.' + dec[2]), +(dec[3] + '.' + dec[4])];
   return null;
 }
@@ -67,6 +67,10 @@ function orgao(t, mun, uf = 'MT') {
   if (uf === 'RS' && /\bFEPAM\b|Funda[cç][aã]o\s+Estadual\s+de\s+Prote[cç][aã]o\s+Ambiental/i.test(t)) return { orgao: 'FEPAM (Fundação Estadual de Proteção Ambiental)', esfera: 'estadual' };
   if (uf === 'SP' && /\bCETESB\b|Companhia\s+Ambiental\s+do\s+Estado\s+de\s+S[ãa]o\s+Paulo/i.test(t)) return { orgao: 'CETESB (Companhia Ambiental do Estado de SP)', esfera: 'estadual' };
   if (uf === 'PR' && /\bIAT\b|Instituto\s+[ÁA]gua\s+e\s+Terra/i.test(t)) return { orgao: 'IAT (Instituto Água e Terra)', esfera: 'estadual' };
+  if (uf === 'PA' && /\bSEMAS\b|Secretaria\s+de\s+Estado\s+de\s+Meio\s+Ambiente\s+e\s+Sustentabilidade/i.test(t)) return { orgao: 'SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade)', esfera: 'estadual' };
+  if (uf === 'RO' && /\bSEDAM\b|Secretaria\s+de\s+Estado\s+do\s+Desenvolvimento\s+Ambiental/i.test(t)) return { orgao: 'SEDAM (Secretaria de Estado do Desenvolvimento Ambiental de RO)', esfera: 'estadual' };
+  if (uf === 'TO' && /\bNATURATINS\b|Instituto\s+Natureza\s+do\s+Tocantins/i.test(t)) return { orgao: 'NATURATINS (Instituto Natureza do Tocantins)', esfera: 'estadual' };
+  if (uf === 'SE' && /\bADEMA\b|Administra[cç][aã]o\s+Estadual\s+do\s+Meio\s+Ambiente/i.test(t)) return { orgao: 'ADEMA (Administração Estadual do Meio Ambiente de SE)', esfera: 'estadual' };
   if (uf === 'SC' && /\bIMA\b|Instituto\s+do\s+Meio\s+Ambiente\s+de\s+Santa\s+Catarina/i.test(t)) return { orgao: 'IMA (Instituto do Meio Ambiente de SC)', esfera: 'estadual' };
   if (/\bSEMA\b|Secretaria\s+(de\s+Estado|Estadual)\s+d[eo]\s+Meio\s+Ambiente/i.test(t)) return { orgao: `SEMA-${uf} (Secretaria de Estado de Meio Ambiente)`, esfera: 'estadual' };
   return { orgao: '', esfera: '' };
@@ -102,29 +106,32 @@ function licencasPedidas(t) {
 }
 
 function empresa(t) {
+  // aviso publicado pelo próprio município ("O MUNICÍPIO DE X, com CNPJ ..., torna público que ... o empreendimento Y,
+  // inscrito no CNPJ"): o nome é o do empreendimento, não o do município
+  if (/^\s*(?:O\s+|A\s+)?(?:MUNIC[IÍ]PIO|PREFEITURA|SECRETARIA)\b/i.test(t)) { const m = t.match(/(?:o\s+empreendimento|a\s+empresa)\s+(?=[A-ZÀ-Ú][^,;]{3,120}?\s*,?\s*(?:inscrit|CNPJ))/i); if (m) t = t.slice(m.index + m[0].length); }
   const i = t.search(/[,(\-–]?\s*(inscrit[oa]\s+no\s+|portador[a]?\s+do\s+|devidamente\s+inscrit[oa]\s+no\s+)?(CNPJ|CPF)\b/i);
   let nome = i > 0 ? t.slice(0, i) : (t.match(/^(.{5,120}?)(?:,|\s+torna|\s+-\s+)/) || [])[1] || '';
   const cab = /^(EDITAL DE COMUNICA[CÇ][AÃ]O|C\.\d|A\s+empresa|O\s+empreendimento|(?:A|O)\s+(?=[A-ZÀ-Ú])|A\s+Pessoa\s+Jur[ií]dica\s+de\s+Direito\s+Privado|[“"])\s*/i;
   for (let k = 0; k < 6 && cab.test(nome); k++) nome = nome.replace(cab, '');
   // cabeçalho de outra matéria colado antes do nome: fica o que vem depois do último cabeçalho
-  const hdr = [...nome.matchAll(/\b(EDITAL\s+DE\s+[A-ZÇÃ]+|ASSEMBLEIA\s+GERAL(\s+(EXTRA)?ORDIN[AÁ]RIA)?|AVISO\s+DE\s+[A-ZÇÃ]+|CONVOCA[CÇ][AÃ]O)\b/g)].pop();
-  if (hdr) nome = nome.slice(hdr.index + hdr[0].length);
-  nome = limpa(nome.replace(/^[\s\-–:]+/, '').replace(/[.,;:\-–\s]+$/, ''));
+  const hdr = [...nome.matchAll(/\b(EDITAL\s+DE\s+[A-ZÇÃ]+|ASSEMBLEIA\s+GERAL(\s+(EXTRA)?ORDIN[AÁ]RIA)?|AVISO\s+DE\s+[A-ZÇÃ]+(\s+DE\s+LICEN[CÇ]A(\s+AMBIENTAL)?(\s+DE\s+(OPERA[CÇ][AÃ]O|INSTALA[CÇ][AÃ]O)|\s+PR[EÉ]VIA)?)?|CONVOCA[CÇ][AÃ]O|LICEN[CÇ]A\s+(DE\s+)?(OPERA[CÇ][AÃ]O|INSTALA[CÇ][AÃ]O|PR[EÉ]VIA)(\s*[–-]\s*L[PIO]C?)?(\s+N[º°]\s*[\d./]+)?)(?=\s|$)/g)].pop();
+  if (hdr) { nome = nome.slice(hdr.index + hdr[0].length).replace(/^[\s\-–:]+/, ''); for (let k = 0; k < 3 && cab.test(nome); k++) nome = nome.replace(cab, ''); }
+  nome = limpa(nome.replace(/^[\s\-–:]+/, '').replace(/,\s*pessoa\s+jur[ií]dica.*$/i, '').replace(/[.,;:\-–\s]+$/, ''));
   // lixo de outra matéria antes do nome (valores, datas, cargos): fica o último pedaço
   const pedacos = nome.split(/\s*(?:R\$[-\s\d.,]+|\b\d{2}\/\d{2}\/\d{4}\b|Portaria\s+n[º°]?\s*\d+|Comiss[aã]o\s+Eleitoral|\bVALOR\b)\s*/i).filter(x => x.trim().split(/\s+/).length >= 2);
   if (pedacos.length > 1) nome = limpa(pedacos.pop());
   let fantasia = '';
   const pf = nome.match(/\(([^)]{3,60})\)/) || t.slice(0, 260).match(/nome\s+fantasia:?\s*([^,;]{3,60})/i);
   if (pf) { fantasia = limpa(pf[1]); nome = limpa(nome.replace(pf[0], '')); }
-  const hf = nome.match(/^(.{4,}?)\s+[-–]\s+((?:AUTO\s+)?POSTO\b.{2,50})$/i);
+  const hf = nome.match(/^(.{4,}?)\s+[-–]\s+((?:AUTO\s+)?POSTO\b.{2,50})$/i) || nome.match(/^(.{4,}?\b(?:LTDA|EIRELI|ME|EPP|S\.?A)\.?)\s+[\/–-]\s+(.{2,50})$/i);
   if (hf) { nome = limpa(hf[1]); fantasia = fantasia || limpa(hf[2]); }
-  nome = nome.replace(/[.,;:\-–\s]+$/, '');
+  nome = nome.replace(/^[\s,]*(a\s+empresa\s+)?que\s+denominava-se\s+.*?,?\s*passa\s+a\s+(?:ser|denominar-se)\s+/i, '').replace(/[.,;:\-–\s]+$/, '');
   if (nome.length > 140 || nome.length < 3) nome = '';
   return { razao: nome, fantasia };
 }
 
 function endereco(t) {
-  const m = t.match(/(?:localizad[oa]|situad[oa]|sito|sita|instalad[oa]|endere[cç]o:?|a\s+ser\s+localizad[oa])\s*(?:na|no|à|a|em)?\s*:?\s*((?:Av|Avenida|Rua|R\.|Rod|Rodovia|BR|MT|RS|ERS|SC|PR|SP|Estrada|Travessa|Tv|Alameda|Lote|Quadra|Fazenda|S[ií]tio|Ent\.)[^]{5,170}?)(?=,?\s*(?:no\s+)?munic[ií]pio|\s*-\s*[A-ZÀ-Ú][\wÀ-ú' ]+\/?\s*-?\s*(?:MT|RS|SC|PR)\b|,\s*CEP|\.\s|,?\s*coordenadas|$)/i);
+  const m = t.match(/(?:localizad[oa]|situad[oa]|sito|sita|instalad[oa]|endere[cç]o:?|a\s+ser\s+localizad[oa])\s*(?:na|no|à|a|em)?\s*:?\s*((?:Av|Avenida|Rua|R\.|Rod|Rodovia|BR|MT|RS|ERS|SC|PR|SP|PA|TO|RO|SE|Estrada|Travessa|Tv|Alameda|Lote|Quadra|Fazenda|S[ií]tio|Ent\.)[^]{5,170}?)(?=,?\s*(?:no\s+)?munic[ií]pio|\s*-\s*[A-ZÀ-Ú][\wÀ-ú' ]+\/?\s*-?\s*(?:MT|RS|SC|PR|SP|PA|TO|RO|SE)\b|,\s*CEP|\.\s|,?\s*coordenadas|$)/i);
   return m ? limpa(m[1]).replace(/[,.\s]+$/, '') : '';
 }
 
@@ -133,7 +140,8 @@ export function analisarAviso(texto, municipios, uf = municipios.uf || 'MT') {
   if (!POSTO.test(texto) || NAO_POSTO.test(texto.slice(0, 400))) return null;
   if (!REQUER.test(texto)) return null;
   const mun = municipios.achar(texto);
-  const cnpjs = [...texto.matchAll(/\b\d{2}\.?\d{3}\.?\d{3}\s?\/\s?\d{4}\s?-?\s?\d{2}\b/g)].map(m => m[0].replace(/\D/g, '')).filter(cnpjValido);
+  // fica de fora o CNPJ do próprio município/órgão ("O MUNICÍPIO DE X, com CNPJ ...")
+  const cnpjs = [...texto.matchAll(/\b\d{2}\.?\d{3}\.?\d{3}\s?\/\s?\d{4}\s?-?\s?\d{2}\b/g)].filter(m => !/(munic[ií]pio|prefeitura|secretaria|fundo\s+municipal)\s+(de\s+)?[^,;]{0,40},?\s*(com|inscrit[oa]\s+no|sob\s+o)?\s*(o\s+)?CNPJ[^\d]{0,12}$/i.test(texto.slice(Math.max(0, m.index - 90), m.index))).map(m => m[0].replace(/\D/g, '')).filter(cnpjValido);
   const { razao, fantasia } = empresa(texto);
   const proc = (texto.match(/processo\s*(?:SEMA\s*)?(?:n[º°o.]*|n[uú]mero)?\s*:?\s*(\d{1,7}\s*\/\s*\d{4})/i) || [])[1];
   const { evento, categoria, agua } = INDEFERE.test(texto) ? { evento: 'indeferido', categoria: 'outro', agua: false } : licencasPedidas(texto);
@@ -186,19 +194,31 @@ export function analisarEmitidas(texto, municipios) {
 // "LICENÇA DE INSTALAÇÃO Nº 12/2026 ... concede a presente licença a FULANO LTDA, CNPJ ..., para a atividade de
 // comércio varejista de combustíveis". Só vale se o texto disser que a licença foi emitida e a atividade for de posto.
 const TIPO_LIC = [['LP', /licen[cç]a\s+pr[eé]via|\bLP\s*(?:n[º°.]|\d)/i], ['LI', /licen[cç]a\s+(?:de\s+)?instala[cç][aã]o|\bLI\s*(?:n[º°.]|\d)/i], ['LO', /licen[cç]a\s+(?:de\s+)?opera[cç][aã]o|\bLOC?\s*(?:n[º°.]|\d)/i]];
-const EMITE = /\b(expede|concede|emite|outorga|licencia|fica\s+licenciad|presente\s+licen[cç]a|v[aá]lid[ao]\s+at[eé]|prazo\s+de\s+validade|validade\s*:|com\s+base\s+nos\s+autos)/i;
+const EMITE = /\b(expede|concede|emite|outorga|licencia|fica\s+licenciad|presente\s+licen[cç]a|v[aá]lid[ao]\s+at[eé]|prazo\s+de\s+validade|validade\s*:|com\s+base\s+nos\s+autos|concedeu|foi\s+concedid|aprova\s+a\s+(?:emiss[aã]o|renova[cç][aã]o)\s+da\s+licen[cç]a|recebeu\s+d[ao]\s+(?:secretaria|semma|semas|prefeitura|munic[ií]pio|funda[cç][aã]o|instituto)[^.]{0,80}licen[cç]a)/i;
 export function analisarLicenca(texto, municipios, { titulo = '', uf = municipios.uf || 'MT', entidade = '' } = {}) {
   const cab = titulo + ' ' + texto.slice(0, 700);
   if (!POSTO.test(texto) || NAO_POSTO.test(titulo) || !EMITE.test(texto)) return null;
+  // matéria com vários avisos (ex.: a secretaria publica várias licenças juntas) e o primeiro não é de posto:
+  // devolve null para o texto ser separado aviso por aviso
+  const avisos = [...texto.matchAll(/torna[mr]?\s+p[uú]blico/gi)];
+  if (avisos.length >= 2 && !POSTO.test(texto.slice(0, avisos[1].index))) return null;
   const tipos = TIPO_LIC.filter(([, re]) => re.test(titulo)).map(([t]) => t);
   if (!tipos.length) TIPO_LIC.forEach(([t, re]) => { if (re.test(texto.slice(0, 700))) tipos.push(t); });
   if (!tipos.length) return null;
   if (/renova/i.test(cab)) tipos.push('renov');
   const mun = (entidade && municipios.achar(entidade + ' ' + uf)) || municipios.achar(texto);
-  const cnpjs = [...texto.matchAll(/\b\d{2}\.?\d{3}\.?\d{3}\s?\/\s?\d{4}\s?-?\s?\d{2}\b/g)].map(m => m[0].replace(/\D/g, '')).filter(cnpjValido);
-  const rot = texto.match(/(?:empreendedor|raz[aã]o\s+social|interessad[oa]|requerente|titular|nome)\s*:\s*([^:\n]{3,120}?)\s*(?:[,;–-]\s*)?(?:CNPJ|CPF|C\.N\.P\.J|endere[cç]o|ativ)/i);
+  // fica de fora o CNPJ do próprio município/órgão ("O MUNICÍPIO DE X, com CNPJ ...")
+  const cnpjs = [...texto.matchAll(/\b\d{2}\.?\d{3}\.?\d{3}\s?\/\s?\d{4}\s?-?\s?\d{2}\b/g)].filter(m => !/(munic[ií]pio|prefeitura|secretaria|fundo\s+municipal)\s+(de\s+)?[^,;]{0,40},?\s*(com|inscrit[oa]\s+no|sob\s+o)?\s*(o\s+)?CNPJ[^\d]{0,12}$/i.test(texto.slice(Math.max(0, m.index - 90), m.index))).map(m => m[0].replace(/\D/g, '')).filter(cnpjValido);
+  const rot = texto.match(/(?:empreendedor|raz[aã]o\s+social|interessad[oa]|requerente|titular|nome)\s*:\s*([^:\n]{3,120}?)\s*(?:[,;–-]\s*)?(?:CNPJ|CPF|C\.N\.P\.J|endere[cç]o|ativ)/i)
+    // "Aprova a emissão da Licença ... para um Posto ... de propriedade da empresa X" (conselho municipal) e
+    // "Essa licença foi concedida à X – NOME FANTASIA, inscrito no CNPJ"
+    || texto.match(/EMPREENDIMENTO\s*:\s*([^:]{3,120}?)\s+(?:Trata-se|Vistos|CNPJ|Endere[cç]o)/i)
+    || texto.match(/de\s+propriedade\s+d[ae]\s+(?:empresa\s+)?([A-ZÀ-Ú].{2,110}?)\.?\s+O\s+CONSELHO/)
+    || texto.match(/de\s+propriedade\s+d[ae]\s+(?:empresa\s+)?([A-ZÀ-Ú][^.;:]{3,100}?)(?:\.\s|\s*,|\s+inscrit)/)
+    || texto.match(/(?:concedid[ao]|emitid[ao])\s+(?:à|ao|em\s+favor\s+d[ae])\s+(?:empresa\s+)?([A-ZÀ-Ú][^,;]{3,120}?)\s*,?\s*(?:inscrit|CNPJ|pessoa)/);
   const { razao: r2, fantasia } = empresa(texto.replace(/^[^]*?\b(?:a|à)\s+(?=[A-ZÀ-Ú][A-ZÀ-Ú0-9 .&-]{3,}\s*,?\s*(?:inscrit|CNPJ))/, ''));
-  const razao = limpa(rot ? rot[1] : r2).replace(/^(a\s+empresa|empresa)\s+/i, '');
+  // "a empresa que denominava-se X, passa a ser Y": fica o nome novo
+  const razao = limpa(rot ? rot[1] : r2).replace(/^[\s,.;–-]*(a\s+empresa|empresa)\s+/i, '').replace(/^.*\bpassa\s+a\s+(?:ser|denominar-se)\s+/i, '').replace(/[.,;\s]+$/, '');
   const numero = (cab.match(/\b(?:L[PIO]C?|licen[cç]a[^\dº°]{0,40})\s*n?[º°.]*\s*(\d{1,6}\s*\/\s*\d{2,4})/i) || [])[1];
   const proc = (texto.match(/processo\s*(?:administrativo\s*)?(?:n[º°o.]*|n[uú]mero)?\s*:?\s*([\d.\-]{3,20}\s*\/\s*\d{2,4}(?:-\d)?)/i) || [])[1];
   const t0 = tipos.find(x => x !== 'renov');
@@ -215,4 +235,16 @@ export function analisarLicenca(texto, municipios, { titulo = '', uf = municipio
     orgao: og.orgao, esfera: og.esfera || (entidade ? 'municipal' : ''),
     confianca: forte && legivel && (cnpjs.length || numero) && !proprio ? 'confirmado' : forte ? 'possivel' : 'analise', trecho: limpa(texto).slice(0, 1500)
   };
+}
+
+// Separa uma matéria com várias publicações seguidas, cada uma com o seu "torna público" (ex.: a secretaria municipal
+// publica várias licenças juntas). Cada parte começa na frase do "torna público". Com menos de 2, devolve [].
+export function separarPublicacoes(texto) {
+  const pos = [...texto.matchAll(/torna[mr]?\s+p[uú]blico/gi)].map(m => {
+    const antes = texto.slice(Math.max(0, m.index - 250), m.index);
+    const ini = Math.max(antes.lastIndexOf('. '), antes.lastIndexOf('” '), antes.lastIndexOf('" '));
+    return m.index - antes.length + (ini >= 0 ? ini + 2 : 0);
+  });
+  if (pos.length < 2) return [];
+  return pos.map((p, i) => limpa(texto.slice(i ? p : 0, pos[i + 1] ?? texto.length))).filter(p => p.length > 40);
 }

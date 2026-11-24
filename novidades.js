@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 235, data: '2026-11-24', titulo: 'Postos em construção em Sergipe, Pará, Tocantins e Rondônia', itens: [
+    'Telemetria → Postos em construção: o Estado agora tem também Sergipe (SE), Pará (PA), Tocantins (TO) e Rondônia (RO), com os mesmos filtros de Cidade, mapa, lista, alertas e fontes.',
+    'No Pará o Radar lê os processos de licenciamento de posto na consulta pública da SEMAS-PA e as licenças publicadas pelas prefeituras no Diário dos Municípios (FAMEP). Nos processos da SEMAS o município, o CNPJ e o endereço não aparecem: ficam como pendente de confirmação.',
+    'Em Rondônia e Sergipe entram os diários dos municípios (AROM e Sergipe) e, nos quatro Estados, os diários próprios das cidades (Querido Diário). Os sites da ADEMA (SE), do NATURATINS (TO) e da SEDAM (RO) recusam acesso de fora do Brasil e aparecem como não monitorados.'
+  ] },
   { v: 234, data: '2026-11-24', titulo: 'Pré Start, Start e Pós Start como módulos próprios', itens: [
     'No TASK, Pré Start, Start e Pós Start deixaram de ser etapas dentro de Implantação e viraram módulos principais, cada um com a sua liberação.',
     'Liberação padrão: Pré Start quando "Liberar a base" (Implantação) é finalizado, Start quando "Agendar o start com o cliente" (Pré Start) é finalizado e Pós Start quando "Aceite do cliente" (Start) é finalizado. O administrador muda em Administração → Parâmetros Módulos TASK.'
