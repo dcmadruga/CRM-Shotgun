@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 231, data: '2026-11-24', titulo: 'Pré TASK já vem marcado pela proposta e pela ANP', itens: [
+    'No Pré TASK, a seção TEF / PIX já abre com Sim em TEF Fixo quando a proposta aceita tem item de TEF, e com Sim em PDV Móvel quando tem item de PDV Móvel. Cartões Frota fica marcado quando houver item de frota.',
+    'Embaixo do campo aparece "Marcado pela proposta" com o item que deu origem. Sem o item, o campo continua em branco (não marca Não sozinho) e tudo segue editável.',
+    'Na seção Integração, "Posto é Bandeirado?" vem da base da ANP pelo CNPJ do posto (na Central, de cada filial): com bandeira já marca Sim e preenche a bandeira; bandeira branca marca Não.'
+  ] },
   { v: 229, data: '2026-11-24', titulo: 'Filtros na lista de revendas', itens: [
     'Administração → Revendas: acima das revendas cadastradas agora tem filtros por Estado de atuação e por Gerente de revenda (inclusive "Sem estado" e "Sem gerente").',
     'Os filtros se combinam, o contador mostra quantas revendas aparecem do total, e "Limpar filtros" volta a mostrar todas.'

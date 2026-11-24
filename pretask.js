@@ -70,6 +70,7 @@
 .pthist{font-size:12px;color:var(--muted);font-weight:400}
 .dgm.ok,.dgm.parcial,.dgm.vazio{flex:none}
 .dgm.falta{border:2px solid #d69e2e}
+.ptauto{font-size:11.5px;font-weight:500;color:var(--muted)}
 `;
   function estilos() { if (document.getElementById('ptCss')) return; const s = document.createElement('style'); s.id = 'ptCss'; s.textContent = css; document.head.appendChild(s); }
 
@@ -300,12 +301,34 @@
     const cs = camposBand(), sn = cs.find(c => c.tipo === 'simnao'), qual = cs.find(c => c.tipo === 'opcoes' || c.tipo === 'multicond');
     const branca = /branca|sem bandeira|livre/i.test(bE2); let mudou = false;
     if (sn && !C.v[sn.k]) { C.v[sn.k] = branca ? 'Não' : 'Sim'; mudou = true; }
-    if (qual && !C.v[qual.k]) {
-      const ops = String(qual.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean), n = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bandeira\s+/, '').replace(/^outr[oa]s?:\s*/, '');
-      const alvo = n(bE2), op = ops.find(o => n(o) === alvo) || ops.find(o => n(o) && (alvo.includes(n(o)) || n(o).includes(alvo))), outra = ops.find(ehOutro);
-      C.v[qual.k] = op || (outra ? outra + ': ' + bE2.replace(/^outr[oa]s?:\s*/i, '') : bE2); mudou = true;
-    }
+    if (qual && !C.v[qual.k]) { C.v[qual.k] = opBandeira(qual, bE2); mudou = true; }
     return mudou;
+  }
+  // Valor do campo "Qual bandeira" para um nome de bandeira: a opção da lista que corresponde, ou Outros: nome
+  function opBandeira(qual, nome) {
+    const ops = String(qual.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean), n = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bandeira\s+/, '').replace(/^outr[oa]s?:\s*/, '').trim();
+    const b = BANDS.find(x => x[0].test(nome)), canon = b ? b[4] : '';
+    const alvo = n(nome), op = ops.find(o => n(o) === alvo) || (canon && ops.find(o => n(o) === n(canon))) || ops.find(o => n(o) && !ehOutro(o) && (alvo.includes(n(o)) || n(o).includes(alvo))), outra = ops.find(ehOutro);
+    if (qual.tipo !== 'opcoes' && qual.tipo !== 'multicond') return canon || nome;
+    return op || (outra ? outra + ': ' + (canon || nome).replace(/^outr[oa]s?:\s*/i, '') : canon || nome);
+  }
+  // Posto é bandeirado? e Qual bandeira vêm da base da ANP pelo CNPJ do posto (cada filial, na Central), só se vazios.
+  // Com bandeira: Sim e a bandeira; bandeira branca: Não. CNPJ fora da ANP: fica como está.
+  async function bandeiraDaAnp() {
+    if (!window.anpPosto) return;
+    const cs = camposBand(), sn = cs.find(c => c.tipo === 'simnao'), qual = cs.find(c => c.tipo === 'opcoes' || c.tipo === 'multicond') || cs.find(c => c.tipo === 'texto' && /^\s*(qual\s+(a\s+)?)?bandeira\b/i.test(c.label || ''));
+    if (!sn) return;
+    const fs = C.pre.filiais || [], central = C.pre.tipoBase === 'Central';
+    const alvos = central ? fs.map((f, j) => ['f' + j + '__', f.cnpj]) : [['', [fs[0] && fs[0].cnpj, C.leadCnpj, C.p.cnpj].find(x => dig(x).length === 14)]];
+    for (const [pf, cnpj] of alvos) {
+      if (dig(cnpj).length !== 14 || C.v[pf + sn.k]) continue;
+      let o = null; try { o = await window.anpPosto(cnpj); } catch (e) {}
+      if (!C) return; if (!o || !o.bandeira) continue;
+      const fonte = 'Base ANP · CNPJ ' + fmtCnpj(cnpj);
+      if (o.bandeiraBranca) { C.v[pf + sn.k] = 'Não'; C.auto[pf + sn.k] = fonte + ' (bandeira branca)'; continue; }
+      C.v[pf + sn.k] = 'Sim'; C.auto[pf + sn.k] = fonte;
+      if (qual && !C.v[pf + qual.k]) { C.v[pf + qual.k] = opBandeira(qual, o.bandeira); C.auto[pf + qual.k] = fonte + ' · ' + o.bandeira; }
+    }
   }
   // Conversão: o "Sistema atual" informado pelo cliente no Pré-Contrato entra no Sistema Legado (só se vazio)
   function legadoDoE2() {
@@ -318,6 +341,40 @@
     const n = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '');
     const ops = String(leg.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean), op = ops.find(o => n(o) === n(sa)) || ops.find(o => n(o) && !ehOutro(o) && (n(sa).includes(n(o)) || n(o).includes(n(sa)))), outra = ops.find(ehOutro);
     C.v[leg.k] = leg.tipo === 'opcoes' ? (op || (outra ? outra + ': ' + sa : sa)) : sa;
+  }
+  // Itens da proposta aceita (os mesmos do contrato) marcam Sim nos campos Sim/Não ligados a eles (só se ainda vazios).
+  // Sem o item, o campo fica em branco: não marca Não. Continua editável.
+  const VINCULOS = [
+    { campo: /\btef\b.*\bfix|\bfix\w*.*\btef\b/i, item: c => /\btef\b/i.test(c) && !/m[oó]vel|pos\b|smart/i.test(c) },
+    { campo: /pdv\s*m[oó]vel|tef\s*m[oó]vel|\bpos\b/i, item: c => /pdv\s*m[oó]vel|tef\s*m[oó]vel|espelho de venda|smart\s*pos|\bpos\b/i.test(c) },
+    { campo: /cart[oõ]es?\s*(de\s*)?frota|\bfrota\b/i, item: c => /frota/i.test(c) }
+  ];
+  function itensProposta() {
+    const d = (C && C.p && C.p.dados) || {};
+    return [].concat(d.lic || [], d.men || []).filter(r => r && !r.oculto && String(r.desc || '').trim() && String(r.qty ?? '').trim() !== '0').map(r => String(r.desc) + ' ' + String(r.sub || ''));
+  }
+  function itensDaProposta() {
+    if (C.direto) return;
+    const its = itensProposta(); if (!its.length) return;
+    secoesParam(C.cfg4).forEach(sc => {
+      const prefs = porFilial(sc) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : [''];
+      sc.campos.forEach(c => {
+        if (c.tipo !== 'simnao') return;
+        const vin = VINCULOS.find(x => x.campo.test(c.label || '')); if (!vin) return;
+        const it = its.find(vin.item); if (!it) return;
+        prefs.forEach(pf => { const k = pf + c.k; if (!C.v[k]) { C.v[k] = 'Sim'; C.auto[k] = 'Proposta · ' + it.split(/[.(]/)[0].trim(); } });
+      });
+    });
+  }
+  // Mostra embaixo do campo de onde veio a resposta (proposta ou ANP); some quando a pessoa muda a resposta
+  function marcarAuto(root) {
+    Object.entries(C.auto || {}).forEach(([k, de]) => {
+      const el = root.querySelector(`[data-pk="${CSS.escape(k)}"]`); if (!el) return;
+      const n = document.createElement('small'); n.className = 'ptauto'; n.textContent = '✓ Preenchido pela ' + de;
+      const depois = el.parentElement.querySelector('.ptbsel') || el; depois.after(n);
+      const tira = () => { delete C.auto[k]; n.remove(); };
+      if (el.dataset.seg) el.addEventListener('click', tira, { once: true }); else el.addEventListener('change', tira, { once: true });
+    });
   }
   function ligarSelo(root) {
     root.querySelectorAll('select[data-pk]').forEach(sel => {
@@ -397,7 +454,10 @@
     camposBase().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v[k] === undefined && C.v['f0__' + k] !== undefined) C.v[k] = C.v['f0__' + k]; }));
     // a Bandeira voltou para a aba Integração: na Central ela é por filial, então o valor salvo na aba Implantação vai para a F1
     if (C.pre.tipoBase === 'Central') camposBand().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v['f0__' + k] === undefined && C.v[k] !== undefined) C.v['f0__' + k] = C.v[k]; }));
-    bandeiraDoE2(); legadoDoE2();
+    C.auto = {};
+    if (p.leadId && !direto) { const ld = await ler('crm', p.leadId); C.leadCnpj = (ld && ld.cnpj) || ''; }
+    await bandeiraDaAnp(); if (!C || (direto ? C.tid !== tk.id : C.pid !== pid)) return;
+    bandeiraDoE2(); legadoDoE2(); itensDaProposta();
     desenhar();
     if (e4 && e4.parcial) msg('Salvo parcial' + (e4.por ? ' por ' + e4.por : '') + (e4.em && e4.em.toDate ? ' em ' + e4.em.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '') + '. Complete os obrigatórios para o salvar final.');
   }
@@ -465,7 +525,7 @@
     // Salvar parcial também no fim de cada tela de Validação
     corpo.querySelectorAll(':scope > [data-ptp]').forEach(pn => { const id = pn.dataset.ptp; if (id !== 'status' && id !== 'base' && !(id === 'e2c' && C.e2) && !(id === 'e2' && C.direto) && !/^p\d+$/.test(id)) return; pn.insertAdjacentHTML('beforeend', '<div class="ptpfoot"><span class="hint" role="status"></span><button type="button" data-ptparc="1">Salvar parcial</button></div>'); });
     corpo.addEventListener('click', ev => { if (ev.target.closest('[data-ptparc]')) salvar(true); });
-    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo);
+    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo); marcarAuto(corpo);
     corpo.addEventListener('pt-mudou', ev => { cabecalhoMudou(ev); conferirFinal(); });
     corpo.addEventListener('input', () => conferirFinal()); corpo.addEventListener('change', () => conferirFinal());
     conferirFinal(true);
