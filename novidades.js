@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 232, data: '2026-11-24', titulo: 'Setor de Validação nas seções do Pré TASK', itens: [
+    'Administração → Parâmetros Pré TASK e Parâmetros Pré-Contrato: cada seção ganhou o campo "Setor de Validação", que escolhe onde ela aparece no Pré TASK: item próprio no menu, dentro de Status e datas, de Implantação ou de outra seção (ex.: TEF / PIX, Integração).',
+    'No Pré-Contrato, o campo aparece nas seções que têm campos marcados "Pré TASK". A seção de Dados bancários para boleto já vem apontando para TEF / PIX. Depois de escolher, toque em Salvar e publicar.'
+  ] },
   { v: 231, data: '2026-11-24', titulo: 'Pré TASK já vem marcado pela proposta e pela ANP', itens: [
     'No Pré TASK, a seção TEF / PIX já abre com Sim em TEF Fixo quando a proposta aceita tem item de TEF, e com Sim em PDV Móvel quando tem item de PDV Móvel. Cartões Frota fica marcado quando houver item de frota.',
     'Embaixo do campo aparece "Preenchido pela Proposta" com o item que deu origem. Sem o item, o campo continua em branco (não marca Não sozinho) e tudo segue editável.',
