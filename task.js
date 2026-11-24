@@ -110,7 +110,7 @@ function etapas(t) {
   if (!p) return `<div class="tketapas"><span class="tke none">${t.propostaId ? 'Proposta ainda não aprovada' : 'Sem proposta vinculada'}</span></div>`;
   const e = (n, nome, ok, quando, pend) => `<span class="tke ${ok ? 'ok' : pend ? 'pend' : 'none'}" title="${esc(nome + (quando ? ' em ' + quando : ''))}"><b>${ok ? '✓' : n}</b>${esc(nome)}${ok && quando ? `<small>${esc(quando)}</small>` : pend ? `<small>${esc(pend)}</small>` : ''}</span>`;
   const d = ts => ts && ts.toDate ? ts.toDate().toLocaleDateString('pt-BR') : '';
-  return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${p.e2Em ? e(2, 'Dados Primários', true, d(p.e2Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e2" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(2, 'Dados Primários', false, '', 'aguardando')}${(() => { const h = e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : ''); return p.ctEm ? h.replace('</span>', `<button type="button" class="tkver" data-tk="ct" data-pid="${esc(p.id)}">Ver contrato</button></span>`) : h; })()}${p.e4Em ? e(4, 'Pré TASK', true, d(p.e4Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e4" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(4, 'Pré TASK', false, '', p.ctAceitoEm ? 'aguardando vendedor' : '')}</div>`;
+  return `<div class="tketapas">${e(1, 'Proposta', true, d(p.aprovadoEm)).replace('</span>', `<button type="button" class="tkver" data-tk="pdf" data-pid="${esc(p.id)}">Ver proposta</button></span>`)}${p.e2Em ? e(2, 'Pré-Contrato', true, d(p.e2Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e2" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(2, 'Pré-Contrato', false, '', 'aguardando')}${(() => { const h = e(3, 'Contrato', !!p.ctAceitoEm, d(p.ctAceitoEm), p.ctAceitoEm ? '' : p.ctEm ? 'aguardando aceite' : p.e2Em ? 'a gerar' : ''); return p.ctEm ? h.replace('</span>', `<button type="button" class="tkver" data-tk="ct" data-pid="${esc(p.id)}">Ver contrato</button></span>`) : h; })()}${p.e4Em ? e(4, 'Pré TASK', true, d(p.e4Em)).replace('</span>', `<button type="button" class="tkver" data-tk="e4" data-pid="${esc(p.id)}">Ver dados</button></span>`) : e(4, 'Pré TASK', false, '', p.ctAceitoEm ? 'aguardando vendedor' : '')}</div>`;
 }
 // Pré TASK completo (salvar final com todos os obrigatórios): o botão do card passa de "Pré TASK" para "DADOS".
 // preOk é gravado pelo Pré TASK; cards antigos usam o passo 4 da proposta (e4Em só é marcado no salvar final).
@@ -329,7 +329,7 @@ function confirmar(bt, chave, texto) { if (armado === chave) { armado = null; re
 
 /* Dados gerais / novo cadastro */
 // Dados gerais: menu lateral por assunto (como um cadastro em etapas), com os campos editáveis do TASK
-// e, ao lado, as respostas da Etapa 2 e da Etapa 4 agrupadas pelas seções configuradas
+// e, ao lado, as respostas do Pré-Contrato e da Etapa 4 agrupadas pelas seções configuradas
 const ICONES = {
   status: '<path d="M3 12h4l3-8 4 16 3-8h4"/>', posto: '<path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M6 9h6M14 10h2a2 2 0 0 1 2 2v4a2 2 0 0 0 4 0V8l-3-3"/>',
   pessoas: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>', banco: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
@@ -398,7 +398,7 @@ function mostrarDg(id) {
   document.querySelectorAll('#tkForm .dgnav').forEach(b => b.setAttribute('aria-selected', b.dataset.dg === id));
   document.querySelectorAll('#tkForm .dgpainel').forEach(p => { p.hidden = p.dataset.dgp !== id; });
 }
-// Respostas da Etapa 2 e da Etapa 4, agrupadas pelas seções dos formulários
+// Respostas do Pré-Contrato e da Etapa 4, agrupadas pelas seções dos formulários
 async function carregarDg(t, navItem, painel) {
   const pid = t.propostaId, form = $('tkForm');
   const ler = async (...c) => { try { const r = await F.getDoc(F.doc(db, ...c)); return r.exists() ? r.data() : null; } catch (e) { return null; } };
@@ -420,7 +420,7 @@ async function carregarDg(t, navItem, painel) {
   };
   const linhas = rows => `<table class="tkdados"><tbody>${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td style="white-space:pre-wrap">${valorOuLink(v)}</td></tr>`).join('')}</tbody></table>`;
   const grupos = [];
-  if (e2) agrupar(e2.campos, titulosDe(json(pub2) || window.ETAPA2_PADRAO), 'e2_').forEach(g => grupos.push({ ...g, sub: 'Dados do cliente (Etapa 2)' }));
+  if (e2) agrupar(e2.campos, titulosDe(json(pub2) || window.ETAPA2_PADRAO), 'e2_').forEach(g => grupos.push({ ...g, sub: 'Dados do cliente (Pré-Contrato)' }));
   if (e4) agrupar(e4.campos, e4.secoes || titulosDe(json(cfg4)), 'e4_').forEach(g => grupos.push({ ...g, sub: 'Referência da implantação (Etapa 4)' }));
   const nomes4 = {}; Object.values((e4 && e4.valores) || {}).forEach(l => { if (Array.isArray(l)) l.forEach(a => { if (a && a.id && a.nome) nomes4[a.id] = a.nome; }); });
   const v2 = (e2 && e2.valores) || {};
@@ -531,7 +531,7 @@ async function formImportar() {
     const ja = new Set(tasks.map(t => t.propostaId).filter(Boolean));
     const ps = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !ja.has(p.id)).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0));
     $('tkDlgBody').innerHTML = ps.length ? `<p class="hint">Quando o vendedor conclui a Etapa 4 (Dados Referência Implantação), o cadastro é criado sozinho. Use esta lista para trazer antes uma proposta aprovada que ainda não chegou nessa fase, ou para trazer de volta um card removido.</p>
-      <ul class="tkimp">${ps.map(p => `<li><div><b>${esc(p.cliente)}</b><small>Nº ${esc(p.numero)} · ${esc(p.cidade || '')} · ${esc(p.vendedor || '')}${p.e2Em ? ' · Dados Primários recebidos' : ''}</small></div><button type="button" data-imp="${esc(p.id)}">Importar</button></li>`).join('')}</ul>`
+      <ul class="tkimp">${ps.map(p => `<li><div><b>${esc(p.cliente)}</b><small>Nº ${esc(p.numero)} · ${esc(p.cidade || '')} · ${esc(p.vendedor || '')}${p.e2Em ? ' · Pré-Contrato recebido' : ''}</small></div><button type="button" data-imp="${esc(p.id)}">Importar</button></li>`).join('')}</ul>`
       : '<p class="hint">Nenhuma proposta aprovada pendente de importação.</p>';
   } catch (e) { $('tkDlgBody').innerHTML = `<p class="hint">Não foi possível carregar as propostas (${esc(e.code || 'erro')}).</p>`; }
 }
@@ -556,7 +556,7 @@ async function datasE4(pid) {
     return { dataBase: achar(/da[dt]a.*base|base.*da[dt]a/i, /base/i), start: achar(/start|in[ií]cio da implanta/i), central, simples, campos: Object.fromEntries(c), por: r.data().por || '', porUid: r.data().porUid || '' };
   } catch (e) { return null; }
 }
-// Logo do posto ou rede: anexo da Etapa 2 com "logo" no nome do campo, reduzido para uma miniatura
+// Logo do posto ou rede: anexo do Pré-Contrato com "logo" no nome do campo, reduzido para uma miniatura
 async function logoDe(pid) {
   try {
     const R = Array.isArray(pid) ? pid : ['propostas', pid]; // cadastro direto: ['tasks', id]

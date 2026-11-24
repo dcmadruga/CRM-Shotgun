@@ -159,7 +159,7 @@ const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 
 /* Dados vindos do link: #d=base64url(JSON) com cnpj, razão, cidade, vendedor, WhatsApp do vendedor e nº da proposta */
 let L={};
-// Preenchimento pelo vendedor (botão na Etapa 2): salva no sistema sem abrir o WhatsApp
+// Preenchimento pelo vendedor (botão no Pré-Contrato): salva no sistema sem abrir o WhatsApp
 const VEND=/(^|[#&])vend=1(&|$)/.test(location.hash);
 try{ const m=location.hash.match(/d=([^&]+)/); if(m){ const b=m[1].replace(/-/g,'+').replace(/_/g,'/'); L=JSON.parse(decodeURIComponent(escape(atob(b)))) } }catch(e){ L={} }
 const destino = dig(L.w);
@@ -923,9 +923,9 @@ f.addEventListener('submit',async e=>{
   }
   const pc=problemaCert(); if(pc){ $('#msg').textContent=pc; const c=[...f.querySelectorAll('.anxs input')].find(i=>!i.value||i.classList.contains('bad')); if(c){ c.focus(); c.scrollIntoView({block:'center'}) } return }
   if(PEND && !CAMPOS.some(c=>c.tipo==='arquivo'&&arqs(f.elements[c.k]).length)){ $('#msg').textContent='Escolha pelo menos um arquivo para enviar.'; return }
-  if(PEND && !L.p){ $('#msg').textContent='Este link não aceita anexos. Peça ao seu consultor um link novo da Etapa 2.'; return }
+  if(PEND && !L.p){ $('#msg').textContent='Este link não aceita anexos. Peça ao seu consultor um link novo do Pré-Contrato.'; return }
   const temArquivos=CAMPOS.some(c=>c.tipo==='arquivo'&&f.elements[c.k]&&!f.elements[c.k].disabled&&arqs(f.elements[c.k]).length);
-  if(temArquivos && !L.p){ $('#msg').textContent='Este link não aceita anexos. Peça ao seu consultor um link novo da Etapa 2.'; return }
+  if(temArquivos && !L.p){ $('#msg').textContent='Este link não aceita anexos. Peça ao seu consultor um link novo do Pré-Contrato.'; return }
   const o=valoresFinais(lerForm()), texto=montarTexto(o);
   if(VEND){
     const btn=$('#btnEnviar'); btn.disabled=true; $('#msg').textContent='Salvando…';
