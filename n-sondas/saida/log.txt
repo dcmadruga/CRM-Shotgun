@@ -1,0 +1,114 @@
+Modo de teste (RADAR_TESTE=true): nada será gravado.
+Gatilho: push · fontes: dom-se (2025-11-24 a 2026-11-24), querido-se (2025-11-24 a 2026-11-24), simlam-pa (2025-11-24 a 2026-11-24), famep (2025-11-24 a 2026-11-24), querido-pa (2025-11-24 a 2026-11-24), querido-to (2025-11-24 a 2026-11-24), arom (2025-11-24 a 2026-11-24), querido-ro (2025-11-24 a 2026-11-24)
+Municípios de SE: 75 · postos de SE na base da ANP: 339
+Municípios de PA: 144 · postos de PA na base da ANP: 1768
+Municípios de TO: 139 · postos de TO na base da ANP: 482
+Municípios de RO: 52 · postos de RO na base da ANP: 543
+DOM-SE "posto de combustíveis": 0 matéria(s) no período
+DOM-SE "posto de combustível": 0 matéria(s) no período
+DOM-SE "comércio varejista de combustíveis": 0 matéria(s) no período
+DOM-SE "posto de abastecimento": 0 matéria(s) no período
+DOM-SE "revenda de combustíveis": 0 matéria(s) no período
+DOM-SE "auto posto": 0 matéria(s) no período
+DOM-SE "tanques subterrâneos": 0 matéria(s) no período
+DOM-SE "armazenamento de combustíveis": 0 matéria(s) no período
+DOM-SE "licença de operação" combustíveis: 0 matéria(s) no período
+DOM-SE "licença de instalação" combustíveis: 0 matéria(s) no período
+DOM-SE "licença prévia" combustíveis: 0 matéria(s) no período
+DOM-SE "licença ambiental" combustíveis: 0 matéria(s) no período
+DOM-SE: 0 matérias encontradas, 0 candidatas lidas por inteiro
+Diário Oficial dos Municípios de Sergipe (SIGPub): 12 consultas, 0 páginas/matérias lidas, 0 documentos de posto
+Querido Diário "posto de combustíveis": 0 diário(s) no período
+Querido Diário "posto de combustível": 14 diário(s) no período
+Querido Diário "comércio varejista de combustíveis": 1 diário(s) no período
+Querido Diário "posto de abastecimento": 0 diário(s) no período
+Querido Diário "revenda de combustíveis": 3 diário(s) no período
+Querido Diário "tanques subterrâneos": 0 diário(s) no período
+Querido Diário: 23 trechos em diários de 4 cidade(s); 7 falam de licenciamento
+Querido Diário (diários próprios das cidades de SE): 12 consultas, 7 páginas/matérias lidas, 0 documentos de posto
+SIMLAM-PA 2024 "posto": 96 processo(s), 96 lido(s) na lista
+SIMLAM-PA 2024 "combust": 65 processo(s), 65 lido(s) na lista
+SIMLAM-PA 2024 "petro": 22 processo(s), 22 lido(s) na lista
+SIMLAM-PA 2024 "abastec": 0 processo(s), 0 lido(s) na lista
+SIMLAM-PA 2024 "derivad": 15 processo(s), 15 lido(s) na lista
+SIMLAM-PA 2025 "posto": 85 processo(s), 85 lido(s) na lista
+SIMLAM-PA 2025 "combust": 63 processo(s), 63 lido(s) na lista
+SIMLAM-PA 2025 "petro": 29 processo(s), 29 lido(s) na lista
+SIMLAM-PA 2025 "abastec": 0 processo(s), 0 lido(s) na lista
+SIMLAM-PA 2025 "derivad": 14 processo(s), 14 lido(s) na lista
+SIMLAM-PA 2026 "posto": 88 processo(s), 88 lido(s) na lista
+SIMLAM-PA 2026 "combust": 72 processo(s), 72 lido(s) na lista
+SIMLAM-PA 2026 "petro": 23 processo(s), 23 lido(s) na lista
+SIMLAM-PA 2026 "abastec": 0 processo(s), 0 lido(s) na lista
+SIMLAM-PA 2026 "derivad": 11 processo(s), 11 lido(s) na lista
+SIMLAM-PA: 495 processo(s) para abrir
+SIMLAM-PA: 65 processo(s) de posto no período
+SEMAS-PA: consulta pública de processos (SIMLAM): 578 consultas, 65 páginas/matérias lidas, 65 documentos de posto
+FAMEP "posto de combustíveis": 21 matéria(s) no período
+FAMEP "posto de combustível": 7 matéria(s) no período
+FAMEP "comércio varejista de combustíveis": 10 matéria(s) no período
+FAMEP "posto de abastecimento": 25 matéria(s) no período
+FAMEP "revenda de combustíveis": 3 matéria(s) no período
+FAMEP "auto posto": 25 matéria(s) no período
+FAMEP "tanques subterrâneos": 0 matéria(s) no período
+FAMEP "armazenamento de combustíveis": 0 matéria(s) no período
+FAMEP "licença de operação" combustíveis: 14 matéria(s) no período
+FAMEP "licença de instalação" combustíveis: 11 matéria(s) no período
+FAMEP "licença prévia" combustíveis: 14 matéria(s) no período
+FAMEP "licença ambiental" combustíveis: 12 matéria(s) no período
+FAMEP: 107 matérias encontradas, 37 candidatas lidas por inteiro
+Diário Oficial dos Municípios do Pará (FAMEP): 49 consultas, 37 páginas/matérias lidas, 27 documentos de posto
+Querido Diário "posto de combustíveis": 0 diário(s) no período
+Querido Diário "posto de combustível": 0 diário(s) no período
+Querido Diário "comércio varejista de combustíveis": 0 diário(s) no período
+Querido Diário "posto de abastecimento": 0 diário(s) no período
+Querido Diário "revenda de combustíveis": 0 diário(s) no período
+Querido Diário "tanques subterrâneos": 0 diário(s) no período
+Querido Diário: 0 trechos em diários de 0 cidade(s); 0 falam de licenciamento
+Querido Diário (diários próprios das cidades de PA): 24 consultas, 0 páginas/matérias lidas, 0 documentos de posto
+Querido Diário "posto de combustíveis": 1 diário(s) no período
+Querido Diário "posto de combustível": 0 diário(s) no período
+Querido Diário "comércio varejista de combustíveis": 3 diário(s) no período
+Querido Diário "posto de abastecimento": 5 diário(s) no período
+Querido Diário "revenda de combustíveis": 0 diário(s) no período
+Querido Diário "tanques subterrâneos": 0 diário(s) no período
+Querido Diário: 9 trechos em diários de 2 cidade(s); 5 falam de licenciamento
+Querido Diário (diários próprios das cidades de TO): 24 consultas, 5 páginas/matérias lidas, 3 documentos de posto
+AROM "posto de combustíveis": 25 matéria(s) no período
+AROM "posto de combustível": 1 matéria(s) no período
+AROM "comércio varejista de combustíveis": 7 matéria(s) no período
+AROM "posto de abastecimento": 9 matéria(s) no período
+AROM "revenda de combustíveis": 2 matéria(s) no período
+AROM "auto posto": 25 matéria(s) no período
+AROM "tanques subterrâneos": 0 matéria(s) no período
+AROM "armazenamento de combustíveis": 2 matéria(s) no período
+AROM "licença de operação" combustíveis: 3 matéria(s) no período
+AROM "licença de instalação" combustíveis: 2 matéria(s) no período
+AROM "licença prévia" combustíveis: 3 matéria(s) no período
+AROM "licença ambiental" combustíveis: 4 matéria(s) no período
+AROM: 67 matérias encontradas, 7 candidatas lidas por inteiro
+Diário Oficial dos Municípios de Rondônia (AROM): 19 consultas, 7 páginas/matérias lidas, 1 documentos de posto
+Querido Diário "posto de combustíveis": 0 diário(s) no período
+Querido Diário "posto de combustível": 0 diário(s) no período
+Querido Diário "comércio varejista de combustíveis": 1 diário(s) no período
+Querido Diário "posto de abastecimento": 0 diário(s) no período
+Querido Diário "revenda de combustíveis": 0 diário(s) no período
+Querido Diário "tanques subterrâneos": 0 diário(s) no período
+Querido Diário: 1 trechos em diários de 1 cidade(s); 1 falam de licenciamento
+Querido Diário (diários próprios das cidades de RO): 12 consultas, 1 páginas/matérias lidas, 0 documentos de posto
+Resultado: 96 avisos únicos · 29 empreendimentos · 29 novos · 0 atualizados · 96 documentos novos · 0 alertas
+
+Novos/ampliações/tanques (13):
+  PA · 2026-11-23 · Novo posto de combustível · Requerimento ao órgão ambiental · Listar Empreendimento · sem CNPJ · ? · confirmado
+  PA · 2026-09-16 · Novo posto de combustível · Solicitação de Licença de Operação · SEMMA - SECRETARIA MUNICIPAL DE MEIO AMBIENTE LICENÇA DE OPERAÇÃO – LO Nº 459/2026 POSTO SÃO JOSE LTDA, pessoa jurídica · 65320651000104 · Marabá · confirmado
+  PA · 2026-09-10 · Novo posto de combustível · Licença Prévia emitida · ? · 56283909000159 · Canaã dos Carajás · possivel
+  PA · 2026-09-09 · Novo posto de combustível · Licença Prévia emitida · ? · 66509904000155 · Canaã dos Carajás · possivel
+  PA · 2026-09-09 · Novo posto de combustível · Licença Prévia emitida · ? · 67931202000128 · Canaã dos Carajás · possivel
+  PA · 2026-08-04 · Novo posto de combustível · Licença Prévia emitida · ? · sem CNPJ · Dom Eliseu · analise
+  PA · 2026-07-14 · Novo posto de combustível · Solicitação de Licença Prévia · ? · 22953681000145 · Dom Eliseu · possivel
+  PA · 2026-05-13 · Novo posto de combustível · Licença Prévia emitida · ? · 61589732000153 · Canaã dos Carajás · possivel
+  PA · 2026-03-13 · Novo posto de combustível · Solicitação de Licença de Instalação · DE LICENÇA DE OPERAÇÃO LAJEDO PETRO LTDA / LAJEDO PETRO · 55582479000103 · Conceição do Araguaia · confirmado
+  PA · 2026-01-16 · Novo posto de combustível · Licença de Instalação emitida · ? · 58312522000109 · Canaã dos Carajás · possivel
+  PA · 2026-01-16 · Novo posto de combustível · Licença Prévia emitida · ? · 60883839000147 · Canaã dos Carajás · possivel
+  PA · 2025-12-18 · Instalação de tanques · Solicitação de renovação · ? · sem CNPJ · Trairão · possivel
+  PA · 2025-12-15 · Novo posto de combustível · Licença de Instalação emitida · ? · 57266534000181 · Canaã dos Carajás · possivel

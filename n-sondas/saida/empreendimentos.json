@@ -1,0 +1,1690 @@
+[
+ {
+  "id": "d-famep-D6E39CE8-97b7ec9349ef",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-D6E39CE8-97b7ec9349ef",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/D6E39CE8",
+    "data": "2025-12-15",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Prefeitura Municipal de Canaã dos Carajás PREFEITURA MUNICIPAL D (Canaã dos Carajás)",
+    "evento": "emitida_lo",
+    "data": "2025-12-15",
+    "id": "d-famep-D6E39CE8-97b7ec9349ef-emitida_lo-2025-12-15"
+   }
+  ],
+  "fantasia": "COEMA",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Av. Valmir Ferreira Soares, Qd.28, Lts",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2025-12-15",
+  "ultimoEvento": "emitida_lo",
+  "situacao": "aprovado",
+  "primeiraData": "2025-12-15",
+  "categoria": "outro",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao",
+   "cnpj"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "57266534000181",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_li"
+  ],
+  "docs": [
+   {
+    "id": "famep-200F60D9-b097a1e43483",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/200F60D9",
+    "data": "2025-12-15",
+    "evento": "emitida_li"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Prefeitura Municipal de Canaã dos Carajás PREFEITURA MUNICIPAL D (Canaã dos Carajás)",
+    "evento": "emitida_li",
+    "data": "2025-12-15",
+    "id": "57266534000181-emitida_li-2025-12-15"
+   }
+  ],
+  "fantasia": "COEMA",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Av. Belém, S/nº, Bairro Parakanã, Canaã dos Carajás-PA",
+  "cnpj": "57266534000181",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2025-12-15",
+  "ultimoEvento": "emitida_li",
+  "situacao": "aprovado",
+  "primeiraData": "2025-12-15",
+  "categoria": "novo",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "d-famep-BB2B3235-2a29e6847f2a",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "req_renov"
+  ],
+  "docs": [
+   {
+    "id": "famep-BB2B3235-2a29e6847f2a",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/BB2B3235",
+    "data": "2025-12-18",
+    "evento": "req_renov"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "",
+    "evento": "req_renov",
+    "data": "2025-12-18",
+    "id": "d-famep-BB2B3235-2a29e6847f2a-req_renov-2025-12-18"
+   }
+  ],
+  "municipio": "Trairão",
+  "ibge": "1508050",
+  "lat": -5.1076,
+  "lng": -55.9719,
+  "coordFonte": "municipio",
+  "ultimaData": "2025-12-18",
+  "ultimoEvento": "req_renov",
+  "situacao": "solicitado",
+  "primeiraData": "2025-12-18",
+  "categoria": "tanques",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao",
+   "cnpj",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "n-gabinete-lei-municipal-n-1-156-1100908",
+  "uf": "RO",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "indeferido"
+  ],
+  "docs": [
+   {
+    "id": "arom-D253339B-92fb0d400142",
+    "fonte": "arom",
+    "url": "https://www.diariomunicipal.com.br/arom/materia/D253339B",
+    "data": "2025-12-18",
+    "evento": "indeferido"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Secretaria Municipal de Administração (Castanheiras)",
+    "evento": "indeferido",
+    "data": "2025-12-18",
+    "id": "n-gabinete-lei-municipal-n-1-156-1100908-indeferido-2025-12-18"
+   }
+  ],
+  "razao": "GABINETE LEI MUNICIPAL Nº 1.156",
+  "municipio": "Castanheiras",
+  "ibge": "1100908",
+  "endereco": "seu proprietário ou responsável; III",
+  "lat": -11.4379,
+  "lng": -61.8501,
+  "coordFonte": "municipio",
+  "ultimaData": "2025-12-18",
+  "ultimoEvento": "indeferido",
+  "situacao": "indeferido",
+  "primeiraData": "2025-12-18",
+  "categoria": "outro",
+  "confianca": "analise",
+  "pendentes": [
+   "cnpj"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "d-famep-FDEF8D9E-527c56f9835a",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "req_renov"
+  ],
+  "docs": [
+   {
+    "id": "famep-FDEF8D9E-527c56f9835a",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/FDEF8D9E",
+    "data": "2025-12-22",
+    "evento": "req_renov"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "174/2025",
+    "orgao": "Secretaria Municipal do Meio Ambiente",
+    "evento": "req_renov",
+    "data": "2025-12-22",
+    "id": "mun-1502152-174-2025"
+   }
+  ],
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2025-12-22",
+  "ultimoEvento": "req_renov",
+  "situacao": "solicitado",
+  "primeiraData": "2025-12-22",
+  "categoria": "renovacao",
+  "confianca": "analise",
+  "pendentes": [
+   "razao",
+   "cnpj",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "d-famep-FDEF8D9E-777133a98c6f",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "req_renov"
+  ],
+  "docs": [
+   {
+    "id": "famep-FDEF8D9E-777133a98c6f",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/FDEF8D9E",
+    "data": "2025-12-22",
+    "evento": "req_renov"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "264/2025",
+    "orgao": "Secretaria Municipal do Meio Ambiente",
+    "evento": "req_renov",
+    "data": "2025-12-22",
+    "id": "mun-1502152-264-2025"
+   }
+  ],
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2025-12-22",
+  "ultimoEvento": "req_renov",
+  "situacao": "solicitado",
+  "primeiraData": "2025-12-22",
+  "categoria": "renovacao",
+  "confianca": "analise",
+  "pendentes": [
+   "razao",
+   "cnpj",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "n-listar-empreendimento-pa",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "req_outro",
+   "emitida_li",
+   "emitida_lo",
+   "indeferido"
+  ],
+  "docs": [
+   {
+    "id": "simlam-pa-20250000037824-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=171930",
+    "data": "2026-11-23",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20250000027282-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=171046",
+    "data": "2026-11-23",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20260000046122-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=179331",
+    "data": "2026-11-23",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20260000029240-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=177312",
+    "data": "2026-11-18",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20240000017528-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=164385",
+    "data": "2026-11-17",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20240000005977-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=163253",
+    "data": "2026-11-16",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20260000015376-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=175845",
+    "data": "2026-11-13",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20260000001782-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=174254",
+    "data": "2026-11-10",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20240000017957-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=164448",
+    "data": "2026-11-06",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20250000023998-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=170723",
+    "data": "2026-11-03",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20260000042952-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=178970",
+    "data": "2026-10-28",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20250000029240-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=171201",
+    "data": "2026-10-24",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20250000020818-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=170450",
+    "data": "2026-10-21",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20250000049687-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=173249",
+    "data": "2026-10-20",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20260000042422-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=178890",
+    "data": "2026-10-20",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20260000042197-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=178868",
+    "data": "2026-10-16",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20250000044247-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=172623",
+    "data": "2026-10-15",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20250000026762-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=170993",
+    "data": "2026-10-08",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20250000016393-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=170048",
+    "data": "2026-10-08",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20240000001407-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=162801",
+    "data": "2026-10-05",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20260000038276-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=178382",
+    "data": "2026-09-21",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20260000019266-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=176292",
+    "data": "2026-09-18",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20260000037307-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=178246",
+    "data": "2026-09-15",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20260000036395-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=178119",
+    "data": "2026-09-14",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20260000035934-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=178030",
+    "data": "2026-09-03",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20250000050584-indeferido",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=173356",
+    "data": "2026-09-02",
+    "evento": "indeferido"
+   },
+   {
+    "id": "simlam-pa-20260000034114-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=177819",
+    "data": "2026-08-26",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20260000034158-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=177822",
+    "data": "2026-08-25",
+    "evento": "req_outro"
+   },
+   {
+    "id": "simlam-pa-20250000045488-emitida_lo",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=172750",
+    "data": "2026-08-24",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "simlam-pa-20260000033314-req_outro",
+    "fonte": "simlam-pa",
+    "url": "https://monitoramento.semas.pa.gov.br/simlam/VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=177738",
+    "data": "2026-08-20",
+    "evento": "req_outro"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "2026/0000046122",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "req_outro",
+    "data": "2026-11-23",
+    "id": "est-pa-2026-0000046122"
+   },
+   {
+    "numero": "2025/0000027282",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "req_outro",
+    "data": "2026-11-23",
+    "id": "est-pa-2025-0000027282"
+   },
+   {
+    "numero": "2025/0000037824",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "req_outro",
+    "data": "2026-11-23",
+    "id": "est-pa-2025-0000037824"
+   },
+   {
+    "numero": "2026/0000029240",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "emitida_lo",
+    "data": "2026-11-18",
+    "id": "est-pa-2026-0000029240",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "16562"
+     }
+    ]
+   },
+   {
+    "numero": "2024/0000017528",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "emitida_lo",
+    "data": "2026-11-17",
+    "id": "est-pa-2024-0000017528",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "15030"
+     }
+    ]
+   },
+   {
+    "numero": "2024/0000005977",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "req_outro",
+    "data": "2026-11-16",
+    "id": "est-pa-2024-0000005977"
+   },
+   {
+    "numero": "2026/0000015376",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "emitida_lo",
+    "data": "2026-11-13",
+    "id": "est-pa-2026-0000015376",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "16475"
+     }
+    ]
+   },
+   {
+    "numero": "2026/0000001782",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "emitida_lo",
+    "data": "2026-11-10",
+    "id": "est-pa-2026-0000001782",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "16356"
+     }
+    ]
+   },
+   {
+    "numero": "2024/0000017957",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "emitida_lo",
+    "data": "2026-11-06",
+    "id": "est-pa-2024-0000017957",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "16449"
+     }
+    ]
+   },
+   {
+    "numero": "2025/0000023998",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "req_outro",
+    "data": "2026-11-03",
+    "id": "est-pa-2025-0000023998"
+   },
+   {
+    "numero": "2026/0000042952",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "req_outro",
+    "data": "2026-10-28",
+    "id": "est-pa-2026-0000042952"
+   },
+   {
+    "numero": "2025/0000029240",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "req_outro",
+    "data": "2026-10-24",
+    "id": "est-pa-2025-0000029240"
+   },
+   {
+    "numero": "2025/0000020818",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "req_outro",
+    "data": "2026-10-21",
+    "id": "est-pa-2025-0000020818"
+   },
+   {
+    "numero": "2026/0000042422",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "req_outro",
+    "data": "2026-10-20",
+    "id": "est-pa-2026-0000042422"
+   },
+   {
+    "numero": "2025/0000049687",
+    "orgao": "SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)",
+    "evento": "emitida_lo",
+    "data": "2026-10-20",
+    "id": "est-pa-2025-0000049687",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "16362"
+     }
+    ]
+   }
+  ],
+  "razao": "Listar Empreendimento",
+  "ultimaData": "2026-11-23",
+  "ultimoEvento": "req_outro",
+  "situacao": "solicitado",
+  "primeiraData": "2025-12-29",
+  "categoria": "novo",
+  "confianca": "confirmado",
+  "pendentes": [
+   "cnpj",
+   "municipio",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "d-querido-to-1721000-2026-01-08--0-1481-8fc93149db1f",
+  "uf": "TO",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "req_outro"
+  ],
+  "docs": [
+   {
+    "id": "querido-to-1721000-2026-01-08--0-1481-8fc93149db1f",
+    "fonte": "querido-to",
+    "url": "https://data.queridodiario.ok.org.br/1721000/2026-01-08/6c1ce34e53f8ef5c582075374b6330c9f4001433.pdf",
+    "data": "2026-01-08",
+    "evento": "req_outro"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "",
+    "evento": "req_outro",
+    "data": "2026-01-08",
+    "id": "d-querido-to-1721000-2026-01-08--0-1481-8fc93149db1f-req_outro-2026-01-08"
+   }
+  ],
+  "municipio": "Palmas",
+  "ibge": "1721000",
+  "lat": -10.1918,
+  "lng": -48.1078,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-01-08",
+  "ultimoEvento": "req_outro",
+  "situacao": "solicitado",
+  "primeiraData": "2026-01-08",
+  "categoria": "outro",
+  "confianca": "analise",
+  "pendentes": [
+   "razao",
+   "cnpj",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "58474189000134",
+  "uf": "TO",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "req_outro"
+  ],
+  "docs": [
+   {
+    "id": "querido-to-1721000-2026-01-13--0-1384-2b67c5243ece",
+    "fonte": "querido-to",
+    "url": "https://data.queridodiario.ok.org.br/1721000/2026-01-13/d9b4957449fa8e9166474507a214847e41090c09.pdf",
+    "data": "2026-01-13",
+    "evento": "req_outro"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "",
+    "evento": "req_outro",
+    "data": "2026-01-13",
+    "id": "58474189000134-req_outro-2026-01-13"
+   }
+  ],
+  "razao": "A empresa MORADA DO SOL COMERCIO DE COMBUSTIVEIS LTDA",
+  "municipio": "Palmas",
+  "ibge": "1721000",
+  "cnpj": "58474189000134",
+  "anp": {
+   "bandeira": "BANDEIRA BRANCA",
+   "autorizacao": "PR/TO0253004",
+   "vinculada": "2026-06-08"
+  },
+  "lat": -10.34545108,
+  "lng": -48.29115904,
+  "coordFonte": "anp",
+  "ultimaData": "2026-01-13",
+  "ultimoEvento": "req_outro",
+  "situacao": "solicitado",
+  "primeiraData": "2026-01-13",
+  "categoria": "outro",
+  "confianca": "possivel",
+  "pendentes": [
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "58312522000109",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_li"
+  ],
+  "docs": [
+   {
+    "id": "famep-87E9004F-b06bbd906422",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/87E9004F",
+    "data": "2026-01-16",
+    "evento": "emitida_li"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Prefeitura Municipal de Canaã dos Carajás PREFEITURA MUNICIPAL D (Canaã dos Carajás)",
+    "evento": "emitida_li",
+    "data": "2026-01-16",
+    "id": "58312522000109-emitida_li-2026-01-16"
+   }
+  ],
+  "fantasia": "COEMA",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Avenida Weyne Cavalcante, nº 11 e 12, Bairro Vale dos Sonhos I, Canaã dos Carajás-PA",
+  "cnpj": "58312522000109",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-01-16",
+  "ultimoEvento": "emitida_li",
+  "situacao": "aprovado",
+  "primeiraData": "2026-01-16",
+  "categoria": "novo",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "60883839000147",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lp"
+  ],
+  "docs": [
+   {
+    "id": "famep-033CC101-eb475fc091aa",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/033CC101",
+    "data": "2026-01-16",
+    "evento": "emitida_lp"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Prefeitura Municipal de Canaã dos Carajás PREFEITURA MUNICIPAL D (Canaã dos Carajás)",
+    "evento": "emitida_lp",
+    "data": "2026-01-16",
+    "id": "60883839000147-emitida_lp-2026-01-16"
+   }
+  ],
+  "fantasia": "COEMA",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Avenida dos Pioneiros, S/nº, Bairro Jardim América, Canaã dos Carajás-PA",
+  "cnpj": "60883839000147",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-01-16",
+  "ultimoEvento": "emitida_lp",
+  "situacao": "aprovado",
+  "primeiraData": "2026-01-16",
+  "categoria": "novo",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "15779566000130",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-415C2C8E-ef43c2c7486e",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/415C2C8E",
+    "data": "2026-01-20",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "273/2025",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE (Canaã dos Carajás)",
+    "evento": "emitida_lo",
+    "data": "2026-01-20",
+    "id": "mun-1502152-273-2025",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "273/2025"
+     }
+    ]
+   }
+  ],
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Rua 01, C, 02, com , Av",
+  "cnpj": "15779566000130",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-01-20",
+  "ultimoEvento": "emitida_lo",
+  "situacao": "aprovado",
+  "primeiraData": "2026-01-20",
+  "categoria": "renovacao",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "55582479000103",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "req_li"
+  ],
+  "docs": [
+   {
+    "id": "famep-873D3E79-984d088ca1f6",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/873D3E79",
+    "data": "2026-03-13",
+    "evento": "req_li"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Secretaria Municipal de Meio Ambiente e Recursos Hídricos de Conceição do Araguaia – PA (Conceição do Araguaia)",
+    "evento": "req_li",
+    "data": "2026-03-13",
+    "id": "55582479000103-req_li-2026-03-13"
+   }
+  ],
+  "razao": "DE LICENÇA DE OPERAÇÃO LAJEDO PETRO LTDA / LAJEDO PETRO",
+  "municipio": "Conceição do Araguaia",
+  "ibge": "1502707",
+  "cnpj": "55582479000103",
+  "lat": -8.2048,
+  "lng": -49.5321,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-03-13",
+  "ultimoEvento": "req_li",
+  "situacao": "solicitado",
+  "primeiraData": "2026-03-13",
+  "categoria": "novo",
+  "confianca": "confirmado",
+  "pendentes": [
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "37420772000192",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-483D5512-e62c720b7f06",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/483D5512",
+    "data": "2026-04-20",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "043/2026",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE (Canaã dos Carajás)",
+    "evento": "emitida_lo",
+    "data": "2026-04-20",
+    "id": "mun-1502152-043-2026",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "043/2026"
+     }
+    ]
+   }
+  ],
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Rua V-10, Qd",
+  "cnpj": "37420772000192",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-04-20",
+  "ultimoEvento": "emitida_lo",
+  "situacao": "aprovado",
+  "primeiraData": "2026-04-20",
+  "categoria": "renovacao",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "61589732000153",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lp"
+  ],
+  "docs": [
+   {
+    "id": "famep-95236918-24dd18799146",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/95236918",
+    "data": "2026-05-13",
+    "evento": "emitida_lp"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Prefeitura Municipal de Canaã dos Carajás PREFEITURA MUNICIPAL D (Canaã dos Carajás)",
+    "evento": "emitida_lp",
+    "data": "2026-05-13",
+    "id": "61589732000153-emitida_lp-2026-05-13"
+   }
+  ],
+  "fantasia": "COEMA",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Rodovia Arnaldo Chagas (KM 06), S/N, Zona Rural, Canaã dos Carajás-PA",
+  "cnpj": "61589732000153",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-05-13",
+  "ultimoEvento": "emitida_lp",
+  "situacao": "aprovado",
+  "primeiraData": "2026-05-13",
+  "categoria": "novo",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "22953681000145",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo",
+   "req_lp"
+  ],
+  "docs": [
+   {
+    "id": "famep-E2004045-e45f173b7a16",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/E2004045",
+    "data": "2026-07-14",
+    "evento": "req_lp"
+   },
+   {
+    "id": "famep-00DAC474-a3a78dd922dd",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/00DAC474",
+    "data": "2026-06-24",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "famep-07037705-21668b576edd",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/07037705",
+    "data": "2026-05-18",
+    "evento": "emitida_lo"
+   },
+   {
+    "id": "famep-19AD9AEB-46fd5f84bf3e",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/19AD9AEB",
+    "data": "2026-05-18",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Secretaria Municipal de Meio Ambiente (Dom Eliseu)",
+    "evento": "req_lp",
+    "data": "2026-07-14",
+    "id": "22953681000145-req_lp-2026-07-14"
+   },
+   {
+    "numero": "",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE LICENÇA DE OPERAÇÃO – LO Nº 017/2026 Dom Eliseu - PA (Dom Eliseu)",
+    "evento": "emitida_lo",
+    "data": "2026-06-24",
+    "id": "22953681000145-emitida_lo-2026-06-24",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "017/2026"
+     }
+    ]
+   },
+   {
+    "numero": "",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE LICENÇA DE OPERAÇÃO – LO Nº 021/2026 Dom Eliseu - PA (Dom Eliseu)",
+    "evento": "emitida_lo",
+    "data": "2026-05-18",
+    "id": "22953681000145-emitida_lo-2026-05-18",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "021/2026"
+     },
+     {
+      "tipo": "LO",
+      "numero": "020/2026"
+     }
+    ]
+   }
+  ],
+  "municipio": "Dom Eliseu",
+  "ibge": "1502939",
+  "cnpj": "22953681000145",
+  "lat": -4.2018,
+  "lng": -47.868,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-07-14",
+  "ultimoEvento": "req_lp",
+  "situacao": "solicitado",
+  "primeiraData": "2026-05-18",
+  "categoria": "novo",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z",
+  "endereco": "Avenida Bernardo Sayão, km 19, Vila Ligação"
+ },
+ {
+  "id": "10953986000410",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-F657E3C1-574dcbe11e2b",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/F657E3C1",
+    "data": "2026-05-19",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "300/2025",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE (Canaã dos Carajás)",
+    "evento": "emitida_lo",
+    "data": "2026-05-19",
+    "id": "mun-1502152-300-2025"
+   }
+  ],
+  "razao": ", a empresa LAVANDERIA CONFORT LTDA",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Rodovia PA 160, Bairro Novo Planalto, Canaã dos Carajás- Pa",
+  "cnpj": "10953986000410",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-05-19",
+  "ultimoEvento": "emitida_lo",
+  "situacao": "aprovado",
+  "primeiraData": "2026-05-19",
+  "categoria": "outro",
+  "confianca": "confirmado",
+  "pendentes": [],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "13684523000146",
+  "uf": "TO",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "req_renov"
+  ],
+  "docs": [
+   {
+    "id": "querido-to-1721000-2026-06-08--0-1494-c6505d04bcf6",
+    "fonte": "querido-to",
+    "url": "https://data.queridodiario.ok.org.br/1721000/2026-06-08/d7e60fc3b03af58c4ec285aa6b83f89c82305e0a.pdf",
+    "data": "2026-06-08",
+    "evento": "req_renov"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "",
+    "evento": "req_renov",
+    "data": "2026-06-08",
+    "id": "13684523000146-req_renov-2026-06-08"
+   }
+  ],
+  "razao": "A empresa POSTO DLS COMBUSTIVEIS LTDA",
+  "municipio": "Palmas",
+  "ibge": "1721000",
+  "endereco": "Quadra 701 Sul, Conjunto 02, Lote 20, Avenida LO-15, Plano Diretor Sul, Palmas - TO",
+  "cnpj": "13684523000146",
+  "anp": {
+   "bandeira": "VIBRA",
+   "autorizacao": "PR/TO0098867",
+   "vinculada": "2011-07-12"
+  },
+  "lat": -10.22440167,
+  "lng": -48.33540833,
+  "coordFonte": "anp",
+  "ultimaData": "2026-06-08",
+  "ultimoEvento": "req_renov",
+  "situacao": "solicitado",
+  "primeiraData": "2026-06-08",
+  "categoria": "renovacao",
+  "confianca": "confirmado",
+  "pendentes": [],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "04842396000175",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-3EE394F8-d3eb91c54e32",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/3EE394F8",
+    "data": "2026-07-17",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "147/2026",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE (Canaã dos Carajás)",
+    "evento": "emitida_lo",
+    "data": "2026-07-17",
+    "id": "mun-1502152-147-2026",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "147/2026"
+     }
+    ]
+   }
+  ],
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Rua Canaã, S/N, Qd 01, Lt 10 e 11, Setor Industrial I Vale do Sossego, Canaã dos Carajás – PA",
+  "cnpj": "04842396000175",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-07-17",
+  "ultimoEvento": "emitida_lo",
+  "situacao": "aprovado",
+  "primeiraData": "2026-07-17",
+  "categoria": "renovacao",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "d-famep-73EE225F-2f6826a6b62c",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-73EE225F-2f6826a6b62c",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/73EE225F",
+    "data": "2026-07-22",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE DECISÃO ADMINISTRATIVA (Dom Eliseu)",
+    "evento": "emitida_lo",
+    "data": "2026-07-22",
+    "id": "d-famep-73EE225F-2f6826a6b62c-emitida_lo-2026-07-22"
+   }
+  ],
+  "municipio": "Dom Eliseu",
+  "ibge": "1502939",
+  "lat": -4.2018,
+  "lng": -47.868,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-07-22",
+  "ultimoEvento": "emitida_lo",
+  "situacao": "aprovado",
+  "primeiraData": "2026-07-22",
+  "categoria": "outro",
+  "confianca": "analise",
+  "pendentes": [
+   "razao",
+   "cnpj",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "d-famep-9208C48E-2f6826a6b62c",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-9208C48E-2f6826a6b62c",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/9208C48E",
+    "data": "2026-07-22",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE DECISÃO ADMINISTRATIVA (Dom Eliseu)",
+    "evento": "emitida_lo",
+    "data": "2026-07-22",
+    "id": "d-famep-9208C48E-2f6826a6b62c-emitida_lo-2026-07-22"
+   }
+  ],
+  "municipio": "Dom Eliseu",
+  "ibge": "1502939",
+  "lat": -4.2018,
+  "lng": -47.868,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-07-22",
+  "ultimoEvento": "emitida_lo",
+  "situacao": "aprovado",
+  "primeiraData": "2026-07-22",
+  "categoria": "outro",
+  "confianca": "analise",
+  "pendentes": [
+   "razao",
+   "cnpj",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "d-famep-8C6C9C1B-faddccd41011",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lp"
+  ],
+  "docs": [
+   {
+    "id": "famep-8C6C9C1B-faddccd41011",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/8C6C9C1B",
+    "data": "2026-08-04",
+    "evento": "emitida_lp"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Secretaria Municipal de Meio Ambiente (Dom Eliseu)",
+    "evento": "emitida_lp",
+    "data": "2026-08-04",
+    "id": "d-famep-8C6C9C1B-faddccd41011-emitida_lp-2026-08-04"
+   }
+  ],
+  "municipio": "Dom Eliseu",
+  "ibge": "1502939",
+  "lat": -4.2018,
+  "lng": -47.868,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-08-04",
+  "ultimoEvento": "emitida_lp",
+  "situacao": "aprovado",
+  "primeiraData": "2026-08-04",
+  "categoria": "novo",
+  "confianca": "analise",
+  "pendentes": [
+   "razao",
+   "cnpj",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "66509904000155",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lp"
+  ],
+  "docs": [
+   {
+    "id": "famep-24BDCCDB-c1031f9426cd",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/24BDCCDB",
+    "data": "2026-09-09",
+    "evento": "emitida_lp"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Prefeitura Municipal de Canaã dos Carajás PREFEITURA MUNICIPAL D (Canaã dos Carajás)",
+    "evento": "emitida_lp",
+    "data": "2026-09-09",
+    "id": "66509904000155-emitida_lp-2026-09-09"
+   }
+  ],
+  "fantasia": "COEMA",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "cnpj": "66509904000155",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-09-09",
+  "ultimoEvento": "emitida_lp",
+  "situacao": "aprovado",
+  "primeiraData": "2026-09-09",
+  "categoria": "novo",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "67931202000128",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lp"
+  ],
+  "docs": [
+   {
+    "id": "famep-12E23531-621e0b2ce302",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/12E23531",
+    "data": "2026-09-09",
+    "evento": "emitida_lp"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Prefeitura Municipal de Canaã dos Carajás PREFEITURA MUNICIPAL D (Canaã dos Carajás)",
+    "evento": "emitida_lp",
+    "data": "2026-09-09",
+    "id": "67931202000128-emitida_lp-2026-09-09"
+   }
+  ],
+  "fantasia": "COEMA",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "cnpj": "67931202000128",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-09-09",
+  "ultimoEvento": "emitida_lp",
+  "situacao": "aprovado",
+  "primeiraData": "2026-09-09",
+  "categoria": "novo",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "45116289000147",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-2A759CB2-9f73dcf3c7af",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/2A759CB2",
+    "data": "2026-09-10",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Prefeitura Municipal de Canaã dos Carajás PREFEITURA MUNICIPAL D (Canaã dos Carajás)",
+    "evento": "emitida_lo",
+    "data": "2026-09-10",
+    "id": "45116289000147-emitida_lo-2026-09-10"
+   }
+  ],
+  "fantasia": "COEMA",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Av. dos Pioneiros, S/nº, Bairro Nova Canaã, Canaã dos Carajás-PA",
+  "cnpj": "45116289000147",
+  "anp": {
+   "bandeira": "BANDEIRA BRANCA",
+   "autorizacao": "PR/PA0244847",
+   "vinculada": "2023-12-27"
+  },
+  "razao": "POSTO KM LTDA",
+  "campoFonte": {
+   "razao": "anp"
+  },
+  "lat": -6.53415044,
+  "lng": -49.85385336,
+  "coordFonte": "anp",
+  "ultimaData": "2026-09-10",
+  "ultimoEvento": "emitida_lo",
+  "situacao": "aprovado",
+  "primeiraData": "2026-09-10",
+  "categoria": "renovacao",
+  "confianca": "possivel",
+  "pendentes": [],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "56283909000159",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lp"
+  ],
+  "docs": [
+   {
+    "id": "famep-7B96CA8D-271df0cac63f",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/7B96CA8D",
+    "data": "2026-09-10",
+    "evento": "emitida_lp"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "Prefeitura Municipal de Canaã dos Carajás PREFEITURA MUNICIPAL D (Canaã dos Carajás)",
+    "evento": "emitida_lp",
+    "data": "2026-09-10",
+    "id": "56283909000159-emitida_lp-2026-09-10"
+   }
+  ],
+  "fantasia": "COEMA",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "cnpj": "56283909000159",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-09-10",
+  "ultimoEvento": "emitida_lp",
+  "situacao": "aprovado",
+  "primeiraData": "2026-09-10",
+  "categoria": "novo",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao",
+   "endereco"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "65320651000104",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "req_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-E66DE219-9ee445245199",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/E66DE219",
+    "data": "2026-09-16",
+    "evento": "req_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE LICENÇA DE OPERAÇÃO – LO Nº 459/2026 POSTO SÃO JOSE LTDA (Marabá)",
+    "evento": "req_lo",
+    "data": "2026-09-16",
+    "id": "65320651000104-req_lo-2026-09-16"
+   }
+  ],
+  "razao": "SEMMA - SECRETARIA MUNICIPAL DE MEIO AMBIENTE LICENÇA DE OPERAÇÃO – LO Nº 459/2026 POSTO SÃO JOSE LTDA, pessoa jurídica",
+  "municipio": "Marabá",
+  "ibge": "1504208",
+  "endereco": "Avenida Antonio Maia, nº 1804 B, Velha Marabá, Marabá–PA",
+  "cnpj": "65320651000104",
+  "lat": -5.5249,
+  "lng": -50.0623,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-09-16",
+  "ultimoEvento": "req_lo",
+  "situacao": "solicitado",
+  "primeiraData": "2026-09-16",
+  "categoria": "novo",
+  "confianca": "confirmado",
+  "pendentes": [],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "02284062002818",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-1E73CEC9-08ca1b6ef3b0",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/1E73CEC9",
+    "data": "2026-09-21",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "070/2026",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE (Canaã dos Carajás)",
+    "evento": "emitida_lo",
+    "data": "2026-09-21",
+    "id": "mun-1502152-070-2026",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "070/2026"
+     }
+    ]
+   }
+  ],
+  "razao": ", a empresa HOSPITAL ESPERANÇA AS",
+  "fantasia": "05 DE OUTUBRO DIAGNÓSTICOS",
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Rua Avenida Monte Castelo s/n, Quadra 17 Lote 13, 14 e 15, Monte Castelo, Canaã dos Carajás – PA",
+  "cnpj": "02284062002818",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-09-21",
+  "ultimoEvento": "emitida_lo",
+  "situacao": "aprovado",
+  "primeiraData": "2026-09-21",
+  "categoria": "outro",
+  "confianca": "confirmado",
+  "pendentes": [],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ },
+ {
+  "id": "67661709000109",
+  "uf": "PA",
+  "identificado": "2026-11-24T04:59:36.553Z",
+  "eventos": [
+   "emitida_lo"
+  ],
+  "docs": [
+   {
+    "id": "famep-EE915853-2bdc232a15a7",
+    "fonte": "famep",
+    "url": "https://www.diariomunicipal.com.br/famep/materia/EE915853",
+    "data": "2026-11-04",
+    "evento": "emitida_lo"
+   }
+  ],
+  "processos": [
+   {
+    "numero": "197/2026",
+    "orgao": "SECRETARIA MUNICIPAL DE MEIO AMBIENTE (Canaã dos Carajás)",
+    "evento": "emitida_lo",
+    "data": "2026-11-04",
+    "id": "mun-1502152-197-2026",
+    "licencas": [
+     {
+      "tipo": "LO",
+      "numero": "299/2025"
+     }
+    ]
+   }
+  ],
+  "municipio": "Canaã dos Carajás",
+  "ibge": "1502152",
+  "endereco": "Rua São Luíz, s/n, Qd",
+  "cnpj": "67661709000109",
+  "lat": -6.4817,
+  "lng": -50.1161,
+  "coordFonte": "municipio",
+  "ultimaData": "2026-11-04",
+  "ultimoEvento": "emitida_lo",
+  "situacao": "aprovado",
+  "primeiraData": "2026-11-04",
+  "categoria": "outro",
+  "confianca": "possivel",
+  "pendentes": [
+   "razao"
+  ],
+  "atualizado": "2026-11-24T04:59:36.553Z"
+ }
+]
