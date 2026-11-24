@@ -81,22 +81,22 @@
     if (!box) return;
     if (!box.hidden && box.dataset.on) { box.hidden = true; return; }
     ufIni = UFS.includes(String(ufIni || '').toUpperCase()) ? String(ufIni).toUpperCase() : '';
-    let lista = [];
+    let lista = [], cidades = [], cidSel = '', cidAlvo = -1;
     const q = sel => box.querySelector(sel);
     box.classList.add('anpbusca');
     box.innerHTML = `<div class="anpbhead"><h4>Pesquisar na base de postos da ANP</h4><button type="button" class="linkbtn" data-anp="fechar">Fechar</button></div>
       <div class="anpbfil">
         <label>Nome<input data-anp="nome" placeholder="Razão social ou parte dela" autocomplete="off"></label>
         <label>Estado<select data-anp="uf"><option value="">Escolha…</option>${UFS.map(u => `<option${u === ufIni ? ' selected' : ''}>${u}</option>`).join('')}</select></label>
-        <label>Cidade<select data-anp="cid" disabled><option value="">Todas</option></select></label>
+        <label class="anpcid">Cidade<input data-anp="cid" type="search" placeholder="Todas · digite o nome" autocomplete="off" disabled role="combobox" aria-autocomplete="list" aria-expanded="false"><ul class="anpcidl" role="listbox" hidden></ul></label>
         <label>Bandeira<select data-anp="band" disabled><option value="">Todas</option></select></label>
       </div>
       <div class="anpbres"><p class="hint">Escolha o estado para pesquisar.</p></div>`;
     const res = q('.anpbres');
     const filtrar = () => {
       if (!lista.length) return;
-      const n = window.anpNorm, ts = n(q('[data-anp=nome]').value).split(' ').filter(Boolean), cid = q('[data-anp=cid]').value, band = q('[data-anp=band]').value, uf = q('[data-anp=uf]').value;
-      const ach = lista.filter(x => (!cid || x[2] === cid) && (!band || x[3] === band) && (!ts.length || ts.every(t => n(x[1]).includes(t) || x[0].includes(t))));
+      const n = window.anpNorm, ts = n(q('[data-anp=nome]').value).split(' ').filter(Boolean), cq = n(q('[data-anp=cid]').value), band = q('[data-anp=band]').value, uf = q('[data-anp=uf]').value;
+      const ach = lista.filter(x => (cidSel ? x[2] === cidSel : !cq || n(x[2]).includes(cq)) && (!band || x[3] === band) && (!ts.length || ts.every(t => n(x[1]).includes(t) || x[0].includes(t))));
       const MAX = 100;
       res.innerHTML = ach.length ? `<p class="hint">${ach.length} posto${ach.length === 1 ? '' : 's'}${ach.length > MAX ? ` (mostrando ${MAX}; use os filtros para refinar)` : ''}. Clique no posto para usar.</p>
         <ul>${ach.slice(0, MAX).map(x => `<li><button type="button" data-anp="usar" data-cnpj="${x[0]}">
@@ -104,25 +104,51 @@
           <span class="anpbband">${window.anpSeloBandeira(x[3], false, true)}<small>${esc(x[3])}</small></span></button></li>`).join('')}</ul>`
         : '<p class="hint">Nenhum posto encontrado com esses filtros.</p>';
     };
+    // Cidade: digita parte do nome (sem acento e sem maiúscula) e a lista abaixo do campo mostra as cidades do estado
+    // que batem; a grade já filtra enquanto digita. Escolher uma cidade da lista filtra só por ela.
+    const cidInp = () => q('[data-anp=cid]'), cidLst = () => q('.anpcidl');
+    const fecharCid = () => { cidLst().hidden = true; cidInp().setAttribute('aria-expanded', 'false'); cidAlvo = -1; };
+    const listarCid = () => {
+      const n = window.anpNorm, t = n(cidInp().value);
+      const ach = t ? cidades.filter(c => n(c).includes(t)).sort((a, b) => (n(b).startsWith(t) - n(a).startsWith(t)) || a.localeCompare(b, 'pt-BR')) : cidades;
+      cidAlvo = -1;
+      if (!ach.length) { cidLst().innerHTML = '<li class="vazio">Nenhuma cidade com esse nome</li>'; }
+      else cidLst().innerHTML = ach.slice(0, 60).map(c => `<li role="option" data-cid="${esc(c)}">${esc(titulo(c))}<small>${cont[c]} posto${cont[c] === 1 ? '' : 's'}</small></li>`).join('');
+      cidLst().hidden = false; cidInp().setAttribute('aria-expanded', 'true');
+    };
+    const usarCid = c => { cidSel = c; cidInp().value = titulo(c); fecharCid(); filtrar(); };
+    let cont = {};
     const carregar = async uf => {
-      lista = [];
-      ['cid', 'band'].forEach(k => { const el = q(`[data-anp=${k}]`); el.disabled = true; el.innerHTML = '<option value="">Todas</option>'; });
+      lista = []; cidades = []; cidSel = ''; cont = {};
+      cidInp().value = ''; cidInp().disabled = true; fecharCid();
+      const bd = q('[data-anp=band]'); bd.disabled = true; bd.innerHTML = '<option value="">Todas</option>';
       if (!uf) { res.innerHTML = '<p class="hint">Escolha o estado para pesquisar.</p>'; return; }
       res.innerHTML = `<p class="hint">Carregando os postos de ${esc(uf)}…</p>`;
       let l; try { l = await window.anpUf(uf); } catch (e) { res.innerHTML = '<p class="hint">Não consegui carregar a base da ANP agora. Tente de novo.</p>'; return; }
       if (q('[data-anp=uf]').value !== uf) return;
       lista = l;
       const ord = a => [...new Set(a)].filter(Boolean).sort((x, y) => x.localeCompare(y, 'pt-BR'));
-      q('[data-anp=cid]').innerHTML = '<option value="">Todas</option>' + ord(l.map(x => x[2])).map(c => `<option value="${esc(c)}">${esc(titulo(c))}</option>`).join('');
+      l.forEach(x => { cont[x[2]] = (cont[x[2]] || 0) + 1; });
+      cidades = ord(l.map(x => x[2]));
       q('[data-anp=band]').innerHTML = '<option value="">Todas</option>' + ord(l.map(x => x[3])).map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
       q('[data-anp=cid]').disabled = q('[data-anp=band]').disabled = false;
       if (!l.length) res.innerHTML = '<p class="hint">Nenhum posto deste estado na base.</p>'; else filtrar();
     };
     if (!box.dataset.on) {
       box.dataset.on = '1';
-      box.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input')) e.preventDefault(); });
-      box.addEventListener('input', e => { if (e.target.dataset.anp === 'nome') box._filtrar && box._filtrar(); });
-      box.addEventListener('change', e => { const k = e.target.dataset.anp; if (k === 'uf') box._carregar(e.target.value); else if (k === 'cid' || k === 'band') box._filtrar(); });
+      box.addEventListener('keydown', e => {
+        if (e.target.dataset.anp === 'cid' && box._cid) return box._cid.tecla(e);
+        if (e.key === 'Enter' && e.target.matches('input')) e.preventDefault();
+      });
+      box.addEventListener('input', e => {
+        if (e.target.dataset.anp === 'nome') box._filtrar && box._filtrar();
+        else if (e.target.dataset.anp === 'cid' && box._cid) box._cid.digitou();
+      });
+      box.addEventListener('focusin', e => { if (e.target.dataset.anp === 'cid' && box._cid) box._cid.abrir(); });
+      box.addEventListener('focusout', e => { if (e.target.dataset.anp === 'cid' && box._cid) setTimeout(() => box._cid && box._cid.sair(), 150); });
+      // mousedown (e não click) para escolher antes de o campo perder o foco
+      box.addEventListener('mousedown', e => { const li = e.target.closest('.anpcidl [data-cid]'); if (li && box._cid) { e.preventDefault(); box._cid.usar(li.dataset.cid); } });
+      box.addEventListener('change', e => { const k = e.target.dataset.anp; if (k === 'uf') box._carregar(e.target.value); else if (k === 'band') box._filtrar(); });
       box.addEventListener('click', e => {
         const b = e.target.closest('[data-anp]'); if (!b || !box.contains(b)) return;
         e.preventDefault(); e.stopPropagation();
@@ -131,6 +157,27 @@
       });
     }
     box._filtrar = filtrar; box._carregar = carregar; box._escolher = escolher;
+    box._cid = {
+      abrir: () => { if (cidades.length && !cidSel) listarCid(); },
+      digitou: () => { cidSel = ''; listarCid(); filtrar(); },
+      usar: usarCid,
+      sair: () => {
+        // Saiu do campo com um nome que é exatamente uma cidade: considera escolhida
+        const n = window.anpNorm, t = n(cidInp().value), ex = t && cidades.find(c => n(c) === t);
+        if (ex && !cidSel) usarCid(ex); else fecharCid();
+      },
+      tecla: e => {
+        const lis = [...cidLst().querySelectorAll('[data-cid]')];
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault(); if (cidLst().hidden) listarCid();
+          const l2 = [...cidLst().querySelectorAll('[data-cid]')]; if (!l2.length) return;
+          cidAlvo = (cidAlvo + (e.key === 'ArrowDown' ? 1 : -1) + l2.length) % l2.length;
+          l2.forEach((li, i) => li.classList.toggle('alvo', i === cidAlvo)); l2[cidAlvo].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+          e.preventDefault(); const li = lis[cidAlvo] || (cidInp().value.trim() && lis[0]); if (li) usarCid(li.dataset.cid);
+        } else if (e.key === 'Escape') { if (!cidLst().hidden) { e.preventDefault(); e.stopPropagation(); fecharCid(); } }
+      }
+    };
     box.hidden = false;
     box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     if (ufIni) carregar(ufIni); else q('[data-anp=uf]').focus();

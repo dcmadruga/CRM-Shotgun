@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 228, data: '2026-11-24', titulo: 'Pesquisar na ANP: cidade pelo nome', itens: [
+    'No painel Pesquisar na ANP (Novo lead, Nova proposta e Novo cadastro da TASK), o filtro Cidade virou um campo de digitar. Escreva parte do nome, sem se preocupar com acento ou maiúscula, e a lista de postos já filtra enquanto você digita.',
+    'Abaixo do campo aparecem as cidades do estado que batem com o que você digitou, com quantos postos cada uma tem. Clique numa delas, ou use as setas e Enter, para ver só os postos dessa cidade.'
+  ] },
   { v: 227, data: '2026-11-24', titulo: 'Templates e referências no cadastro da revenda', itens: [
     'Cada revenda agora tem os próprios Templates de proposta e a própria lista de Referências (página 2 do PDF). O administrador edita em Administração → Revendas, nos botões Editar templates e Editar referências.',
     'O gerente da revenda edita os dois em Parâmetros Proposta → Valores de base, e eles valem na hora para a equipe dele, sem precisar publicar. "Usar os gerais" volta para a lista geral.',
