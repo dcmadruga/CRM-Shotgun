@@ -2,7 +2,7 @@
  {
   "id": "n-auto-posto-buriti-ii-1502152",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -40,12 +40,12 @@
   "pendentes": [
    "cnpj"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "57266534000181",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_li",
    "req_lo"
@@ -97,98 +97,12 @@
   "categoria": "novo",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
- },
- {
-  "id": "d-famep-BB2B3235-2a29e6847f2a",
-  "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
-  "eventos": [
-   "req_renov"
-  ],
-  "docs": [
-   {
-    "id": "famep-BB2B3235-2a29e6847f2a",
-    "fonte": "famep",
-    "url": "https://www.diariomunicipal.com.br/famep/materia/BB2B3235",
-    "data": "2025-12-18",
-    "evento": "req_renov"
-   }
-  ],
-  "processos": [
-   {
-    "numero": "",
-    "orgao": "",
-    "evento": "req_renov",
-    "data": "2025-12-18",
-    "id": "d-famep-BB2B3235-2a29e6847f2a-req_renov-2025-12-18"
-   }
-  ],
-  "municipio": "Trairão",
-  "ibge": "1508050",
-  "lat": -5.1076,
-  "lng": -55.9719,
-  "coordFonte": "municipio",
-  "ultimaData": "2025-12-18",
-  "ultimoEvento": "req_renov",
-  "situacao": "solicitado",
-  "primeiraData": "2025-12-18",
-  "categoria": "tanques",
-  "confianca": "possivel",
-  "pendentes": [
-   "razao",
-   "cnpj",
-   "endereco"
-  ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
- },
- {
-  "id": "n-gabinete-lei-municipal-n-1-156-1100908",
-  "uf": "RO",
-  "identificado": "2026-11-24T05:25:23.337Z",
-  "eventos": [
-   "indeferido"
-  ],
-  "docs": [
-   {
-    "id": "arom-D253339B-92fb0d400142",
-    "fonte": "arom",
-    "url": "https://www.diariomunicipal.com.br/arom/materia/D253339B",
-    "data": "2025-12-18",
-    "evento": "indeferido"
-   }
-  ],
-  "processos": [
-   {
-    "numero": "",
-    "orgao": "Secretaria Municipal de Administração (Castanheiras)",
-    "evento": "indeferido",
-    "data": "2025-12-18",
-    "id": "n-gabinete-lei-municipal-n-1-156-1100908-indeferido-2025-12-18"
-   }
-  ],
-  "razao": "GABINETE LEI MUNICIPAL Nº 1.156",
-  "municipio": "Castanheiras",
-  "ibge": "1100908",
-  "endereco": "seu proprietário ou responsável; III",
-  "lat": -11.4379,
-  "lng": -61.8501,
-  "coordFonte": "municipio",
-  "ultimaData": "2025-12-18",
-  "ultimoEvento": "indeferido",
-  "situacao": "indeferido",
-  "primeiraData": "2025-12-18",
-  "categoria": "outro",
-  "confianca": "analise",
-  "pendentes": [
-   "cnpj"
-  ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-rabelo-silva-combustiveis-1502152",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -232,12 +146,12 @@
   "pendentes": [
    "cnpj"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "60883839000147",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo",
    "emitida_lp"
@@ -315,12 +229,12 @@
   "categoria": "novo",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-lonaju-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -368,12 +282,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "d-querido-to-1721000-2026-01-08--0-1481-8fc93149db1f",
   "uf": "TO",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -411,12 +325,12 @@
    "cnpj",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "58474189000134",
   "uf": "TO",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -459,12 +373,12 @@
   "pendentes": [
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-lonaju-comercio-de-combustivel-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -498,12 +412,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "58312522000109",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_li"
   ],
@@ -540,12 +454,12 @@
   "categoria": "novo",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-auto-posto-comaxin-maraba-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_li",
    "req_outro"
@@ -600,12 +514,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "48640407000100",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_lp_li",
    "emitida_lp",
@@ -664,12 +578,12 @@
   "categoria": "novo",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "55941187000110",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -717,12 +631,12 @@
   "categoria": "outro",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "14140639000187",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -770,12 +684,12 @@
   "categoria": "renovacao",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-pacheco-company-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -809,12 +723,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-auto-posto-santarem-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -848,12 +762,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-auto-posto-ipanema-xinguara-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -893,12 +807,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-rede-de-postos-marajo-paragominas-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -938,12 +852,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-mirian-barcarena-auto-posto-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -977,12 +891,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "55582479000103",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_li"
   ],
@@ -1027,12 +941,12 @@
   "pendentes": [
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-de-combustivel-sao-miguel-i-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -1066,12 +980,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-duarte-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -1111,12 +1025,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-pontao-j-h-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -1150,12 +1064,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-mirian-santana-auto-posto-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -1189,12 +1103,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "32681371006456",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_renov",
    "emitida_lo"
@@ -1244,13 +1158,13 @@
   "categoria": "renovacao",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z",
+  "atualizado": "2026-11-24T05:43:40.295Z",
   "endereco": "Rua Papagaio, s/n, Distrito Empresarial – Antônio José de Araújo, Canaã dos Carajás – PA"
  },
  {
   "id": "n-auto-posto-b-s-da-silva-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -1284,12 +1198,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-lider-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -1323,12 +1237,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-beira-mar-comercio-de-combustivel-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -1368,12 +1282,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-da-s-comercio-de-combustivel-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -1407,12 +1321,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-g-j-s-de-brito-posto-gerson-brito-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -1446,12 +1360,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-rota-fluvial-comercio-de-combustivel-lubrificantes-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -1491,12 +1405,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "61589732000153",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lp"
   ],
@@ -1533,12 +1447,12 @@
   "categoria": "novo",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-a-m-com-de-derivados-de-petroleo-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -1572,12 +1486,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "28665232000188",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -1626,12 +1540,12 @@
   "pendentes": [
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "28037613000112",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -1680,12 +1594,12 @@
   "pendentes": [
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "34619494000290",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_renov",
    "emitida_lo"
@@ -1743,13 +1657,13 @@
   "categoria": "renovacao",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z",
+  "atualizado": "2026-11-24T05:43:40.295Z",
   "endereco": "Avenida Wayne Cavalcante nº 385, Centro, Canaã dos Carajás – PA"
  },
  {
   "id": "d-famep-F657E3C1-d8e632c06fa3",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -1793,12 +1707,12 @@
    "cnpj",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "60655062000163",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_li"
   ],
@@ -1841,12 +1755,12 @@
   "categoria": "novo",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "45116289000147",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -1908,12 +1822,12 @@
   "categoria": "renovacao",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "12239495000195",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_renov",
    "emitida_lo"
@@ -1968,13 +1882,13 @@
   "categoria": "renovacao",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z",
+  "atualizado": "2026-11-24T05:43:40.295Z",
   "endereco": "Avenida Weyne Cavalcante, s/n, Qd"
  },
  {
   "id": "02032139000142",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_titular"
   ],
@@ -2011,12 +1925,12 @@
   "categoria": "titularidade",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-macedao-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -2050,12 +1964,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-wei-juan-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -2089,12 +2003,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-acai-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -2128,12 +2042,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-fs-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -2173,12 +2087,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-silva-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -2212,12 +2126,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-flutuante-dos-santos-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -2251,12 +2165,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "13684523000146",
   "uf": "TO",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_renov"
   ],
@@ -2298,12 +2212,12 @@
   "categoria": "renovacao",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-k-m-correa-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -2347,12 +2261,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-de-combustiveis-cristo-rei-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -2386,12 +2300,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-mega-posto-curralinho-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -2435,12 +2349,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-flutuante-beira-rio-revenda-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -2484,12 +2398,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-c-r-postos-servicos-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -2523,12 +2437,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "65997381000170",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -2577,12 +2491,12 @@
   "pendentes": [
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "65564567000136",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_lp"
   ],
@@ -2619,12 +2533,12 @@
   "categoria": "novo",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "40993601000167",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_renov"
   ],
@@ -2667,12 +2581,12 @@
   "pendentes": [
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-suzano-s-a-1502939",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -2717,12 +2631,12 @@
    "cnpj",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-naves-comercio-transporte-de-combustivel-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -2762,12 +2676,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-capital-real-combustiveis-derivados-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_li",
    "emitida_lo"
@@ -2828,12 +2742,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-sagres-aviation-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -2873,12 +2787,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-w-de-souza-comercio-de-combustivel-1502939",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lp"
   ],
@@ -2916,12 +2830,12 @@
    "cnpj",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-lorena-comercio-de-produtos-de-petroleo-hanna-posto-caravell-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -2955,12 +2869,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-sao-sebastiao-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -2994,12 +2908,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-hiper-petro-trr-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -3039,12 +2953,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-asa-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3078,12 +2992,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-novo-horizonte-comercio-de-petroleo-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3117,12 +3031,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-pioneiro-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "indeferido",
    "emitida_lo"
@@ -3177,12 +3091,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-skmar-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3216,12 +3130,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "66509904000155",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lp"
   ],
@@ -3259,12 +3173,12 @@
   "pendentes": [
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "67931202000128",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lp"
   ],
@@ -3320,13 +3234,13 @@
   "categoria": "novo",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z",
+  "atualizado": "2026-11-24T05:43:40.295Z",
   "endereco": "Rua Laranjeira, Qd"
  },
  {
   "id": "56283909000159",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lp"
   ],
@@ -3364,12 +3278,12 @@
   "pendentes": [
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-terra-santa-comercio-de-petroleo-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3403,12 +3317,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-f-costa-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3442,12 +3356,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "65320651000104",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -3490,12 +3404,12 @@
   "categoria": "outro",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-chico-machado-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -3535,12 +3449,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-j-a-mendo-combustivel-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3574,12 +3488,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "52101653000160",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_renov"
   ],
@@ -3621,12 +3535,12 @@
   "categoria": "renovacao",
   "confianca": "confirmado",
   "pendentes": [],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-mais-paizao-miritituba-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -3666,12 +3580,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-promessa-de-deus-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -3711,12 +3625,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-auto-posto-ferroviario-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -3756,12 +3670,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-j-f-comercio-varejista-de-combustivel-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3795,12 +3709,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-d-f-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -3840,12 +3754,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-palmares-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3879,12 +3793,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-auto-posto-r-s-siqueira-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3918,12 +3832,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-leao-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3957,12 +3871,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-alvorada-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -3996,12 +3910,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-rede-de-postos-almeida-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -4041,12 +3955,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-pontao-mota-comercio-de-combustiveis-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -4086,12 +4000,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-prainha-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -4125,12 +4039,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-posto-mesquita-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -4170,12 +4084,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-j-m-servicos-comercio-hiper-posto-maraba-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "emitida_lo"
   ],
@@ -4215,12 +4129,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-u-da-s-moreira-revenda-de-combustivel-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -4254,12 +4168,12 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  },
  {
   "id": "n-comercio-de-combustiveis-derivados-simoes-pa",
   "uf": "PA",
-  "identificado": "2026-11-24T05:25:23.337Z",
+  "identificado": "2026-11-24T05:43:40.295Z",
   "eventos": [
    "req_outro"
   ],
@@ -4293,6 +4207,6 @@
    "municipio",
    "endereco"
   ],
-  "atualizado": "2026-11-24T05:25:23.337Z"
+  "atualizado": "2026-11-24T05:43:40.295Z"
  }
 ]

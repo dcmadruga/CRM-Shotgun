@@ -1,6 +1,6 @@
 {
- "inicio": "2026-11-24T05:25:23.337Z",
- "fim": "2026-11-24T05:42:16.092Z",
+ "inicio": "2026-11-24T05:43:40.295Z",
+ "fim": "2026-11-24T05:59:19.711Z",
  "status": "ok",
  "gatilho": "push",
  "pedidoPor": "",
@@ -39,11 +39,11 @@
   "famep": {
    "ok": true,
    "uf": "PA",
-   "consultas": 49,
-   "lidos": 37,
-   "docs": 41,
+   "consultas": 47,
+   "lidos": 35,
+   "docs": 40,
    "de": "2025-11-24",
-   "novos": 41
+   "novos": 40
   },
   "querido-pa": {
    "ok": true,
@@ -66,11 +66,11 @@
   "arom": {
    "ok": true,
    "uf": "RO",
-   "consultas": 19,
-   "lidos": 7,
-   "docs": 1,
+   "consultas": 17,
+   "lidos": 5,
+   "docs": 0,
    "de": "2025-11-24",
-   "novos": 1
+   "novos": 0
   },
   "querido-ro": {
    "ok": true,
@@ -110,11 +110,11 @@
    "novos": 0
   }
  },
- "documentos": 109,
- "novos": 94,
+ "documentos": 107,
+ "novos": 92,
  "atualizados": 0,
- "novosDocumentos": 109,
+ "novosDocumentos": 107,
  "alertas": 0,
  "teste": true,
- "duracaoSeg": 1013
+ "duracaoSeg": 939
 }
