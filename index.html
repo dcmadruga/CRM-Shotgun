@@ -1267,6 +1267,11 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div class="tools"><button type="button" class="primary" id="btnAddRev">Cadastrar revenda</button><span id="rStatus" class="hint" role="status"></span></div>
   </div></section>
   <section class="sec"><h2>Revendas cadastradas <span id="rCount"></span></h2><div class="body">
+    <div class="ufiltros" role="search" aria-label="Filtrar revendas">
+      <label>Estado de atuação<select id="rfUf"><option value="">Todos</option></select></label>
+      <label>Gerente de revenda<select id="rfGer"><option value="">Todos</option></select></label>
+      <button type="button" class="lnk" id="rfLimpar" hidden>Limpar filtros</button>
+    </div>
     <div id="revBody" class="rvlista"></div>
     <p class="hint">Cada usuário pertence a uma revenda só: ao adicionar alguém que já está em outra revenda, ele muda de revenda. O gerente da revenda tem acesso aos Parâmetros Proposta. Tudo é salvo na hora.</p>
   </div></section>
