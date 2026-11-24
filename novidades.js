@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 220, data: '2026-11-24', titulo: 'Templates de proposta mais legíveis', itens: [
+    'Parâmetros Proposta → Templates de proposta: licenças e mensalidades ficam uma embaixo da outra, com a descrição inteira, o preço e a quantidade sempre visíveis, no computador e no celular.'
+  ] },
   { v: 219, data: '2026-11-23', titulo: 'Link de dados do cliente mais simples', itens: [
     'O link de dados que o cliente preenche não pede mais a "Data desejada para a implantação". O bloco Operação, que só tinha esse campo para o cliente, saiu da tela.',
     'O contrato passa a dizer que a licença será instalada em data a ser combinada entre as partes. Propostas antigas que já tinham a data continuam com ela no contrato.',
