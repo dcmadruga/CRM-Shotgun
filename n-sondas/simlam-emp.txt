@@ -1,0 +1,593 @@
+200 https://monitoramento.semas.pa.gov.br/simlam/ListarEmpreendimento.aspx
+
+
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head><meta http-equiv="content-type" content="text/html;charset=utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta name="description" /><meta name="author" /><link rel="shortcut icon" href="Imagens/favicon.png" /><title>
+	SEMAS -  Simlam Público PA
+</title><link href="http://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css" />
+
+    <!----------------------------css------------------------------->
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="css/bootstrap.css" /><link rel="stylesheet" href="css/bootstrap-theme.css" />
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" type="text/css" media="screen" href="css/datepicker.css" /><link rel="Stylesheet" type="text/css" href="css/select2.css" /><link rel="Stylesheet" type="text/css" href="css/table.css" /><link rel="stylesheet" type="text/css" media="all" href="css/publicoNovo.css" /><link href="https://icons.getbootstrap.com/assets/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <!--------------------------SCRIPTs----------------------------->
+    
+    <script src='js/jquery.js' type="text/javascript"></script>
+    <script src='js/bootstrap.min.js' type="text/javascript"></script>
+    <script src='js/bootstrap-datepicker.js' type="text/javascript"></script>
+    <script src='js/bootstrap-datepicker.pt-BR.js' type="text/javascript"></script>
+    <script src='jquery/jquery-select2.js' type="text/javascript"></script>
+    <script src='jquery/select2_locale_pt-BR.js' type="text/javascript"></script>
+    <script src='js/offcanvas.js' type="text/javascript"></script>
+    <script src='js/nav.js' type="text/javascript"></script>
+    <script src='jquery/analytics.js' type="text/javascript"></script>
+    <script src='js/etramite.js' type="text/javascript"></script>
+    
+    <script type="text/javascript">
+
+        $(function () {
+
+            $('[data-pesquisa]').keypress(function (e) {
+
+                var tecla = (e.keyCode ? e.keyCode : e.which);
+
+                if (tecla == 13) {
+                    return false;
+                }
+
+            });
+
+        });
+
+        function LimparCampos() {
+            $('[data-pesquisa]').each(function () {
+                switch (this.type) {
+                    case "file":
+                    case "password":
+                    case "text":
+                    case "textarea":
+                        $(this).val("");
+                        break;
+                    case "checkbox":
+                    case "radio":
+                        this.checked = false;
+                }
+
+                $(this).children("option:selected").removeAttr("selected").end()
+                    .children("option:first").attr("selected", "selected");
+            });
+        }
+    </script>
+
+    
+    <script type="text/javascript">
+
+        function abrirEmpreendimento(id) {
+            location.href = 'VisualizarEmpreendimento.aspx?id=' + id + '&UrlRetorno=ListarEmpreendimento.aspx';
+        }
+
+    </script>
+<script id="ctl00_tm.mask" src="js/tm.mask.js" type="text/javascript"></script><script id="ctl00_jquerySetMask" src="jquery/jquery.meio.mask.js" type="text/javascript"></script></head>
+<body>
+    <div class="mensagemHolder col-xs-10 col-xs-offset-1 col-sm-10 col-sm-offset-1 col-lg-8 col-lg-offset-2"></div>
+    <form name="aspnetForm" method="post" action="./ListarEmpreendimento.aspx" id="aspnetForm" role="form" class="content">
+<div>
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwULLTIwOTYwOTc4MTUPFgQeBE1vZG8LKYUBVGVjbm9tYXBhcy5FdHJhbWl0ZS5FbnRpdGllcy5Nb2RvQ2FycmVnYXIsIFRlY25vbWFwYXMuRXRyYW1pdGUuRW50aXRpZXMsIFZlcnNpb249MS4wLjgxMDUuMjkwNTUsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49bnVsbAAeDENvZGlnb1BhZ2luYQUfNEJGOUJFQTQ5ODUyRUNEMjI0QzVEMzJDREQ3RjM2NxYCZg9kFgQCAQ9kFg4CCQ8WAh4EaHJlZgURY3NzL2Jvb3RzdHJhcC5jc3NkAgoPFgIfAgUXY3NzL2Jvb3RzdHJhcC10aGVtZS5jc3NkAgwPFgIfAgUSY3NzL2RhdGVwaWNrZXIuY3NzZAINDxYCHwIFD2Nzcy9zZWxlY3QyLmNzc2QCDg8WAh8CBQ1jc3MvdGFibGUuY3NzZAIPDxYCHwIFE2Nzcy9wdWJsaWNvTm92by5jc3NkAhEPFQoManMvanF1ZXJ5LmpzE2pzL2Jvb3RzdHJhcC5taW4uanMaanMvYm9vdHN0cmFwLWRhdGVwaWNrZXIuanMganMvYm9vdHN0cmFwLWRhdGVwaWNrZXIucHQtQlIuanMYanF1ZXJ5L2pxdWVyeS1zZWxlY3QyLmpzHmpxdWVyeS9zZWxlY3QyX2xvY2FsZV9wdC1CUi5qcw9qcy9vZmZjYW52YXMuanMJanMvbmF2LmpzE2pxdWVyeS9hbmFseXRpY3MuanMOanMvZXRyYW1pdGUuanNkAgMPZBYCAgUPZBYEAgUPZBYCZg9kFggCCQ8QZBAVGwJBQwJBTAJBUAJBTQJCQQJDRQJERgJFUwJHTwJNQQJNVAJNUwJNRwJQQQJQQgJQUgJQRQJQSQJSSgJSTgJSUwJSTwJSUgJTQwJTUAJTRQJUTxUbATEBMgEzATQBNQE2ATcBOAE5AjEwAjExAjEyAjEzAjE0AjE1AjE2AjE3AjE4AjE5AjIwAjIxAjIyAjIzAjI0AjI1AjI2AjI3FCsDG2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZxYBAg1kAgsPEGQQFZEBDSoqU2VsZWNpb25lKioKQWJhZXRldHViYQ9BYmVsIEZpZ3VlaXJlZG8GQWNhcsOhBUFmdcOhE8OBZ3VhIEF6dWwgZG8gTm9ydGUIQWxlbnF1ZXIIQWxtZWlyaW0IQWx0YW1pcmEHQW5hasOhcwpBbmFuaW5kZXVhBUFuYXB1D0F1Z3VzdG8gQ29ycsOqYQ9BdXJvcmEgZG8gUGFyw6EGQXZlaXJvBUJhZ3JlBkJhacOjbwdCYW5uYWNoCUJhcmNhcmVuYQZCZWzDqW0IQmVsdGVycmEJQmVuZXZpZGVzFkJvbSBKZXN1cyBkbyBUb2NhbnRpbnMGQm9uaXRvCUJyYWdhbsOnYQtCcmFzaWwgTm92bxhCcmVqbyBHcmFuZGUgZG8gQXJhZ3VhaWELQnJldSBCcmFuY28GQnJldmVzBkJ1amFydRJDYWNob2VpcmEgZG8gQXJhcmkTQ2FjaG9laXJhIGRvIFBpcmnDoQdDYW1ldMOhE0NhbmHDoyBkb3MgQ2FyYWrDoXMIQ2FwYW5lbWEOQ2FwaXTDo28gUG/Dp28JQ2FzdGFuaGFsBkNoYXZlcwdDb2xhcmVzF0NvbmNlacOnw6NvIGRvIEFyYWd1YWlhE0NvbmPDs3JkaWEgZG8gUGFyw6EPQ3VtYXJ1IGRvIE5vcnRlDUN1cmlvbsOzcG9saXMKQ3VycmFsaW5obwZDdXJ1w6EIQ3VydcOnw6EKRG9tIEVsaXNldRVFbGRvcmFkbyBkb3MgQ2FyYWrDoXMERmFybxRGbG9yZXN0YSBkbyBBcmFndWFpYRJHYXJyYWbDo28gZG8gTm9ydGUTR29pYW7DqXNpYSBkbyBQYXLDoQdHdXJ1cMOhDUlnYXJhcMOpLUHDp3UNSWdhcmFww6ktTWlyaQlJbmhhbmdhcGkQSXBpeHVuYSBkbyBQYXLDoQdJcml0dWlhCEl0YWl0dWJhCkl0dXBpcmFuZ2EMSmFjYXJlYWNhbmdhCEphY3VuZMOhBkp1cnV0aRFMaW1vZWlybyBkbyBBanVydQtNw6NlIGRvIFJpbxFNYWdhbGjDo2VzIEJhcmF0YQdNYXJhYsOhCU1hcmFjYW7DowlNYXJhcGFuaW0ITWFyaXR1YmENTWVkaWNpbMOibmRpYQhNZWxnYcOnbwhNb2NhanViYQRNb2p1EU1vanXDrSBkb3MgQ2FtcG9zDE1vbnRlIEFsZWdyZQZNdWFuw6EZTm92YSBFc3BlcmFuw6dhIGRvIFBpcmnDoQxOb3ZhIElwaXh1bmEOTm92YSBUaW1ib3RldWEOTm92byBQcm9ncmVzc28RTm92byBSZXBhcnRpbWVudG8Hw5NiaWRvcw9PZWlyYXMgZG8gUGFyw6EKT3JpeGltaW7DoQZPdXLDqW0UT3VyaWzDom5kaWEgZG8gTm9ydGUHUGFjYWrDoRJQYWxlc3RpbmEgZG8gUGFyw6ELUGFyYWdvbWluYXMLUGFyYXVhcGViYXMKUGF1IGQgQXJjbwlQZWl4ZS1Cb2kIUGnDp2FycmEGUGxhY2FzD1BvbnRhIGRlIFBlZHJhcwZQb3J0ZWwMUG9ydG8gZGUgTW96B1ByYWluaGEJUHJpbWF2ZXJhCVF1YXRpcHVydQpSZWRlbsOnw6NvCVJpbyBNYXJpYQ9Sb25kb24gZG8gUGFyw6EKUnVyw7Nwb2xpcwxTYWxpbsOzcG9saXMKU2FsdmF0ZXJyYRdTYW50YSBCw6FyYmFyYSBkbyBQYXLDoRNTYW50YSBDcnV6IGRvIEFyYXJpFVNhbnRhIElzYWJlbCBkbyBQYXLDoRRTYW50YSBMdXppYSBkbyBQYXLDoRlTYW50YSBNYXJpYSBkYXMgQmFycmVpcmFzFFNhbnRhIE1hcmlhIGRvIFBhcsOhE1NhbnRhbmEgZG8gQXJhZ3VhaWEJU2FudGFyw6ltDlNhbnRhcsOpbSBOb3ZvF1NhbnRvIEFudMO0bmlvIGRvIFRhdcOhGFPDo28gQ2FldGFubyBkZSBPZGl2ZWxhcxlTw6NvIERvbWluZ29zIGRvIEFyYWd1YWlhFlPDo28gRG9taW5nb3MgZG8gQ2FwaW0UU8OjbyBGw6lsaXggZG8gWGluZ3UXU8OjbyBGcmFuY2lzY28gZG8gUGFyw6EYU8OjbyBHZXJhbGRvIGRvIEFyYWd1YWlhE1PDo28gSm/Do28gZGEgUG9udGEVU8OjbyBKb8OjbyBkZSBQaXJhYmFzFlPDo28gSm/Do28gZG8gQXJhZ3VhaWEVU8OjbyBNaWd1ZWwgZG8gR3VhbcOhHFPDo28gU2ViYXN0acOjbyBkYSBCb2EgVmlzdGEIU2FwdWNhaWEXU2VuYWRvciBKb3PDqSBQb3Jmw61yaW8FU291cmUKVGFpbMOibmRpYQpUZXJyYSBBbHRhC1RlcnJhIFNhbnRhClRvbcOpLUHDp3UKVHJhY3VhdGV1YQhUcmFpcsOjbwdUdWN1bcOjCFR1Y3VydcOtDFVsaWFuw7Nwb2xpcwdVcnVhcsOhBVZpZ2lhBVZpc2V1EVZpdMOzcmlhIGRvIFhpbmd1CFhpbmd1YXJhFZEBATAEMjQxMAQyNDExBDI0MTIEMjQxMwQyNDE0BDI0MTUEMjQxNgQyNDE3BDI0MTgEMjQxOQQyNDIwBDI0MjEEMjQyMgQyNDIzBDI0MjQEMjQyNQQyNDI2BDI0MjcEMjQyOAQyNDI5BDI0MzAEMjQzMQQyNDMyBDI0MzMEMjQzNAQyNDM1BDI0MzYEMjQzNwQyNDM4BDI0MzkEMjQ0MAQyNDQxBDI0NDIEMjQ0MwQyNDQ0BDI0NDUEMjQ0NgQyNDQ3BDI0NDgEMjQ0OQQyNDUwBDI0NTEEMjQ1MgQyNDUzBDI0NTQEMjQ1NQQyNDU2BDI0NTcEMjQ1OAQyNDU5BDI0NjAEMjQ2MQQyNDYyBDI0NjMEMjQ2NAQyNDY1BDI0NjYEMjQ2NwQyNDY4BDI0NjkEMjQ3MAQyNDcxBDI0NzIEMjQ3MwQyNDc0BDI0NzUEMjQ3NgQyNDc3BDI0NzgEMjQ3OQQyNDgwBDI0ODEEMjQ4MgQ1NTI3BDI0ODMEMjQ4NAQyNDg1BDI0ODYEMjQ4NwQyNDg4BDI0ODkEMjQ5MAQyNDkxBDI0OTIEMjQ5MwQyNDk0BDI0OTUEMjQ5NgQyNDk3BDI0OTgEMjQ5OQQyNTAwBDI1MDEEMjUwMgQyNTAzBDI1MDQEMjUwNQQyNTA2BDI1MDcEMjUwOAQyNTA5BDI1MTAEMjUxMQQyNTEyBDI1MTMEMjUxNAQyNTE1BDI1MTYEMjUxNwQyNTE4BDI1MTkEMjUyMAQyNTIxBDI1MjIEMjUyMwQyNTI0BDI1MjUEMjUyNgQyNTI3BDI1MjgEMjUyOQQyNTMwBDI1MzEEMjUzMgQyNTMzBDI1MzQEMjUzNQQyNTM2BDI1MzcEMjUzOAQyNTM5BDI1NDAEMjU0MQQyNTQyBDI1NDMEMjU0NAQyNTQ1BDI1NDYEMjU0NwQyNTQ4BDI1NDkEMjU1MAQyNTUxBDI1NTIUKwORAWdnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dkZAIRDxBkZBYBZmQCFQ8PFgIeB1Zpc2libGVoZGQCCQ9kFgJmD2QWAgIDDzwrAAsAZGS2oWjjU16fJu040UkUwSgbUL541XI6+9RX+5ZnRtEjNg==" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['aspnetForm'];
+if (!theForm) {
+    theForm = document.aspnetForm;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<script src="/simlam/WebResource.axd?d=_at4hbRZOwOq58CiA2fMI-qt0C-xvgGrlNZR0SOIBqM9pZrhFbtHCtYawOIFLEEl_zAKMpwmVaQSJ16FaYchr06ViQzxB8t1TQm3tS2I2JM1&amp;t=637109961120000000" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+//<![CDATA[
+  function RetornaId() { return ('4BF9BEA49852ECD224C5D32CDD7F367'); } var __cultureInfo = {"name":"pt-BR","numberFormat":{"CurrencyDecimalDigits":2,"CurrencyDecimalSeparator":",","IsReadOnly":true,"CurrencyGroupSizes":[3],"NumberGroupSizes":[3],"PercentGroupSizes":[3],"CurrencyGroupSeparator":".","CurrencySymbol":"R$","NaNSymbol":"NaN (Não é um número)","CurrencyNegativePattern":9,"NumberNegativePattern":1,"PercentPositivePattern":1,"PercentNegativePattern":1,"NegativeInfinitySymbol":"-Infinito","NegativeSign":"-","NumberDecimalDigits":2,"NumberDecimalSeparator":",","NumberGroupSeparator":".","CurrencyPositivePattern":2,"PositiveInfinitySymbol":"+Infinito","PositiveSign":"+","PercentDecimalDigits":2,"PercentDecimalSeparator":",","PercentGroupSeparator":".","PercentSymbol":"%","PerMilleSymbol":"‰","NativeDigits":["0","1","2","3","4","5","6","7","8","9"],"DigitSubstitution":1},"dateTimeFormat":{"AMDesignator":"","Calendar":{"MinSupportedDateTime":"\/Date(-62135586000000)\/","MaxSupportedDateTime":"\/Date(253402300799999)\/","AlgorithmType":1,"CalendarType":1,"Eras":[1],"TwoDigitYearMax":2029,"IsReadOnly":true},"DateSeparator":"/","FirstDayOfWeek":0,"CalendarWeekRule":0,"FullDateTimePattern":"dddd, d\u0027 de \u0027MMMM\u0027 de \u0027yyyy HH:mm:ss","LongDatePattern":"dddd, d\u0027 de \u0027MMMM\u0027 de \u0027yyyy","LongTimePattern":"HH:mm:ss","MonthDayPattern":"dd\u0027 de \u0027MMMM","PMDesignator":"","RFC1123Pattern":"ddd, dd MMM yyyy HH\u0027:\u0027mm\u0027:\u0027ss \u0027GMT\u0027","ShortDatePattern":"dd/MM/yyyy","ShortTimePattern":"HH:mm","SortableDateTimePattern":"yyyy\u0027-\u0027MM\u0027-\u0027dd\u0027T\u0027HH\u0027:\u0027mm\u0027:\u0027ss","TimeSeparator":":","UniversalSortableDateTimePattern":"yyyy\u0027-\u0027MM\u0027-\u0027dd HH\u0027:\u0027mm\u0027:\u0027ss\u0027Z\u0027","YearMonthPattern":"MMMM\u0027 de \u0027yyyy","AbbreviatedDayNames":["dom","seg","ter","qua","qui","sex","sáb"],"ShortestDayNames":["D","S","T","Q","Q","S","S"],"DayNames":["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"],"AbbreviatedMonthNames":["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez",""],"MonthNames":["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro",""],"IsReadOnly":true,"NativeCalendarName":"Calendário gregoriano","AbbreviatedMonthGenitiveNames":["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez",""],"MonthGenitiveNames":["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro",""]},"eras":[1,"d.C.",null,0]};//]]>
+</script>
+
+<script src="/simlam/ScriptResource.axd?d=b0VIZuHuWAx8CvNKYAOMoqfbosLxD9ABVlmK6lRIq7JRVNtzzoOCscJM7vA9oGpz1nZyIfxjZ3kZYRxYwd8cWkYJ0TANgNoWmWxoKoj_YzXWlfM8buFaferFwHcSjW0TBYARufeFU2hkxX5pAuTO3Q2&amp;t=254cc609" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax client-side framework failed to load.');
+//]]>
+</script>
+
+<script src="/simlam/ScriptResource.axd?d=oX8bR5KGp4ISgSK4aJLVcsj512WVLb3_zbCxl1SOWqIulpGMXZNJnBYfBZnk_enhCwP7HSIRO2WuNTirLTboeFgqHdgT7o9W0jXyVp5chpr9RAIgkn0PCyOTTqP1NWWUmD6A3lQb0hKQnOt85jWILw2&amp;t=254cc609" type="text/javascript"></script>
+<div>
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="7C4B916E" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="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" />
+</div>
+        
+        <div id="canvas" class="navbar navbar-fixed-top topo">
+
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="http://monitoramento.semas.pa.gov.br/simlam/index.aspx">
+                    <img class="img-responsive logo" src="assets/semas.png" alt="SEMAS-PA">
+                </a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a class="nav-link menuItem" aria-current="page" href="http://monitoramento.semas.pa.gov.br/simlam/index.aspx">Home</a>
+                    </li>
+                    <li>
+                        <a class="nav-link menuItem" aria-current="page" href="https://www.semas.pa.gov.br/">Portal Semas</a>
+                    </li>
+                    <li>
+                        <a class="nav-link menuItem" aria-current="page" href="http://monitoramento.semas.pa.gov.br/simlamtec/">SIMLAM Técnico</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Empreendimento <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="ListarEmpreendimento.aspx">Listar Empreendimento</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Responsável Técnico <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="ResponsavelTecnicoMenu.aspx">Cadastrar Responsável Técnico</a></li>
+                            <li><a href="ListarResponsavelTecnico.aspx">Listar Responsável Técnico</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Protocolo <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="ListarProcessos.aspx">Buscar Processo</a></li>
+                            <li><a href="ListarDocumentos.aspx">Buscar Documento</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        
+        
+        
+
+        <div class="container containerPrincipal">
+            <script type="text/javascript">
+//<![CDATA[
+Sys.WebForms.PageRequestManager._initialize('ctl00$scriptManagerMstPage', 'aspnetForm', ['tctl00$baseBody$upBuscaSimples','','tctl00$baseBody$upControlesBuscaAvancada','','tctl00$baseBody$upBotoes','','tctl00$baseBody$upGrid',''], [], [], 300, 'ctl00');
+//]]>
+</script>
+
+            
+
+    <h1 class="titulo" style=""><span class="titulo1"><i class='bi bi-list-task'></i></span><span class="charInicial">&nbsp;E</span><span class="titulo2">mpreendimentos Cadastrados</span></h1>
+
+
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingOne">
+                <h4 class="panel-title">
+                    <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        <i class="glyphicon glyphicon-search"></i>Busca Rápida
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                <div class="panel-body">
+
+                    <div id="ctl00_baseBody_upBuscaSimples">
+	
+                            <div class="col-lg-12">
+                                <div class="input-group">
+                                    <input name="ctl00$baseBody$txtBusca" type="text" maxlength="100" id="ctl00_baseBody_txtBusca" class="form-control" data-pesquisaSimples="" placeholder="Pesquisar por Nome / Razão Social / Dominação, CNPJ do Empreendimento, IE do Empreendimento e Município" data-toggle="tooltip" data-placement="top" title="Pesquisar por Nome / Razão Social / Dominação, CNPJ do Empreendimento, IE do Empreendimento e Município" SourceField="BUSCA_SIMPLES" />
+                                    <span class="input-group-btn">
+                                        <a id="ctl00_baseBody_btnPesquisa" data-busca="0" data-categoria="Empreendimento" class="btn btn-primary " href="javascript:__doPostBack(&#39;ctl00$baseBody$btnPesquisa&#39;,&#39;&#39;)"><i class="bi bi-search"></i> Buscar</a>
+                                    </span>
+                                </div>
+                            </div>
+                        
+</div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingTwo">
+                <h4 class="panel-title">
+                    <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        <i class="glyphicon glyphicon-search"></i>Busca Avançada
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                <div class="panel-body">
+
+                    <div id="ctl00_baseBody_upControlesBuscaAvancada">
+	
+                            <div class="row">
+                                <!--------------------------------------------------Razão social--------------------------------------------------->
+                                <div class="col-md-6">
+                                    <label>Razão Social</label>
+                                    <input name="ctl00$baseBody$txtRazaoSocial" type="text" maxlength="100" id="ctl00_baseBody_txtRazaoSocial" data-pesquisa="RazaoSocial" SourceField="RAZAO_SOCIAL" FillGroup="BuscaAvancada" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" />
+                                </div>
+                                <!--------------------------------------------------Nome Fantasia-------------------------------------------------->
+                                <div class="col-md-6">
+                                    <label>Nome Fantasia</label>
+                                    <input name="ctl00$baseBody$txtNomeFantasia" type="text" maxlength="100" id="ctl00_baseBody_txtNomeFantasia" data-pesquisa="NomeFantasia" SourceField="NOME_FANTASIA" FillGroup="BuscaAvancada" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <!---------------------------------------------------Inscrição Municipal------------------------------------------->
+                                <div class="col-md-6">
+                                    <label>Incrição Estadual</label>
+                                    <input name="ctl00$baseBody$txtInscricaoEstadual" type="text" id="ctl00_baseBody_txtInscricaoEstadual" data-pesquisa="InscricaoEstadual" SourceField="INSCRICAO_ESTADUAL" FillGroup="BuscaAvancada" mask="iePa" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" />
+                                </div>
+                                <!-----------------------------------------------------CNPJ-------------------------------------------------------->
+                                <div class="col-md-6">
+                                    <label>CNPJ</label>
+                                    <input name="ctl00$baseBody$txtCnpj" type="text" id="ctl00_baseBody_txtCnpj" data-pesquisa="Cnpj" SourceField="CNPJ" FillGroup="BuscaAvancada" mask="cnpj" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <!----------------------------------------------------Municipio--------------------------------------------------->
+                                <div class="col-md-6">
+                                    <label>Municipío</label>
+                                    <div class="input-group">
+                                        <div class="input-group-btn">
+                                            <select name="ctl00$baseBody$ddlUf" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$baseBody$ddlUf\&#39;,\&#39;\&#39;)&#39;, 0)" id="ctl00_baseBody_ddlUf" class="btn btn-default dropdown-toggle">
+		<option value="1">AC</option>
+		<option value="2">AL</option>
+		<option value="3">AP</option>
+		<option value="4">AM</option>
+		<option value="5">BA</option>
+		<option value="6">CE</option>
+		<option value="7">DF</option>
+		<option value="8">ES</option>
+		<option value="9">GO</option>
+		<option value="10">MA</option>
+		<option value="11">MT</option>
+		<option value="12">MS</option>
+		<option value="13">MG</option>
+		<option selected="selected" value="14">PA</option>
+		<option value="15">PB</option>
+		<option value="16">PR</option>
+		<option value="17">PE</option>
+		<option value="18">PI</option>
+		<option value="19">RJ</option>
+		<option value="20">RN</option>
+		<option value="21">RS</option>
+		<option value="22">RO</option>
+		<option value="23">RR</option>
+		<option value="24">SC</option>
+		<option value="25">SP</option>
+		<option value="26">SE</option>
+		<option value="27">TO</option>
+
+	</select>
+                                        </div>
+                                        <select name="ctl00$baseBody$ddlMunicipio" id="ctl00_baseBody_ddlMunicipio" class="form-control" data-pesquisa="Municipio" FillGroup="BuscaAvancada">
+		<option selected="selected" value="0" title="**Selecione**">**Selecione**</option>
+		<option value="2410">Abaetetuba</option>
+		<option value="2411">Abel Figueiredo</option>
+		<option value="2412">Acar&#225;</option>
+		<option value="2413">Afu&#225;</option>
+		<option value="2414">&#193;gua Azul do Norte</option>
+		<option value="2415">Alenquer</option>
+		<option value="2416">Almeirim</option>
+		<option value="2417">Altamira</option>
+		<option value="2418">Anaj&#225;s</option>
+		<option value="2419">Ananindeua</option>
+		<option value="2420">Anapu</option>
+		<option value="2421">Augusto Corr&#234;a</option>
+		<option value="2422">Aurora do Par&#225;</option>
+		<option value="2423">Aveiro</option>
+		<option value="2424">Bagre</option>
+		<option value="2425">Bai&#227;o</option>
+		<option value="2426">Bannach</option>
+		<option value="2427">Barcarena</option>
+		<option value="2428">Bel&#233;m</option>
+		<option value="2429">Belterra</option>
+		<option value="2430">Benevides</option>
+		<option value="2431">Bom Jesus do Tocantins</option>
+		<option value="2432">Bonito</option>
+		<option value="2433">Bragan&#231;a</option>
+		<option value="2434">Brasil Novo</option>
+		<option value="2435">Brejo Grande do Araguaia</option>
+		<option value="2436">Breu Branco</option>
+		<option value="2437">Breves</option>
+		<option value="2438">Bujaru</option>
+		<option value="2439">Cachoeira do Arari</option>
+		<option value="2440">Cachoeira do Piri&#225;</option>
+		<option value="2441">Camet&#225;</option>
+		<option value="2442">Cana&#227; dos Caraj&#225;s</option>
+		<option value="2443">Capanema</option>
+		<option value="2444">Capit&#227;o Po&#231;o</option>
+		<option value="2445">Castanhal</option>
+		<option value="2446">Chaves</option>
+		<option value="2447">Colares</option>
+		<option value="2448">Concei&#231;&#227;o do Araguaia</option>
+		<option value="2449">Conc&#243;rdia do Par&#225;</option>
+		<option value="2450">Cumaru do Norte</option>
+		<option value="2451">Curion&#243;polis</option>
+		<option value="2452">Curralinho</option>
+		<option value="2453">Curu&#225;</option>
+		<option value="2454">Curu&#231;&#225;</option>
+		<option value="2455">Dom Eliseu</option>
+		<option value="2456">Eldorado dos Caraj&#225;s</option>
+		<option value="2457">Faro</option>
+		<option value="2458">Floresta do Araguaia</option>
+		<option value="2459">Garraf&#227;o do Norte</option>
+		<option value="2460">Goian&#233;sia do Par&#225;</option>
+		<option value="2461">Gurup&#225;</option>
+		<option value="2462">Igarap&#233;-A&#231;u</option>
+		<option value="2463">Igarap&#233;-Miri</option>
+		<option value="2464">Inhangapi</option>
+		<option value="2465">Ipixuna do Par&#225;</option>
+		<option value="2466">Irituia</option>
+		<option value="2467">Itaituba</option>
+		<option value="2468">Itupiranga</option>
+		<option value="2469">Jacareacanga</option>
+		<option value="2470">Jacund&#225;</option>
+		<option value="2471">Juruti</option>
+		<option value="2472">Limoeiro do Ajuru</option>
+		<option value="2473">M&#227;e do Rio</option>
+		<option value="2474">Magalh&#227;es Barata</option>
+		<option value="2475">Marab&#225;</option>
+		<option value="2476">Maracan&#227;</option>
+		<option value="2477">Marapanim</option>
+		<option value="2478">Marituba</option>
+		<option value="2479">Medicil&#226;ndia</option>
+		<option value="2480">Melga&#231;o</option>
+		<option value="2481">Mocajuba</option>
+		<option value="2482">Moju</option>
+		<option value="5527">Moju&#237; dos Campos</option>
+		<option value="2483">Monte Alegre</option>
+		<option value="2484">Muan&#225;</option>
+		<option value="2485">Nova Esperan&#231;a do Piri&#225;</option>
+		<option value="2486">Nova Ipixuna</option>
+		<option value="2487">Nova Timboteua</option>
+		<option value="2488">Novo Progresso</option>
+		<option value="2489">Novo Repartimento</option>
+		<option value="2490">&#211;bidos</option>
+		<option value="2491">Oeiras do Par&#225;</option>
+		<option value="2492">Oriximin&#225;</option>
+		<option value="2493">Our&#233;m</option>
+		<option value="2494">Ouril&#226;ndia do Norte</option>
+		<option value="2495">Pacaj&#225;</option>
+		<option value="2496">Palestina do Par&#225;</option>
+		<option value="2497">Paragominas</option>
+		<option value="2498">Parauapebas</option>
+		<option value="2499">Pau d Arco</option>
+		<option value="2500">Peixe-Boi</option>
+		<option value="2501">Pi&#231;arra</option>
+		<option value="2502">Placas</option>
+		<option value="2503">Ponta de Pedras</option>
+		<option value="2504">Portel</option>
+		<option value="2505">Porto de Moz</option>
+		<option value="2506">Prainha</option>
+		<option value="2507">Primavera</option>
+		<option value="2508">Quatipuru</option>
+		<option value="2509">Reden&#231;&#227;o</option>
+		<option value="2510">Rio Maria</option>
+		<option value="2511">Rondon do Par&#225;</option>
+		<option value="2512">Rur&#243;polis</option>
+		<option value="2513">Salin&#243;polis</option>
+		<option value="2514">Salvaterra</option>
+		<option value="2515">Santa B&#225;rbara do Par&#225;</option>
+		<option value="2516">Santa Cruz do Arari</option>
+		<option value="2517">Santa Isabel do Par&#225;</option>
+		<option value="2518">Santa Luzia do Par&#225;</option>
+		<option value="2519">Santa Maria das Barreiras</option>
+		<option value="2520">Santa Maria do Par&#225;</option>
+		<option value="2521">Santana do Araguaia</option>
+		<option value="2522">Santar&#233;m</option>
+		<option value="2523">Santar&#233;m Novo</option>
+		<option value="2524">Santo Ant&#244;nio do Tau&#225;</option>
+		<option value="2525">S&#227;o Caetano de Odivelas</option>
+		<option value="2526">S&#227;o Domingos do Araguaia</option>
+		<option value="2527">S&#227;o Domingos do Capim</option>
+		<option value="2528">S&#227;o F&#233;lix do Xingu</option>
+		<option value="2529">S&#227;o Francisco do Par&#225;</option>
+		<option value="2530">S&#227;o Geraldo do Araguaia</option>
+		<option value="2531">S&#227;o Jo&#227;o da Ponta</option>
+		<option value="2532">S&#227;o Jo&#227;o de Pirabas</option>
+		<option value="2533">S&#227;o Jo&#227;o do Araguaia</option>
+		<option value="2534">S&#227;o Miguel do Guam&#225;</option>
+		<option value="2535">S&#227;o Sebasti&#227;o da Boa Vista</option>
+		<option value="2536">Sapucaia</option>
+		<option value="2537">Senador Jos&#233; Porf&#237;rio</option>
+		<option value="2538">Soure</option>
+		<option value="2539">Tail&#226;ndia</option>
+		<option value="2540">Terra Alta</option>
+		<option value="2541">Terra Santa</option>
+		<option value="2542">Tom&#233;-A&#231;u</option>
+		<option value="2543">Tracuateua</option>
+		<option value="2544">Trair&#227;o</option>
+		<option value="2545">Tucum&#227;</option>
+		<option value="2546">Tucuru&#237;</option>
+		<option value="2547">Ulian&#243;polis</option>
+		<option value="2548">Uruar&#225;</option>
+		<option value="2549">Vigia</option>
+		<option value="2550">Viseu</option>
+		<option value="2551">Vit&#243;ria do Xingu</option>
+		<option value="2552">Xinguara</option>
+
+	</select>
+                                    </div>
+                                </div>
+                                <!---------------------------------------------Inscricao estadual do Proprietario-->
+                                <div class="col-md-6">
+                                    <label>I.E. do proprietário</label>
+                                    <input name="ctl00$baseBody$txtInscricaoEstadualProprietario" type="text" maxlength="80" id="ctl00_baseBody_txtInscricaoEstadualProprietario" data-pesquisa="InscEstProprietario" SourceField="INSCRICAO_ESTADUAL_PROPRIETARIO" FillGroup="BuscaAvancada" mask="iePa" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label>RG do Proprietário</label>
+                                    <input name="ctl00$baseBody$txtRgProprietario" type="text" maxlength="80" id="ctl00_baseBody_txtRgProprietario" class="form-control" data-pesquisa="RgProprietario" CssClassFocus="form-control" Tipo="naoUtilizado" SourceField="RG_PROPRIETARIO" FillGroup="BuscaAvancada" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label>CPF/CNPJ do Proprietário</label>
+                                    <div class="input-group">
+                                        <div class="input-group-btn">
+                                            <select name="ctl00$baseBody$ddlCPFCPNJProprietario" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$baseBody$ddlCPFCPNJProprietario\&#39;,\&#39;\&#39;)&#39;, 0)" id="ctl00_baseBody_ddlCPFCPNJProprietario" class="btn btn-default dropdown-toggle">
+		<option selected="selected" value="cpf">CPF</option>
+		<option value="cnpj">CNPJ</option>
+
+	</select>
+                                        </div>
+                                        <input name="ctl00$baseBody$txtCpfProprietario" type="text" id="ctl00_baseBody_txtCpfProprietario" data-pesquisa="CpfProprietario" SourceField="CPF_CNPJ_PROPRIETARIO" FillGroup="BuscaAvancada" mask="cpf" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" />
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        
+</div>
+
+                    <hr />
+
+                    <div class="row text-right">
+                        <div id="ctl00_baseBody_upBotoes" class="col-md-12">
+	
+                                <input type="button" class="btn btn-default" value="Limpar Filtros" onclick="javascript: LimparCampos()" />
+                                <a onclick="$(&#39;#collapseBuscaAvancada&#39;).click();" id="ctl00_baseBody_btnBuscaAvancada" class="btn btn-primary" data-busca="1" data-categoria="Empreendimento" href="javascript:__doPostBack(&#39;ctl00$baseBody$btnBuscaAvancada&#39;,&#39;&#39;)"><i class="bi bi-search"></i> Filtrar Busca</a>
+                            
+</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="tableInfo">
+        <div id="ctl00_baseBody_upGrid">
+	
+                <br />
+                <span id="ctl00_baseBody_lblQuantidade" class="labelNegrito"></span>
+                <div id="flip-scroll">
+                    
+                </div>
+            
+</div>
+    </div>
+    
+    <br/><br/><br/><br/>
+
+
+        </div>
+        
+        
+        <footer id="rodape" class="footer">
+            <div class="container text-center">
+                
+                <div class="row text-center">
+                    <div class="col-md-4 col-sm-12">
+                        <img class="tamanhoImagem" src="assets/semas_branco.png" alt="SEMAS-PA" />
+                    </div>
+
+                    <div class="col-md-4 col-sm-12 enderecoSemas">
+                        <b>Secretaria de Meio Ambiente e Sustentabilidade do Pará</b><br />
+                        Tv Lomas Valentinas, 2717<br />
+                        Belém, PA<br />
+                        CEP: 66093-677<br />
+                        TELEFONE (91) 3184-3330
+                    </div>
+                    
+                    <div class="col-md-4 col-sm-12 divIcones">
+                        <a class="btn-outline-secondary" title="Facebook" aria-label="Facebook" target="_blank"
+                            href="https://www.facebook.com/semaspara/">
+                            <i class="bi bi-facebook iconeRodape"></i>
+                        </a>
+                        <a class="mat-icon-button" title="Instagram" aria-label="Instagram" target="_blank"
+                            href="https://www.instagram.com/semaspara/">
+                            <i class="bi bi-instagram iconeRodape"></i>
+                        </a>
+                        <a class="mat-icon-button" title="YouTube" aria-label="YouTube" target="_blank"
+                            href="https://www.youtube.com/channel/UCR8bxUop5m4JbRO52H8C5Aw">
+                            <i class="bi bi-youtube iconeRodape"></i>
+                        </a>
+                        <a class="mat-icon-button" title="Twitter" aria-label="Twitter" target="_blank"
+                            href="https://twitter.com/semaspara">
+                            <i class="bi bi-twitter iconeRodape"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <hr />
+                <div class="text-center fontRodape">
+                    &copy;
+                    <script type="text/javascript">
+                        var currentTime = new Date();
+                        var year = currentTime.getFullYear()
+                        document.write(year);
+                    </script>
+                    - Powered by DTI / SEMAS
+                </div>
+            </div>
+        </footer>
+
+
+
+        
+        <div id="divModalLoading" class="modal fade modal-loading col-lg-12" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content col-lg-8 col-lg-offset-2">
+                    <div class="modal-body">
+                        <h4>Carregando...</h4>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <img src="img/bar-loader.gif" alt="Alternate Text" width="100%" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    
+
+<script type="text/javascript">
+//<![CDATA[
+try {
+						parent.window.frames['informacao'].mensagem('Vazio', '');
+					} catch (e) { }
+					
+ $(function () { $('#ctl00_baseBody_txtInscricaoEstadual').setMask(); }); 
+
+ $(function () { $('#ctl00_baseBody_txtCnpj').setMask(); }); 
+
+ $(function () { $('#ctl00_baseBody_txtInscricaoEstadualProprietario').setMask(); }); 
+
+ $(function () { $('#ctl00_baseBody_txtCpfProprietario').setMask(); }); 
+//]]>
+</script>
+</form>
+</body>
+</html>

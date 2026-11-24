@@ -1,0 +1,479 @@
+200 https://monitoramento.semas.pa.gov.br/simlam/ListarDocumentos.aspx
+
+
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head><meta http-equiv="content-type" content="text/html;charset=utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta name="description" /><meta name="author" /><link rel="shortcut icon" href="Imagens/favicon.png" /><title>
+	SEMAS -  Simlam Público PA
+</title><link href="http://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css" />
+
+    <!----------------------------css------------------------------->
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="css/bootstrap.css" /><link rel="stylesheet" href="css/bootstrap-theme.css" />
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" type="text/css" media="screen" href="css/datepicker.css" /><link rel="Stylesheet" type="text/css" href="css/select2.css" /><link rel="Stylesheet" type="text/css" href="css/table.css" /><link rel="stylesheet" type="text/css" media="all" href="css/publicoNovo.css" /><link href="https://icons.getbootstrap.com/assets/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <!--------------------------SCRIPTs----------------------------->
+    
+    <script src='js/jquery.js' type="text/javascript"></script>
+    <script src='js/bootstrap.min.js' type="text/javascript"></script>
+    <script src='js/bootstrap-datepicker.js' type="text/javascript"></script>
+    <script src='js/bootstrap-datepicker.pt-BR.js' type="text/javascript"></script>
+    <script src='jquery/jquery-select2.js' type="text/javascript"></script>
+    <script src='jquery/select2_locale_pt-BR.js' type="text/javascript"></script>
+    <script src='js/offcanvas.js' type="text/javascript"></script>
+    <script src='js/nav.js' type="text/javascript"></script>
+    <script src='jquery/analytics.js' type="text/javascript"></script>
+    <script src='js/etramite.js' type="text/javascript"></script>
+    
+    <script type="text/javascript">
+
+        $(function () {
+
+            $('[data-pesquisa]').keypress(function (e) {
+
+                var tecla = (e.keyCode ? e.keyCode : e.which);
+
+                if (tecla == 13) {
+                    return false;
+                }
+
+            });
+
+        });
+
+        function LimparCampos() {
+            $('[data-pesquisa]').each(function () {
+                switch (this.type) {
+                    case "file":
+                    case "password":
+                    case "text":
+                    case "textarea":
+                        $(this).val("");
+                        break;
+                    case "checkbox":
+                    case "radio":
+                        this.checked = false;
+                }
+
+                $(this).children("option:selected").removeAttr("selected").end()
+                    .children("option:first").attr("selected", "selected");
+            });
+        }
+    </script>
+
+    
+    <script type="text/javascript">
+
+
+        $(function () {
+
+            if (typeof (Sys) !== 'undefined') {
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(alternarCpfCnpj);
+            }
+
+            alternarCpfCnpj();
+
+        });
+
+        function abrirDocumento(id) {
+            location.href = 'VisualizarDocumento.aspx?UrlRetorno=ListarDocumentos.aspx&id=' + id;
+        }
+
+        function alternarCpfCnpj() {
+
+            $('#ctl00_baseBody_rblCPFCNPJ :radio:eq(0)').click(function () {
+
+                if ($(this).is(':checked')) {
+
+                    $('#ctl00_baseBody_txtCPFInteressado').show();
+                    $('#ctl00_baseBody_txtCNPJInteressado').hide();
+                    $('#ctl00_baseBody_txtCNPJInteressado').val('');
+                }
+
+            });
+
+            $('#ctl00_baseBody_rblCPFCNPJ :radio:eq(1)').click(function () {
+
+                if ($(this).is(':checked')) {
+
+                    $('#ctl00_baseBody_txtCNPJInteressado').show();
+                    $('#ctl00_baseBody_txtCPFInteressado').hide();
+                    $('#ctl00_baseBody_txtCPFInteressado').val('');
+                }
+
+            });
+
+        }
+
+    </script>
+<script id="ctl00_tm.mask" src="js/tm.mask.js" type="text/javascript"></script><script id="ctl00_jquerySetMask" src="jquery/jquery.meio.mask.js" type="text/javascript"></script></head>
+<body>
+    <div class="mensagemHolder col-xs-10 col-xs-offset-1 col-sm-10 col-sm-offset-1 col-lg-8 col-lg-offset-2"></div>
+    <form name="aspnetForm" method="post" action="./ListarDocumentos.aspx" id="aspnetForm" role="form" class="content">
+<div>
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKLTU3NDIyMzExNg8WBB4ETW9kbwsphQFUZWNub21hcGFzLkV0cmFtaXRlLkVudGl0aWVzLk1vZG9DYXJyZWdhciwgVGVjbm9tYXBhcy5FdHJhbWl0ZS5FbnRpdGllcywgVmVyc2lvbj0xLjAuODEwNS4yOTA1NSwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1udWxsAB4MQ29kaWdvUGFnaW5hBSA2NTI0QzY1QkNDNjY4Qjc4QjY1MjZEMUUzRjRGM0Y4NBYCZg9kFgQCAQ9kFg4CCQ8WAh4EaHJlZgURY3NzL2Jvb3RzdHJhcC5jc3NkAgoPFgIfAgUXY3NzL2Jvb3RzdHJhcC10aGVtZS5jc3NkAgwPFgIfAgUSY3NzL2RhdGVwaWNrZXIuY3NzZAINDxYCHwIFD2Nzcy9zZWxlY3QyLmNzc2QCDg8WAh8CBQ1jc3MvdGFibGUuY3NzZAIPDxYCHwIFE2Nzcy9wdWJsaWNvTm92by5jc3NkAhEPFQoManMvanF1ZXJ5LmpzE2pzL2Jvb3RzdHJhcC5taW4uanMaanMvYm9vdHN0cmFwLWRhdGVwaWNrZXIuanMganMvYm9vdHN0cmFwLWRhdGVwaWNrZXIucHQtQlIuanMYanF1ZXJ5L2pxdWVyeS1zZWxlY3QyLmpzHmpxdWVyeS9zZWxlY3QyX2xvY2FsZV9wdC1CUi5qcw9qcy9vZmZjYW52YXMuanMJanMvbmF2LmpzE2pxdWVyeS9hbmFseXRpY3MuanMOanMvZXRyYW1pdGUuanNkAgMPZBYCAgUPZBYEAgUPZBYCZg9kFgQCEQ8QZBAVGg0qKlNlbGVjaW9uZSoqHEF0ZW5kaW1lbnRvIGRlIENvbmRpY2lvbmFudGUVQXV0byBkZSBOb3RpZmljYcOnw6NvHUJvbGV0aW0gTWVuc2FsIGRlIEZyZXF1w6puY2lhA0NBUg5DYXJ0YSBDb25zdWx0YRtDZXJ0aWTDo28gTmVnYXRpdmEgUHVuaXRpdmEQQ29tcGxlbWVudGHDp8OjbxdDb25jaWxpYcOnw6NvIEFtYmllbnRhbBJDw7NwaWEgZGUgUHJvY2Vzc28MRGVjbGFyYcOnw6NvGERlY2xhcmHDp8OjbyBkZSBUcsOibWl0ZQZEZWZlc2EcSnVzdGlmaWNhdGl2YSBkZSBGcmVxdcOqbmNpYQdPZsOtY2lvKU9yZGVtIGRlIFNlcnZpw6dvIGRlIFRlYy4gZGEgSW5mb3JtYcOnw6NvEU91dHJvcyBkb2N1bWVudG9zCU91dmlkb3JpYQdQcm9qZXRvClJlbGF0w7NyaW8rUmVsYXTDs3JpbyBkZSBJbmZvcm1hw6fDo28gQW1iaWVudGFsIEFudWFsIBlSZXNwb3N0YSBkZSBOb3RpZmljYcOnw6NvCFNJU0ZMT1JBB1NJU1BBU1MqU29saWNpdGHDp8OjbyBkZSDDk3Jnw6NvIEV4dGVybm8gLSBPZsOtY2lvHlRlcm1vIGRlIENvbXByb21pc3NvIEFtYmllbnRhbBUaATACMTkBNQIxMwIyMQIxMAIxNgE3AjI0AjE4ATQCMTUCMTcCMTIBMwIxNAExATgBMgE2ATkCMjACMjICMjMCMTECMjUUKwMaZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dkZAITDxBkEBUHDSoqU2VsZWNpb25lKioLUHJvdG9jb2xhZG8HSnVudGFkbwpSZXNwb25kaWRvCUFycXVpdmFkbw5Ow6NvIGFycXVpdmFkbwd0ZXN0aW5nFQcBMAExATIBMwIxMQIxMgIxMxQrAwdnZ2dnZ2dnZGQCCQ9kFgJmD2QWAgIDDzwrAAsAZGQtME7u7jsQ7WGiteyP6zGpLIb2+bdV2uEeMKYsaDcqqQ==" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['aspnetForm'];
+if (!theForm) {
+    theForm = document.aspnetForm;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<script src="/simlam/WebResource.axd?d=_at4hbRZOwOq58CiA2fMI-qt0C-xvgGrlNZR0SOIBqM9pZrhFbtHCtYawOIFLEEl_zAKMpwmVaQSJ16FaYchr06ViQzxB8t1TQm3tS2I2JM1&amp;t=637109961120000000" type="text/javascript"></script>
+
+
+<script type="text/javascript">
+//<![CDATA[
+  function RetornaId() { return ('6524C65BCC668B78B6526D1E3F4F3F84'); } var __cultureInfo = {"name":"pt-BR","numberFormat":{"CurrencyDecimalDigits":2,"CurrencyDecimalSeparator":",","IsReadOnly":true,"CurrencyGroupSizes":[3],"NumberGroupSizes":[3],"PercentGroupSizes":[3],"CurrencyGroupSeparator":".","CurrencySymbol":"R$","NaNSymbol":"NaN (Não é um número)","CurrencyNegativePattern":9,"NumberNegativePattern":1,"PercentPositivePattern":1,"PercentNegativePattern":1,"NegativeInfinitySymbol":"-Infinito","NegativeSign":"-","NumberDecimalDigits":2,"NumberDecimalSeparator":",","NumberGroupSeparator":".","CurrencyPositivePattern":2,"PositiveInfinitySymbol":"+Infinito","PositiveSign":"+","PercentDecimalDigits":2,"PercentDecimalSeparator":",","PercentGroupSeparator":".","PercentSymbol":"%","PerMilleSymbol":"‰","NativeDigits":["0","1","2","3","4","5","6","7","8","9"],"DigitSubstitution":1},"dateTimeFormat":{"AMDesignator":"","Calendar":{"MinSupportedDateTime":"\/Date(-62135586000000)\/","MaxSupportedDateTime":"\/Date(253402300799999)\/","AlgorithmType":1,"CalendarType":1,"Eras":[1],"TwoDigitYearMax":2029,"IsReadOnly":true},"DateSeparator":"/","FirstDayOfWeek":0,"CalendarWeekRule":0,"FullDateTimePattern":"dddd, d\u0027 de \u0027MMMM\u0027 de \u0027yyyy HH:mm:ss","LongDatePattern":"dddd, d\u0027 de \u0027MMMM\u0027 de \u0027yyyy","LongTimePattern":"HH:mm:ss","MonthDayPattern":"dd\u0027 de \u0027MMMM","PMDesignator":"","RFC1123Pattern":"ddd, dd MMM yyyy HH\u0027:\u0027mm\u0027:\u0027ss \u0027GMT\u0027","ShortDatePattern":"dd/MM/yyyy","ShortTimePattern":"HH:mm","SortableDateTimePattern":"yyyy\u0027-\u0027MM\u0027-\u0027dd\u0027T\u0027HH\u0027:\u0027mm\u0027:\u0027ss","TimeSeparator":":","UniversalSortableDateTimePattern":"yyyy\u0027-\u0027MM\u0027-\u0027dd HH\u0027:\u0027mm\u0027:\u0027ss\u0027Z\u0027","YearMonthPattern":"MMMM\u0027 de \u0027yyyy","AbbreviatedDayNames":["dom","seg","ter","qua","qui","sex","sáb"],"ShortestDayNames":["D","S","T","Q","Q","S","S"],"DayNames":["domingo","segunda-feira","terça-feira","quarta-feira","quinta-feira","sexta-feira","sábado"],"AbbreviatedMonthNames":["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez",""],"MonthNames":["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro",""],"IsReadOnly":true,"NativeCalendarName":"Calendário gregoriano","AbbreviatedMonthGenitiveNames":["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez",""],"MonthGenitiveNames":["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro",""]},"eras":[1,"d.C.",null,0]};//]]>
+</script>
+
+<script src="/simlam/ScriptResource.axd?d=b0VIZuHuWAx8CvNKYAOMoqfbosLxD9ABVlmK6lRIq7JRVNtzzoOCscJM7vA9oGpz1nZyIfxjZ3kZYRxYwd8cWkYJ0TANgNoWmWxoKoj_YzXWlfM8buFaferFwHcSjW0TBYARufeFU2hkxX5pAuTO3Q2&amp;t=254cc609" type="text/javascript"></script>
+<script type="text/javascript">
+//<![CDATA[
+if (typeof(Sys) === 'undefined') throw new Error('ASP.NET Ajax client-side framework failed to load.');
+//]]>
+</script>
+
+<script src="/simlam/ScriptResource.axd?d=oX8bR5KGp4ISgSK4aJLVcsj512WVLb3_zbCxl1SOWqIulpGMXZNJnBYfBZnk_enhCwP7HSIRO2WuNTirLTboeFgqHdgT7o9W0jXyVp5chpr9RAIgkn0PCyOTTqP1NWWUmD6A3lQb0hKQnOt85jWILw2&amp;t=254cc609" type="text/javascript"></script>
+<div>
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="D231F7B4" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdAC/xrn/DmMdumUdEyfcEMGHyR4Wa+/Z58fMUXAlIsBt8KKKpmBOaPMAbD747f8vLh0Ma9gUe6JuRi4ogdRkEaSrjChwT9G1YK94sBvCh7fTr+66SR/UJgfG77b5pCuwOnzrSfxs/NcUKEJKnvLK4WBKdXzii/ijFw1f+C6f74u/sspcKDXCGLnyjPs0ah1HyaucbDeR9KUE14A0Q9U7UDUHYZBGkxvCglBBEnOeB4CzoF3VBt4+CBCKPtKb8X8hYkQjhzcUFEr9kLPiVRPsxxbEZRsoHs0GT+ueFVxoOyjIjmP4GhDwfnmUSdJcKQlFgJLleaW74+vqscHUFdS6tAYXeUTTbJlXd5s1qppznM+TNzA4T9xCKc390URCvnoko/JpW2zWL6CNjfgW2OB6Jcmr1ssJErrsRVIKDjHe25AFLny/i1gHLCVOR2GjE9v9IZdRvkvaJRE2ZaL4n2L949g/UeK+u9FkRyy7Lrc/9mzEtOtQzB7gsVq9KEZJ9iDssQYaitv6qdoiNRqJAQm9CEINzpFmmC+ctO6lYEmlz+WG53uWeX5P9+r5LyaTmc8YiUas7ShMHDc+nQaWoG98oM1ArLC/UhwhLicCMmY1EZopvGOqJ/+fuH2ccZDEwlXU3hXNj3f1+kFthapzsr/qMot5gclNc/Da4bD3WPf+fybUgoq12foycFFNpr6G5mFnN5soeX3bA0sgDlm1eLW37DB8N1Q2k5UvX1rbq1vgZ6jsjResURxXTENiD/3+Lg/CPz8eTVDR8Ltveq9rwBEAbxTZ0JbgxhzZMydX0gVpSJESJCaf+xyONA1UVfMoQPq+MKk1tBo3Vh7PNHqkFN5h3Yi/yJCXC2ozSs7y0E5ZBhhy4OlW6MgxQzXa7/tMO2uVcYr6hAyHA8lQPdeHoqE36gNty1VxyCFPqFALyYc5zdZ3Rf0Qirmg+ToxY/nGKsjCGUVKgyOgCmTC78BlTy3/QpYK79S4R4as0T/tAztbeR6ZzPInugEPOHt7hjIT8XxN2/ar9N+rzUQqu+AG67vaqgj5x" />
+</div>
+        
+        <div id="canvas" class="navbar navbar-fixed-top topo">
+
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="http://monitoramento.semas.pa.gov.br/simlam/index.aspx">
+                    <img class="img-responsive logo" src="assets/semas.png" alt="SEMAS-PA">
+                </a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a class="nav-link menuItem" aria-current="page" href="http://monitoramento.semas.pa.gov.br/simlam/index.aspx">Home</a>
+                    </li>
+                    <li>
+                        <a class="nav-link menuItem" aria-current="page" href="https://www.semas.pa.gov.br/">Portal Semas</a>
+                    </li>
+                    <li>
+                        <a class="nav-link menuItem" aria-current="page" href="http://monitoramento.semas.pa.gov.br/simlamtec/">SIMLAM Técnico</a>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Empreendimento <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="ListarEmpreendimento.aspx">Listar Empreendimento</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Responsável Técnico <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="ResponsavelTecnicoMenu.aspx">Cadastrar Responsável Técnico</a></li>
+                            <li><a href="ListarResponsavelTecnico.aspx">Listar Responsável Técnico</a></li>
+                        </ul>
+                    </li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Protocolo <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="ListarProcessos.aspx">Buscar Processo</a></li>
+                            <li><a href="ListarDocumentos.aspx">Buscar Documento</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        
+        
+        
+
+        <div class="container containerPrincipal">
+            <script type="text/javascript">
+//<![CDATA[
+Sys.WebForms.PageRequestManager._initialize('ctl00$scriptManagerMstPage', 'aspnetForm', ['tctl00$baseBody$upPesquisaSimples','','tctl00$baseBody$upControlesBuscaAvancada','','tctl00$baseBody$upBotoes','','tctl00$baseBody$upGrid',''], [], [], 300, 'ctl00');
+//]]>
+</script>
+
+            
+
+    <h1 class="title" style=""><span class="titulo1"><i class='glyphicon glyphicon-th-list'></i></span><span class="charInicial">&nbsp;B</span><span class="titulo2">uscar Documentos</span></h1>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel-group" id="accordion">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne"><i class="glyphicon glyphicon-search"></i>Busca Rápida </a>
+                        </h4>
+                    </div>
+                    <div id="collapseOne" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div class="row">
+                                <br />
+                                <div id="ctl00_baseBody_upPesquisaSimples">
+	
+                                        <div class="col-md-12 input-group">
+                                            <input name="ctl00$baseBody$txtBusca" type="text" maxlength="100" id="ctl00_baseBody_txtBusca" class="form-control" data-pesquisaSimples="" placeholder="Pesquisar por Número do Documento, Nome Empreendimento, Interessado e Situação." data-toggle="tooltip" data-placement="top" title="Pesquisar por Número do Documento, Nome Empreendimento, Interessado e Situação." SourceField="BUSCA_SIMPLES" />
+                                            <span class="input-group-btn">
+                                                <a id="ctl00_baseBody_btnPesquisa" data-busca="0" data-categoria="DocumentoParaHabilitacao" class="btn btn-primary " href="javascript:__doPostBack(&#39;ctl00$baseBody$btnPesquisa&#39;,&#39;&#39;)"><i class="glyphicon glyphicon-search"></i> Buscar</a>
+                                            </span>
+                                        </div>
+                                    
+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">
+                            <a id="collapseBuscaAvancada" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo"><i class="glyphicon glyphicon-search"></i>Busca Avançada </a>
+                        </h4>
+                    </div>
+                    <div id="collapseTwo" class="panel-collapse collapse">
+                        <div class="panel-body">
+                            <div id="ctl00_baseBody_upControlesBuscaAvancada">
+	
+                                    <div class="row">
+                                        <!-------------------------------------------------Documento----------------------------------------------------->
+                                        <div class="col-md-6">
+                                            <label>
+                                                Número do Documento</label>
+                                            <input name="ctl00$baseBody$txtNumeroDocumento" type="text" maxlength="20" id="ctl00_baseBody_txtNumeroDocumento" data-pesquisa="NumeroDocumento" SourceField="NUMERO" FillGroup="BuscaAvancada" mask="inteirocombarra" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" />
+                                        </div>
+                                        <!----------------------------------------------Número do Processo----------------------------------------------->
+                                        <div class="col-md-6">
+                                            <label>
+                                                Número do Processo</label>
+                                            <input name="ctl00$baseBody$txtNumeroProcesso" type="text" maxlength="20" id="ctl00_baseBody_txtNumeroProcesso" data-pesquisa="NumeroProcesso" SourceField="NUMERO_PROCESSO" FillGroup="BuscaAvancada" mask="inteirocombarra" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" />
+                                        </div>
+                                    </div>
+                                    <!--------------------------------------------------Interessado-------------------------------------------------->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label>
+                                                Nome do Interessado</label>
+                                            <input name="ctl00$baseBody$Texto1" type="text" maxlength="80" id="ctl00_baseBody_Texto1" class="form-control" data-pesquisa="NomeInteressado" SourceField="NOME_INTERESSADO" FillGroup="BuscaAvancada" />
+                                        </div>
+                                        <div class="col-md-6">
+                                                <table id="ctl00_baseBody_rblCPFCNPJ" class="checkbox-inline textoNegrito" border="0">
+		<tr>
+			<td><input id="ctl00_baseBody_rblCPFCNPJ_0" type="radio" name="ctl00$baseBody$rblCPFCNPJ" value="CPF do Interessado" checked="checked" /><label for="ctl00_baseBody_rblCPFCNPJ_0">CPF do Interessado</label></td><td><input id="ctl00_baseBody_rblCPFCNPJ_1" type="radio" name="ctl00$baseBody$rblCPFCNPJ" value="CNPJ do Interessado" /><label for="ctl00_baseBody_rblCPFCNPJ_1">CNPJ do Interessado</label></td>
+		</tr>
+	</table>
+                                            <input name="ctl00$baseBody$txtCPFInteressado" type="text" id="ctl00_baseBody_txtCPFInteressado" data-pesquisa="CpfInteressado" SourceField="CPF_CNPJ_INTERESSADO" FillGroup="BuscaAvancada" mask="cpf" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" />
+                                            <input name="ctl00$baseBody$txtCNPJInteressado" type="text" id="ctl00_baseBody_txtCNPJInteressado" data-pesquisa="CnpjInteressado" SourceField="CPF_CNPJ_INTERESSADO" FillGroup="BuscaAvancada" mask="cnpj" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" style="display: none" />
+                                        </div>
+                                    </div>
+                                    <!------------------------------------------------Empreendimento------------------------------------------------->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label>
+                                                Nome do Empreendimento</label>
+                                            <input name="ctl00$baseBody$txtNomeEmpreendimento" type="text" maxlength="80" id="ctl00_baseBody_txtNomeEmpreendimento" class="form-control" data-pesquisa="NomeEmpreendimento" Tipo="naoUtilizado" SourceField="NOME_EMPREENDIMENTO" FillGroup="BuscaAvancada" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>
+                                                CNPJ do Empreendimento</label>
+                                            <input name="ctl00$baseBody$txtCnpjEmpreendimento" type="text" id="ctl00_baseBody_txtCnpjEmpreendimento" data-pesquisa="CnpjEmpreendimento" SourceField="CNPJ" FillGroup="BuscaAvancada" mask="cnpj" class="form-control" onblur="this.className=&#39;form-control&#39;;" onfocus="this.className=&#39;form-control&#39;;" />
+                                        </div>
+                                    </div>
+                                    <!-------------------------------------------------------------------------------------------------------------->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <label>
+                                                Tipo do Documento</label>
+                                            <select name="ctl00$baseBody$ddlTipoDocumento" id="ctl00_baseBody_ddlTipoDocumento" class="form-control" data-pesquisa="TipoDocumento" SourceField="TIPO_DOCUMENTO" FillGroup="BuscaAvancada">
+		<option selected="selected" value="0" title="**Selecione**">**Selecione**</option>
+		<option value="19" title="Atendimento de Condicionante">Atendimento de Condicionante</option>
+		<option value="5" title="Auto de Notificação">Auto de Notifica&#231;&#227;o</option>
+		<option value="13" title="Boletim Mensal de Frequência">Boletim Mensal de Frequ&#234;ncia</option>
+		<option value="21" title="CAR">CAR</option>
+		<option value="10" title="Carta Consulta">Carta Consulta</option>
+		<option value="16" title="Certidão Negativa Punitiva">Certid&#227;o Negativa Punitiva</option>
+		<option value="7" title="Complementação">Complementa&#231;&#227;o</option>
+		<option value="24" title="Conciliação Ambiental">Concilia&#231;&#227;o Ambiental</option>
+		<option value="18" title="Cópia de Processo">C&#243;pia de Processo</option>
+		<option value="4" title="Declaração">Declara&#231;&#227;o</option>
+		<option value="15" title="Declaração de Trâmite">Declara&#231;&#227;o de Tr&#226;mite</option>
+		<option value="17" title="Defesa">Defesa</option>
+		<option value="12" title="Justificativa de Frequência">Justificativa de Frequ&#234;ncia</option>
+		<option value="3" title="Ofício">Of&#237;cio</option>
+		<option value="14" title="Ordem de Serviço de Tec. da Informação">Ordem de Servi&#231;o de Tec. da Informa&#231;&#227;o</option>
+		<option value="1" title="Outros documentos">Outros documentos</option>
+		<option value="8" title="Ouvidoria">Ouvidoria</option>
+		<option value="2" title="Projeto">Projeto</option>
+		<option value="6" title="Relatório">Relat&#243;rio</option>
+		<option value="9" title="Relatório de Informação Ambiental Anual ">Relat&#243;rio de Informa&#231;&#227;o Ambiental Anual </option>
+		<option value="20" title="Resposta de Notificação">Resposta de Notifica&#231;&#227;o</option>
+		<option value="22" title="SISFLORA">SISFLORA</option>
+		<option value="23" title="SISPASS">SISPASS</option>
+		<option value="11" title="Solicitação de Órgão Externo - Ofício">Solicita&#231;&#227;o de &#211;rg&#227;o Externo - Of&#237;cio</option>
+		<option value="25" title="Termo de Compromisso Ambiental">Termo de Compromisso Ambiental</option>
+
+	</select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label>
+                                                Situação do Documento</label>
+                                            <select name="ctl00$baseBody$ddlSituacaoDocumento" id="ctl00_baseBody_ddlSituacaoDocumento" class="form-control" data-pesquisa="SituacaoDocumento" SourceField="SITUACAO" FillGroup="BuscaAvancada">
+		<option selected="selected" value="0" title="**Selecione**">**Selecione**</option>
+		<option value="1" title="Protocolado">Protocolado</option>
+		<option value="2" title="Juntado">Juntado</option>
+		<option value="3" title="Respondido">Respondido</option>
+		<option value="11" title="Arquivado">Arquivado</option>
+		<option value="12" title="Não arquivado">N&#227;o arquivado</option>
+		<option value="13" title="testing">testing</option>
+
+	</select>
+                                        </div>
+                                    </div>
+                                
+</div>
+                        </div>
+                        <div class="panel-footer">
+                            <div class="row">
+                                <div id="ctl00_baseBody_upBotoes" class="col-md-12">
+	
+                                        <span class="pull-right">
+                                            <a onclick="$(&#39;#collapseBuscaAvancada&#39;).click();" id="ctl00_baseBody_btnBuscaAvancada" class="btn btn-primary" data-busca="1" data-categoria="Documento" href="javascript:__doPostBack(&#39;ctl00$baseBody$btnBuscaAvancada&#39;,&#39;&#39;)"><i class="glyphicon glyphicon-search"></i> Filtrar Busca</a>
+                                            <input type="button" class="btn btn-primary" value="Limpar Filtros" onclick="javascript: LimparCampos()" />
+                                        </span>
+                                    
+</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="row">
+                <div>
+                    <div id="ctl00_baseBody_upGrid" class="col-md-12">
+	
+                            <span id="ctl00_baseBody_lblQuantidade"></span>
+                            <div id="flip-scroll">
+                                
+                            </div>
+                        
+</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        </div>
+        
+        
+        <footer id="rodape" class="footer">
+            <div class="container text-center">
+                
+                <div class="row text-center">
+                    <div class="col-md-4 col-sm-12">
+                        <img class="tamanhoImagem" src="assets/semas_branco.png" alt="SEMAS-PA" />
+                    </div>
+
+                    <div class="col-md-4 col-sm-12 enderecoSemas">
+                        <b>Secretaria de Meio Ambiente e Sustentabilidade do Pará</b><br />
+                        Tv Lomas Valentinas, 2717<br />
+                        Belém, PA<br />
+                        CEP: 66093-677<br />
+                        TELEFONE (91) 3184-3330
+                    </div>
+                    
+                    <div class="col-md-4 col-sm-12 divIcones">
+                        <a class="btn-outline-secondary" title="Facebook" aria-label="Facebook" target="_blank"
+                            href="https://www.facebook.com/semaspara/">
+                            <i class="bi bi-facebook iconeRodape"></i>
+                        </a>
+                        <a class="mat-icon-button" title="Instagram" aria-label="Instagram" target="_blank"
+                            href="https://www.instagram.com/semaspara/">
+                            <i class="bi bi-instagram iconeRodape"></i>
+                        </a>
+                        <a class="mat-icon-button" title="YouTube" aria-label="YouTube" target="_blank"
+                            href="https://www.youtube.com/channel/UCR8bxUop5m4JbRO52H8C5Aw">
+                            <i class="bi bi-youtube iconeRodape"></i>
+                        </a>
+                        <a class="mat-icon-button" title="Twitter" aria-label="Twitter" target="_blank"
+                            href="https://twitter.com/semaspara">
+                            <i class="bi bi-twitter iconeRodape"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <hr />
+                <div class="text-center fontRodape">
+                    &copy;
+                    <script type="text/javascript">
+                        var currentTime = new Date();
+                        var year = currentTime.getFullYear()
+                        document.write(year);
+                    </script>
+                    - Powered by DTI / SEMAS
+                </div>
+            </div>
+        </footer>
+
+
+
+        
+        <div id="divModalLoading" class="modal fade modal-loading col-lg-12" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content col-lg-8 col-lg-offset-2">
+                    <div class="modal-body">
+                        <h4>Carregando...</h4>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <img src="img/bar-loader.gif" alt="Alternate Text" width="100%" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    
+
+<script type="text/javascript">
+//<![CDATA[
+try {
+						parent.window.frames['informacao'].mensagem('Vazio', '');
+					} catch (e) { }
+					
+ $(function () { $('#ctl00_baseBody_txtNumeroDocumento').setMask(); }); 
+
+ $(function () { $('#ctl00_baseBody_txtNumeroProcesso').setMask(); }); 
+
+ $(function () { $('#ctl00_baseBody_txtCPFInteressado').setMask(); }); 
+
+ $(function () { $('#ctl00_baseBody_txtCNPJInteressado').setMask(); }); 
+
+ $(function () { $('#ctl00_baseBody_txtCnpjEmpreendimento').setMask(); }); 
+//]]>
+</script>
+</form>
+</body>
+</html>
