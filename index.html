@@ -1293,6 +1293,9 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
 /* Se o firebase-config.js não chegar (ex.: o GitHub Pages devolve 404 por alguns instantes logo depois de uma publicação),
    o app não pode cair no modo sem login, que esconde o usuário e os menus. Mesma configuração do arquivo (não é segredo). */
 if(!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey)&&/\.github\.io$/.test(location.hostname)) window.FIREBASE_CONFIG={apiKey:"AIzaSyCl3ES4L-5EHzEOdE-PoUq6jEnxovY8kW8",authDomain:"propostas-argo.firebaseapp.com",projectId:"propostas-argo",storageBucket:"propostas-argo.firebasestorage.app",messagingSenderId:"696362967875",appId:"1:696362967875:web:b0061e09974e776fd645f6"};
+// Com login: já marca o modo de login e trava a tela aqui, antes de qualquer outro código.
+// Assim, se algo mais adiante falhar, o app ainda pede o login e mostra os menus, em vez de abrir sem usuário.
+if(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey) document.body.classList.add('fb','locked');
 </script>
 <script src="etapa2-padrao.js"></script>
 <script src="etapa3-padrao.js"></script>
@@ -1349,6 +1352,7 @@ function cfgModelo(){ return {
     'Incluso Backup Diário na Nuvem (Responsabilidade do Cliente).'].join('\n'),
   refs:[{"nome": "Rede JP", "postos": "3", "regiao": "Rosário, Diamantino", "contato": "Sueimi Campos", "fone": "(66) 99632-9491"}, {"nome": "Posto Avanti", "postos": "1", "regiao": "Sorriso", "contato": "Eloisa", "fone": "(66) 99616-4612"}, {"nome": "Rede Galeski", "postos": "4", "regiao": "Cuiabá", "contato": "Galeski", "fone": "(65) 98121-3133"}, {"nome": "Rede 77", "postos": "4", "regiao": "Campo Novo dos Parecis, Brasnorte, Juína", "contato": "Kleber", "fone": "(65) 9997-9636"}, {"nome": "Posto G1", "postos": "1", "regiao": "Nova Mutum", "contato": "Rosangela", "fone": "(65) 98116-5191"}, {"nome": "Rede Danubio Azul", "postos": "", "regiao": "Mirassol do Oeste", "contato": "Lucas", "fone": "(65) 98119-8010"}, {"nome": "Rede Quero Quero", "postos": "", "regiao": "Juruena, Juína", "contato": "Karla", "fone": "(66) 98431-1515"}, {"nome": "Rede CPN", "postos": "6", "regiao": "Primavera do Leste, Lucas do Rio Verde, Nova Mutum", "contato": "Bernardo", "fone": "(66) 9986-0638"}, {"nome": "Rede Cimatel", "postos": "1", "regiao": "Nova Monte Verde", "contato": "Jonatan Zanella", "fone": "(66) 98470-0289"}, {"nome": "Rede Arinos", "postos": "2", "regiao": "Juara, Brasnorte", "contato": "Vandreia", "fone": "(66) 99668-6182"}, {"nome": "Rede São Paulo", "postos": "4", "regiao": "Lucas do Rio Verde", "contato": "Jaqueline", "fone": "(65) 9960-6538"}, {"nome": "Rede Trevão Matupá", "postos": "22", "regiao": "Norte do MT e Sul do PA", "contato": "Ivo", "fone": "(66) 9958-2905"}, {"nome": "Rede Terra Santa", "postos": "2", "regiao": "Nova Ubiratã, Juína", "contato": "Antonio", "fone": "(66) 98444-1508"}, {"nome": "Rede Tradição", "postos": "56", "regiao": "Sarandi, Soledade, Carazinho, Passo Fundo", "contato": "André Fernandes", "fone": "(54) 99681-5246"}, {"nome": "Rede Chopão", "postos": "8", "regiao": "Feliz, Bom Princípio", "contato": "Toninho", "fone": "(51) 99988-8289"}, {"nome": "Rede Sapatão", "postos": "2", "regiao": "Novo Hamburgo, Estância Velha, Taquara", "contato": "Samuel", "fone": "(51) 99346-6446 ou (51) 3595-3190"}, {"nome": "Rede Novo Petro", "postos": "4", "regiao": "Novo Hamburgo", "contato": "Aline", "fone": "(51) 99354-8744"}, {"nome": "Rede Zanluchi", "postos": "3", "regiao": "Bom Princípio", "contato": "Giovani", "fone": "(54) 99632-7312"}, {"nome": "Rede Grossi", "postos": "5", "regiao": "Barra Funda", "contato": "Jacson", "fone": "(54) 99976-1744"}, {"nome": "Rede Squizzato", "postos": "2", "regiao": "Caxias do Sul", "contato": "Ricardo", "fone": "(54) 99975-4495"}, {"nome": "Rede Barbosa", "postos": "3", "regiao": "Carlos Barbosa e região", "contato": "Daniel", "fone": "(54) 99921-2794"}, {"nome": "Rede Paulo Moreira", "postos": "3", "regiao": "Pelotas", "contato": "Henrique", "fone": "(53) 98116-1776"}, {"nome": "Rede Flex", "postos": "10", "regiao": "", "contato": "Piter", "fone": "(51) 99654-0156"}, {"nome": "Rede Santa Terezinha", "postos": "8", "regiao": "", "contato": "Ricardo", "fone": "(55) 99925-1243"}]
 }}
+const FB_ON = !!(window.FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey);
 const CFG_KEY='argo-parametros-v1', KEY='argo-proposta-v2';
 const lsGet = k => { try{ return JSON.parse(localStorage.getItem(k)) }catch(e){ return null } };
 const lsSet = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)) }catch(e){} };
@@ -1356,6 +1360,18 @@ const VEND_KEY='argo-vendedor-v1', VEND=['vNome','vFone','vEmail'];
 const vendData = () => lsGet(VEND_KEY)||{};
 const semVend = o => { const c={...o}; VEND.forEach(k=>delete c[k]); return c };
 let CFG = {...cfgModelo(), ...semVend(lsGet(CFG_KEY)||{}), ...vendData()};
+// Dados guardados no aparelho ou publicados podem vir com itens vazios (null) ou no formato errado:
+// limpa antes de desenhar, para um item ruim não derrubar o app inteiro
+const soObj = a => Array.isArray(a) ? a.filter(x=>x&&typeof x==='object'&&!Array.isArray(x)) : [];
+function sanearCfg(){
+  if(!CFG||typeof CFG!=='object') CFG={...cfgModelo(), ...vendData()};
+  ['catLic','catMen'].forEach(k=>{ CFG[k]=soObj(CFG[k]) });
+  if(CFG.templates!=null) CFG.templates=soObj(CFG.templates).map(t=>({...t, lic:soObj(t.lic), men:soObj(t.men)}));
+}
+function sanearProp(){
+  if(!S||typeof S!=='object'||Array.isArray(S)) S=propExemplo();
+  ['lic','men'].forEach(k=>{ S[k]=soObj(S[k]) });
+}
 let cfgDirty = false;
 
 /* ---------- Proposta ---------- */
@@ -1513,10 +1529,10 @@ function parseRefs(v){
 }
 function renderImp(){ const r=impRemota(), c=impComb(), m=r?'Remota':c?'Combustível':'Presencial'; document.querySelectorAll('[data-imp]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.imp===m))); $('impPres').hidden=r; $('impRemMsg').hidden=!r; $('impCombMsg').hidden=!c; $('deslLinha').hidden=c }
 document.querySelectorAll('[data-imp]').forEach(b=>b.addEventListener('click',()=>{ S.implantacao=b.dataset.imp; save(); renderImp(); totals() }));
-function renderProp(){ PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderImp(); renderTplSeg(); renderBases(); renderItems('lic'); renderItems('men'); setTimeout(()=>anpProposta(),0) }
+function renderProp(){ sanearProp(); PROP.forEach(id=>{ if(id!=='base') $(id).value=S[id]??'' }); renderImp(); renderTplSeg(); renderBases(); renderItems('lic'); renderItems('men'); setTimeout(()=>anpProposta(),0) }
 function aplicarLogo(){ $('logo').src=logoAtual(); $('logoPrev').src=logoAtual();
   const r=CFG.logoRev||''; $('logoRevPrev').hidden=!r; if(r) $('logoRevPrev').src=r; else $('logoRevPrev').removeAttribute('src'); $('logoRevVazio').hidden=!!r; $('btnLogoRevDel').hidden=!r }
-function renderCfg(){ aplicarLogo(); CFG.refs=parseRefs(CFG.refs); garantirIdsCat(); CFGF.forEach(id=>{ $('c-'+id).value=CFG[id]??'' }); renderRefs(); renderItems('catLic'); renderItems('catMen'); renderPickers(); renderTplCfg(); renderTplSeg(); renderBases(); totals() }
+function renderCfg(){ sanearCfg(); sanearProp(); aplicarLogo(); CFG.refs=parseRefs(CFG.refs); garantirIdsCat(); CFGF.forEach(id=>{ $('c-'+id).value=CFG[id]??'' }); renderRefs(); renderItems('catLic'); renderItems('catMen'); renderPickers(); renderTplCfg(); renderTplSeg(); renderBases(); totals() }
 
 /* ---------- Templates de proposta (Posto Simples, Loja Simples, Posto + Loja, Central...) ---------- */
 // Ficam em CFG.templates, junto com os Parâmetros Proposta (cada revenda tem os seus).
@@ -1653,7 +1669,15 @@ $('btnNova').addEventListener('click',()=>{
 $('btnEx').addEventListener('click',()=>{ S=propExemplo(); save(); renderProp(); $('exNote').hidden=false; msg('Exemplo da Alberti recarregado.') });
 
 if(fromStorage) $('exNote').hidden = S.cliente!=='ALBERTI COMERCIO DE COMBUSTIVEIS LTDA';
-renderCfg(); renderProp(); showTab(location.hash==='#parametros');
+// Abertura protegida: se os dados guardados neste aparelho estiverem com problema, guarda uma cópia para análise,
+// volta ao padrão só a parte que falhou (os parâmetros voltam da nuvem no login) e segue abrindo o app
+function dadosComErro(qual, e){
+  console.error('Shotgun: dados guardados com problema ('+qual+')', e);
+  try{ localStorage.setItem('sg-dados-com-erro', JSON.stringify({qual, em:new Date().toISOString(), erro:String(e&&e.message||e), cfg:localStorage.getItem(CFG_KEY), prop:localStorage.getItem(KEY)})) }catch(_){}
+}
+try{ renderCfg() }catch(e){ dadosComErro('parametros', e); try{ localStorage.removeItem(CFG_KEY) }catch(_){} CFG={...cfgModelo(), ...vendData()}; try{ renderCfg() }catch(e2){ console.error(e2) } }
+try{ renderProp() }catch(e){ dadosComErro('proposta', e); try{ localStorage.removeItem(KEY) }catch(_){} S=propExemplo(); try{ renderProp() }catch(e2){ console.error(e2) } }
+showTab(location.hash==='#parametros');
 
 /* ---------- Banco de dados (parâmetros em qualquer dispositivo) ---------- */
 if(window.claude && claude.use){
@@ -2051,7 +2075,7 @@ $('btnPdf').addEventListener('click', async ()=>{
 
 /* ---------- App da equipe: parâmetros centrais, administrador, instalação ---------- */
 const PEND_KEY='argo-pendente-v1', TOKEN_KEY='argo-gh-token', REPO_KEY='argo-gh-repo';
-const FB_ON = !!(window.FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey);
+// FB_ON fica definido no começo do script (antes dos dados guardados), para o login nunca encontrá-lo indefinido
 function isAdmin(){ if(FB_ON) return !!(window.argoFb && argoFb.admin); try{ return !!localStorage.getItem(TOKEN_KEY) }catch(e){ return false } }
 function repoPadrao(){
   try{ const s=localStorage.getItem(REPO_KEY); if(s) return s }catch(e){}
