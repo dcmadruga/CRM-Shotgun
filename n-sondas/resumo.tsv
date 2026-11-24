@@ -1,9 +1,0 @@
-sedam-transp	ERRO	fetch failed ETIMEDOUT	https://transparencia.sedam.ro.gov.br/
-solar	ERRO	fetch failed ETIMEDOUT	https://solar.sistemas.ro.gov.br/
-diof-s	ERRO	fetch failed ETIMEDOUT	https://diof.ro.gov.br/?s=posto+de+combust%C3%ADveis
-semas-transp	200	5543	https://portaldatransparencia.semas.pa.gov.br/
-simlam-proc	200	35163	https://monitoramento.semas.pa.gov.br/simlam/ListarProcessos.aspx
-simlam-doc	200	32736	https://monitoramento.semas.pa.gov.br/simlam/ListarDocumentos.aspx
-simlam-emp	200	42775	https://monitoramento.semas.pa.gov.br/simlam/ListarEmpreendimento.aspx
-ioepa-q1	500	1671	https://www.ioepa.com.br/pesquisa/?q=posto%20de%20combust%C3%ADveis&di=20260901&df=20261123
-ioepa-q2	500	1671	https://www.ioepa.com.br/pesquisa/?q=SEMAS%20licen%C3%A7a%20combust%C3%ADveis&di=20260901&df=20261123

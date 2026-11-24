@@ -2,26 +2,20 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 const UA = { 'user-agent': 'Mozilla/5.0 (compatible; shotgun-radar/1.0; +https://github.com/dcmadruga/crm-shotgun)' };
 await mkdir('n-sondas', { recursive: true });
-const resumo = [];
-async function pega(nome, url, opts = {}) {
-  try {
-    const r = await fetch(url, { headers: { ...UA, ...(opts.headers || {}) }, method: opts.method || 'GET', body: opts.body, redirect: 'follow', signal: AbortSignal.timeout(45000) });
-    const t = await r.text();
-    await writeFile(`n-sondas/${nome}.txt`, `${r.status} ${r.url}\n\n${t.slice(0, 300000)}`);
-    resumo.push(`${nome}\t${r.status}\t${t.length}\t${r.url}`); return t;
-  } catch (e) { resumo.push(`${nome}\tERRO\t${e.message} ${e.cause?.code || ''}\t${url}`); return ''; }
+const B = 'https://monitoramento.semas.pa.gov.br/simlam/';
+let cookie = '';
+async function req(u, body) {
+  const r = await fetch(u, { method: body ? 'POST' : 'GET', body, headers: { ...UA, cookie, ...(body ? { 'content-type': 'application/x-www-form-urlencoded' } : {}) }, redirect: 'follow', signal: AbortSignal.timeout(60000) });
+  const sc = r.headers.getSetCookie?.() || []; if (sc.length) cookie = sc.map(c => c.split(';')[0]).join('; ');
+  return r.text();
 }
-for (const [n, u] of [
-  ['sedam-transp', 'https://transparencia.sedam.ro.gov.br/'],
-  ['solar', 'https://solar.sistemas.ro.gov.br/'],
-  ['diof-s', 'https://diof.ro.gov.br/?s=posto+de+combust%C3%ADveis'],
-  ['semas-transp', 'http://portaldatransparencia.semas.pa.gov.br/'],
-  ['simlam-proc', 'https://monitoramento.semas.pa.gov.br/simlam/ListarProcessos.aspx'],
-  ['simlam-doc', 'https://monitoramento.semas.pa.gov.br/simlam/ListarDocumentos.aspx'],
-  ['simlam-emp', 'https://monitoramento.semas.pa.gov.br/simlam/ListarEmpreendimento.aspx'],
-]) await pega(n, u);
-for (const [n, q] of [['ioepa-q1', 'posto de combustíveis'], ['ioepa-q2', 'SEMAS licença combustíveis']]) {
-  const fd = new URLSearchParams({ InputTexto: q, InputDataInicial: '01/09/2026', InputDataFinal: '23/11/2026' });
-  await pega(n, 'https://www.ioepa.com.br/pesquisa/resultado/QueryTexto', { method: 'POST', body: fd, headers: { 'content-type': 'application/x-www-form-urlencoded' } });
+const campos = h => { const f = new URLSearchParams(); for (const m of h.matchAll(/<input[^>]*type="hidden"[^>]*>/g)) { const n = (m[0].match(/name="([^"]+)"/) || [])[1], v = (m[0].match(/value="([^"]*)"/) || [, ''])[1]; if (n) f.set(n, v.replace(/&amp;/g, '&').replace(/&#39;/g, "'").replace(/&quot;/g, '"')); } return f; };
+for (const termo of ['posto', 'combustíveis']) {
+  const h = await req(B + 'ListarProcessos.aspx');
+  const f = campos(h); f.set('__EVENTTARGET', 'ctl00$baseBody$btnPesquisa'); f.set('ctl00$baseBody$txtBusca', termo);
+  const r = await req(B + 'ListarProcessos.aspx', f);
+  await writeFile(`n-sondas/proc-${termo.slice(0, 5)}.txt`, r);
+  const ids = [...r.matchAll(/abrirProcesso\((\d+)\)/g)].map(m => m[1]);
+  await writeFile(`n-sondas/proc-${termo.slice(0, 5)}-ids.txt`, ids.join('\n'));
+  if (ids[0]) await writeFile(`n-sondas/vis-${termo.slice(0, 5)}.txt`, await req(B + `VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=${ids[0]}`));
 }
-await writeFile('n-sondas/resumo.tsv', resumo.join('\n') + '\n');
