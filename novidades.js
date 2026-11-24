@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 229, data: '2026-11-24', titulo: 'Filtros na lista de revendas', itens: [
+    'Administração → Revendas: acima das revendas cadastradas agora tem filtros por Estado de atuação e por Gerente de revenda (inclusive "Sem estado" e "Sem gerente").',
+    'Os filtros se combinam, o contador mostra quantas revendas aparecem do total, e "Limpar filtros" volta a mostrar todas.'
+  ] },
   { v: 228, data: '2026-11-24', titulo: 'Pesquisar na ANP: cidade pelo nome', itens: [
     'No painel Pesquisar na ANP (Novo lead, Nova proposta e Novo cadastro da TASK), o filtro Cidade virou um campo de digitar. Escreva parte do nome, sem se preocupar com acento ou maiúscula, e a lista de postos já filtra enquanto você digita.',
     'Abaixo do campo aparecem as cidades do estado que batem com o que você digitou, com quantos postos cada uma tem. Clique numa delas, ou use as setas e Enter, para ver só os postos dessa cidade.'

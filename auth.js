@@ -1763,12 +1763,34 @@ async function iniciar() {
     await lote.commit();
     if (u) { if (rid) u.revenda = rid; else delete u.revenda; }
   }
+  // Filtros da lista de revendas: estado de atuação e gerente ("-" = sem gerente)
+  const RF = ['rfUf', 'rfGer'];
+  function opcoesFiltroRev() {
+    const su = $('rfUf'); if (su && su.options.length < 2) su.innerHTML = '<option value="">Todos</option><option value="-">Sem estado</option>' + UFS.map(uf => `<option value="${uf}">${uf} · ${UF_NOMES[uf]}</option>`).join('');
+    const sg = $('rfGer'); if (!sg) return; const v = sg.value;
+    const gs = [...new Set(revendas.map(r => r.gerente).filter(Boolean))].map(uid => ({ uid, nome: (lista.find(u => u.uid === uid) || {}).nome || 'Usuário removido' })).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
+    sg.innerHTML = '<option value="">Todos</option><option value="-">Sem gerente</option>' + gs.map(g => `<option value="${esc(g.uid)}">${esc(g.nome)}</option>`).join('');
+    sg.value = [...sg.options].some(o => o.value === v) ? v : '';
+  }
+  const passaRev = (r, uf, ger) => {
+    const es = Array.isArray(r.estados) ? r.estados : [];
+    if (uf === '-' ? es.length : uf && !es.includes(uf)) return false;
+    if (ger === '-' ? r.gerente && lista.some(u => u.uid === r.gerente) : ger && r.gerente !== ger) return false;
+    return true;
+  };
+  RF.forEach(id => $(id)?.addEventListener('change', () => desenharRevendas()));
+  $('rfLimpar')?.addEventListener('click', () => { RF.forEach(id => { $(id).value = ''; }); desenharRevendas(); });
   function desenharRevendas() {
     const el = $('revBody'); if (!el) return;
-    $('rCount').textContent = revendas.length ? revendas.length + (revendas.length === 1 ? ' revenda' : ' revendas') : '';
+    opcoesFiltroRev();
+    const uf = $('rfUf') ? $('rfUf').value : '', ger = $('rfGer') ? $('rfGer').value : '', ativo = !!(uf || ger);
+    RF.forEach(id => $(id) && $(id).classList.toggle('ativo', !!$(id).value)); if ($('rfLimpar')) $('rfLimpar').hidden = !ativo;
+    const vis = revendas.filter(r => passaRev(r, uf, ger));
+    $('rCount').textContent = revendas.length ? (ativo ? vis.length + ' de ' : '') + revendas.length + (revendas.length === 1 ? ' revenda' : ' revendas') : '';
     if (!revendas.length) { el.innerHTML = '<p class="rvvazio">Nenhuma revenda cadastrada ainda. Comece pelo nome, logo acima.</p>'; return; }
+    if (!vis.length) { el.innerHTML = '<p class="rvvazio">Nenhuma revenda com esses filtros.</p>'; return; }
     const xis = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>';
-    el.innerHTML = revendas.map(r => {
+    el.innerHTML = vis.map(r => {
       const membros = lista.filter(u => u.revenda === r.id).sort((a, b) => (b.uid === r.gerente) - (a.uid === r.gerente) || String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
       const es = Array.isArray(r.estados) ? r.estados : [];
       const fora = es.length ? membros.map(u => ({ u, f: (Array.isArray(u.estados) ? u.estados : []).filter(x => !es.includes(x)) })).filter(x => x.f.length) : [];
