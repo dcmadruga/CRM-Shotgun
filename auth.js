@@ -1094,20 +1094,32 @@ async function iniciar() {
       // Itens marcados "Não constar em contrato" ficam fora da lista e do total do contrato
       total_licencas: brl((dd.lic || []).some(r => r.semContrato) ? sumRows(dd.lic.filter(r => !r.semContrato)) : p.totLic), total_mensalidade: brl((dd.men || []).some(r => r.semContrato) ? sumRows(dd.men.filter(r => !r.semContrato)) : p.totMen), total_deslocamento: brl(p.totDes),
       itens_licencas: itensTexto(dd.lic), itens_mensalidades: itensTexto(dd.men),
+      __socios: [...(d.socios || []), ...(d.sociosCnpj || [])],
       argo_razao: ar.razao || '', argo_cnpj: ar.cnpj || '', argo_endereco: ar.endereco || '', argo_representante: ar.representante || '', argo_foro: ar.foro || ''
     };
   }
   // Sem a data desejada (o cliente não informa mais), a frase do contrato fala em data combinada entre as partes
   const semDataImpl = (modelo, V) => V.dataImpl ? String(modelo || '') : String(modelo || '').replace(/na data prevista de \{dataImpl\}/gi, 'em data a ser combinada entre as partes').replace(/\{dataImpl\}/g, 'a combinar');
   const preencherModelo = (modelo, V) => semDataImpl(modelo, V).replace(/\{([A-Za-z0-9_]+)\}/g, (_, k) => V[k] == null ? '' : String(V[k]));
+  // Aceite do contrato: nome, CPF e cargo já lançados (responsável legal da Etapa 2 ou quem aprovou a proposta) vêm como sugestão na página do cliente
+  function sugestaoAceite(p, V) {
+    const nz = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
+    const nome = String(V.respNome || p.aprovadoNome || '').trim();
+    const mesmo = n => n && nz(n) === nz(nome);
+    const socio = (V.__socios || []).find(x => mesmo(x.nome));
+    const cargo = String(V.respCargo || (mesmo(p.aprovadoNome) ? p.aprovadoCargo : '') || (socio ? (socio.administrador ? 'Sócio administrador' : 'Sócio') : '') || '').trim();
+    const cpf = V.respNome ? String(V.respCpf || '').trim() : '';
+    return { nome, cpf, cargo };
+  }
   async function gerarContrato(p) {
     const cfg = cfgE3();
-    const texto = preencherModelo(cfg.modelo, await valoresContrato(p));
+    const VC = await valoresContrato(p);
+    const texto = preencherModelo(cfg.modelo, VC);
     const titulo = cfg.titulo || window.ETAPA3_PADRAO.titulo;
     const b64 = window.contratoPdf({ titulo, texto, numero: p.numero, logo: logoAtual(), logoW: CFG.logoW, logoH: CFG.logoH }).output('datauristring').split(',')[1];
     if (b64.length + texto.length > 950000) throw new Error('o contrato ficou grande demais (troque o logo por uma imagem menor)');
     const lote = F.writeBatch(db);
-    lote.set(F.doc(db, 'propostas', p.id, 'arquivo', 'contrato'), { b64, texto, titulo, aceiteTxt: cfg.textoAceite || window.ETAPA3_PADRAO.textoAceite, final: cfg.final || window.ETAPA3_PADRAO.final });
+    lote.set(F.doc(db, 'propostas', p.id, 'arquivo', 'contrato'), { b64, texto, titulo, sugestao: sugestaoAceite(p, VC), aceiteTxt: cfg.textoAceite || window.ETAPA3_PADRAO.textoAceite, final: cfg.final || window.ETAPA3_PADRAO.final });
     lote.update(F.doc(db, 'propostas', p.id), { ctEm: F.serverTimestamp() });
     await lote.commit();
   }

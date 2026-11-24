@@ -91,6 +91,7 @@ button.sec2{background:var(--surface);color:var(--purple)}
     <div class="ok" id="jaAceito" hidden></div>
 
     <form class="sec" id="fAceite" novalidate><h2>Aceite do contrato</h2><div class="body">
+      <p id="aSug" class="hint full" hidden style="margin:0">Trouxemos os dados já informados. Confira e corrija se quem vai aceitar for outra pessoa.</p>
       <label><span>Nome completo do representante <b>*</b></span><input id="aNome" required autocomplete="name"></label>
       <label><span>CPF <b>*</b></span><input id="aCpf" required inputmode="numeric" placeholder="000.000.000-00"></label>
       <label><span>Cargo <b>*</b></span><input id="aCargo" required placeholder="Ex.: Sócio, Administrador"></label>
@@ -194,6 +195,17 @@ function textoHtml(t){
       finally{ b.disabled=false }
     });
 
+    // Sugestão: dados já lançados antes (responsável legal informado no link de dados ou quem aprovou a proposta). O cliente pode trocar.
+    if(!P.ctAceitoEm){
+      // contratos gerados antes da v221 não têm a sugestão gravada: lê o representante do próprio texto do contrato
+      const nz=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().trim();
+      const mT=String(D.texto||'').match(/representad[ao] por ([^,\n]{3,80}),[^\n]*?CPF(?: n[º°o]\.?)?\s*([\d.\-]{11,14})/i);
+      const tN=mT?mT[1].trim():'', tC=mT?mT[2]:'';
+      const sg=D.sugestao||(tN?{nome:tN, cpf:tC, cargo:nz(tN)===nz(P.aprovadoNome)?P.aprovadoCargo:''}:{nome:P.aprovadoNome, cargo:P.aprovadoCargo});
+      const pre=(el,v)=>{ v=String(v||'').trim(); if(v&&!$(el).value) $(el).value=v };
+      pre('aNome',sg.nome); pre('aCpf',sg.cpf&&cpfOk(sg.cpf)?fmtCpf(sg.cpf):''); pre('aCargo',sg.cargo);
+      if(sg.nome||sg.cpf||sg.cargo) $('aSug').hidden=false;
+    }
     $('aCpf').addEventListener('blur',()=>{ if(dig($('aCpf').value).length===11) $('aCpf').value=fmtCpf($('aCpf').value) });
 
     $('fAceite').addEventListener('submit', async e=>{

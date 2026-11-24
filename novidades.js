@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 221, data: '2026-11-24', titulo: 'Aceite do contrato já preenchido', itens: [
+    'Na página de aceite do contrato, nome, CPF e cargo do representante já vêm preenchidos com os dados informados antes: o responsável legal do link de dados ou, sem ele, quem aprovou a proposta.',
+    'O cliente confere e pode trocar tudo, se quem for aceitar for outra pessoa.',
+    'Contratos gerados antes desta versão também trazem o nome e o CPF que aparecem no texto do contrato.'
+  ] },
   { v: 219, data: '2026-11-23', titulo: 'Link de dados do cliente mais simples', itens: [
     'O link de dados que o cliente preenche não pede mais a "Data desejada para a implantação". O bloco Operação, que só tinha esse campo para o cliente, saiu da tela.',
     'O contrato passa a dizer que a licença será instalada em data a ser combinada entre as partes. Propostas antigas que já tinham a data continuam com ela no contrato.',
