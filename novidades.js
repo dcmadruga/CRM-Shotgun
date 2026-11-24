@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 222, data: '2026-11-24', titulo: 'Filtros na lista de usuários', itens: [
+    'Administração → Usuários: acima da lista de usuários cadastrados agora tem filtros por Revenda (inclusive "Sem revenda"), Estado de atuação e Perfil (Vendedor, TASK, Administrador ou Gerente de revenda).',
+    'Os filtros se combinam, o contador mostra quantos usuários aparecem do total, e "Limpar filtros" volta a mostrar todos.'
+  ] },
   { v: 221, data: '2026-11-24', titulo: 'Aceite do contrato já preenchido', itens: [
     'Na página de aceite do contrato, nome, CPF e cargo do representante já vêm preenchidos com os dados informados antes: o responsável legal do link de dados ou, sem ele, quem aprovou a proposta.',
     'O cliente confere e pode trocar tudo, se quem for aceitar for outra pessoa.',

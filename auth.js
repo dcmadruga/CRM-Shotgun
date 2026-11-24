@@ -1518,10 +1518,34 @@ async function iniciar() {
   const fotosU = {};
   const pend = u => u.pendente === true && u.ativo !== true ? 1 : 0;
   const UF_NOMES = { AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PA: 'Pará', PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SP: 'São Paulo', SE: 'Sergipe', TO: 'Tocantins' }, UFS = Object.keys(UF_NOMES);
+  // Filtros da lista: revenda, estado de atuação e perfil (o gerente é quem está marcado como gerente de uma revenda)
+  const papeisDe = u => Array.isArray(u.papeis) && u.papeis.length ? u.papeis : [u.papel === 'adm' || u.papel === 'task' ? u.papel : 'vendedor'];
+  const filtroU = () => ({ rev: $('ufRev').value, uf: $('ufUf').value, perfil: $('ufPerfil').value });
+  function passaFiltro(u, f) {
+    if (f.rev === '-' ? u.revenda && revendas.some(r => r.id === u.revenda) : f.rev && u.revenda !== f.rev) return false;
+    if (f.uf && !(Array.isArray(u.estados) && u.estados.includes(f.uf))) return false;
+    if (f.perfil === 'gerente') return revendas.some(r => r.gerente === u.uid);
+    if (f.perfil && !papeisDe(u).includes(f.perfil)) return false;
+    return true;
+  }
+  function opcoesFiltro() {
+    const sel = $('ufRev'), v = sel.value;
+    sel.innerHTML = '<option value="">Todas</option><option value="-">Sem revenda</option>' + revendas.map(r => `<option value="${esc(r.id)}">${esc(r.nome)}</option>`).join('');
+    sel.value = [...sel.options].some(o => o.value === v) ? v : '';
+    const su = $('ufUf'); if (su.options.length < 2) su.innerHTML = '<option value="">Todos</option>' + UFS.map(uf => `<option value="${uf}">${uf} · ${UF_NOMES[uf]}</option>`).join('');
+  }
+  ['ufRev', 'ufUf', 'ufPerfil'].forEach(id => $(id).addEventListener('change', () => desenharUsuarios()));
+  $('ufLimpar').addEventListener('click', () => { ['ufRev', 'ufUf', 'ufPerfil'].forEach(id => { $(id).value = ''; }); desenharUsuarios(); });
   function desenharUsuarios() {
+    opcoesFiltro();
+    const f = filtroU(), ativo = !!(f.rev || f.uf || f.perfil);
+    ['ufRev', 'ufUf', 'ufPerfil'].forEach(id => $(id).classList.toggle('ativo', !!$(id).value));
+    $('ufLimpar').hidden = !ativo;
+    const vis = lista.filter(u => passaFiltro(u, f));
     const np = lista.filter(pend).length;
-    $('uCount').textContent = lista.length + (lista.length === 1 ? ' usuário' : ' usuários') + (np ? ` · ${np} aguardando liberação` : '');
-    $('usersBody').innerHTML = lista.map(u => {
+    $('uCount').textContent = (ativo ? vis.length + ' de ' : '') + lista.length + (lista.length === 1 ? ' usuário' : ' usuários') + (np ? ` · ${np} aguardando liberação` : '');
+    if (!vis.length) { $('usersBody').innerHTML = `<p class="uvazio">${lista.length ? 'Nenhum usuário com esses filtros.' : 'Nenhum usuário cadastrado.'}</p>`; return; }
+    $('usersBody').innerHTML = vis.map(u => {
       const eu = perfil && u.uid === perfil.uid;
       return `<div class="ucard${pend(u) ? ' upend' : ''}" data-uid="${esc(u.uid)}">
         <div class="ucol0">${fotosU[u.uid] ? `<img class="ufoto" src="${fotosU[u.uid]}" alt="Foto de ${esc(u.nome)}">` : `<span class="ufoto" title="${fotosU[u.uid] === '' ? 'Ainda não enviou a foto' : 'Carregando'}"></span>`}</div>
