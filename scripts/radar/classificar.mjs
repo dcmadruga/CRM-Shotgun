@@ -24,8 +24,8 @@ export const cnpjValido = c => {
 // Coordenadas em graus/minutos/segundos ("15°4’1.20”S e 57° 10’43.10”O") ou decimais negativas
 function coordenadas(t) {
   const dms = [...t.matchAll(/(\d{1,2})\s*[°º]\s*(\d{1,2})\s*['’′]\s*([\d.,]+)\s*(?:["”″]|['’′]{2})?\s*([NSOWL])/gi)].map(m => { const v = +m[1] + +m[2] / 60 + parseFloat(m[3].replace(',', '.')) / 3600; return /[SOW]/i.test(m[4]) ? -v : v; });
-  if (dms.length >= 2) { const [a, b] = dms; const lat = Math.abs(a) < Math.abs(b) ? a : b, lng = lat === a ? b : a; if ((lat < -6 && lat > -19 && lng < -50 && lng > -62) || (lat < -22.4 && lat > -34 && lng < -48 && lng > -58) || (lat < -19.6 && lat > -25.4 && lng < -44 && lng > -53.2)) return [+lat.toFixed(6), +lng.toFixed(6)]; }
-  const dec = t.match(/(-1\d|-[6-9]|-2\d|-3[0-3])[.,](\d{3,})\D{1,20}(-4[4-9]|-5\d|-6[01])[.,](\d{3,})/);
+  if (dms.length >= 2) { const [a, b] = dms; const lat = Math.abs(a) < Math.abs(b) ? a : b, lng = lat === a ? b : a; if ((lat < -6 && lat > -19 && lng < -50 && lng > -62) || (lat < -22.4 && lat > -34 && lng < -48 && lng > -58) || (lat < -19.6 && lat > -25.4 && lng < -44 && lng > -53.2) || (lat < 2.7 && lat > -14 && lng < -45 && lng > -67) || (lat < -9.4 && lat > -11.7 && lng < -36.3 && lng > -38.3)) return [+lat.toFixed(6), +lng.toFixed(6)]; }
+  const dec = t.match(/(-1\d|-[0-9]|-2\d|-3[0-3])[.,](\d{3,})\D{1,20}(-3[6-9]|-4\d|-5\d|-6[0-7])[.,](\d{3,})/);
   if (dec) return [+(dec[1] + '.' + dec[2]), +(dec[3] + '.' + dec[4])];
   return null;
 }
@@ -67,6 +67,10 @@ function orgao(t, mun, uf = 'MT') {
   if (uf === 'RS' && /\bFEPAM\b|Funda[cç][aã]o\s+Estadual\s+de\s+Prote[cç][aã]o\s+Ambiental/i.test(t)) return { orgao: 'FEPAM (Fundação Estadual de Proteção Ambiental)', esfera: 'estadual' };
   if (uf === 'SP' && /\bCETESB\b|Companhia\s+Ambiental\s+do\s+Estado\s+de\s+S[ãa]o\s+Paulo/i.test(t)) return { orgao: 'CETESB (Companhia Ambiental do Estado de SP)', esfera: 'estadual' };
   if (uf === 'PR' && /\bIAT\b|Instituto\s+[ÁA]gua\s+e\s+Terra/i.test(t)) return { orgao: 'IAT (Instituto Água e Terra)', esfera: 'estadual' };
+  if (uf === 'PA' && /\bSEMAS\b|Secretaria\s+de\s+Estado\s+de\s+Meio\s+Ambiente\s+e\s+Sustentabilidade/i.test(t)) return { orgao: 'SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade)', esfera: 'estadual' };
+  if (uf === 'RO' && /\bSEDAM\b|Secretaria\s+de\s+Estado\s+do\s+Desenvolvimento\s+Ambiental/i.test(t)) return { orgao: 'SEDAM (Secretaria de Estado do Desenvolvimento Ambiental de RO)', esfera: 'estadual' };
+  if (uf === 'TO' && /\bNATURATINS\b|Instituto\s+Natureza\s+do\s+Tocantins/i.test(t)) return { orgao: 'NATURATINS (Instituto Natureza do Tocantins)', esfera: 'estadual' };
+  if (uf === 'SE' && /\bADEMA\b|Administra[cç][aã]o\s+Estadual\s+do\s+Meio\s+Ambiente/i.test(t)) return { orgao: 'ADEMA (Administração Estadual do Meio Ambiente de SE)', esfera: 'estadual' };
   if (uf === 'SC' && /\bIMA\b|Instituto\s+do\s+Meio\s+Ambiente\s+de\s+Santa\s+Catarina/i.test(t)) return { orgao: 'IMA (Instituto do Meio Ambiente de SC)', esfera: 'estadual' };
   if (/\bSEMA\b|Secretaria\s+(de\s+Estado|Estadual)\s+d[eo]\s+Meio\s+Ambiente/i.test(t)) return { orgao: `SEMA-${uf} (Secretaria de Estado de Meio Ambiente)`, esfera: 'estadual' };
   return { orgao: '', esfera: '' };
@@ -124,7 +128,7 @@ function empresa(t) {
 }
 
 function endereco(t) {
-  const m = t.match(/(?:localizad[oa]|situad[oa]|sito|sita|instalad[oa]|endere[cç]o:?|a\s+ser\s+localizad[oa])\s*(?:na|no|à|a|em)?\s*:?\s*((?:Av|Avenida|Rua|R\.|Rod|Rodovia|BR|MT|RS|ERS|SC|PR|SP|Estrada|Travessa|Tv|Alameda|Lote|Quadra|Fazenda|S[ií]tio|Ent\.)[^]{5,170}?)(?=,?\s*(?:no\s+)?munic[ií]pio|\s*-\s*[A-ZÀ-Ú][\wÀ-ú' ]+\/?\s*-?\s*(?:MT|RS|SC|PR)\b|,\s*CEP|\.\s|,?\s*coordenadas|$)/i);
+  const m = t.match(/(?:localizad[oa]|situad[oa]|sito|sita|instalad[oa]|endere[cç]o:?|a\s+ser\s+localizad[oa])\s*(?:na|no|à|a|em)?\s*:?\s*((?:Av|Avenida|Rua|R\.|Rod|Rodovia|BR|MT|RS|ERS|SC|PR|SP|PA|TO|RO|SE|Estrada|Travessa|Tv|Alameda|Lote|Quadra|Fazenda|S[ií]tio|Ent\.)[^]{5,170}?)(?=,?\s*(?:no\s+)?munic[ií]pio|\s*-\s*[A-ZÀ-Ú][\wÀ-ú' ]+\/?\s*-?\s*(?:MT|RS|SC|PR|SP|PA|TO|RO|SE)\b|,\s*CEP|\.\s|,?\s*coordenadas|$)/i);
   return m ? limpa(m[1]).replace(/[,.\s]+$/, '') : '';
 }
 

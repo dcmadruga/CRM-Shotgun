@@ -1,4 +1,4 @@
-// Robô do Radar de Novos Postos (MT, RS, SC, PR e SP). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
+// Robô do Radar de Novos Postos (MT, RS, SC, PR, SP, SE, PA, TO e RO). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
 // 1) decide se é hora de pesquisar (frequência e "Pesquisar agora" ficam em radar_config/geral);
 // 2) coleta as fontes integradas; 3) separa e classifica os avisos; 4) cruza com a ANP;
 // 5) deduplica e grava empreendimentos, processos, documentos, histórico, alertas e a execução.
@@ -10,12 +10,14 @@ import { municipiosUF } from './municipios.mjs';
 import { avisosDaPagina, analisarAviso, analisarEmitidas, analisarLicenca, hash, slug } from './classificar.mjs';
 import * as iomat from './fontes/iomat.mjs';
 import * as famurs from './fontes/famurs.mjs';
+import { paraSigpub } from './fontes/famurs.mjs';
 import * as doers from './fontes/doers.mjs';
 import * as querido from './fontes/querido.mjs';
 import * as sinfat from './fontes/sinfat.mjs';
 import * as domsc from './fontes/domsc.mjs';
 import * as dioepr from './fontes/dioepr.mjs';
 import * as doesp from './fontes/doesp.mjs';
+import * as simlampa from './fontes/simlampa.mjs';
 import * as anpFonte from './fontes/anp.mjs';
 
 const inicio = new Date();
@@ -28,8 +30,12 @@ const gatilhoBase = process.env.RADAR_GATILHO || 'agendado';
 // Fontes de diário oficial integradas, por Estado. RADAR_FONTES (ex.: "famurs,doe-rs") limita a rodada.
 const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }, { mod: querido, uf: 'RS' }, { mod: sinfat, uf: 'SC' }, { mod: domsc, uf: 'SC' }, { mod: querido.paraUF('SC', 'SC'), uf: 'SC' },
   { mod: dioepr, uf: 'PR' }, { mod: querido.paraUF('PR', 'PR'), uf: 'PR' },
-  { mod: doesp, uf: 'SP' }, { mod: querido.paraUF('SP', 'SP'), uf: 'SP' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
-const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ', SP: 'SÃO PAULO' };
+  { mod: doesp, uf: 'SP' }, { mod: querido.paraUF('SP', 'SP'), uf: 'SP' },
+  { mod: paraSigpub('sergipe', 'SE', 'Diário Oficial dos Municípios de Sergipe (SIGPub)', 'dom-se', 'DOM-SE'), uf: 'SE' }, { mod: querido.paraUF('SE', 'SE'), uf: 'SE' },
+  { mod: simlampa, uf: 'PA' }, { mod: paraSigpub('famep', 'PA', 'Diário Oficial dos Municípios do Pará (FAMEP)'), uf: 'PA' }, { mod: querido.paraUF('PA', 'PA'), uf: 'PA' },
+  { mod: querido.paraUF('TO', 'TO'), uf: 'TO' },
+  { mod: paraSigpub('arom', 'RO', 'Diário Oficial dos Municípios de Rondônia (AROM)'), uf: 'RO' }, { mod: querido.paraUF('RO', 'RO'), uf: 'RO' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
+const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ', SP: 'SÃO PAULO', SE: 'SERGIPE', PA: 'PARÁ', TO: 'TOCANTINS', RO: 'RONDÔNIA' };
 
 const PRIOR_CAT = ['novo', 'tanques', 'ampliacao', 'reforma', 'renovacao', 'titularidade', 'ponto_proprio', 'outro'];
 const PRIOR_CONF = ['confirmado', 'possivel', 'analise', 'nao_confirmado'];
