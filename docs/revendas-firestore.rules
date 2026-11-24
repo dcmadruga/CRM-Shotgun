@@ -17,6 +17,8 @@
     match /revendas/{rid} {
       allow read: if rvAdm() || rvMembro(rid);
       allow write: if rvAdm();
+      // o gerente ajusta só os Valores de base da própria revenda (km, validade, portes, bases de deslocamento)
+      allow update: if rvGerente(rid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['base', 'atualizado']);
 
       match /parametros/{pid} {
         allow read: if rvAdm() || rvMembro(rid);

@@ -735,6 +735,19 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .uvazio{color:var(--muted);font-size:14px;padding:14px 2px}
 @media (max-width:560px){.ufiltros label{max-width:none;flex-basis:100%}}
 /* Revendas (ADM) */
+.rvlogo{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.rvlogo .logoprev{width:112px;height:56px;border:1px solid var(--line);border-radius:8px;background:#2E2E2E;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:none}
+.rvlogo .logoprev img{max-width:96px;max-height:44px;object-fit:contain}
+.rvlogo .logoprev span{font-size:12px;color:#9E9E9E}
+.rvlogo .tools{gap:8px}
+.rvbase{grid-column:1/-1;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.rvbasegrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.rvbase input,.rvbase textarea{width:100%;font-size:14px;font-weight:500;color:var(--fg)}
+.rvbase input{text-align:right;font-variant-numeric:tabular-nums}
+.basero{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:0}
+.basero div{display:flex;flex-direction:column;gap:2px}.basero dt{font-size:11.5px;font-weight:600;color:var(--muted)}
+.basero dd{margin:0;font-size:14px;font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums}.basero small{font-weight:400;color:var(--muted)}
+@media (max-width:760px){.rvbasegrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .rvlista{display:flex;flex-direction:column;gap:12px}
 .rvvazio{color:var(--muted);font-size:14px;padding:8px 2px}
 .rvcard{border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 24px;background:var(--surface)}
@@ -965,7 +978,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
       </div>
     </div>
   </div>
-  <div class="logorow admin">
+  <div class="logorow" hidden><!-- o logo da revenda agora fica no cadastro da revenda (Administração > Revendas) -->
     <div class="logoprev"><img id="logoRevPrev" alt="Logo da revenda" hidden><span id="logoRevVazio" class="logovazio">sem logo</span></div>
     <div class="logoacts">
       <b>Logo da revenda <span class="opc">opcional</span></b>
@@ -978,7 +991,8 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     </div>
   </div></div></section>
 
-  <section class="sec admin"><h2>Valores de base <span>usados no cálculo e nas observações</span></h2><div class="body">
+  <section class="sec sogerente"><h2>Valores de base <span>da sua revenda, salvos na hora</span></h2><div class="body" id="baseRevInfo"></div></section>
+  <section class="sec admin soadm"><h2>Valores de base <span>gerais: valem para quem não tem revenda e para o campo vazio na revenda</span></h2><div class="body">
     <div class="grid">
       <label>Deslocamento (R$ por km)<input id="c-vkm" type="number" step="0.01" min="0"></label>
       <label>Validade da condição (dias)<input id="c-validDias" type="number" step="1" min="0" placeholder="30"></label>
@@ -2104,7 +2118,7 @@ async function carregarEquipe(forcar){
 }
 
 function cfgParaPublicar(){
-  const c=semVend(clone(CFG)); ['alim','hosp','refMax'].forEach(k=>delete c[k]);
+  const c=semVend(clone(CFG)); ['alim','hosp','refMax','logoRev','logoRevW','logoRevH'].forEach(k=>delete c[k]);
   c._publicado=new Date().toISOString(); c._por=String(CFG.vNome||'').trim();
   return c;
 }

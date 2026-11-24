@@ -10,6 +10,12 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 225, data: '2026-11-24', titulo: 'Valores de base e logo no cadastro da revenda', itens: [
+    'O logo da revenda, que sai no cabeçalho do PDF ao lado do logo principal, agora fica no cadastro de cada revenda. O PDF usa o logo da revenda do vendedor; quem não tem revenda sai só com o logo principal.',
+    'Administração → Revendas: cada revenda agora tem os seus Valores de base (deslocamento em R$ por km, validade da condição, limites de porte por tancagem e bases de deslocamento). Campo vazio segue o valor geral.',
+    'O gerente da revenda ajusta esses valores e o logo em Parâmetros Proposta → Valores de base, e eles valem na hora para a equipe dele, sem precisar publicar.',
+    'Os Valores de base em Parâmetros Proposta do administrador continuam valendo para quem não tem revenda.'
+  ] },
   { v: 223, data: '2026-11-24', titulo: 'Correção: menus e usuário sumindo', itens: [
     'O app às vezes abria só com Nova proposta e Administração, sem o usuário. A causa era um dado com problema guardado no aparelho (de uma proposta em edição ou dos parâmetros), que travava a abertura antes do login.',
     'Agora o app limpa esses dados antes de usar e, se mesmo assim algo falhar, volta ao padrão só aquela parte e continua abrindo com login e menus. Os parâmetros voltam da nuvem quando você entra.'
