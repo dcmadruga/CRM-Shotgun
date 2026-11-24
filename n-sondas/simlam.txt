@@ -1,0 +1,291 @@
+200 https://monitoramento.semas.pa.gov.br/simlam/
+text/html; charset=utf-8
+
+
+
+<!doctype html>
+<html lang="en" class="h-100">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors" />
+    <meta name="generator" content="Hugo 0.104.2" />
+    <title>.:: SIMLAM PA - PÚBLICO ::.</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&amp;display=swap" rel="stylesheet" />
+
+    <link href="assets/bootstrap.min.css" rel="stylesheet" />
+    <link href="assets/novo.css" rel="stylesheet" />
+    <link href="https://icons.getbootstrap.com/assets/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <!-- Favicons -->
+    <link rel="apple-touch-icon" href="/docs/5.2/assets/img/favicons/apple-touch-icon.png" sizes="180x180" />
+    <link rel="icon" href="/docs/5.2/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="/docs/5.2/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png" />
+    <link rel="manifest" href="/docs/5.2/assets/img/favicons/manifest.json" />
+    <link rel="mask-icon" href="/docs/5.2/assets/img/favicons/safari-pinned-tab.svg" color="#712cf9" />
+    <link rel="icon" href="/docs/5.2/assets/img/favicons/favicon.ico" />
+    <meta name="theme-color" content="#712cf9" />
+</head>
+
+<body class="d-flex flex-column h-100">
+
+    <header>
+        <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark customNavbar">
+            <div class="container-fluid">
+
+                <a class="navbar-brand" href="#">
+                    <img class="tamanhoImagem" src="assets/semas.png" alt="SEMAS-PA" />
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse"
+                        aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                        <li class="nav-item">
+                            <a class="nav-link menuItem" aria-current="page" href="#">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link menuItem" aria-current="page" href="https://www.semas.pa.gov.br/">Portal Semas</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle menuItem" href="#" data-bs-toggle="dropdown"
+                               aria-expanded="false">Empreendimento</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="ListarEmpreendimento.aspx">Listar Empreendimento</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle menuItem" href="#" data-bs-toggle="dropdown"
+                               aria-expanded="false">Responsável Técnico</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="ResponsavelTecnicoMenu.aspx">Cadastrar Responsável Técnico</a></li>
+                                <li><a class="dropdown-item" href="ListarResponsavelTecnico.aspx">Listar Responsável Técnico</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle menuItem" href="#" data-bs-toggle="dropdown"
+                               aria-expanded="false">Protocolo</a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="ListarProcessos.aspx">Buscar Processo</a></li>
+                                <li><a class="dropdown-item" href="ListarDocumentos.aspx">Buscar Documento</a></li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                </div>
+
+            </div>
+        </nav>
+    </header>
+
+    <main class="flex-shrink-0 customMain">
+
+        <div class="position-relative overflow-hidden p-3  text-center bg-light"
+             style="background-image: url('assets/topo.jpg');">
+            <div class="col-md-5 p-lg-5 mx-auto my-3">
+                <h1 class="display-4 fw-normal" style="color: #FFF; font-size: 2em;">PORTAL SIMLAM PÚBLICO</h1>
+            </div>
+        </div>
+
+        <div class="container">
+
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center cardTitulo">Protocolo SIMLAM</h5>
+                            <p class="card-text mainCard">
+                                <br /><br />
+                            </p>
+                            <p class="text-center">
+                                <a href="ListarProcessos.aspx" class="btn rover t180">Buscar Processo</a>
+                                <a href="ListarDocumentos.aspx" class="btn rover t180">Buscar Documento</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center cardTitulo">Processo Administrativo Eletrônico</h5>
+                            <p class="card-text mainCard">
+                                Consultar o andamento de Processos Administrativos Eletrônicos (PAE)
+                            </p>
+                            <p class="text-center">
+                                <a href="https://pae-consulta-publica.sistemas.pa.gov.br/" class="btn rover"
+                                   target="_blank">Consultar o PAE</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center cardTitulo">
+                                Cadastro Ambiental Rural do Estado do Pará
+                            </h5>
+                            <p class="card-text mainCard">
+                                <br /><br />
+                            </p>
+                            <p class="text-center">
+                                <a href="http://car.semas.pa.gov.br/#/" class="btn rover" target="_blank">
+                                    Acessar
+                                    o CAR
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center cardTitulo">Empreendimento</h5>
+                            <p class="card-text mainCard">
+                                <br /><br />
+                            </p>
+                            <p class="text-center">
+                                <a href="ListarEmpreendimento.aspx" class="btn rover t180">Listar</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center cardTitulo">Responsável Técnico</h5>
+                            <p class="card-text mainCard">
+                                <br /><br />
+                            </p>
+                            <p class="text-center">
+                                <a href="ResponsavelTecnicoMenu.aspx" class="btn rover t180">Cadastrar</a>
+                                <a href="ListarResponsavelTecnico.aspx" class="btn rover t180">Listar</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-center cardTitulo">SIMLAM Técnico</h5>
+                            <p class="card-text mainCard">
+                                Sistema Integrado de Monitoramento e Licenciamento Ambiental - Modulo Técnico (SIMLAM
+                                Técnico)
+                            </p>
+                            <p class="text-center">
+                                <a href="//monitoramento.semas.pa.gov.br/simlamtec/" class="btn rover"
+                                   target="_blank">Acessar</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="espacamento"></div>
+
+            <div class="row row-cols-1 row-cols-md-1 g-4">
+
+                <div class="col">
+                    <!-- <div class="card h-100 alert alert-warning"> -->
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <p class="card-text text-center mainCard aviso">
+                                Para consultar <b>licenciamentos</b>, <b>gestão florestal</b>, <b>monitoramento</b>,
+                                <b>CAR</b>, <b>Recursos Hídricos</b> e demais documentos acessar o
+                                <b>Portal da Transparência da SEMAS-PA</b>.
+                            </p>
+                            <p class="text-center">
+                                <a href="http://portaldatransparencia.semas.pa.gov.br" class="btn rover"
+                                   target="_blank">Acessar o Portal da Transparência</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="espacamento"></div>
+            <div class="row row-cols-1 row-cols-md-1 g-4">
+
+                <div class="col">
+                    <!-- <div class="card h-100 alert alert-warning"> -->
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <p class="card-text text-center mainCard aviso">
+                                Caso precise de Suporte Técnico no <b>Simlam Público</b>, enviar email para:
+                            </p>
+                            <p class="text-center">
+                                <a href="mailto:catis@semas.pa.gov.br" class="btn rover"
+                                   target="_blank">catis@semas.pa.gov.br</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer class="footer mt-auto py-3 customRodape">
+        <div class="container">
+            <div class="text-center">
+                <div class="col-md-12 col-lg-12">
+                    <div class="row g-3">
+                        <div class="col-sm-4 align-self-center">
+                            <img class="tamanhoImagem" src="assets/semas_branco.png" alt="SEMAS-PA" />
+                        </div>
+
+                        <div class="col-sm-4 align-self-center fontRodape">
+                            <b>Secretaria de Meio Ambiente e Sustentabilidade do Pará</b><br />
+                            Tv Lomas Valentinas, 2717<br /> Belém, PA<br /> CEP: 66093-677<br />
+                            TELEFONE (91) 3184-3330<br />
+                        </div>
+                        <div class="col-sm-4 d-flex align-self-center justify-content-evenly">
+                            <a class="btn-outline-secondary" title="Facebook" aria-label="Facebook" target="_blank"
+                               href="https://www.facebook.com/semaspara/">
+                                <i class="bi bi-facebook iconeRodape"></i>
+                            </a>
+                            <a class="mat-icon-button" title="Instagram" aria-label="Instagram" target="_blank"
+                               href="https://www.instagram.com/semaspara/">
+                                <i class="bi bi-instagram iconeRodape"></i>
+                            </a>
+                            <a class="mat-icon-button" title="YouTube" aria-label="YouTube" target="_blank"
+                               href="https://www.youtube.com/channel/UCR8bxUop5m4JbRO52H8C5Aw">
+                                <i class="bi bi-youtube iconeRodape"></i>
+                            </a>
+                            <a class="mat-icon-button" title="Twitter" aria-label="Twitter" target="_blank"
+                               href="https://twitter.com/semaspara">
+                                <i class="bi bi-twitter iconeRodape"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <hr />
+            <div class="text-center fontRodape">
+                &copy;
+                <script type="text/javascript">
+                    var currentTime = new Date();
+                    var year = currentTime.getFullYear()
+                    document.write(year);
+                </script>
+                - Powered by DTI / SEMAS
+            </div>
+        </div>
+
+    </footer>
+    <script src="assets/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

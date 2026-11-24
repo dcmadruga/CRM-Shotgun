@@ -1,0 +1,4 @@
+422 https://api.queridodiario.org.br/cities?levels=1,2,3
+application/json
+
+{"detail":[{"type":"enum","loc":["query","levels",0],"msg":"Input should be '', '0', '1', '2' or '3'","input":"1,2,3","ctx":{"expected":"'', '0', '1', '2' or '3'"}}]}
