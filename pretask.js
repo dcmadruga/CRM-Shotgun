@@ -495,7 +495,7 @@
     // cadastro direto também exige os obrigatórios do Pré-Contrato e complementares (só proposta e contrato ficam de fora)
     m.e2 = C.direto || C.e2 ? conta2(secs2Cli()) : marca(0, 1); secs2Comp().forEach((sc, i) => { m['e2c' + i] = C.e2 ? conta2([sc]) : marca(0, 1); });
     const vv = { ...C.v }; Object.entries(C.anx || {}).forEach(([k, st]) => { if (st && st.salvos) vv[k] = st.salvos.concat(st.novos || []); }); // anexos escolhidos e ainda não salvos também contam
-    secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
+    secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; compDentro(i).forEach(sc => { if (!C.e2) { tot++; return; } const r = contar(sc.campos, '', C.v2); ok += r.ok; tot += r.tot; }); const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
     m.anexos = marca(1, 1);
     // a aba Base e posto também mostra pendência das seções de anexos que estão dentro dela
     secoesParam(C.cfg4).forEach((s, i) => { if (ehSecAnx(s) && !/dgm ok/.test(m['p' + i]) && /dgm ok/.test(m.base)) m.base = marca(0, 1).replace('falta', 'parcial'); });
@@ -515,7 +515,7 @@
     const nav = (id, t, ic) => `<button type="button" class="dgnav" data-pt="${id}" aria-selected="false">${ICO(ic || t)}<span>${esc(t)}</span>${M[id] || ''}</button>`;
     const g = t => `<span class="ptnote" style="padding:10px 14px 2px;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;font-weight:600">${t}</span>`;
     body.innerHTML = `<div class="dgwrap" id="ptWrap">
-      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${C.direto ? nav('e2', 'Pré-Contrato', 'pessoas') : ''}${secs2Comp().map((sc, i) => nav('e2c' + i, tituloComp(sc.titulo), 'contato')).join('')}${ps.map((s, i) => !ehSecAnx(s) && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
+      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${C.direto ? nav('e2', 'Pré-Contrato', 'pessoas') : ''}${secs2Comp().map((sc, i) => destinoComp(sc) >= 0 ? '' : nav('e2c' + i, tituloComp(sc.titulo), 'contato')).join('')}${ps.map((s, i) => !ehSecAnx(s) && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
         ${g('Dos passos anteriores')}${nav('proposta', 'Proposta', 'lista')}${C.direto ? '' : nav('e2', 'Pré-Contrato', 'pessoas')}${nav('contrato', 'Contrato', 'lista')}
         ${ps.some(s => !ehSecAnx(s) && !ehSecVal(s)) ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => ehSecAnx(s) || ehSecVal(s) ? '' : nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
       <div class="dgcorpo" id="ptCorpo">
@@ -614,8 +614,23 @@
   // Dados complementares: o que saiu do formulário do cliente (não entra no contrato) e o vendedor completa aqui
   // Cada seção do Pré-Contrato com campos marcados "Pré TASK" vira um item próprio do menu, com o título da seção
   const tituloComp = t => String(t || 'Dados complementares').replace(/:\s*$/, '').trim();
+  // Seção do Pré-Contrato que entra dentro de uma seção do Pré TASK em vez de ter item próprio:
+  // a escolhida no campo pretaskEm (título da seção do Pré TASK) ou, por padrão, Dados bancários / boleto dentro de TEF / PIX
+  function destinoComp(sc) {
+    const ps = secoesParam(C.cfg4), n = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    if (sc.pretaskEm) { const i = ps.findIndex(x => n(x.titulo) === n(sc.pretaskEm)); if (i >= 0) return i; }
+    if (/boleto|banc[aá]ri/i.test(sc.titulo || '')) return ps.findIndex(x => /tef|pix/i.test(x.titulo || ''));
+    return -1;
+  }
+  function blocoComp(sc) {
+    const tit = tituloComp(sc.titulo);
+    if (!C.e2) return `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid"><p class="ptnote full">Libera quando o cliente enviar o Pré-Contrato.</p></div></div>`;
+    return `<div class="ptsec"><h5>${esc(tit)}<small>do Pré-Contrato · não entra no contrato</small></h5><div class="ptgrid" data-e2>${camposHtml(sc.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`;
+  }
+  const compDentro = i => secs2Comp().filter(sc => destinoComp(sc) === i);
   function painelE2c() {
     return secs2Comp().map((sc, i) => {
+      if (destinoComp(sc) >= 0) return '';
       const id = 'e2c' + i, tit = tituloComp(sc.titulo);
       if (!C.e2) return painel(id, tit, 'dados complementares', '<p class="ptnote">Libera quando o cliente enviar o Pré-Contrato.</p>');
       return painel(id, tit, 'completados pelo vendedor · não entram no contrato', '<p class="ptnote">Estes dados não são pedidos ao cliente no link do Pré-Contrato. Confirme com ele e preencha aqui.</p>' + `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid" data-e2>${camposHtml(sc.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`);
@@ -632,7 +647,8 @@
   function painelParam(s, i, emb) {
     const fils = C.pre.filiais, tit = String(s.titulo || '').replace(/:\s*$/, '');
     // dentro da aba Base e posto: sem painel próprio, só o bloco
-    const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}</div>` : painel;
+    const extra = compDentro(i).map(blocoComp).join('');
+    const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}${extra}</div>` : (id, t, sub, html) => painel(id, t, sub, html + extra);
     if (!porFilial(s)) return pn('p' + i, s.titulo, 'Parâmetros Pré TASK', `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid">${camposHtml(s.campos, '', C.v, C.anx)}</div></div>`);
     const at = Math.min(C.filAtiva, fils.length - 1);
     return pn('p' + i, s.titulo, 'preenchido filial por filial', `<div class="pttabs" role="tablist">${fils.map((f, j) => `<button type="button" role="tab" data-ptfi="${j}" aria-selected="${j === at}">${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}</button>`).join('')}</div>` +
