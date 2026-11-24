@@ -1,0 +1,4 @@
+200 https://api.queridodiario.org.br/gazettes?querystring=combust%C3%ADveis&published_since=2026-01-01&size=2&territory_ids=1100205
+application/json
+
+{"total_gazettes":0,"gazettes":[]}

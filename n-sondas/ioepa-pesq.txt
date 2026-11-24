@@ -1,0 +1,81 @@
+200 http://www.ioepa.com.br/pesquisa
+text/html; charset=utf-8
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Diário Oficial / Busca</title>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link href="/pesquisa/Content/css?v=qD7sBETa9mRmBDWrYfgPe32soSHFrXNwqHSACRYDSoA1" rel="stylesheet"/>
+
+    <script src="/pesquisa/bundles/modernizr?v=wBEWDufH_8Md-Pbioxomt90vm6tJN2Pyy9u9zHtWsPo1"></script>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+</head>
+<body class="skin-blue layout-top-nav" style="height: auto; min-height: 100%;">
+
+    <div class="wrapper" style="height: auto; min-height: 100%;">
+
+        <header class="main-header">
+            <nav class="navbar navbar-static-top">
+                <div class="container">
+                    <div class="navbar-header">
+                        <a href="#" class="navbar-brand">Imprensa Oficial do Estado</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        
+
+
+<div class="content-wrapper">
+
+    <section class="content">
+
+        <div class="box box-widget">
+            <div class="box-body">
+<form action="/pesquisa/resultado/QueryTexto" enctype="multipart/form-data" method="post">                    <div class="row">
+                        <div class="col-md-6">
+                            <input Value="" class="form-control" id="InputTexto" name="InputTexto" placeholder="Texto da pesquisa" type="text" value="" />
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group date">
+                                <div class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </div>
+                                <input Value="" class="form-control pull-right datepicker-here" data-language="pt-BR" id="InputDataInicial" name="InputDataInicial" placeholder="dd/mm/aaaa" type="text" value="" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group date">
+                                <div class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </div>
+                                <input Value="" class="form-control pull-right datepicker-here" data-language="pt-BR" id="InputDataFinal" name="InputDataFinal" placeholder="dd/mm/aaaa" type="text" value="" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary btn-block">Pesquisar</button>
+                        </div>
+                    </div>
+</form>            </div>
+        </div>
+
+
+
+
+    </section>
+</div>
+
+
+    </div>
+
+    <script src="/pesquisa/bundles/jquery?v=l_2JQLDpEf4NHz4ob7KHLjmeRFnOogKHIQKkMQQ4Chs1"></script>
+
+    <script src="/pesquisa/bundles/js?v=jrPLp1E-RHiKwOMIfh7aIi8Yk4ABFP2c1WjXK2nuFug1"></script>
+
+</body>
+</html>
