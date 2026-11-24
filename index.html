@@ -852,7 +852,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   <button type="button" role="tab" id="tabUsers" aria-selected="false" class="admin fbonly">Usuários</button>
   <button type="button" role="tab" id="tabRev" aria-selected="false" class="admin fbonly">Revendas</button>
   <button type="button" role="tab" id="tabCfg" aria-selected="false" class="cfgtab">Parâmetros Proposta</button>
-  <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Parâmetros Dados Primários</button>
+  <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Parâmetros Pré‑Contrato</button>
   <button type="button" role="tab" id="tabE3" aria-selected="false" class="admin fbonly">Parâmetros Contrato</button>
   <button type="button" role="tab" id="tabE4" aria-selected="false" class="admin fbonly">Parâmetros Pré TASK</button>
 </div></div></nav>
@@ -914,10 +914,10 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div class="tools"><button type="button" class="primary" id="btnAprov">Enviar pelo WhatsApp</button><button type="button" id="btnAprovCopy">Copiar link da proposta</button><button type="button" id="btnAprovSalvar" title="Guarda a proposta no CRM, no bloco Propostas, como pendente de envio, para mandar depois">Salvar proposta</button></div>
     <div class="tools" id="aprovLinkRow" hidden><input id="aprovLink" readonly aria-label="Link da proposta" style="flex:1;min-width:200px"><button type="button" id="btnAprovLinkCopy">Copiar</button></div>
     <p class="refaz" id="refazInfo" hidden></p>
-    <p class="hint" id="aprovMsg">A proposta fica salva no CRM, no bloco Propostas. Ainda não vai enviar? Use Salvar proposta: ela fica como PENDENTE DE ENVIO e você envia depois. Quando o cliente aprovar pelo link, ela aparece como APROVADA e a Etapa 2 é liberada.</p>
+    <p class="hint" id="aprovMsg">A proposta fica salva no CRM, no bloco Propostas. Ainda não vai enviar? Use Salvar proposta: ela fica como PENDENTE DE ENVIO e você envia depois. Quando o cliente aprovar pelo link, ela aparece como APROVADA e o Pré-Contrato é liberado.</p>
   </div></section>
 
-  <section class="sec nofb"><h2>Etapa 2 · Dados complementares obrigatórios <span>depois que o cliente aprovar</span></h2><div class="body">
+  <section class="sec nofb"><h2>Pré-Contrato <span>depois que o cliente aprovar</span></h2><div class="body">
     <div class="grid">
       <label>WhatsApp do contato do cliente<input id="waCli" inputmode="tel" placeholder="(65) 99999-0000" autocomplete="off"></label>
     </div>
@@ -1102,7 +1102,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <button type="button" id="btnE2Padrao">Restaurar padrão</button>
     <span id="e2Status" class="hint"></span>
   </div>
-  <section class="sec"><h2>Mensagem de envio da Etapa 2 <span>texto padrão do WhatsApp para o cliente</span></h2><div class="body">
+  <section class="sec"><h2>Mensagem de envio do Pré-Contrato <span>texto padrão do WhatsApp para o cliente</span></h2><div class="body">
     <label>Mensagem<textarea id="e2Msg" rows="5"></textarea></label>
     <p class="hint">Use os marcadores, que são trocados na hora do envio: <b>{contato}</b> nome do contato, <b>{cliente}</b> razão social, <b>{numero}</b> nº da proposta, <b>{link}</b> link do formulário, <b>{vendedor}</b> seu nome. Se tirar o {link}, ele é colocado no fim da mensagem.</p>
     <p class="hint" id="e2MsgPrev" style="white-space:pre-wrap;background:var(--field);border:1px solid var(--line);border-radius:4px;padding:8px"></p>
@@ -1116,7 +1116,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   </div></section>
   <div id="e2Secoes" style="display:flex;flex-direction:column;gap:18px"></div>
   <div class="tools"><button type="button" id="btnE2Secao">+ Nova seção</button></div>
-  <p class="hint">CNPJ e razão social são sempre exibidos e obrigatórios e não podem ser excluídos, porque identificam o cliente. O ✕ exclui o campo; para só esconder, desmarque "Mostrar". As alterações valem para todos os links da Etapa 2, inclusive os já enviados, assim que você publicar.</p>
+  <p class="hint">CNPJ e razão social são sempre exibidos e obrigatórios e não podem ser excluídos, porque identificam o cliente. O ✕ exclui o campo; para só esconder, desmarque "Mostrar". As alterações valem para todos os links do Pré-Contrato, inclusive os já enviados, assim que você publicar.</p>
 </main>
 
 <main id="viewE4" hidden>
@@ -1144,7 +1144,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <button type="button" class="primary" id="btnBandSalvar">Salvar e publicar logos</button>
     <span id="bandStatus" class="hint"></span>
   </div>
-  <p class="hint">Vincule o nome de cada bandeira a uma imagem. Quando a bandeira é escolhida (Pré TASK e Dados Primários), aparece esta imagem. Sem imagem, aparece o selo colorido. Use o nome como ele aparece na lista de opções (ex.: Petrobras, Shell, Ipiranga).</p>
+  <p class="hint">Vincule o nome de cada bandeira a uma imagem. Quando a bandeira é escolhida (Pré TASK e Pré-Contrato), aparece esta imagem. Sem imagem, aparece o selo colorido. Use o nome como ele aparece na lista de opções (ex.: Petrobras, Shell, Ipiranga).</p>
   <div id="bandLista" class="bandlista"></div>
   <div class="tools"><button type="button" id="btnBandNova">+ Nova bandeira</button></div>
 </main>
@@ -1177,7 +1177,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   </div></section>
   <section class="sec"><h2>Modelo do contrato <span>linha começando com "# " vira título</span></h2><div class="body">
     <label>Texto<textarea id="e3Modelo" rows="22" style="font-family:ui-monospace,Consolas,monospace;font-size:13px"></textarea></label>
-    <p class="hint">Toque num marcador para inserir onde está o cursor. Na hora de gerar, ele é trocado pelo dado da proposta ou da Etapa 2. Marcador sem dado fica em branco.</p>
+    <p class="hint">Toque num marcador para inserir onde está o cursor. Na hora de gerar, ele é trocado pelo dado da proposta ou do Pré-Contrato. Marcador sem dado fica em branco.</p>
     <div id="e3Marc" class="marcs"></div>
   </div></section>
 </main>
@@ -2219,7 +2219,7 @@ if(FB_ON) setTimeout(()=>{ if(window.argoFb) return;
 carregarEquipe(false);
 
 
-/* ---------- Etapa 2: formulário de dados complementares ---------- */
+/* ---------- Pré-Contrato: formulário de dados complementares ---------- */
 const digitos = v => String(v||'').replace(/\D/g,'');
 const waNum = v => { const d=digitos(v); return d.length>=10 && d.length<=11 ? '55'+d : d };
 const formMsg = t => { $('formMsg').textContent=t };

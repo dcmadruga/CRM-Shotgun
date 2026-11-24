@@ -17,6 +17,11 @@ window.SHOTGUN_NOVIDADES = [
     'Os Valores de base em Parâmetros Proposta do administrador continuam valendo para quem não tem revenda.',
     'Tela Hoje do gerente da revenda: além das próprias, mostra os próximos passos das propostas de todos os usuários da revenda, com o nome do vendedor e o botão Ver proposta. "Só as minhas" volta a mostrar só as dele.'
   ] },
+  { v: 224, data: '2026-11-24', titulo: 'Dados Primários agora se chama Pré-Contrato', itens: [
+    'O passo 2 da proposta (antes "Dados Primários") passou a se chamar Pré-Contrato: nos passos da proposta, no quadro por etapa, no Pré TASK, nos cards do TASK e nos avisos.',
+    'Administração → Parâmetros Pré-Contrato é a antiga aba Parâmetros Dados Primários. Os botões de link agora dizem "Copiar link do Pré-Contrato".',
+    'Nada muda nos dados: tudo o que os clientes já enviaram continua no mesmo lugar.'
+  ] },
   { v: 223, data: '2026-11-24', titulo: 'Correção: menus e usuário sumindo', itens: [
     'O app às vezes abria só com Nova proposta e Administração, sem o usuário. A causa era um dado com problema guardado no aparelho (de uma proposta em edição ou dos parâmetros), que travava a abertura antes do login.',
     'Agora o app limpa esses dados antes de usar e, se mesmo assim algo falhar, volta ao padrão só aquela parte e continua abrindo com login e menus. Os parâmetros voltam da nuvem quando você entra.'
@@ -76,8 +81,8 @@ window.SHOTGUN_NOVIDADES = [
     'O telefone chega junto com o pedido de acesso e aparece em Administração > Usuários, pronto para sair nas propostas.'
   ] },
   { v: 210, data: '2026-11-23', titulo: 'Novo cadastro do TASK pede os dados obrigatórios do Pré TASK', itens: [
-    'No TASK, o "+ Novo cadastro" agora exige os mesmos dados obrigatórios do Pré TASK de uma proposta, incluindo os Dados Primários e os Dados complementares. O Salvar final só libera com tudo preenchido; o Salvar parcial continua guardando o card em "Em preparação".',
-    'Os Dados Primários aparecem logo abaixo de Implantação e já vêm com o CNPJ, a razão social, a cidade e o CEP do posto informado. Proposta e contrato continuam opcionais nesse cadastro.'
+    'No TASK, o "+ Novo cadastro" agora exige os mesmos dados obrigatórios do Pré TASK de uma proposta, incluindo o Pré-Contrato e os Dados complementares. O Salvar final só libera com tudo preenchido; o Salvar parcial continua guardando o card em "Em preparação".',
+    'O Pré-Contrato aparece logo abaixo de Implantação e já vem com o CNPJ, a razão social, a cidade e o CEP do posto informado. Proposta e contrato continuam opcionais nesse cadastro.'
   ] },
   { v: 209, data: '2026-11-23', titulo: 'Excluir usuário apaga a conta de vez', itens: [
     'Em Administração > Usuários, o botão Excluir agora também apaga a conta da pessoa no Firebase, sem você precisar abrir o console. O acesso continua sendo cortado na hora; a conta some do Firebase em até 1 hora.',
@@ -88,7 +93,7 @@ window.SHOTGUN_NOVIDADES = [
   ] },
   { v: 207, data: '2026-11-23', titulo: 'Novo fluxo até o TASK pronto e Módulos por equipe', itens: [
     'Toda proposta agora tem um lead no CRM. Se a proposta foi feita direto, sem vir de um lead, o app cria o lead sozinho (origem "Proposta direta"). Se já existe lead com o mesmo CNPJ, ele é aproveitado.',
-    'No TASK, o "+ Novo cadastro" (perfis TASK e Administrador) abre o Pré TASK completo. Proposta, Dados Primários e contrato não são obrigatórios nesse cadastro direto, e dá para vincular uma proposta aprovada depois.',
+    'No TASK, o "+ Novo cadastro" (perfis TASK e Administrador) abre o Pré TASK completo. Proposta, Pré-Contrato e contrato não são obrigatórios nesse cadastro direto, e dá para vincular uma proposta aprovada depois.',
     'Cada card do TASK mostra por onde o cliente entrou (Veio de Lead, Veio de Proposta ou Cadastro direto) e se está "Em preparação" ou "Pronto para as equipes". Há uma aba nova, Em preparação, com os cards que ainda têm o Pré TASK incompleto.',
     'Módulos: cada equipe só começa quando o módulo dela é liberado. A Implantação libera quando o TASK fica pronto; TEF / PIX, Homologação de Boletos, Integração e Conciliação, quando a Implantação finaliza "Criar a base"; o Pós-vendas, no encerramento da implantação. O setor recebe aviso no sino. O administrador pode liberar na hora e mudar a ordem em Parâmetros Pré TASK > Módulos do TASK.',
     'Pendências: registre o que está faltando, com quem está (cliente, banco, adquirente, bandeira…) e o prazo. Ligada a um processo, ela deixa o processo Parado até ser resolvida. Pendência com o cliente tem o atalho Cobrar no WhatsApp.',
@@ -129,12 +134,12 @@ window.SHOTGUN_NOVIDADES = [
     'Também dá para abrir a proposta pendente no formulário, ajustar o que precisar e enviar: a versão nova entra no lugar da pendente.',
     'Novo filtro "Pendentes de envio" na aba Propostas.'
   ] },
-  { v: 198, data: '2026-11-22', titulo: 'Dados Primários só com o que o contrato precisa', itens: [
-    'O link dos Dados Primários ficou mais curto: o cliente informa só o que entra no contrato (CNPJ, razão social, dados e endereço do responsável legal e o contrato social).',
+  { v: 198, data: '2026-11-22', titulo: 'Pré-Contrato só com o que o contrato precisa', itens: [
+    'O link do Pré-Contrato ficou mais curto: o cliente informa só o que entra no contrato (CNPJ, razão social, dados e endereço do responsável legal e o contrato social).',
     'Os demais dados (nome fantasia, inscrição estadual, telefone comercial, regime tributário, contabilidade, financeiro, dados bancários e observações) passaram para a Pré TASK, no novo item "Dados complementares", e o vendedor completa ali.',
     'Bandeira, sistema atual, certificado digital e logo saíram do link do cliente porque a Pré TASK já pede esses dados.',
     'Processos que já existem não perdem nada: o que o cliente já tinha enviado aparece preenchido nos Dados complementares.',
-    'Administração → Parâmetros Dados Primários: nova coluna "Pré TASK" para escolher, campo a campo, o que o cliente preenche e o que fica para o vendedor.'
+    'Administração → Parâmetros Pré-Contrato: nova coluna "Pré TASK" para escolher, campo a campo, o que o cliente preenche e o que fica para o vendedor.'
   ] },
   { v: 197, data: '2026-11-22', titulo: 'Postos em construção no Paraná e filtro de Cidade', itens: [
     'Telemetria → Postos em construção: o Paraná (PR) já pode ser escolhido no filtro de Estado.',
@@ -183,7 +188,7 @@ window.SHOTGUN_NOVIDADES = [
   { v: 187, data: '2026-11-22', titulo: 'Documento pode ficar para depois', itens: [
     'Nos dados complementares, cada anexo obrigatório (como Certificado Digital e Logo) tem a opção "Não tenho em mãos, mando mais tarde". O cliente salva os dados sem o arquivo.',
     'A proposta mostra DOCUMENTO PENDENTE no Passo 2, com o que falta, e o botão Cobrar documento pelo WhatsApp. O Pré TASK também avisa na aba Anexos.',
-    'Para enviar depois, o cliente abre o mesmo link da Etapa 2: a página mostra só os documentos que faltam.'
+    'Para enviar depois, o cliente abre o mesmo link do Pré-Contrato: a página mostra só os documentos que faltam.'
   ] },
   { v: 186, data: '2026-11-22', titulo: 'Proposta aceita no sino', itens: [
     'Quando o cliente aprova a proposta, o sino de notificações avisa o vendedor dono da proposta e o administrador, com o cliente, os valores e quem aprovou. Tocar no aviso abre a proposta.'
