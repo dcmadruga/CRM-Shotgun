@@ -70,6 +70,7 @@
 .pthist{font-size:12px;color:var(--muted);font-weight:400}
 .dgm.ok,.dgm.parcial,.dgm.vazio{flex:none}
 .dgm.falta{border:2px solid #d69e2e}
+.ptauto{font-size:11.5px;font-weight:500;color:var(--muted)}
 `;
   function estilos() { if (document.getElementById('ptCss')) return; const s = document.createElement('style'); s.id = 'ptCss'; s.textContent = css; document.head.appendChild(s); }
 
@@ -300,12 +301,34 @@
     const cs = camposBand(), sn = cs.find(c => c.tipo === 'simnao'), qual = cs.find(c => c.tipo === 'opcoes' || c.tipo === 'multicond');
     const branca = /branca|sem bandeira|livre/i.test(bE2); let mudou = false;
     if (sn && !C.v[sn.k]) { C.v[sn.k] = branca ? 'Não' : 'Sim'; mudou = true; }
-    if (qual && !C.v[qual.k]) {
-      const ops = String(qual.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean), n = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bandeira\s+/, '').replace(/^outr[oa]s?:\s*/, '');
-      const alvo = n(bE2), op = ops.find(o => n(o) === alvo) || ops.find(o => n(o) && (alvo.includes(n(o)) || n(o).includes(alvo))), outra = ops.find(ehOutro);
-      C.v[qual.k] = op || (outra ? outra + ': ' + bE2.replace(/^outr[oa]s?:\s*/i, '') : bE2); mudou = true;
-    }
+    if (qual && !C.v[qual.k]) { C.v[qual.k] = opBandeira(qual, bE2); mudou = true; }
     return mudou;
+  }
+  // Valor do campo "Qual bandeira" para um nome de bandeira: a opção da lista que corresponde, ou Outros: nome
+  function opBandeira(qual, nome) {
+    const ops = String(qual.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean), n = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bandeira\s+/, '').replace(/^outr[oa]s?:\s*/, '').trim();
+    const b = BANDS.find(x => x[0].test(nome)), canon = b ? b[4] : '';
+    const alvo = n(nome), op = ops.find(o => n(o) === alvo) || (canon && ops.find(o => n(o) === n(canon))) || ops.find(o => n(o) && !ehOutro(o) && (alvo.includes(n(o)) || n(o).includes(alvo))), outra = ops.find(ehOutro);
+    if (qual.tipo !== 'opcoes' && qual.tipo !== 'multicond') return canon || nome;
+    return op || (outra ? outra + ': ' + (canon || nome).replace(/^outr[oa]s?:\s*/i, '') : canon || nome);
+  }
+  // Posto é bandeirado? e Qual bandeira vêm da base da ANP pelo CNPJ do posto (cada filial, na Central), só se vazios.
+  // Com bandeira: Sim e a bandeira; bandeira branca: Não. CNPJ fora da ANP: fica como está.
+  async function bandeiraDaAnp() {
+    if (!window.anpPosto) return;
+    const cs = camposBand(), sn = cs.find(c => c.tipo === 'simnao'), qual = cs.find(c => c.tipo === 'opcoes' || c.tipo === 'multicond') || cs.find(c => c.tipo === 'texto' && /^\s*(qual\s+(a\s+)?)?bandeira\b/i.test(c.label || ''));
+    if (!sn) return;
+    const fs = C.pre.filiais || [], central = C.pre.tipoBase === 'Central';
+    const alvos = central ? fs.map((f, j) => ['f' + j + '__', f.cnpj]) : [['', [fs[0] && fs[0].cnpj, C.leadCnpj, C.p.cnpj].find(x => dig(x).length === 14)]];
+    for (const [pf, cnpj] of alvos) {
+      if (dig(cnpj).length !== 14 || C.v[pf + sn.k]) continue;
+      let o = null; try { o = await window.anpPosto(cnpj); } catch (e) {}
+      if (!C) return; if (!o || !o.bandeira) continue;
+      const fonte = 'Base ANP · CNPJ ' + fmtCnpj(cnpj);
+      if (o.bandeiraBranca) { C.v[pf + sn.k] = 'Não'; C.auto[pf + sn.k] = fonte + ' (bandeira branca)'; continue; }
+      C.v[pf + sn.k] = 'Sim'; C.auto[pf + sn.k] = fonte;
+      if (qual && !C.v[pf + qual.k]) { C.v[pf + qual.k] = opBandeira(qual, o.bandeira); C.auto[pf + qual.k] = fonte + ' · ' + o.bandeira; }
+    }
   }
   // Conversão: o "Sistema atual" informado pelo cliente no Pré-Contrato entra no Sistema Legado (só se vazio)
   function legadoDoE2() {
@@ -318,6 +341,40 @@
     const n = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, '');
     const ops = String(leg.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean), op = ops.find(o => n(o) === n(sa)) || ops.find(o => n(o) && !ehOutro(o) && (n(sa).includes(n(o)) || n(o).includes(n(sa)))), outra = ops.find(ehOutro);
     C.v[leg.k] = leg.tipo === 'opcoes' ? (op || (outra ? outra + ': ' + sa : sa)) : sa;
+  }
+  // Itens da proposta aceita (os mesmos do contrato) marcam Sim nos campos Sim/Não ligados a eles (só se ainda vazios).
+  // Sem o item, o campo fica em branco: não marca Não. Continua editável.
+  const VINCULOS = [
+    { campo: /\btef\b.*\bfix|\bfix\w*.*\btef\b/i, item: c => /\btef\b/i.test(c) && !/m[oó]vel|pos\b|smart/i.test(c) },
+    { campo: /pdv\s*m[oó]vel|tef\s*m[oó]vel|\bpos\b/i, item: c => /pdv\s*m[oó]vel|tef\s*m[oó]vel|espelho de venda|smart\s*pos|\bpos\b/i.test(c) },
+    { campo: /cart[oõ]es?\s*(de\s*)?frota|\bfrota\b/i, item: c => /frota/i.test(c) }
+  ];
+  function itensProposta() {
+    const d = (C && C.p && C.p.dados) || {};
+    return [].concat(d.lic || [], d.men || []).filter(r => r && !r.oculto && String(r.desc || '').trim() && String(r.qty ?? '').trim() !== '0').map(r => String(r.desc) + ' ' + String(r.sub || ''));
+  }
+  function itensDaProposta() {
+    if (C.direto) return;
+    const its = itensProposta(); if (!its.length) return;
+    secoesParam(C.cfg4).forEach(sc => {
+      const prefs = porFilial(sc) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : [''];
+      sc.campos.forEach(c => {
+        if (c.tipo !== 'simnao') return;
+        const vin = VINCULOS.find(x => x.campo.test(c.label || '')); if (!vin) return;
+        const it = its.find(vin.item); if (!it) return;
+        prefs.forEach(pf => { const k = pf + c.k; if (!C.v[k]) { C.v[k] = 'Sim'; C.auto[k] = 'Proposta · ' + it.split(/[.(]/)[0].trim(); } });
+      });
+    });
+  }
+  // Mostra embaixo do campo de onde veio a resposta (proposta ou ANP); some quando a pessoa muda a resposta
+  function marcarAuto(root) {
+    Object.entries(C.auto || {}).forEach(([k, de]) => {
+      const el = root.querySelector(`[data-pk="${CSS.escape(k)}"]`); if (!el) return;
+      const n = document.createElement('small'); n.className = 'ptauto'; n.textContent = '✓ Preenchido pela ' + de;
+      const depois = el.parentElement.querySelector('.ptbsel') || el; depois.after(n);
+      const tira = () => { delete C.auto[k]; n.remove(); };
+      if (el.dataset.seg) el.addEventListener('click', tira, { once: true }); else el.addEventListener('change', tira, { once: true });
+    });
   }
   function ligarSelo(root) {
     root.querySelectorAll('select[data-pk]').forEach(sel => {
@@ -397,7 +454,10 @@
     camposBase().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v[k] === undefined && C.v['f0__' + k] !== undefined) C.v[k] = C.v['f0__' + k]; }));
     // a Bandeira voltou para a aba Integração: na Central ela é por filial, então o valor salvo na aba Implantação vai para a F1
     if (C.pre.tipoBase === 'Central') camposBand().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v['f0__' + k] === undefined && C.v[k] !== undefined) C.v['f0__' + k] = C.v[k]; }));
-    bandeiraDoE2(); legadoDoE2();
+    C.auto = {};
+    if (p.leadId && !direto) { const ld = await ler('crm', p.leadId); C.leadCnpj = (ld && ld.cnpj) || ''; }
+    await bandeiraDaAnp(); if (!C || (direto ? C.tid !== tk.id : C.pid !== pid)) return;
+    bandeiraDoE2(); legadoDoE2(); itensDaProposta();
     desenhar();
     if (e4 && e4.parcial) msg('Salvo parcial' + (e4.por ? ' por ' + e4.por : '') + (e4.em && e4.em.toDate ? ' em ' + e4.em.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '') + '. Complete os obrigatórios para o salvar final.');
   }
@@ -433,9 +493,9 @@
     const m = { status: marca(nStatus, 4), base: marca(base, 6), proposta: marca(1, 1), contrato: marca(C.p.ctAceitoEm || C.direto ? 1 : 0, 1) };
     const conta2 = ss => { let ok = 0, tot = 0; ss.forEach(s => { const r = contar(s.campos, '', C.v2); ok += r.ok; tot += r.tot; }); return marca(ok, tot); };
     // cadastro direto também exige os obrigatórios do Pré-Contrato e complementares (só proposta e contrato ficam de fora)
-    m.e2 = C.direto || C.e2 ? conta2(secs2Cli()) : marca(0, 1); m.e2c = C.e2 ? conta2(secs2Comp()) : marca(0, 1);
+    m.e2 = C.direto || C.e2 ? conta2(secs2Cli()) : marca(0, 1); secs2Comp().forEach((sc, i) => { m['e2c' + i] = C.e2 ? conta2([sc]) : marca(0, 1); });
     const vv = { ...C.v }; Object.entries(C.anx || {}).forEach(([k, st]) => { if (st && st.salvos) vv[k] = st.salvos.concat(st.novos || []); }); // anexos escolhidos e ainda não salvos também contam
-    secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
+    secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; compDentro(i).forEach(sc => { if (!C.e2) { tot++; return; } const r = contar(sc.campos, '', C.v2); ok += r.ok; tot += r.tot; }); const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
     m.anexos = marca(1, 1);
     // a aba Base e posto também mostra pendência das seções de anexos que estão dentro dela
     secoesParam(C.cfg4).forEach((s, i) => { if (ehSecAnx(s) && !/dgm ok/.test(m['p' + i]) && /dgm ok/.test(m.base)) m.base = marca(0, 1).replace('falta', 'parcial'); });
@@ -455,7 +515,7 @@
     const nav = (id, t, ic) => `<button type="button" class="dgnav" data-pt="${id}" aria-selected="false">${ICO(ic || t)}<span>${esc(t)}</span>${M[id] || ''}</button>`;
     const g = t => `<span class="ptnote" style="padding:10px 14px 2px;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;font-weight:600">${t}</span>`;
     body.innerHTML = `<div class="dgwrap" id="ptWrap">
-      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${C.direto ? nav('e2', 'Pré-Contrato', 'pessoas') : ''}${secs2Comp().length ? nav('e2c', 'Dados complementares', 'contato') : ''}${ps.map((s, i) => !ehSecAnx(s) && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
+      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${C.direto ? nav('e2', 'Pré-Contrato', 'pessoas') : ''}${secs2Comp().map((sc, i) => destinoComp(sc) >= 0 ? '' : nav('e2c' + i, tituloComp(sc.titulo), 'contato')).join('')}${ps.map((s, i) => !ehSecAnx(s) && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
         ${g('Dos passos anteriores')}${nav('proposta', 'Proposta', 'lista')}${C.direto ? '' : nav('e2', 'Pré-Contrato', 'pessoas')}${nav('contrato', 'Contrato', 'lista')}
         ${ps.some(s => !ehSecAnx(s) && !ehSecVal(s)) ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => ehSecAnx(s) || ehSecVal(s) ? '' : nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
       <div class="dgcorpo" id="ptCorpo">
@@ -463,9 +523,9 @@
       </div></div>`;
     const corpo = document.getElementById('ptCorpo');
     // Salvar parcial também no fim de cada tela de Validação
-    corpo.querySelectorAll(':scope > [data-ptp]').forEach(pn => { const id = pn.dataset.ptp; if (id !== 'status' && id !== 'base' && !(id === 'e2c' && C.e2) && !(id === 'e2' && C.direto) && !/^p\d+$/.test(id)) return; pn.insertAdjacentHTML('beforeend', '<div class="ptpfoot"><span class="hint" role="status"></span><button type="button" data-ptparc="1">Salvar parcial</button></div>'); });
+    corpo.querySelectorAll(':scope > [data-ptp]').forEach(pn => { const id = pn.dataset.ptp; if (id !== 'status' && id !== 'base' && !(/^e2c\d+$/.test(id) && C.e2) && !(id === 'e2' && C.direto) && !/^p\d+$/.test(id)) return; pn.insertAdjacentHTML('beforeend', '<div class="ptpfoot"><span class="hint" role="status"></span><button type="button" data-ptparc="1">Salvar parcial</button></div>'); });
     corpo.addEventListener('click', ev => { if (ev.target.closest('[data-ptparc]')) salvar(true); });
-    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo);
+    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo); marcarAuto(corpo);
     corpo.addEventListener('pt-mudou', ev => { cabecalhoMudou(ev); conferirFinal(); });
     corpo.addEventListener('input', () => conferirFinal()); corpo.addEventListener('change', () => conferirFinal());
     conferirFinal(true);
@@ -552,10 +612,29 @@
     return painel('e2', 'Pré-Contrato', `preenchido pelo cliente${e2.em ? ' em ' + esc(fmtTs(e2.em)) : ''} · editável`, secs2Cli().map(s => `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid" data-e2>${camposHtml(s.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`).join('') + (hist ? `<div class="pthist">${hist}</div>` : '<p class="ptnote">Alterar um dado aqui corrige o dado original e registra quem alterou.</p>'));
   }
   // Dados complementares: o que saiu do formulário do cliente (não entra no contrato) e o vendedor completa aqui
+  // Cada seção do Pré-Contrato com campos marcados "Pré TASK" vira um item próprio do menu, com o título da seção
+  const tituloComp = t => String(t || 'Dados complementares').replace(/:\s*$/, '').trim();
+  // Seção do Pré-Contrato que entra dentro de uma seção do Pré TASK em vez de ter item próprio:
+  // a escolhida no campo pretaskEm (título da seção do Pré TASK) ou, por padrão, Dados bancários / boleto dentro de TEF / PIX
+  function destinoComp(sc) {
+    const ps = secoesParam(C.cfg4), n = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+    if (sc.pretaskEm) { const i = ps.findIndex(x => n(x.titulo) === n(sc.pretaskEm)); if (i >= 0) return i; }
+    if (/boleto|banc[aá]ri/i.test(sc.titulo || '')) return ps.findIndex(x => /tef|pix/i.test(x.titulo || ''));
+    return -1;
+  }
+  function blocoComp(sc) {
+    const tit = tituloComp(sc.titulo);
+    if (!C.e2) return `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid"><p class="ptnote full">Libera quando o cliente enviar o Pré-Contrato.</p></div></div>`;
+    return `<div class="ptsec"><h5>${esc(tit)}<small>do Pré-Contrato · não entra no contrato</small></h5><div class="ptgrid" data-e2>${camposHtml(sc.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`;
+  }
+  const compDentro = i => secs2Comp().filter(sc => destinoComp(sc) === i);
   function painelE2c() {
-    const ss = secs2Comp(); if (!ss.length) return '';
-    if (!C.e2) return painel('e2c', 'Dados complementares', '', '<p class="ptnote">Libera quando o cliente enviar o Pré-Contrato.</p>');
-    return painel('e2c', 'Dados complementares', 'completados pelo vendedor · não entram no contrato', '<p class="ptnote">Estes dados não são pedidos ao cliente no link do Pré-Contrato. Confirme com ele e preencha aqui.</p>' + ss.map(s => `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid" data-e2>${camposHtml(s.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`).join(''));
+    return secs2Comp().map((sc, i) => {
+      if (destinoComp(sc) >= 0) return '';
+      const id = 'e2c' + i, tit = tituloComp(sc.titulo);
+      if (!C.e2) return painel(id, tit, 'dados complementares', '<p class="ptnote">Libera quando o cliente enviar o Pré-Contrato.</p>');
+      return painel(id, tit, 'completados pelo vendedor · não entram no contrato', '<p class="ptnote">Estes dados não são pedidos ao cliente no link do Pré-Contrato. Confirme com ele e preencha aqui.</p>' + `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid" data-e2>${camposHtml(sc.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`);
+    }).join('');
   }
   const prefixar = (o, pre) => Object.fromEntries(Object.entries(o || {}).map(([k, v]) => [pre + k, v]));
   function painelContrato() {
@@ -568,7 +647,8 @@
   function painelParam(s, i, emb) {
     const fils = C.pre.filiais, tit = String(s.titulo || '').replace(/:\s*$/, '');
     // dentro da aba Base e posto: sem painel próprio, só o bloco
-    const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}</div>` : painel;
+    const extra = compDentro(i).map(blocoComp).join('');
+    const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}${extra}</div>` : (id, t, sub, html) => painel(id, t, sub, html + extra);
     if (!porFilial(s)) return pn('p' + i, s.titulo, 'Parâmetros Pré TASK', `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid">${camposHtml(s.campos, '', C.v, C.anx)}</div></div>`);
     const at = Math.min(C.filAtiva, fils.length - 1);
     return pn('p' + i, s.titulo, 'preenchido filial por filial', `<div class="pttabs" role="tablist">${fils.map((f, j) => `<button type="button" role="tab" data-ptfi="${j}" aria-selected="${j === at}">${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}</button>`).join('')}</div>` +
@@ -684,7 +764,7 @@
     // 2) Pré-Contrato (só o que mudou é gravado)
     const e2Lido = { valores: {}, legiveis: {} }; let faltaE2 = null, faltaE2c = null;
     if (C.e2) secs2().forEach(s => { const r = lerCampos(corpo, s.campos.filter(c => !ehComp(c)), 'e2:', C.anx), rc = lerCampos(corpo, s.campos.filter(ehComp), 'e2:', C.anx); [r, rc].forEach(x => { Object.assign(e2Lido.valores, x.valores); Object.assign(e2Lido.legiveis, x.legiveis); }); faltaE2 = faltaE2 || r.falta; faltaE2c = faltaE2c || rc.falta; });
-    const fE2 = faltaE2 ? [['e2', 'campos obrigatórios do Pré-Contrato']] : [], fE2c = faltaE2c ? [['e2c', 'campos obrigatórios dos Dados complementares']] : [];
+    const fE2 = faltaE2 ? [['e2', 'campos obrigatórios do Pré-Contrato']] : [], pnC = faltaE2c && faltaE2c.closest('[data-ptp]'), fE2c = faltaE2c ? [[pnC ? pnC.dataset.ptp : 'e2c0', 'campos obrigatórios de ' + (pnC ? (pnC.querySelector('h4') || {}).firstChild?.textContent || 'Dados complementares' : 'Dados complementares')]] : [];
     faltas.push(...(C.direto ? fE2.concat(fE2c) : fE2c.concat(fE2))); // na ordem do menu
     // 3) Parâmetros Pré TASK (por filial quando for Central)
     const valores = {}, campos = {}, fila = []; let faltaP = null, abaP = null;
