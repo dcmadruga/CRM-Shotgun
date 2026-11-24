@@ -16,6 +16,10 @@ window.SHOTGUN_NOVIDADES = [
     'Os Templates e Referências de Parâmetros Proposta continuam valendo para quem não tem revenda.',
     'No bloco Logo da revenda tem a opção "Não vincular logo da revenda nas propostas". Marcada, os PDFs da revenda saem só com o logo principal, mesmo com logo cadastrado.'
   ] },
+  { v: 226, data: '2026-11-24', titulo: 'Dados do vendedor vêm do cadastro', itens: [
+    'Parâmetros Proposta: saiu o bloco Seus dados (Nome, Telefone e E-mail). O cabeçalho do PDF já usa o nome, o telefone e o e-mail do cadastro de cada usuário, ajustados pelo administrador em Usuários.',
+    'No lugar fica só o Logo do PDF, para o administrador.'
+  ] },
   { v: 225, data: '2026-11-24', titulo: 'Valores de base e logo no cadastro da revenda', itens: [
     'O logo da revenda, que sai no cabeçalho do PDF ao lado do logo principal, agora fica no cadastro de cada revenda. O PDF usa o logo da revenda do vendedor; quem não tem revenda sai só com o logo principal.',
     'Administração → Revendas: cada revenda agora tem os seus Valores de base (deslocamento em R$ por km, validade da condição, limites de porte por tancagem e bases de deslocamento). Campo vazio segue o valor geral.',
