@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 234, data: '2026-11-24', titulo: 'Pré Start, Start e Pós Start como módulos próprios', itens: [
+    'No TASK, Pré Start, Start e Pós Start deixaram de ser etapas dentro de Implantação e viraram módulos principais, cada um com a sua liberação.',
+    'Liberação padrão: Pré Start quando "Liberar a base" (Implantação) é finalizado, Start quando "Agendar o start com o cliente" (Pré Start) é finalizado e Pós Start quando "Aceite do cliente" (Start) é finalizado. O administrador muda em Administração → Parâmetros Módulos TASK.'
+  ] },
   { v: 233, data: '2026-11-24', titulo: 'Módulos do TASK com menu próprio', itens: [
     'Administração ganhou o item "Parâmetros Módulos TASK": é ali que ficam agora os módulos do TASK, quando cada um é liberado para a equipe, as responsabilidades do setor e as seções e campos de cada módulo.',
     'Parâmetros Pré TASK ficou só com o formulário do Pré TASK e os Logos das Bandeiras. Nada muda nos módulos já publicados.'
