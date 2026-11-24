@@ -13,7 +13,8 @@ window.SHOTGUN_NOVIDADES = [
   { v: 231, data: '2026-11-24', titulo: 'Pré TASK já vem marcado pela proposta e pela ANP', itens: [
     'No Pré TASK, a seção TEF / PIX já abre com Sim em TEF Fixo quando a proposta aceita tem item de TEF, e com Sim em PDV Móvel quando tem item de PDV Móvel. Cartões Frota fica marcado quando houver item de frota.',
     'Embaixo do campo aparece "Marcado pela proposta" com o item que deu origem. Sem o item, o campo continua em branco (não marca Não sozinho) e tudo segue editável.',
-    'Na seção Integração, "Posto é Bandeirado?" vem da base da ANP pelo CNPJ do posto (na Central, de cada filial): com bandeira já marca Sim e preenche a bandeira; bandeira branca marca Não.'
+    'Na seção Integração, "Posto é Bandeirado?" vem da base da ANP pelo CNPJ do posto (na Central, de cada filial): com bandeira já marca Sim e preenche a bandeira; bandeira branca marca Não.',
+    'Cada seção do Pré-Contrato com campos marcados "Pré TASK" (ex.: Dados da empresa contábil e do contador, Financeiro) agora aparece como item próprio no menu do Pré TASK, com o título da seção, em vez de tudo junto em "Dados complementares".'
   ] },
   { v: 229, data: '2026-11-24', titulo: 'Filtros na lista de revendas', itens: [
     'Administração → Revendas: acima das revendas cadastradas agora tem filtros por Estado de atuação e por Gerente de revenda (inclusive "Sem estado" e "Sem gerente").',
