@@ -37,7 +37,7 @@ async function iniciar() {
   const BASE_REV = ['vkm', 'validDias', 'portePeq', 'porteMed', 'bases'];
   // Logo da revenda (cabeçalho do PDF): vem só do cadastro da revenda; quem não tem revenda fica sem
   const LOGO_REV = ['logoRev', 'logoRevW', 'logoRevH'];
-  const comBaseRev = c => { fb.geral = BASE_REV.reduce((o, k) => (o[k] = c[k], o), {}); const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); if (!fb.revenda) return c; BASE_REV.forEach(k => { if (b[k] !== undefined && b[k] !== null && String(b[k]).trim() !== '') c[k] = b[k]; }); return c; };
+  const comBaseRev = c => { fb.geral = BASE_REV.reduce((o, k) => (o[k] = c[k], o), {}); const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && !b.semLogo && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); if (!fb.revenda) return c; BASE_REV.forEach(k => { if (b[k] !== undefined && b[k] !== null && String(b[k]).trim() !== '') c[k] = b[k]; }); return c; };
 
   /* ---------- Login ---------- */
   const box = $('loginBox'), lmsg = t => { $('loginMsg').textContent = t };
@@ -345,7 +345,7 @@ async function iniciar() {
       teamStatus('Sem conexão: usando os últimos parâmetros baixados neste aparelho.');
     }
   }
-  const semLogoRev = c => { const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); return c; };
+  const semLogoRev = c => { const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && !b.semLogo && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); return c; };
   // Lê uma imagem de logo, reduz para no máximo 256 px e devolve { url, w, h } (mesmo limite do logo principal)
   const lerImagemLogo = f => new Promise((ok, falha) => {
     if (!f || !/^image\/(png|jpeg|webp)$/.test(f.type)) return falha(new Error('Use uma imagem PNG ou JPG.'));
@@ -357,9 +357,11 @@ async function iniciar() {
       ok({ url, w: c.width, h: c.height }); }; img.onerror = () => falha(new Error('Não consegui ler essa imagem. Tente outro arquivo PNG ou JPG.')); img.src = rd.result; };
     rd.readAsDataURL(f);
   });
-  const blocoLogoRev = (b, attr) => `<div class="rvlogo"><div class="logoprev">${b.logoRev ? `<img src="${esc(b.logoRev)}" alt="Logo da revenda">` : '<span>sem logo</span>'}</div>
+  const blocoLogoRev = (b, attr) => `<div class="rvlogo${b.semLogo ? ' off' : ''}"><div class="logoprev">${b.logoRev ? `<img src="${esc(b.logoRev)}" alt="Logo da revenda">` : '<span>sem logo</span>'}</div>
     <div><b>Logo da revenda</b> <span class="hint">aparece no cabeçalho do PDF, ao lado do logo principal</span>
-    <div class="tools"><label class="btn up">${b.logoRev ? 'Trocar logo' : 'Carregar logo'}<input type="file" ${attr}="up" accept="image/png,image/jpeg,image/webp" hidden></label>${b.logoRev ? `<button type="button" ${attr}="del">Remover</button>` : ''}</div></div></div>`;
+    <div class="tools"><label class="btn up">${b.logoRev ? 'Trocar logo' : 'Carregar logo'}<input type="file" ${attr}="up" accept="image/png,image/jpeg,image/webp" hidden></label>${b.logoRev ? `<button type="button" ${attr}="del">Remover</button>` : ''}</div>
+    <label class="chk rvsemlogo"><input type="checkbox" ${attr}="off"${b.semLogo ? ' checked' : ''}> Não vincular logo da revenda nas propostas</label>${b.semLogo ? '<span class="hint">Os PDFs desta revenda saem só com o logo principal.</span>' : ''}</div></div>`;
+  const gravarSemLogo = (rid, sim) => F.updateDoc(F.doc(db, 'revendas', rid), { 'base.semLogo': sim ? true : F.deleteField(), atualizado: F.serverTimestamp() });
   async function gravarLogoRev(rid, dados) {
     const up = dados ? { 'base.logoRev': dados.url, 'base.logoRevW': dados.w, 'base.logoRevH': dados.h } : { 'base.logoRev': F.deleteField(), 'base.logoRevW': F.deleteField(), 'base.logoRevH': F.deleteField() };
     await F.updateDoc(F.doc(db, 'revendas', rid), { ...up, atualizado: F.serverTimestamp() });
@@ -391,6 +393,16 @@ async function iniciar() {
   }
   $('baseRevInfo')?.addEventListener('click', e => { if (e.target.dataset.glogo === 'del' && fb.gerente && fb.revenda) logoGerente(null); });
   $('baseRevInfo')?.addEventListener('change', async e => {
+    if (e.target.dataset.glogo === 'off') {
+      if (!fb.gerente || !fb.revenda) return; const sim = e.target.checked, m = $('baseRevMsg');
+      try {
+        await gravarSemLogo(fb.revenda.id, sim);
+        const bs = fb.revenda.base = { ...(fb.revenda.base || {}) }; if (sim) bs.semLogo = true; else delete bs.semLogo;
+        comBaseRev(CFG); lsSet(CFG_KEY, CFG); try { aplicarLogo(); } catch (er) {} mostrarBaseRev();
+        const m2 = $('baseRevMsg'); if (m2) m2.textContent = sim ? 'Pronto: as propostas da sua equipe saem só com o logo principal.' : 'Pronto: o logo da revenda volta a sair nas propostas.';
+      } catch (err) { e.target.checked = !sim; if (m) m.textContent = 'Não foi possível salvar (' + (err.code || err.message || 'erro') + ').'; }
+      return;
+    }
     if (e.target.dataset.glogo === 'up') { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f || !fb.gerente) return; try { await logoGerente(await lerImagemLogo(f)); } catch (err) { const m = $('baseRevMsg'); if (m) m.textContent = err.message; } return; }
     const k = e.target.dataset.gb; if (!k || !fb.gerente || !fb.revenda) return;
     const msg = t => { const m = $('baseRevMsg'); if (m) m.textContent = t; };
@@ -1775,6 +1787,10 @@ async function iniciar() {
         const estados = [...card.querySelectorAll('[data-ruf]:checked')].map(x => x.dataset.ruf);
         await F.updateDoc(ref, { estados, atualizado: F.serverTimestamp() });
         rStatus(estados.length ? `Estados de ${r.nome}: ${estados.join(', ')}.` : `${r.nome} ficou sem estado de atuação.`); return;
+      }
+      if (e.target.dataset.rlogo === 'off') {
+        const sim = e.target.checked; await gravarSemLogo(r.id, sim);
+        rStatus(sim ? 'Propostas de ' + r.nome + ' saem só com o logo principal.' : 'Logo de ' + r.nome + ' volta a sair nas propostas.'); return;
       }
       if (e.target.dataset.rlogo === 'up') {
         const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;

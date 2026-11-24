@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 226, data: '2026-11-24', titulo: 'Proposta sem o logo da revenda', itens: [
+    'No bloco Logo da revenda tem a opção "Não vincular logo da revenda nas propostas". Marcada, os PDFs da revenda saem só com o logo principal, mesmo com logo cadastrado.',
+    'O administrador marca em Administração → Revendas, e o gerente da revenda em Parâmetros Proposta → Valores de base. Desmarcar volta a usar o logo.'
+  ] },
   { v: 225, data: '2026-11-24', titulo: 'Valores de base e logo no cadastro da revenda', itens: [
     'O logo da revenda, que sai no cabeçalho do PDF ao lado do logo principal, agora fica no cadastro de cada revenda. O PDF usa o logo da revenda do vendedor; quem não tem revenda sai só com o logo principal.',
     'Administração → Revendas: cada revenda agora tem os seus Valores de base (deslocamento em R$ por km, validade da condição, limites de porte por tancagem e bases de deslocamento). Campo vazio segue o valor geral.',
