@@ -10,6 +10,13 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 225, data: '2026-11-24', titulo: 'Valores de base e logo no cadastro da revenda', itens: [
+    'O logo da revenda, que sai no cabeçalho do PDF ao lado do logo principal, agora fica no cadastro de cada revenda. O PDF usa o logo da revenda do vendedor; quem não tem revenda sai só com o logo principal.',
+    'Administração → Revendas: cada revenda agora tem os seus Valores de base (deslocamento em R$ por km, validade da condição, limites de porte por tancagem e bases de deslocamento). Campo vazio segue o valor geral.',
+    'O gerente da revenda ajusta esses valores e o logo em Parâmetros Proposta → Valores de base, e eles valem na hora para a equipe dele, sem precisar publicar.',
+    'Os Valores de base em Parâmetros Proposta do administrador continuam valendo para quem não tem revenda.',
+    'Tela Hoje do gerente da revenda: além das próprias, mostra os próximos passos das propostas de todos os usuários da revenda, com o nome do vendedor e o botão Ver proposta. "Só as minhas" volta a mostrar só as dele.'
+  ] },
   { v: 224, data: '2026-11-24', titulo: 'Dados Primários agora se chama Pré-Contrato', itens: [
     'O passo 2 da proposta (antes "Dados Primários") passou a se chamar Pré-Contrato: nos passos da proposta, no quadro por etapa, no Pré TASK, nos cards do TASK e nos avisos.',
     'Administração → Parâmetros Pré-Contrato é a antiga aba Parâmetros Dados Primários. Os botões de link agora dizem "Copiar link do Pré-Contrato".',

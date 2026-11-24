@@ -32,6 +32,7 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 
 - Administração > Revendas (só ADM): `revendas/{id}` guarda `nome`, `estados` (UFs de atuação) e `gerente` (uid). O vínculo de cada pessoa fica no cadastro dela (`usuarios/{uid}.revenda`), então cada usuário pertence a uma revenda só. A tela Usuários também troca a revenda.
 - O gerente da revenda vê Parâmetros Proposta e publica em `revendas/{id}/parametros/proposta` (cópia completa dos parâmetros). Os usuários da revenda carregam esse documento; se ele não existir, usam `config/parametros`. O ADM sempre edita os gerais e pode apagar os da revenda ("Voltar aos parâmetros gerais").
+- Logo da revenda (`base.logoRev`, com `logoRevW`/`logoRevH`) e valores de base (R$ por km, validade, portes por tancagem e bases de deslocamento) ficam no cadastro da revenda (`revendas/{id}.base`), editados pelo ADM em Revendas e pelo gerente em Parâmetros Proposta. Campo vazio segue o valor geral (`config/parametros`). O app aplica esses valores por cima dos parâmetros carregados.
 - Precisa das regras de `docs/revendas-firestore.rules` publicadas no Firestore.
 
 ## Novidades a cada versão

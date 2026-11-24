@@ -33,6 +33,11 @@ async function iniciar() {
   const fb = window.argoFb = { admin: false, gerente: false, revenda: null, carregar, publicar };
   // Parâmetros Proposta próprios de uma revenda (publicados pelo gerente dela)
   const paramRev = rid => F.doc(db, 'revendas', rid, 'parametros', 'proposta');
+  // Valores de base (km, validade, portes, bases de deslocamento) ficam no cadastro da revenda; campo vazio = valor geral
+  const BASE_REV = ['vkm', 'validDias', 'portePeq', 'porteMed', 'bases'];
+  // Logo da revenda (cabeçalho do PDF): vem só do cadastro da revenda; quem não tem revenda fica sem
+  const LOGO_REV = ['logoRev', 'logoRevW', 'logoRevH'];
+  const comBaseRev = c => { fb.geral = BASE_REV.reduce((o, k) => (o[k] = c[k], o), {}); const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); if (!fb.revenda) return c; BASE_REV.forEach(k => { if (b[k] !== undefined && b[k] !== null && String(b[k]).trim() !== '') c[k] = b[k]; }); return c; };
 
   /* ---------- Login ---------- */
   const box = $('loginBox'), lmsg = t => { $('loginMsg').textContent = t };
@@ -299,7 +304,7 @@ async function iniciar() {
     await carregar(false);
     if (fb.admin) { ouvirUsuarios(); ouvirRevendas(); carregarE2(); carregarE3(); }
     carregarE4(); if (fb.admin) { carregarMod(); carregarBand(); }
-    ouvirPropostas();
+    ouvirPropostas(); if (fb.gerente) ouvirEquipe();
     window.dispatchEvent(new CustomEvent('shotgun-crm', { detail: { F, db, perfil, admin: fb.admin, temTask: fb.temTask } }));
     abrirAba('tabHoje');
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa2')).then(s => { if (s.exists() && s.data().json) E2PUB = JSON.parse(s.data().json); }).catch(() => {});
@@ -323,29 +328,88 @@ async function iniciar() {
       if (!fb.admin && fb.revenda) try { rsnap = await F.getDoc(paramRev(fb.revenda.id)); } catch (e) { rsnap = null; }
       if (rsnap && rsnap.exists()) {
         const j = rsnap.data();
-        CFG = { ...cfgModelo(), ...semVend(j), ...vendData() };
+        CFG = comBaseRev({ ...cfgModelo(), ...semVend(j), ...vendData() });
         lsSet(CFG_KEY, CFG); if (forcar) lsSet(PEND_KEY, false); cfgDirty = false;
-        renderCfg(); aplicarValidade(); totals(); aplicarPerfil();
+        renderCfg(); aplicarValidade(); totals(); aplicarPerfil(); mostrarBaseRev();
         teamStatus('Parâmetros da revenda ' + fb.revenda.nome + (j._publicado ? ' (publicados em ' + fmtQuando(j._publicado) + (j._por ? ' por ' + j._por : '') + ').' : '.'));
         return;
       }
       const snap = await F.getDoc(PARAM);
       if (!snap.exists()) { teamStatus(fb.admin ? 'Ainda não há parâmetros publicados. Revise abaixo e clique em Publicar para a equipe.' : 'O administrador ainda não publicou os parâmetros.'); return; }
       const j = snap.data();
-      CFG = { ...cfgModelo(), ...semVend(j), ...vendData() };
+      CFG = fb.admin ? semLogoRev({ ...cfgModelo(), ...semVend(j), ...vendData() }) : comBaseRev({ ...cfgModelo(), ...semVend(j), ...vendData() });
       lsSet(CFG_KEY, CFG); if (forcar) lsSet(PEND_KEY, false); cfgDirty = false;
-      renderCfg(); aplicarValidade(); totals(); aplicarPerfil();
+      renderCfg(); aplicarValidade(); totals(); aplicarPerfil(); mostrarBaseRev();
       teamStatus(fb.gerente ? 'Sua revenda ainda usa os parâmetros gerais. Ajuste o que precisar e clique em Publicar para a revenda: daí em diante só a sua equipe recebe os seus valores.' : j._publicado ? 'Parâmetros da equipe atualizados (publicados em ' + fmtQuando(j._publicado) + (j._por ? ' por ' + j._por : '') + ').' : 'Parâmetros da equipe carregados.');
     } catch (e) {
       teamStatus('Sem conexão: usando os últimos parâmetros baixados neste aparelho.');
     }
   }
+  const semLogoRev = c => { const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); return c; };
+  // Lê uma imagem de logo, reduz para no máximo 256 px e devolve { url, w, h } (mesmo limite do logo principal)
+  const lerImagemLogo = f => new Promise((ok, falha) => {
+    if (!f || !/^image\/(png|jpeg|webp)$/.test(f.type)) return falha(new Error('Use uma imagem PNG ou JPG.'));
+    const rd = new FileReader();
+    rd.onload = () => { const img = new Image(); img.onload = () => {
+      const k = Math.min(1, 256 / Math.max(img.width, img.height)), c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); const url = c.toDataURL('image/png');
+      if (url.length > 180000) return falha(new Error('Essa imagem ficou grande demais. Use um logo mais simples ou menor.'));
+      ok({ url, w: c.width, h: c.height }); }; img.onerror = () => falha(new Error('Não consegui ler essa imagem. Tente outro arquivo PNG ou JPG.')); img.src = rd.result; };
+    rd.readAsDataURL(f);
+  });
+  const blocoLogoRev = (b, attr) => `<div class="rvlogo"><div class="logoprev">${b.logoRev ? `<img src="${esc(b.logoRev)}" alt="Logo da revenda">` : '<span>sem logo</span>'}</div>
+    <div><b>Logo da revenda</b> <span class="hint">aparece no cabeçalho do PDF, ao lado do logo principal</span>
+    <div class="tools"><label class="btn up">${b.logoRev ? 'Trocar logo' : 'Carregar logo'}<input type="file" ${attr}="up" accept="image/png,image/jpeg,image/webp" hidden></label>${b.logoRev ? `<button type="button" ${attr}="del">Remover</button>` : ''}</div></div></div>`;
+  async function gravarLogoRev(rid, dados) {
+    const up = dados ? { 'base.logoRev': dados.url, 'base.logoRevW': dados.w, 'base.logoRevH': dados.h } : { 'base.logoRev': F.deleteField(), 'base.logoRevW': F.deleteField(), 'base.logoRevH': F.deleteField() };
+    await F.updateDoc(F.doc(db, 'revendas', rid), { ...up, atualizado: F.serverTimestamp() });
+  }
+  // Gerente: edita os Valores de base da própria revenda (gravados no cadastro dela, salvos na hora)
+  function mostrarBaseRev() {
+    const el = $('baseRevInfo'); if (!el) return;
+    if (!fb.gerente) { el.innerHTML = ''; return; }
+    const bs = (fb.revenda && fb.revenda.base) || {}, v = k => bs[k] === undefined || bs[k] === null ? '' : esc(bs[k]), ph = k => esc(String((fb.geral || {})[k] ?? ''));
+    el.innerHTML = blocoLogoRev(bs, 'data-glogo') + `<div class="grid" style="margin-top:14px">
+      <label>Deslocamento (R$ por km)<input data-gb="vkm" type="number" step="0.01" min="0" value="${v('vkm')}" placeholder="${ph('vkm')}"></label>
+      <label>Validade da condição (dias)<input data-gb="validDias" type="number" step="1" min="0" value="${v('validDias')}" placeholder="${ph('validDias')}"></label>
+      <label>Porte Pequeno: tancagem até (m³)<input data-gb="portePeq" type="number" step="1" min="1" value="${v('portePeq')}" placeholder="${ph('portePeq')}"></label>
+      <label>Porte Médio: tancagem até (m³)<input data-gb="porteMed" type="number" step="1" min="1" value="${v('porteMed')}" placeholder="${ph('porteMed')}"></label>
+    </div>
+    <p class="hint">O porte do posto vem da tancagem total registrada na ANP. Acima do limite do Médio, o posto é Grande. Campo vazio usa o valor geral (o cinza dentro do campo).</p>
+    <label>Bases de deslocamento (uma por linha)<textarea data-gb="bases" rows="2" placeholder="${ph('bases')}">${v('bases')}</textarea></label>
+    <p class="hint" id="baseRevMsg">Estes valores ficam no cadastro da revenda e são salvos na hora, sem precisar publicar.</p>`;
+  }
+  async function logoGerente(dados) {
+    const msg = t => { const m = $('baseRevMsg'); if (m) m.textContent = t; };
+    try {
+      await gravarLogoRev(fb.revenda.id, dados);
+      const bs = fb.revenda.base = { ...(fb.revenda.base || {}) };
+      if (dados) Object.assign(bs, { logoRev: dados.url, logoRevW: dados.w, logoRevH: dados.h }); else LOGO_REV.forEach(k => delete bs[k]);
+      semLogoRev(CFG); lsSet(CFG_KEY, CFG); try { aplicarLogo(); } catch (e) {} mostrarBaseRev();
+      msg(dados ? 'Logo da revenda salvo. Já sai nos próximos PDFs da sua equipe.' : 'Logo da revenda removido.');
+    } catch (err) { msg('Não foi possível salvar o logo (' + (err.code || err.message || 'erro') + ').'); }
+  }
+  $('baseRevInfo')?.addEventListener('click', e => { if (e.target.dataset.glogo === 'del' && fb.gerente && fb.revenda) logoGerente(null); });
+  $('baseRevInfo')?.addEventListener('change', async e => {
+    if (e.target.dataset.glogo === 'up') { const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f || !fb.gerente) return; try { await logoGerente(await lerImagemLogo(f)); } catch (err) { const m = $('baseRevMsg'); if (m) m.textContent = err.message; } return; }
+    const k = e.target.dataset.gb; if (!k || !fb.gerente || !fb.revenda) return;
+    const msg = t => { const m = $('baseRevMsg'); if (m) m.textContent = t; };
+    const val = k === 'bases' ? e.target.value.split('\n').map(x => x.trim()).filter(Boolean).join('\n') : e.target.value.trim();
+    const peq = $('baseRevInfo').querySelector('[data-gb="portePeq"]').value || (fb.geral || {}).portePeq || 0;
+    if (k === 'porteMed' && val && Number(val) <= Number(peq)) { msg('O limite do Porte Médio precisa ser maior que o do Pequeno.'); e.target.value = (fb.revenda.base || {}).porteMed ?? ''; return; }
+    try {
+      await F.updateDoc(F.doc(db, 'revendas', fb.revenda.id), { ['base.' + k]: val === '' ? F.deleteField() : (k === 'bases' ? val : Number(val)), atualizado: F.serverTimestamp() });
+      const bs = fb.revenda.base = { ...(fb.revenda.base || {}) }; if (val === '') delete bs[k]; else bs[k] = k === 'bases' ? val : Number(val);
+      CFG[k] = val === '' ? (fb.geral || {})[k] : bs[k]; lsSet(CFG_KEY, CFG); renderCfg(); aplicarValidade(); totals();
+      msg(val === '' ? 'Esse valor volta a seguir o geral.' : 'Salvo. Vale para a sua equipe no próximo acesso.');
+    } catch (err) { msg('Não foi possível salvar (' + (err.code || 'erro') + ').'); }
+  });
   async function publicar() {
     if (!fb.admin && !fb.gerente) return;
     const btn = $('btnPublish'); btn.disabled = true; pubStatus('Publicando…');
     try {
       const dados = JSON.parse(JSON.stringify(cfgParaPublicar()));
-      if (fb.gerente) dados._porUid = perfil.uid;
+      if (fb.gerente) { dados._porUid = perfil.uid; if (fb.geral) BASE_REV.forEach(k => { if (fb.geral[k] !== undefined) dados[k] = fb.geral[k]; }); } // valores de base da revenda ficam no cadastro dela
       await F.setDoc(fb.admin ? PARAM : paramRev(fb.revenda.id), dados);
       lsSet(PEND_KEY, false); cfgDirty = false; status('');
       pubStatus('Publicado em ' + fmtQuando(dados._publicado) + (fb.admin ? '. A equipe recebe na próxima vez que abrir o app.' : '. Os usuários da revenda recebem na próxima vez que abrirem o app.'));
@@ -494,6 +558,26 @@ async function iniciar() {
     }, e => pMsg('Não foi possível carregar as propostas (' + (e.code || 'erro') + ').'));
   }
   A.onAuthStateChanged(auth, u => { if (!u && unsubP) { unsubP(); unsubP = null; props = []; } });
+  // Gerente da revenda: a tela Hoje também traz as propostas dos outros usuários da revenda (só leitura)
+  let unsubEq = [], propsEq = [], equipe = {};
+  const pararEquipe = () => { unsubEq.forEach(f => { try { f(); } catch (e) {} }); unsubEq = []; propsEq = []; equipe = {}; };
+  async function ouvirEquipe() {
+    pararEquipe(); if (!fb.gerente || !fb.revenda) return;
+    try {
+      const qs = await F.getDocs(F.query(F.collection(db, 'usuarios'), F.where('revenda', '==', fb.revenda.id)));
+      qs.forEach(d => { if (d.id !== perfil.uid && !d.data().excluido) equipe[d.id] = d.data().nome || d.data().email || 'Usuário'; });
+    } catch (e) { desenharHoje(); return; } // regras ainda não publicadas: o Hoje fica só com as propostas do próprio gerente
+    const uids = Object.keys(equipe), partes = {};
+    for (let i = 0; i < uids.length; i += 30) {
+      const k = i;
+      unsubEq.push(F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('owner', 'in', uids.slice(i, i + 30))), qs => {
+        partes[k] = qs.docs.map(d => ({ id: d.id, ...d.data(), _equipe: true })).filter(p => p.status !== 'substituida');
+        propsEq = Object.values(partes).flat(); desenharHoje();
+      }, () => {}));
+    }
+    desenharHoje();
+  }
+  A.onAuthStateChanged(auth, u => { if (!u) pararEquipe(); });
 
   const fmtD = iso => { if (!iso) return ''; const [y, m, d] = String(iso).split('-'); return `${d}/${m}/${y}`; };
   const fmtTs = ts => ts && ts.toDate ? ts.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
@@ -572,15 +656,16 @@ async function iniciar() {
   }
   function desenharHoje() {
     if (!$('hList')) return;
-    const minhas = fb.admin && $('hMinhas').checked;
-    const itens = props.filter(p => !minhas || p.owner === perfil?.uid).map(p => ({ p, x: pendencia(p) })).filter(o => o.x)
+    const minhas = (fb.admin || fb.gerente) && $('hMinhas').checked;
+    const base = fb.gerente && !minhas ? props.concat(propsEq.filter(p => !props.some(q => q.id === p.id))) : props;
+    const itens = base.filter(p => !minhas || p.owner === perfil?.uid).map(p => ({ p, x: pendencia(p) })).filter(o => o.x)
       .sort((a, b) => (a.x.cli === b.x.cli ? 0 : a.x.cli ? 1 : -1));
-    const meus = itens.filter(o => !o.x.cli).length;
-    $('hCount').textContent = itens.length ? `${meus} com você · ${itens.length - meus} aguardando cliente` : '';
-    $('hList').innerHTML = itens.length ? itens.map((o, i) => `<div class="hitem${o.x.cli ? ' cli' : ''}"><span class="n">${o.x.passo + 1}</span><div><b>${esc(o.x.t)} · ${esc(o.p.cliente)}</b><small>${esc(o.x.d)}${fb.admin && o.p.vendedor ? ' · ' + esc(o.p.vendedor) : ''}</small></div><button type="button"${o.x.cli ? '' : ' class="primary"'} data-hoje="${esc(o.p.id)}" data-passo="${o.x.passo}">${esc(o.x.b)}</button></div>`).join('')
+    const meus = itens.filter(o => !o.x.cli && !o.p._equipe).length, daEq = itens.filter(o => !o.x.cli && o.p._equipe).length;
+    $('hCount').textContent = itens.length ? `${meus} com você${daEq ? ` · ${daEq} com a equipe` : ''} · ${itens.length - meus - daEq} aguardando cliente` : '';
+    $('hList').innerHTML = itens.length ? itens.map((o, i) => `<div class="hitem${o.x.cli ? ' cli' : ''}"><span class="n">${o.x.passo + 1}</span><div><b>${esc(o.x.t)} · ${esc(o.p.cliente)}</b><small>${esc(o.x.d)}${(fb.admin || o.p._equipe) && o.p.vendedor ? ' · ' + esc(o.p._equipe ? (equipe[o.p.owner] || o.p.vendedor) : o.p.vendedor) : ''}</small></div>${o.p._equipe ? `<button type="button" data-ver="${esc(linkAprov(o.p.id))}" title="Abre a proposta como o cliente vê">Ver proposta</button>` : `<button type="button"${o.x.cli ? '' : ' class="primary"'} data-hoje="${esc(o.p.id)}" data-passo="${o.x.passo}">${esc(o.x.b)}</button>`}</div>`).join('')
       : `<p class="hint">${props.length ? 'Nenhuma pendência. Todas as propostas já estão no TASK.' : 'Nenhuma proposta ainda.'} Clique em <b>+ Nova proposta</b> para começar outra.</p>`;
   }
-  $('hList').addEventListener('click', e => { const b = e.target.closest('[data-hoje]'); if (b) abrirJornada(b.dataset.hoje, +b.dataset.passo); });
+  $('hList').addEventListener('click', e => { const v = e.target.closest('[data-ver]'); if (v) { window.open(v.dataset.ver, '_blank', 'noopener'); return; } const b = e.target.closest('[data-hoje]'); if (b) abrirJornada(b.dataset.hoje, +b.dataset.passo); });
   $('hMinhas').addEventListener('change', desenharHoje);
   function desenharPropostas() {
     const busca = $('pBusca').value.trim().toLowerCase(), filtro = $('pFiltro').value;
@@ -1659,6 +1744,15 @@ async function iniciar() {
         <div class="rvbloco"><span class="ulabt">Estados de atuação <small class="uufn">${es.length ? es.length + (es.length === 1 ? ' estado' : ' estados') : 'nenhum marcado'}</small></span>
           <div class="uufs">${UFS.map(uf => `<label class="uuf" title="${UF_NOMES[uf]}"><input type="checkbox" data-ruf="${uf}"${es.includes(uf) ? ' checked' : ''}><span>${uf}</span></label>`).join('')}</div>
           ${fora.length ? `<p class="rvaviso">${fora.map(x => `<b>${esc(String(x.u.nome).split(' ')[0])}</b> também atua em ${x.f.join(', ')}`).join('; ')}, fora dos estados da revenda.</p>` : ''}</div>
+        ${(() => { const b = r.base || {}, v = k => b[k] === undefined || b[k] === null ? '' : esc(b[k]), ph = k => esc(String(((typeof CFG === 'object' && CFG) || {})[k] ?? '')); return `<div class="rvbase">${blocoLogoRev(b, 'data-rlogo')}<span class="ulabt" style="margin-top:8px">Valores de base <small class="uufn">usados no cálculo e nas observações da proposta</small></span>
+          <div class="rvbasegrid">
+            <label class="ulab">Deslocamento (R$ por km)<input data-rb="vkm" type="number" step="0.01" min="0" value="${v('vkm')}" placeholder="${ph('vkm')}"></label>
+            <label class="ulab">Validade da condição (dias)<input data-rb="validDias" type="number" step="1" min="0" value="${v('validDias')}" placeholder="${ph('validDias')}"></label>
+            <label class="ulab">Porte Pequeno: tancagem até (m³)<input data-rb="portePeq" type="number" step="1" min="1" value="${v('portePeq')}" placeholder="${ph('portePeq')}"></label>
+            <label class="ulab">Porte Médio: tancagem até (m³)<input data-rb="porteMed" type="number" step="1" min="1" value="${v('porteMed')}" placeholder="${ph('porteMed')}"></label>
+          </div>
+          <label class="ulab">Bases de deslocamento (uma por linha)<textarea data-rb="bases" rows="2" placeholder="${ph('bases')}">${v('bases')}</textarea></label>
+          <p class="rvaviso">Campo vazio usa o valor geral (o cinza dentro do campo). O porte do posto vem da tancagem total registrada na ANP; acima do limite do Médio, o posto é Grande.</p></div>`; })()}
       </div>`;
     }).join('');
   }
@@ -1681,6 +1775,17 @@ async function iniciar() {
         const estados = [...card.querySelectorAll('[data-ruf]:checked')].map(x => x.dataset.ruf);
         await F.updateDoc(ref, { estados, atualizado: F.serverTimestamp() });
         rStatus(estados.length ? `Estados de ${r.nome}: ${estados.join(', ')}.` : `${r.nome} ficou sem estado de atuação.`); return;
+      }
+      if (e.target.dataset.rlogo === 'up') {
+        const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+        try { await gravarLogoRev(r.id, await lerImagemLogo(f)); rStatus('Logo de ' + r.nome + ' salvo. Sai nos próximos PDFs da equipe dela.'); } catch (err) { rStatus(err.message || 'Não foi possível salvar o logo.'); }
+        return;
+      }
+      if (e.target.dataset.rb) {
+        const k = e.target.dataset.rb, val = k === 'bases' ? e.target.value.split('\n').map(s => s.trim()).filter(Boolean).join('\n') : e.target.value.trim();
+        if (k === 'porteMed' && val && Number(val) <= Number(card.querySelector('[data-rb="portePeq"]').value || ((typeof CFG === 'object' && CFG) || {}).portePeq || 0)) { rStatus('O limite do Porte Médio precisa ser maior que o do Pequeno.'); e.target.value = (r.base || {}).porteMed ?? ''; return; }
+        await F.updateDoc(ref, { ['base.' + k]: val === '' ? F.deleteField() : (k === 'bases' ? val : Number(val)), atualizado: F.serverTimestamp() });
+        rStatus(val === '' ? 'Esse valor volta a seguir o geral.' : 'Valor de base de ' + r.nome + ' salvo. Vale para a equipe no próximo acesso.'); return;
       }
       if (e.target.dataset.rf === 'nome') {
         const nome = e.target.value.trim().replace(/\s+/g, ' ');
@@ -1707,10 +1812,11 @@ async function iniciar() {
     } catch (err) { rStatus('Não foi possível salvar (' + (err.code || 'erro') + ').'); desenharRevendas(); }
   });
   $('revBody').addEventListener('click', async e => {
-    const b = e.target.closest('button[data-ra]'), card = e.target.closest('[data-rid]'); if (!b || !card) return;
+    const b = e.target.closest('button[data-ra],button[data-rlogo]'), card = e.target.closest('[data-rid]'); if (!b || !card) return;
     const r = revendas.find(x => x.id === card.dataset.rid); if (!r) return;
     try {
       if (b.dataset.ra === 'tirar') { const uid = b.dataset.uid; await vincularRevenda(uid, ''); desenharRevendas(); rStatus(`${nomeU(uid)} saiu de ${r.nome}.`); return; }
+      if (b.dataset.rlogo === 'del') { await gravarLogoRev(r.id, null); rStatus('Logo de ' + r.nome + ' removido.'); return; }
       if (b.dataset.ra === 'gerais') {
         if (geraisArm.id !== r.id || Date.now() - geraisArm.t > 5000) { geraisArm = { id: r.id, t: Date.now() }; b.textContent = 'Confirmar: apagar os parâmetros da revenda'; rStatus(`Clique de novo para apagar os parâmetros próprios de ${r.nome}. A equipe volta a usar os parâmetros gerais.`); return; }
         geraisArm = {}; await F.deleteDoc(paramRev(r.id)); revPar[r.id] = null; desenharRevendas(); rStatus(`${r.nome} voltou a usar os parâmetros gerais.`); return;
