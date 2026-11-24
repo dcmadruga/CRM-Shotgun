@@ -13,33 +13,28 @@ async function pega(nome, url, opts = {}) {
   } catch (e) { resumo.push(`${nome}\tERRO\t${e.message}\t${url}`); return ''; }
 }
 const L = [
-  ['adema-home', 'https://licenciamento.adema.se.gov.br/'],
-  ['adema-lic', 'https://licenciamento.adema.se.gov.br/download-licenca/0000145099'],
-  ['adema-site', 'https://adema.se.gov.br/'],
-  ['adema-consulta', 'https://licenciamento.adema.se.gov.br/consulta-licenca'],
-  ['adema-publicacoes', 'https://licenciamento.adema.se.gov.br/publicacoes'],
-  ['doe-se', 'https://www.segrase.se.gov.br/'],
-  ['doe-se2', 'https://iose.se.gov.br/'],
-  ['ioepa', 'https://www.ioepa.com.br/'],
-  ['ioepa-busca', 'https://www.ioepa.com.br/busca/?q=posto+de+combust%C3%ADveis'],
-  ['semas', 'https://www.semas.pa.gov.br/'],
-  ['simlam', 'https://monitoramento.semas.pa.gov.br/simlam/'],
-  ['semas-transp', 'https://www.semas.pa.gov.br/transparencia/'],
-  ['doe-to', 'https://diariooficial.to.gov.br/'],
-  ['doe-to-busca', 'https://diariooficial.to.gov.br/busca?texto=posto+de+combust%C3%ADveis'],
-  ['naturatins', 'https://www.to.gov.br/naturatins'],
-  ['sigam-to', 'https://sigam.to.gov.br/'],
-  ['doe-ro', 'https://diof.ro.gov.br/'],
-  ['doe-ro-busca', 'https://diof.ro.gov.br/busca/?q=posto+de+combust%C3%ADveis'],
-  ['sedam', 'https://www.sedam.ro.gov.br/'],
-  ['sedam-lic', 'https://sistemas.sedam.ro.gov.br/'],
-  ['famep', 'https://www.diariomunicipal.com.br/famep/pesquisar?busca_avancada%5Btexto%5D=%22posto+de+combust%C3%ADveis%22&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-23&busca_avancada%5Bpagina%5D=1'],
-  ['arom', 'https://www.diariomunicipal.com.br/arom/pesquisar?busca_avancada%5Btexto%5D=%22posto+de+combust%C3%ADveis%22&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-23&busca_avancada%5Bpagina%5D=1'],
-  ['atm', 'https://www.diariomunicipal.com.br/atm/pesquisar?busca_avancada%5Btexto%5D=%22posto+de+combust%C3%ADveis%22&busca_avancada%5BdataInicio%5D=2026-05-01&busca_avancada%5BdataFim%5D=2026-11-23&busca_avancada%5Bpagina%5D=1'],
-  ['fames', 'https://www.diariomunicipal.com.br/fames/'],
-  ['sigpub-lista', 'https://www.diariomunicipal.com.br/'],
-  ['qd-cities', 'https://api.queridodiario.org.br/cities?levels=1,2,3'],
-  ['qd-pa', 'https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&published_since=2026-06-01&size=2&territory_ids=1501402'],
+  ['ioepa-pesq', 'http://www.ioepa.com.br/pesquisa'],
+  ['ioepa-pesq2', 'https://www.ioepa.com.br/pesquisa/'],
+  ['diof-wpsearch', 'https://diof.ro.gov.br/wp-json/wp/v2/search?search=posto%20de%20combust%C3%ADveis&per_page=5'],
+  ['diof-busca-js', 'https://diof.ro.gov.br/busca/?q=posto'],
+  ['qd-pvh', 'https://api.queridodiario.org.br/gazettes?querystring=combust%C3%ADveis&published_since=2026-01-01&size=2&territory_ids=1100205'],
+  ['qd-palmas', 'https://api.queridodiario.org.br/gazettes?querystring=combust%C3%ADveis&published_since=2026-01-01&size=2&territory_ids=1721000'],
+  ['qd-aracaju', 'https://api.queridodiario.org.br/gazettes?querystring=combust%C3%ADveis&published_since=2026-01-01&size=2&territory_ids=2800308'],
+  ['qd-belem', 'https://api.queridodiario.org.br/gazettes?querystring=combust%C3%ADveis&published_since=2026-01-01&size=2&territory_ids=1501402'],
+  ['qd-cities', 'https://api.queridodiario.org.br/cities?levels=3'],
+  ['sergipe-sigpub', 'https://www.diariomunicipal.com.br/sergipe/pesquisar?busca_avancada%5Btexto%5D=%22licen%C3%A7a%22+combust%C3%ADveis&busca_avancada%5BdataInicio%5D=2025-11-24&busca_avancada%5BdataFim%5D=2026-11-24&busca_avancada%5Bpagina%5D=1'],
+  ['famep-lic', 'https://www.diariomunicipal.com.br/famep/pesquisar?busca_avancada%5Btexto%5D=%22licen%C3%A7a%22+combust%C3%ADveis&busca_avancada%5BdataInicio%5D=2025-11-24&busca_avancada%5BdataFim%5D=2026-11-24&busca_avancada%5Bpagina%5D=1'],
+  ['arom-lic', 'https://www.diariomunicipal.com.br/arom/pesquisar?busca_avancada%5Btexto%5D=%22licen%C3%A7a%22+combust%C3%ADveis&busca_avancada%5BdataInicio%5D=2025-11-24&busca_avancada%5BdataFim%5D=2026-11-24&busca_avancada%5Bpagina%5D=1'],
 ];
+// por que SE e TO falham
+for (const u of ['https://licenciamento.adema.se.gov.br/', 'https://diariooficial.to.gov.br/', 'https://www.to.gov.br/naturatins', 'https://iose.se.gov.br/portal/']) {
+  try { const r = await fetch(u, { headers: UA, signal: AbortSignal.timeout(30000) }); resumo.push(`causa ${u}\t${r.status}`); }
+  catch (e) { resumo.push(`causa ${u}\t${e.message}\t${e.cause?.code || ''} ${e.cause?.message || ''}`); }
+}
+const sim = await pega('simlam', 'https://monitoramento.semas.pa.gov.br/simlam/');
+resumo.push('simlam links: ' + [...sim.matchAll(/href="([^"#]+)"/g)].map(m => m[1]).filter(h => !/\.(css|js|png|ico)/.test(h)).join(' '));
+const busca = await pega('diof-busca', 'https://diof.ro.gov.br/busca/?q=posto');
+resumo.push('diof scripts: ' + [...busca.matchAll(/src="([^"]+\.js[^"]*)"/g)].map(m => m[1]).join(' '));
+resumo.push('diof apis: ' + [...new Set([...busca.matchAll(/https?:\/\/[a-z0-9.-]*ro\.gov\.br\/[^"' <)]*api[^"' <)]*/gi)].map(m => m[0]))].join(' '));
 for (const [n, u] of L) await pega(n, u);
 await writeFile('n-sondas/resumo.tsv', resumo.join('\n') + '\n');
