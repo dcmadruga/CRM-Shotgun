@@ -71,7 +71,8 @@ async function pesquisar(req, ano, nome, log) {
 // página do processo
 export function detalhe(html, id) {
   const c = celulas(html);
-  const apos = rot => { const i = c.findIndex(x => x.replace(/:$/, '') === rot); return i >= 0 ? c[i + 1] || '' : ''; };
+  // rótulos do cabeçalho do processo terminam com ":" (o menu e as tabelas têm "Empreendimento" e "Situação" sem ":")
+  const apos = rot => { const i = c.findIndex(x => x === rot + ':'); return i >= 0 && !/:$/.test(c[i + 1] || '') ? c[i + 1] || '' : ''; };
   const entre = (a, b) => { const i = c.indexOf(a), j = c.indexOf(b, i + 1); return i >= 0 ? c.slice(i + 1, j > i ? j : undefined) : []; };
   const ativ = entre('Atividades Licenciadas', 'Responsáveis Técnicos');
   const atividades = []; for (let i = 0; i < ativ.length; i++) if (/^\d{2,5}$/.test(ativ[i])) atividades.push({ codigo: ativ[i], nome: ativ[i + 1] || '' });
@@ -129,7 +130,7 @@ export async function coletar(de, ate, log = console.log) {
       const d = detalhe(await req(`${BASE}VisualizarProcesso.aspx?UrlRetorno=ListarProcessos.aspx&id=${l.id}`), l.id); consultas++;
       if (!d.numero) d.numero = l.numero; if (!d.empreendimento) d.empreendimento = l.nome;
       const r = registro(d);
-      amostra.push({ data: d.protocolo, titulo: `${d.numero} · ${d.tipo} · ${d.situacao} · ${d.atividades.map(a => a.codigo).join(',') || 'sem atividade'} · ${r ? 'POSTO' : 'fora'}`, entidade: d.empreendimento, trecho: d.titulos.map(t => t.modelo).join(', ') });
+      amostra.push({ data: d.protocolo, titulo: `${d.numero} · ${d.tipo} · ${d.situacao} · ${d.atividades.map(a => a.codigo + ' ' + a.nome.slice(0, 70)).join(' + ') || 'sem atividade'} · ${r ? 'POSTO' : 'fora'}`, entidade: d.empreendimento, trecho: d.titulos.map(t => t.modelo).join(', ') });
       if (r && d.ultima >= de && r.dataDoc <= ate) registros.push({ ...r, dataDoc: r.dataDoc < de ? d.ultima : r.dataDoc, id: `${d.numero.replace(/\D/g, '')}-${r.evento}`, data: r.dataDoc < de ? d.ultima : r.dataDoc, url: d.url, pdf: '', local: `Processo ${d.numero} no SIMLAM da SEMAS-PA · ${d.setor}` });
     } catch (e) { log('SIMLAM-PA processo ' + l.id + ': ' + e.message); }
     await espera(300);

@@ -18,7 +18,7 @@ jobs:
           RADAR_TESTE: 'true'
           RADAR_GATILHO: 'push'
           RADAR_DIAS: '365'
-          RADAR_FONTES: 'simlam-pa,famep,querido-pa,dom-se,querido-se,querido-to,arom,querido-ro'
+          RADAR_FONTES: 'simlam-pa'
         run: node scripts/radar/radar.mjs 2>&1 | tee radar-log.txt
       - if: always()
         run: |
