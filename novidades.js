@@ -14,7 +14,8 @@ window.SHOTGUN_NOVIDADES = [
     'O logo da revenda, que sai no cabeçalho do PDF ao lado do logo principal, agora fica no cadastro de cada revenda. O PDF usa o logo da revenda do vendedor; quem não tem revenda sai só com o logo principal.',
     'Administração → Revendas: cada revenda agora tem os seus Valores de base (deslocamento em R$ por km, validade da condição, limites de porte por tancagem e bases de deslocamento). Campo vazio segue o valor geral.',
     'O gerente da revenda ajusta esses valores e o logo em Parâmetros Proposta → Valores de base, e eles valem na hora para a equipe dele, sem precisar publicar.',
-    'Os Valores de base em Parâmetros Proposta do administrador continuam valendo para quem não tem revenda.'
+    'Os Valores de base em Parâmetros Proposta do administrador continuam valendo para quem não tem revenda.',
+    'Tela Hoje do gerente da revenda: além das próprias, mostra os próximos passos das propostas de todos os usuários da revenda, com o nome do vendedor e o botão Ver proposta. "Só as minhas" volta a mostrar só as dele.'
   ] },
   { v: 223, data: '2026-11-24', titulo: 'Correção: menus e usuário sumindo', itens: [
     'O app às vezes abria só com Nova proposta e Administração, sem o usuário. A causa era um dado com problema guardado no aparelho (de uma proposta em edição ou dos parâmetros), que travava a abertura antes do login.',

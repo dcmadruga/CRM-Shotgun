@@ -26,3 +26,19 @@
         allow delete: if rvAdm();
       }
     }
+
+// Gerente da revenda vê a equipe: lista os usuários da própria revenda e as propostas e leads/fichas do CRM deles (só leitura).
+// Usado na tela Hoje (próximos passos das propostas da equipe). Não libera nenhuma gravação.
+
+    function rvSouGerente() { return rvAtivo() && rvEu().get('revenda', '') != '' && rvGerente(rvEu().get('revenda', '')); }
+    function rvDaEquipe(uid) { return rvSouGerente() && get(/databases/$(database)/documents/usuarios/$(uid)).data.get('revenda', '') == rvEu().get('revenda', ''); }
+
+    match /usuarios/{uid} {
+      allow read: if rvSouGerente() && resource.data.get('revenda', '') == rvEu().get('revenda', '');
+    }
+    match /propostas/{id} {
+      allow list: if rvDaEquipe(resource.data.owner);
+    }
+    match /crm/{id} {
+      allow read: if rvDaEquipe(resource.data.owner);
+    }

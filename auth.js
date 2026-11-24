@@ -304,7 +304,7 @@ async function iniciar() {
     await carregar(false);
     if (fb.admin) { ouvirUsuarios(); ouvirRevendas(); carregarE2(); carregarE3(); }
     carregarE4(); if (fb.admin) { carregarMod(); carregarBand(); }
-    ouvirPropostas();
+    ouvirPropostas(); if (fb.gerente) ouvirEquipe();
     window.dispatchEvent(new CustomEvent('shotgun-crm', { detail: { F, db, perfil, admin: fb.admin, temTask: fb.temTask } }));
     abrirAba('tabHoje');
     if (!fb.admin) F.getDoc(F.doc(db, 'publico', 'etapa2')).then(s => { if (s.exists() && s.data().json) E2PUB = JSON.parse(s.data().json); }).catch(() => {});
@@ -558,6 +558,26 @@ async function iniciar() {
     }, e => pMsg('Não foi possível carregar as propostas (' + (e.code || 'erro') + ').'));
   }
   A.onAuthStateChanged(auth, u => { if (!u && unsubP) { unsubP(); unsubP = null; props = []; } });
+  // Gerente da revenda: a tela Hoje também traz as propostas dos outros usuários da revenda (só leitura)
+  let unsubEq = [], propsEq = [], equipe = {};
+  const pararEquipe = () => { unsubEq.forEach(f => { try { f(); } catch (e) {} }); unsubEq = []; propsEq = []; equipe = {}; };
+  async function ouvirEquipe() {
+    pararEquipe(); if (!fb.gerente || !fb.revenda) return;
+    try {
+      const qs = await F.getDocs(F.query(F.collection(db, 'usuarios'), F.where('revenda', '==', fb.revenda.id)));
+      qs.forEach(d => { if (d.id !== perfil.uid && !d.data().excluido) equipe[d.id] = d.data().nome || d.data().email || 'Usuário'; });
+    } catch (e) { desenharHoje(); return; } // regras ainda não publicadas: o Hoje fica só com as propostas do próprio gerente
+    const uids = Object.keys(equipe), partes = {};
+    for (let i = 0; i < uids.length; i += 30) {
+      const k = i;
+      unsubEq.push(F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('owner', 'in', uids.slice(i, i + 30))), qs => {
+        partes[k] = qs.docs.map(d => ({ id: d.id, ...d.data(), _equipe: true })).filter(p => p.status !== 'substituida');
+        propsEq = Object.values(partes).flat(); desenharHoje();
+      }, () => {}));
+    }
+    desenharHoje();
+  }
+  A.onAuthStateChanged(auth, u => { if (!u) pararEquipe(); });
 
   const fmtD = iso => { if (!iso) return ''; const [y, m, d] = String(iso).split('-'); return `${d}/${m}/${y}`; };
   const fmtTs = ts => ts && ts.toDate ? ts.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
@@ -636,15 +656,16 @@ async function iniciar() {
   }
   function desenharHoje() {
     if (!$('hList')) return;
-    const minhas = fb.admin && $('hMinhas').checked;
-    const itens = props.filter(p => !minhas || p.owner === perfil?.uid).map(p => ({ p, x: pendencia(p) })).filter(o => o.x)
+    const minhas = (fb.admin || fb.gerente) && $('hMinhas').checked;
+    const base = fb.gerente && !minhas ? props.concat(propsEq.filter(p => !props.some(q => q.id === p.id))) : props;
+    const itens = base.filter(p => !minhas || p.owner === perfil?.uid).map(p => ({ p, x: pendencia(p) })).filter(o => o.x)
       .sort((a, b) => (a.x.cli === b.x.cli ? 0 : a.x.cli ? 1 : -1));
-    const meus = itens.filter(o => !o.x.cli).length;
-    $('hCount').textContent = itens.length ? `${meus} com você · ${itens.length - meus} aguardando cliente` : '';
-    $('hList').innerHTML = itens.length ? itens.map((o, i) => `<div class="hitem${o.x.cli ? ' cli' : ''}"><span class="n">${o.x.passo + 1}</span><div><b>${esc(o.x.t)} · ${esc(o.p.cliente)}</b><small>${esc(o.x.d)}${fb.admin && o.p.vendedor ? ' · ' + esc(o.p.vendedor) : ''}</small></div><button type="button"${o.x.cli ? '' : ' class="primary"'} data-hoje="${esc(o.p.id)}" data-passo="${o.x.passo}">${esc(o.x.b)}</button></div>`).join('')
+    const meus = itens.filter(o => !o.x.cli && !o.p._equipe).length, daEq = itens.filter(o => !o.x.cli && o.p._equipe).length;
+    $('hCount').textContent = itens.length ? `${meus} com você${daEq ? ` · ${daEq} com a equipe` : ''} · ${itens.length - meus - daEq} aguardando cliente` : '';
+    $('hList').innerHTML = itens.length ? itens.map((o, i) => `<div class="hitem${o.x.cli ? ' cli' : ''}"><span class="n">${o.x.passo + 1}</span><div><b>${esc(o.x.t)} · ${esc(o.p.cliente)}</b><small>${esc(o.x.d)}${(fb.admin || o.p._equipe) && o.p.vendedor ? ' · ' + esc(o.p._equipe ? (equipe[o.p.owner] || o.p.vendedor) : o.p.vendedor) : ''}</small></div>${o.p._equipe ? `<button type="button" data-ver="${esc(linkAprov(o.p.id))}" title="Abre a proposta como o cliente vê">Ver proposta</button>` : `<button type="button"${o.x.cli ? '' : ' class="primary"'} data-hoje="${esc(o.p.id)}" data-passo="${o.x.passo}">${esc(o.x.b)}</button>`}</div>`).join('')
       : `<p class="hint">${props.length ? 'Nenhuma pendência. Todas as propostas já estão no TASK.' : 'Nenhuma proposta ainda.'} Clique em <b>+ Nova proposta</b> para começar outra.</p>`;
   }
-  $('hList').addEventListener('click', e => { const b = e.target.closest('[data-hoje]'); if (b) abrirJornada(b.dataset.hoje, +b.dataset.passo); });
+  $('hList').addEventListener('click', e => { const v = e.target.closest('[data-ver]'); if (v) { window.open(v.dataset.ver, '_blank', 'noopener'); return; } const b = e.target.closest('[data-hoje]'); if (b) abrirJornada(b.dataset.hoje, +b.dataset.passo); });
   $('hMinhas').addEventListener('change', desenharHoje);
   function desenharPropostas() {
     const busca = $('pBusca').value.trim().toLowerCase(), filtro = $('pFiltro').value;
