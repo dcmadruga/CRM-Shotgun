@@ -1,7 +1,7 @@
 // Módulo TASK: checklist de implantação. Roda para usuários TASK e administradores.
 // Dados: tasks/{id} (cadastros com checklists) e taskTemplates/{id} (modelos de checklist).
 let F, db, perfil, admin = false, unsubT = null, unsubM = null, unsubP = null, unsubMod = null, tasksOk = false, aprovadas = null;
-// Módulos do TASK (Implantação, TEF/PIX…): configurados em Parâmetros Pré TASK
+// Módulos do TASK (Implantação, TEF/PIX…): configurados em Parâmetros Módulos TASK
 let MODS = window.MODULOS_PADRAO ? JSON.parse(JSON.stringify(window.MODULOS_PADRAO)) : { secoes: [] };
 let tasks = [], removidas = new Set(), templates = [], resps = [], aba = 'and', minhas = false, setorVer = null;
 const $ = id => document.getElementById(id);
@@ -157,7 +157,7 @@ const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.set
 const podeMod = m => admin || !meusSetores().length || meusSetores().includes(topDe(m).id);
 /* ---------- Liberação, pendências e diário dos módulos ----------
    Cada módulo principal é a área de trabalho de uma equipe. Ele fica "Aguardando liberação" até a regra dele valer
-   (TASK pronto, ou um processo de outro módulo finalizado: config "libera" em Parâmetros Pré TASK > Módulos).
+   (TASK pronto, ou um processo de outro módulo finalizado: config "libera" em Parâmetros Módulos TASK).
    Quando libera, o setor recebe aviso no sino. Pendências e diário ficam em tasks/{id}.mods[mid].pend e .hist. */
 const PEND_COM = window.PEND_COM || ['Cliente', 'Equipe interna', 'Outro setor', 'Banco', 'Adquirente', 'Bandeira', 'Fornecedor', 'Outro'];
 const topos = () => (MODS.secoes || []).filter(m => !m.pai);
@@ -270,7 +270,7 @@ const diarioTudo = {};
 function formMods(id, mid) {
   const t = tasks.find(x => x.id === id); if (!t) return;
   const L = MODS.secoes || [], ordem = []; L.filter(m => !m.pai).forEach(m => { ordem.push(m); L.filter(x => x.pai === m.id).forEach(x => ordem.push(x)); });
-  const m = ordem.find(x => x.id === mid) || ordem[0]; if (pedeLink && (pedeLink.id !== id || !m || pedeLink.mid !== m.id)) pedeLink = null; if (!m) { abrirDlg('mods', 'Módulos', '<p class="hint">Nenhum módulo configurado. O administrador cria em Parâmetros Pré TASK.</p>'); return; }
+  const m = ordem.find(x => x.id === mid) || ordem[0]; if (pedeLink && (pedeLink.id !== id || !m || pedeLink.mid !== m.id)) pedeLink = null; if (!m) { abrirDlg('mods', 'Módulos', '<p class="hint">Nenhum módulo configurado. O administrador cria em Administração → Parâmetros Módulos TASK.</p>'); return; }
   const d = dlg(), top = d.open ? d.scrollTop : 0;
   const nav = x => { const c = contaMod(t, [x]), e = x.pai ? null : estadoMod(t, x); return `<button type="button" class="dgnav${x.pai ? ' sub' : ''}" data-md="${esc(x.id)}" aria-selected="${x.id === m.id}">${iconeDe(x.titulo)}<span>${esc(x.titulo)}${e ? `<em class="mdest ${e.k}">${esc(e.txt)}</em>` : ''}</span><small class="mdn${c.pa.length ? ' pa' : c.tot && c.f === c.tot ? ' ok' : ''}">${c.f}/${c.tot}</small></button>`; };
   const c = contaMod(t, [m]), pct = c.tot ? Math.round(c.f * 100 / c.tot) : 0, dados = ((t.mods || {})[m.id] || {}).dados || {};

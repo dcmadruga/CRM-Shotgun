@@ -462,7 +462,7 @@ async function iniciar() {
   }
 
   /* ---------- Abas ---------- */
-  const EXTRA = { tabHoje: 'viewHoje', tabTask: 'viewTask', tabUsers: 'viewUsers', tabRev: 'viewRev', tabList: 'viewList', tabCrm: 'viewCrm', tabTele: 'viewTele', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4' };
+  const EXTRA = { tabHoje: 'viewHoje', tabTask: 'viewTask', tabUsers: 'viewUsers', tabRev: 'viewRev', tabList: 'viewList', tabCrm: 'viewCrm', tabTele: 'viewTele', tabE2: 'viewE2', tabE3: 'viewE3', tabE4: 'viewE4', tabMod: 'viewMod' };
   function abrirAba(tab) {
     Object.entries(EXTRA).forEach(([t, v]) => { const on = t === tab; $(v).hidden = !on; $(t).setAttribute('aria-selected', String(on)); });
     document.body.classList.toggle('semBarra', !!EXTRA[tab]);

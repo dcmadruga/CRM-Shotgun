@@ -869,6 +869,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   <button type="button" role="tab" id="tabE2" aria-selected="false" class="admin fbonly">Parâmetros Pré‑Contrato</button>
   <button type="button" role="tab" id="tabE3" aria-selected="false" class="admin fbonly">Parâmetros Contrato</button>
   <button type="button" role="tab" id="tabE4" aria-selected="false" class="admin fbonly">Parâmetros Pré TASK</button>
+  <button type="button" role="tab" id="tabMod" aria-selected="false" class="admin fbonly">Parâmetros Módulos TASK</button>
 </div></div></nav>
 
 <div class="wrap"><main id="viewProp">
@@ -1155,16 +1156,6 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   <div id="e4Secoes" style="display:flex;flex-direction:column;gap:18px"></div>
   <div class="tools"><button type="button" id="btnE4Secao">+ Nova seção</button></div>
   <p class="hint">O ✕ exclui o campo; para só esconder, desmarque "Mostrar". As alterações valem para todas as propostas assim que você publicar. Dados já preenchidos continuam guardados. Status, datas, modalidade, tipo de base e filiais ficam no cabeçalho fixo do Pré TASK.</p>
-  <h2 class="modtit" id="modTit">Módulos do TASK</h2>
-  <div class="savebar">
-    <button type="button" class="primary" id="btnModSalvar">Salvar e publicar módulos</button>
-    <button type="button" id="btnModPadrao">Restaurar padrão</button>
-    <span id="modStatus" class="hint"></span>
-  </div>
-  <p class="hint">Cada módulo aparece no card do TASK com os seus campos (dados) e a lista de processos. Cada processo recebe um status: Não iniciado, Iniciado, Em andamento, Parado ou Finalizado. Um módulo pode ser etapa de outro (ex.: Homologação de Boletos dentro de Implantação).</p>
-  <div id="modSecoes" style="display:flex;flex-direction:column;gap:18px"></div>
-  <div class="tools"><button type="button" id="btnModNovo">+ Novo módulo</button></div>
-
   <h2 class="modtit">Logos das Bandeiras</h2>
   <div class="savebar">
     <button type="button" class="primary" id="btnBandSalvar">Salvar e publicar logos</button>
@@ -1173,6 +1164,17 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
   <p class="hint">Vincule o nome de cada bandeira a uma imagem. Quando a bandeira é escolhida (Pré TASK e Pré-Contrato), aparece esta imagem. Sem imagem, aparece o selo colorido. Use o nome como ele aparece na lista de opções (ex.: Petrobras, Shell, Ipiranga).</p>
   <div id="bandLista" class="bandlista"></div>
   <div class="tools"><button type="button" id="btnBandNova">+ Nova bandeira</button></div>
+</main>
+
+<main id="viewMod" hidden>
+  <div class="savebar">
+    <button type="button" class="primary" id="btnModSalvar">Salvar e publicar módulos</button>
+    <button type="button" id="btnModPadrao">Restaurar padrão</button>
+    <span id="modStatus" class="hint"></span>
+  </div>
+  <p class="hint">Cada módulo aparece no card do TASK com os seus campos (dados) e a lista de processos. Cada processo recebe um status: Não iniciado, Iniciado, Em andamento, Parado ou Finalizado. Um módulo pode ser etapa de outro (ex.: Homologação de Boletos dentro de Implantação).</p>
+  <div id="modSecoes" style="display:flex;flex-direction:column;gap:18px"></div>
+  <div class="tools"><button type="button" id="btnModNovo">+ Novo módulo</button></div>
 </main>
 
 <main id="viewE3" hidden>
@@ -1350,7 +1352,7 @@ if(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey) document.body.classLis
 <script>
 /* Menu Administração: abre a primeira subaba e mostra a linha de subabas enquanto uma delas estiver aberta */
 (function(){
-  const ids=['tabUsers','tabRev','tabCfg','tabE2','tabE4','tabE3'], el=id=>document.getElementById(id), sub=el('subParam'), bt=el('tabParam');
+  const ids=['tabUsers','tabRev','tabCfg','tabE2','tabE4','tabMod','tabE3'], el=id=>document.getElementById(id), sub=el('subParam'), bt=el('tabParam');
   const sync=()=>{ const on=ids.some(id=>el(id).getAttribute('aria-selected')==='true'); sub.hidden=!on; bt.setAttribute('aria-selected',String(on)); bt.setAttribute('aria-expanded',String(on)) };
   bt.addEventListener('click',()=>{ const ab=ids.map(el).find(b=>b.getAttribute('aria-selected')==='true'); (ab||(document.body.classList.contains('is-admin')?el('tabUsers'):el('tabCfg'))).click() });
   new MutationObserver(sync).observe(sub,{subtree:true,attributes:true,attributeFilter:['aria-selected']}); sync();
@@ -2342,6 +2344,7 @@ $('btnNova').addEventListener('click',()=>{ $('waCli').value=''; formMsg('O clie
     tabE2:'<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
     tabE3:'<path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/>',
     tabE4:'<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
+    tabMod:'<rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/>',
     btnSair:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>'
   };
   const svg=(d,c)=>'<svg class="sgic'+(c?' '+c:'')+'" viewBox="0 0 24 24" aria-hidden="true">'+d+'</svg>';
