@@ -278,6 +278,19 @@
   const ehSecAnx = s => /anexo/i.test(s.titulo || '') || (s.campos || []).some(c => c.tipo === 'anexo' && /certificad|pfx|logo/i.test(c.label || ''));
   // Seções dos Parâmetros que ficam no grupo Validação do menu, logo abaixo de Implantação (hoje todas: TEF / PIX, Integração…)
   const ehSecVal = s => true;
+  // Setor de Validação de uma seção (escolhido nos Parâmetros): 'proprio' (item próprio no menu), 'status', 'base' (Implantação)
+  // ou o id/título de outra seção do Pré TASK. Sem escolha: Anexos em Implantação e o resto com item próprio.
+  const normT = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  function alvoSetor(v, ps, eu) {
+    if (!v || v === 'proprio') return 'proprio';
+    if (v === 'status' || v === 'base') return v;
+    const j = ps.findIndex((x, k) => k !== eu && ((x.id && x.id === v) || normT(x.titulo) === normT(v)));
+    if (j < 0) return 'proprio';
+    return alvoSetor(setorBruto(ps[j]), ps, j) === 'proprio' ? j : 'proprio'; // sem encadear: o destino precisa ter item próprio
+  }
+  const setorBruto = s => s.setor || (ehSecAnx(s) ? 'base' : 'proprio');
+  const setorSec = (ps, i) => alvoSetor(setorBruto(ps[i]), ps, i);
+  const injeta = (html, extra) => extra ? html.replace(/<\/section>\s*$/, extra + '</section>') : html;
   const ARQ_CONV = '.csv,.txt,.xls,.xlsx,.xlsm,.xlsb,.xltx,.ods';
   const camposBase = () => blocosBase().flatMap(x => x.campos);
   const secoesParam = cfg => ((cfg && cfg.secoes) || []).filter(s => !ehSecBase(s)).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c)) })).filter(s => s.campos.length);
@@ -498,7 +511,9 @@
     secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; compDentro(i).forEach(sc => { if (!C.e2) { tot++; return; } const r = contar(sc.campos, '', C.v2); ok += r.ok; tot += r.tot; }); const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
     m.anexos = marca(1, 1);
     // a aba Base e posto também mostra pendência das seções de anexos que estão dentro dela
-    secoesParam(C.cfg4).forEach((s, i) => { if (ehSecAnx(s) && !/dgm ok/.test(m['p' + i]) && /dgm ok/.test(m.base)) m.base = marca(0, 1).replace('falta', 'parcial'); });
+    const psM = secoesParam(C.cfg4), pend = (dest, mk) => { const k = typeof dest === 'number' ? 'p' + dest : dest; if (k !== 'proprio' && !/dgm ok/.test(mk) && /dgm ok/.test(m[k] || '')) m[k] = marca(0, 1).replace('falta', 'parcial'); };
+    psM.forEach((s, i) => pend(setorSec(psM, i), m['p' + i]));
+    secs2Comp().forEach((sc, i) => { const d = destinoComp(sc); if (d === 'status' || d === 'base') pend(d, m['e2c' + i]); });
     return m;
   }
   // Cadastro direto: o que já se sabe do posto (F100 ou F1, com a consulta do CNPJ) entra nos campos vazios do Pré-Contrato
@@ -515,11 +530,11 @@
     const nav = (id, t, ic) => `<button type="button" class="dgnav" data-pt="${id}" aria-selected="false">${ICO(ic || t)}<span>${esc(t)}</span>${M[id] || ''}</button>`;
     const g = t => `<span class="ptnote" style="padding:10px 14px 2px;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;font-weight:600">${t}</span>`;
     body.innerHTML = `<div class="dgwrap" id="ptWrap">
-      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${C.direto ? nav('e2', 'Pré-Contrato', 'pessoas') : ''}${secs2Comp().map((sc, i) => destinoComp(sc) >= 0 ? '' : nav('e2c' + i, tituloComp(sc.titulo), 'contato')).join('')}${ps.map((s, i) => !ehSecAnx(s) && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
+      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${C.direto ? nav('e2', 'Pré-Contrato', 'pessoas') : ''}${secs2Comp().map((sc, i) => destinoComp(sc) !== 'proprio' ? '' : nav('e2c' + i, tituloComp(sc.titulo), 'contato')).join('')}${ps.map((s, i) => setorSec(ps, i) === 'proprio' && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
         ${g('Dos passos anteriores')}${nav('proposta', 'Proposta', 'lista')}${C.direto ? '' : nav('e2', 'Pré-Contrato', 'pessoas')}${nav('contrato', 'Contrato', 'lista')}
-        ${ps.some(s => !ehSecAnx(s) && !ehSecVal(s)) ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => ehSecAnx(s) || ehSecVal(s) ? '' : nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
+        ${ps.some((s, i) => setorSec(ps, i) === 'proprio' && !ehSecVal(s)) ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => setorSec(ps, i) !== 'proprio' || ehSecVal(s) ? '' : nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
       <div class="dgcorpo" id="ptCorpo">
-        ${painelStatus()}${painelBase(ps.map((s, i) => ehSecAnx(s) ? painelParam(s, i, true) : '').join(''))}${painelE2c()}${painelProposta()}${painelE2()}${painelContrato()}${ps.map((s, i) => ehSecAnx(s) ? '' : painelParam(s, i)).join('')}
+        ${injeta(painelStatus(), dentroDe('status', ps))}${painelBase(dentroDe('base', ps))}${painelE2c()}${painelProposta()}${painelE2()}${painelContrato()}${ps.map((s, i) => setorSec(ps, i) === 'proprio' ? painelParam(s, i) : '').join('')}
       </div></div>`;
     const corpo = document.getElementById('ptCorpo');
     // Salvar parcial também no fim de cada tela de Validação
@@ -536,7 +551,7 @@
   }
   function mostrar(id) {
     const emb = document.querySelector(`#ptCorpo .ptemb[data-ptp="${id}"]`);
-    if (emb) id = 'base';
+    if (emb) id = (emb.parentElement.closest('[data-ptp]') || { dataset: { ptp: 'base' } }).dataset.ptp;
     // cadastro direto: ao abrir o Pré-Contrato, traz o CNPJ, a razão social e a cidade do posto já informados na Implantação
     if (id === 'e2' && C.direto && document.getElementById('ptCorpo')) { colherCabecalho(); colherCampos(); const antes = JSON.stringify(C.v2); e2DoPosto(); if (JSON.stringify(C.v2) !== antes) { C.aba = 'e2'; desenhar(); return; } }
     C.aba = id;
@@ -617,10 +632,10 @@
   // Seção do Pré-Contrato que entra dentro de uma seção do Pré TASK em vez de ter item próprio:
   // a escolhida no campo pretaskEm (título da seção do Pré TASK) ou, por padrão, Dados bancários / boleto dentro de TEF / PIX
   function destinoComp(sc) {
-    const ps = secoesParam(C.cfg4), n = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-    if (sc.pretaskEm) { const i = ps.findIndex(x => n(x.titulo) === n(sc.pretaskEm)); if (i >= 0) return i; }
-    if (/boleto|banc[aá]ri/i.test(sc.titulo || '')) return ps.findIndex(x => /tef|pix/i.test(x.titulo || ''));
-    return -1;
+    const ps = secoesParam(C.cfg4);
+    let v = sc.setor;
+    if (!v && /boleto|banc[aá]ri/i.test(sc.titulo || '')) { const t = ps.find(x => /tef|pix/i.test(x.titulo || '')); v = t ? (t.id || t.titulo) : ''; } // padrão até o ADM escolher
+    return alvoSetor(v || 'proprio', ps, -1);
   }
   function blocoComp(sc) {
     const tit = tituloComp(sc.titulo);
@@ -628,9 +643,11 @@
     return `<div class="ptsec"><h5>${esc(tit)}<small>do Pré-Contrato · não entra no contrato</small></h5><div class="ptgrid" data-e2>${camposHtml(sc.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`;
   }
   const compDentro = i => secs2Comp().filter(sc => destinoComp(sc) === i);
+  // Blocos que entram dentro de Status e datas ou Implantação: seções do Pré TASK e do Pré-Contrato com esse setor
+  const dentroDe = (alvo, ps) => ps.map((s, i) => setorSec(ps, i) === alvo ? painelParam(s, i, true) : '').join('') + compDentro(alvo).map(blocoComp).join('');
   function painelE2c() {
     return secs2Comp().map((sc, i) => {
-      if (destinoComp(sc) >= 0) return '';
+      if (destinoComp(sc) !== 'proprio') return '';
       const id = 'e2c' + i, tit = tituloComp(sc.titulo);
       if (!C.e2) return painel(id, tit, 'dados complementares', '<p class="ptnote">Libera quando o cliente enviar o Pré-Contrato.</p>');
       return painel(id, tit, 'completados pelo vendedor · não entram no contrato', '<p class="ptnote">Estes dados não são pedidos ao cliente no link do Pré-Contrato. Confirme com ele e preencha aqui.</p>' + `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid" data-e2>${camposHtml(sc.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`);
@@ -647,7 +664,7 @@
   function painelParam(s, i, emb) {
     const fils = C.pre.filiais, tit = String(s.titulo || '').replace(/:\s*$/, '');
     // dentro da aba Base e posto: sem painel próprio, só o bloco
-    const extra = compDentro(i).map(blocoComp).join('');
+    const psX = secoesParam(C.cfg4), extra = emb ? compDentro(i).map(blocoComp).join('') : psX.map((x, k) => k !== i && setorSec(psX, k) === i ? painelParam(x, k, true) : '').join('') + compDentro(i).map(blocoComp).join('');
     const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}${extra}</div>` : (id, t, sub, html) => painel(id, t, sub, html + extra);
     if (!porFilial(s)) return pn('p' + i, s.titulo, 'Parâmetros Pré TASK', `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid">${camposHtml(s.campos, '', C.v, C.anx)}</div></div>`);
     const at = Math.min(C.filAtiva, fils.length - 1);

@@ -1303,6 +1303,8 @@ async function iniciar() {
     $('e2Msg').value = E2.msgEnvio; previewMsg();
     $('e2Titulo').value = E2.titulo || ''; $('e2Intro').value = E2.intro || ''; $('e2Final').value = E2.final || ''; $('e2Contrato').checked = E2.contratoSocial !== false;
     $('e2Secoes').innerHTML = htmlSecoes(E2, TIPOS, 'o cliente');
+    // seções com campos Pré TASK escolhem em qual tela do Pré TASK aparecem
+    $('e2Secoes').querySelectorAll('.sec[data-si]').forEach(sec => { const s = E2.secoes[+sec.dataset.si]; if ((s.campos || []).some(c => c.pretask && !c.fixo && c.show !== false)) sec.querySelector('.body').prepend(setorHtml(s, -1, true)); });
   }
   // Editor de seções/campos (usado no Pré-Contrato e na Etapa 4)
   // Editor do Multi condicional: para cada opção, a lista de campos adicionais
@@ -1394,7 +1396,28 @@ async function iniciar() {
     $('e4Secoes').innerHTML = htmlSecoes(E4, TIPOS4, 'o vendedor');
     // Central: cada seção pode ser preenchida filial por filial (padrão) ou uma vez só para a Central
     $('e4Secoes').querySelectorAll('.sec[data-si]').forEach(sec => { const s = E4.secoes[+sec.dataset.si]; const d = document.createElement('label'); d.className = 'chk secfil'; d.innerHTML = `<input type="checkbox" data-porfil${s.porFilial === false ? '' : ' checked'}> Em Central, preencher esta seção filial por filial`; sec.querySelector('.body').prepend(d); });
+    $('e4Secoes').querySelectorAll('.sec[data-si]').forEach(sec => { const si = +sec.dataset.si; sec.querySelector('.body').prepend(setorHtml(E4.secoes[si], si)); });
+    if (E2) desenharE2(); // as opções do Setor de Validação no Pré-Contrato usam as seções daqui
   }
+  // Setor de Validação: em qual tela do Pré TASK a seção aparece (item próprio no menu ou dentro de outra tela)
+  const SETOR_ANX = s => /anexo/i.test(s.titulo || '') || (s.campos || []).some(c => c.tipo === 'anexo' && /certificad|pfx|logo/i.test(c.label || ''));
+  const SETOR_CONV = s => /convers[aã]o/i.test(s.titulo || '');
+  function setorHtml(s, eu, e2) {
+    const box = document.createElement('div'); box.className = 'setorsel';
+    if (!e2 && SETOR_CONV(s)) { box.innerHTML = '<span>Setor de Validação</span><span class="hint">Fica sempre em Implantação, logo abaixo da Base.</span>'; return box; }
+    const secs = (cfgE4().secoes || []).map((x, k) => ({ x, k })).filter(({ x, k }) => (e2 || k !== eu) && !SETOR_CONV(x) && String(x.titulo || '').trim());
+    const val = x => x.id || String(x.titulo || '').trim();
+    let atual = s.setor;
+    if (!atual) { if (e2) { const t = /boleto|banc[aá]ri/i.test(s.titulo || '') && secs.find(({ x }) => /tef|pix/i.test(x.titulo || '')); atual = t ? val(t.x) : 'proprio'; } else atual = SETOR_ANX(s) ? 'base' : 'proprio'; }
+    const ops = [['proprio', 'Item próprio no menu'], ['status', 'Status e datas'], ['base', 'Implantação']].concat(secs.map(({ x }) => [val(x), String(x.titulo).replace(/:\s*$/, '')]));
+    box.innerHTML = `<span>Setor de Validação <small class="hint">onde esta seção aparece no Pré TASK</small></span><select data-setor${e2 ? '="e2"' : ''} aria-label="Setor de Validação">${ops.map(([v, t]) => `<option value="${esc(v)}"${v === atual ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>`;
+    return box;
+  }
+  document.addEventListener('change', e => {
+    const sel = e.target.closest('select[data-setor]'); if (!sel) return; const sec = sel.closest('[data-si]'); if (!sec) return;
+    const cfg = sel.dataset.setor === 'e2' ? E2 : E4; if (!cfg) return; cfg.secoes[+sec.dataset.si].setor = sel.value;
+    if (cfg === E2) marcarE2(); else marcarE4();
+  });
   $('e4Secoes').addEventListener('change', e => { if (!e.target.matches('[data-porfil]') || !E4) return; E4.secoes[+e.target.closest('[data-si]').dataset.si].porFilial = e.target.checked; marcarE4(); });
 
   /* ---------- Logos das Bandeiras (ADM): publico/bandeiras, lido pelo Pré TASK e pelo Pré-Contrato ---------- */
