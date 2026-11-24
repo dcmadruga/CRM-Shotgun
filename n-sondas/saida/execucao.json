@@ -1,6 +1,6 @@
 {
- "inicio": "2026-11-24T05:18:18.998Z",
- "fim": "2026-11-24T05:24:41.946Z",
+ "inicio": "2026-11-24T05:25:23.337Z",
+ "fim": "2026-11-24T05:42:16.092Z",
  "status": "ok",
  "gatilho": "push",
  "pedidoPor": "",
@@ -9,14 +9,84 @@
   "ate": "2026-11-24"
  },
  "porFonte": {
+  "dom-se": {
+   "ok": true,
+   "uf": "SE",
+   "consultas": 12,
+   "lidos": 0,
+   "docs": 0,
+   "de": "2025-11-24",
+   "novos": 0
+  },
+  "querido-se": {
+   "ok": true,
+   "uf": "SE",
+   "consultas": 12,
+   "lidos": 7,
+   "docs": 0,
+   "de": "2025-11-24",
+   "novos": 0
+  },
   "simlam-pa": {
    "ok": true,
    "uf": "PA",
    "consultas": 578,
-   "lidos": 65,
-   "docs": 65,
+   "lidos": 64,
+   "docs": 64,
    "de": "2025-11-24",
-   "novos": 65
+   "novos": 64
+  },
+  "famep": {
+   "ok": true,
+   "uf": "PA",
+   "consultas": 49,
+   "lidos": 37,
+   "docs": 41,
+   "de": "2025-11-24",
+   "novos": 41
+  },
+  "querido-pa": {
+   "ok": true,
+   "uf": "PA",
+   "consultas": 24,
+   "lidos": 0,
+   "docs": 0,
+   "de": "2025-11-24",
+   "novos": 0
+  },
+  "querido-to": {
+   "ok": true,
+   "uf": "TO",
+   "consultas": 24,
+   "lidos": 5,
+   "docs": 3,
+   "de": "2025-11-24",
+   "novos": 3
+  },
+  "arom": {
+   "ok": true,
+   "uf": "RO",
+   "consultas": 19,
+   "lidos": 7,
+   "docs": 1,
+   "de": "2025-11-24",
+   "novos": 1
+  },
+  "querido-ro": {
+   "ok": true,
+   "uf": "RO",
+   "consultas": 12,
+   "lidos": 1,
+   "docs": 0,
+   "de": "2025-11-24",
+   "novos": 0
+  },
+  "anp-SE": {
+   "ok": true,
+   "uf": "SE",
+   "docs": 0,
+   "postos": 339,
+   "novos": 0
   },
   "anp-PA": {
    "ok": true,
@@ -24,13 +94,27 @@
    "docs": 0,
    "postos": 1768,
    "novos": 0
+  },
+  "anp-TO": {
+   "ok": true,
+   "uf": "TO",
+   "docs": 0,
+   "postos": 482,
+   "novos": 0
+  },
+  "anp-RO": {
+   "ok": true,
+   "uf": "RO",
+   "docs": 0,
+   "postos": 543,
+   "novos": 0
   }
  },
- "documentos": 65,
- "novos": 60,
+ "documentos": 109,
+ "novos": 94,
  "atualizados": 0,
- "novosDocumentos": 65,
+ "novosDocumentos": 109,
  "alertas": 0,
  "teste": true,
- "duracaoSeg": 383
+ "duracaoSeg": 1013
 }
