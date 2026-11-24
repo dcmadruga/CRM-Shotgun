@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 223, data: '2026-11-24', titulo: 'Correção: menus e usuário sumindo', itens: [
+    'O app às vezes abria só com Nova proposta e Administração, sem o usuário. A causa era um dado com problema guardado no aparelho (de uma proposta em edição ou dos parâmetros), que travava a abertura antes do login.',
+    'Agora o app limpa esses dados antes de usar e, se mesmo assim algo falhar, volta ao padrão só aquela parte e continua abrindo com login e menus. Os parâmetros voltam da nuvem quando você entra.'
+  ] },
   { v: 222, data: '2026-11-24', titulo: 'Filtros na lista de usuários', itens: [
     'Administração → Usuários: acima da lista de usuários cadastrados agora tem filtros por Revenda (inclusive "Sem revenda"), Estado de atuação e Perfil (Vendedor, TASK, Administrador ou Gerente de revenda).',
     'Os filtros se combinam, o contador mostra quantos usuários aparecem do total, e "Limpar filtros" volta a mostrar todos.'
