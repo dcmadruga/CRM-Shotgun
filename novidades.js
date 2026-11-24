@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 226, data: '2026-11-24', titulo: 'Dados do vendedor vêm do cadastro', itens: [
+    'Parâmetros Proposta: saiu o bloco Seus dados (Nome, Telefone e E-mail). O cabeçalho do PDF já usa o nome, o telefone e o e-mail do cadastro de cada usuário, ajustados pelo administrador em Usuários.',
+    'No lugar fica só o Logo do PDF, para o administrador.'
+  ] },
   { v: 225, data: '2026-11-24', titulo: 'Valores de base e logo no cadastro da revenda', itens: [
     'O logo da revenda, que sai no cabeçalho do PDF ao lado do logo principal, agora fica no cadastro de cada revenda. O PDF usa o logo da revenda do vendedor; quem não tem revenda sai só com o logo principal.',
     'Administração → Revendas: cada revenda agora tem os seus Valores de base (deslocamento em R$ por km, validade da condição, limites de porte por tancagem e bases de deslocamento). Campo vazio segue o valor geral.',
