@@ -125,7 +125,7 @@ function empresa(t) {
   if (pf) { fantasia = limpa(pf[1]); nome = limpa(nome.replace(pf[0], '')); }
   const hf = nome.match(/^(.{4,}?)\s+[-–]\s+((?:AUTO\s+)?POSTO\b.{2,50})$/i) || nome.match(/^(.{4,}?\b(?:LTDA|EIRELI|ME|EPP|S\.?A)\.?)\s+[\/–-]\s+(.{2,50})$/i);
   if (hf) { nome = limpa(hf[1]); fantasia = fantasia || limpa(hf[2]); }
-  nome = nome.replace(/[.,;:\-–\s]+$/, '');
+  nome = nome.replace(/^[\s,]*(a\s+empresa\s+)?que\s+denominava-se\s+.*?,?\s*passa\s+a\s+(?:ser|denominar-se)\s+/i, '').replace(/[.,;:\-–\s]+$/, '');
   if (nome.length > 140 || nome.length < 3) nome = '';
   return { razao: nome, fantasia };
 }

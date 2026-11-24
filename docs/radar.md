@@ -74,7 +74,34 @@ Em SP quem licencia posto é a CETESB, mas ela não publica no Diário Oficial c
 
 **Teste real (nov/2026, 12 meses):** o DOE-SP devolveu 302 matérias com termos de posto; 11 vieram de seções de licenciamento e 1 empreendimento de posto: NOVO CENTRO COMERCIAL R P LTDA, em Ribeirão Preto, com Licença Ambiental Prévia nº 3119 de 30/10/2026 para reativar dois postos (processo CETESB.069613/2025-84, com parecer técnico publicado em 07/10/2026). O Querido Diário estava fora do ar (503), então os diários das prefeituras de SP ainda não foram lidos.
 
-<!--NORTE-->
+### Pará
+
+No Pará a SEMAS licencia os postos maiores e os municípios habilitados licenciam os de impacto local (Resolução COEMA nº 162/2021). Por isso entram as duas pontas: a consulta pública de processos da SEMAS e os diários das prefeituras.
+
+| Fonte | Situação | Observação |
+| --- | --- | --- |
+| SEMAS-PA: consulta pública de processos (SIMLAM), `monitoramento.semas.pa.gov.br/simlam` | Integrada | Usa a mesma consulta pública do site (sem login nem CAPTCHA): pesquisa por ano do processo e nome do empreendimento ("posto", "combust", "petro", "abastec", "derivad"), abre cada processo e fica só com os de licenciamento cuja atividade licenciada é de posto (310, 314, 316, 317 e afins) ou de troca de tanques (312). Processos de posto com a atividade 2303 (transporte de produtos perigosos, ou seja, o caminhão-tanque), descomissionamento e processos infracionais ficam de fora. A consulta não mostra município, CNPJ nem endereço: ficam "pendente de confirmação" e o núcleo regional vai no trecho. A data é a do protocolo; quando já há licença emitida ou indeferimento, a da última movimentação. |
+| Diário Oficial dos Municípios do Pará (FAMEP, SIGPub) | Integrada | Mesmo coletor da FAMURS. Traz as licenças das secretarias municipais e as resoluções do conselho municipal (ex.: CONSEMMA de Canaã dos Carajás aprovando LP e LI de posto). Matérias com várias licenças juntas são lidas uma a uma. |
+| Querido Diário (diários próprios das cidades) | Integrada | Cobre só 3 cidades do PA (Belém, Garrafão do Norte e Santana do Araguaia); no teste não trouxe nada. |
+| Base de postos da ANP | Integrada (cruzamento) | Filtrada por PA (1.768 postos). |
+| Diário Oficial do Estado (IOEPA) | Não integrada | A pesquisa por texto do site devolve erro 500. |
+
+**Teste real (nov/2026, 12 meses):** 89 empreendimentos de posto no PA. A SEMAS devolveu 495 processos com os nomes pesquisados, dos quais 64 são licenciamento de posto (2 com Licença de Instalação emitida). A FAMEP trouxe 40 publicações de posto, quase todas de Canaã dos Carajás, Dom Eliseu, Marabá e Conceição do Araguaia, com 14 novos postos (LP ou LI emitida, ou pedido de LP), por exemplo Martins e Pimentel Combustíveis, Auto Posto Prime, R. E. I. Monteiro Comércio de Combustíveis, Posto Avenida Pará e W de Souza Comércio de Combustível.
+
+### Tocantins, Rondônia e Sergipe
+
+| Estado | Fonte | Situação | Observação |
+| --- | --- | --- | --- |
+| TO | Querido Diário (26 cidades, inclusive Palmas) | Integrada | No teste trouxe 3 publicações de Palmas (2 pedidos de licença de posto à Fundação Municipal de Meio Ambiente e 1 trecho a revisar). |
+| TO | NATURATINS e Diário Oficial do Estado | Não integradas | Os sites recusam conexão de servidores fora do Brasil (tempo esgotado). O robô não contorna restrições de acesso. |
+| RO | Diário Oficial dos Municípios de Rondônia (AROM, SIGPub) | Integrada | No teste achou 67 matérias com termos de posto, nenhuma licença de posto (eram compras e leis). |
+| RO | Querido Diário (só Jaru) | Integrada | Nada no período. |
+| RO | SEDAM (transparência e SOLAR) e DIOF-RO | Não integradas | A SEDAM recusa conexão de fora do Brasil; o DIOF responde de forma instável e não tem busca aberta. |
+| SE | Diário Oficial dos Municípios de Sergipe (SIGPub) | Integrada | Nenhuma matéria com termos de posto no período. |
+| SE | Querido Diário (29 cidades, inclusive Aracaju) | Integrada | 23 trechos, nenhum de licença de posto. |
+| SE | ADEMA (licenciamento estadual) | Não integrada | Recusa conexão de servidores fora do Brasil. |
+
+Nos três Estados a base da ANP também entra no cruzamento (TO 482, RO 543 e SE 339 postos).
 
 Uma fonte só aparece como "Monitorada" no app depois de uma execução real com sucesso.
 
