@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 221, data: '2026-11-24', titulo: 'Aceite do contrato já preenchido', itens: [
+    'Na página de aceite do contrato, nome, CPF e cargo do representante já vêm preenchidos com os dados informados antes: o responsável legal do link de dados ou, sem ele, quem aprovou a proposta.',
+    'O cliente confere e pode trocar tudo, se quem for aceitar for outra pessoa.',
+    'Contratos gerados antes desta versão também trazem o nome e o CPF que aparecem no texto do contrato.'
+  ] },
   { v: 220, data: '2026-11-24', titulo: 'Templates de proposta mais legíveis', itens: [
     'Parâmetros Proposta → Templates de proposta: licenças e mensalidades ficam uma embaixo da outra, com a descrição inteira, o preço e a quantidade sempre visíveis, no computador e no celular.'
   ] },
