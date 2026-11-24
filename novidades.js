@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 230, data: '2026-11-24', titulo: 'Pesquisar na ANP: só as bandeiras que existem', itens: [
+    'No painel Pesquisar na ANP, o filtro Bandeira agora lista só as bandeiras dos postos do estado e da cidade escolhidos, com quantos postos cada uma tem. Trocou a cidade, a lista de bandeiras se atualiza sozinha.'
+  ] },
   { v: 229, data: '2026-11-24', titulo: 'Filtros na lista de revendas', itens: [
     'Administração → Revendas: acima das revendas cadastradas agora tem filtros por Estado de atuação e por Gerente de revenda (inclusive "Sem estado" e "Sem gerente").',
     'Os filtros se combinam, o contador mostra quantas revendas aparecem do total, e "Limpar filtros" volta a mostrar todas.'

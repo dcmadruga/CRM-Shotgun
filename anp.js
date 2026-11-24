@@ -95,8 +95,16 @@
     const res = q('.anpbres');
     const filtrar = () => {
       if (!lista.length) return;
-      const n = window.anpNorm, ts = n(q('[data-anp=nome]').value).split(' ').filter(Boolean), cq = n(q('[data-anp=cid]').value), band = q('[data-anp=band]').value, uf = q('[data-anp=uf]').value;
-      const ach = lista.filter(x => (cidSel ? x[2] === cidSel : !cq || n(x[2]).includes(cq)) && (!band || x[3] === band) && (!ts.length || ts.every(t => n(x[1]).includes(t) || x[0].includes(t))));
+      const n = window.anpNorm, ts = n(q('[data-anp=nome]').value).split(' ').filter(Boolean), cq = n(q('[data-anp=cid]').value), uf = q('[data-anp=uf]').value;
+      // Bandeira: só as que existem nos postos do estado e da cidade escolhidos, com quantos postos cada uma tem
+      const naCid = lista.filter(x => cidSel ? x[2] === cidSel : !cq || n(x[2]).includes(cq));
+      const bd = q('[data-anp=band]'), cBand = {};
+      naCid.forEach(x => { if (x[3]) cBand[x[3]] = (cBand[x[3]] || 0) + 1; });
+      const band = cBand[bd.value] ? bd.value : '';
+      const opts = Object.keys(cBand).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+      const novo = `<option value="">Todas (${naCid.length})</option>` + opts.map(b => `<option value="${esc(b)}"${b === band ? ' selected' : ''}>${esc(b)} (${cBand[b]})</option>`).join('');
+      if (bd.innerHTML !== novo) { bd.innerHTML = novo; bd.value = band; }
+      const ach = naCid.filter(x => (!band || x[3] === band) && (!ts.length || ts.every(t => n(x[1]).includes(t) || x[0].includes(t))));
       const MAX = 100;
       res.innerHTML = ach.length ? `<p class="hint">${ach.length} posto${ach.length === 1 ? '' : 's'}${ach.length > MAX ? ` (mostrando ${MAX}; use os filtros para refinar)` : ''}. Clique no posto para usar.</p>
         <ul>${ach.slice(0, MAX).map(x => `<li><button type="button" data-anp="usar" data-cnpj="${x[0]}">
@@ -130,7 +138,6 @@
       const ord = a => [...new Set(a)].filter(Boolean).sort((x, y) => x.localeCompare(y, 'pt-BR'));
       l.forEach(x => { cont[x[2]] = (cont[x[2]] || 0) + 1; });
       cidades = ord(l.map(x => x[2]));
-      q('[data-anp=band]').innerHTML = '<option value="">Todas</option>' + ord(l.map(x => x[3])).map(b => `<option value="${esc(b)}">${esc(b)}</option>`).join('');
       q('[data-anp=cid]').disabled = q('[data-anp=band]').disabled = false;
       if (!l.length) res.innerHTML = '<p class="hint">Nenhum posto deste estado na base.</p>'; else filtrar();
     };
