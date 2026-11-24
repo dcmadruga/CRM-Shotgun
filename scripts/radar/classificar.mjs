@@ -217,7 +217,8 @@ export function analisarLicenca(texto, municipios, { titulo = '', uf = municipio
     || texto.match(/de\s+propriedade\s+d[ae]\s+(?:empresa\s+)?([A-ZÀ-Ú][^.;:]{3,100}?)(?:\.\s|\s*,|\s+inscrit)/)
     || texto.match(/(?:concedid[ao]|emitid[ao])\s+(?:à|ao|em\s+favor\s+d[ae])\s+(?:empresa\s+)?([A-ZÀ-Ú][^,;]{3,120}?)\s*,?\s*(?:inscrit|CNPJ|pessoa)/);
   const { razao: r2, fantasia } = empresa(texto.replace(/^[^]*?\b(?:a|à)\s+(?=[A-ZÀ-Ú][A-ZÀ-Ú0-9 .&-]{3,}\s*,?\s*(?:inscrit|CNPJ))/, ''));
-  const razao = limpa(rot ? rot[1] : r2).replace(/^[\s,.;–-]*(a\s+empresa|empresa)\s+/i, '').replace(/[.,;\s]+$/, '');
+  // "a empresa que denominava-se X, passa a ser Y": fica o nome novo
+  const razao = limpa(rot ? rot[1] : r2).replace(/^[\s,.;–-]*(a\s+empresa|empresa)\s+/i, '').replace(/^.*\bpassa\s+a\s+(?:ser|denominar-se)\s+/i, '').replace(/[.,;\s]+$/, '');
   const numero = (cab.match(/\b(?:L[PIO]C?|licen[cç]a[^\dº°]{0,40})\s*n?[º°.]*\s*(\d{1,6}\s*\/\s*\d{2,4})/i) || [])[1];
   const proc = (texto.match(/processo\s*(?:administrativo\s*)?(?:n[º°o.]*|n[uú]mero)?\s*:?\s*([\d.\-]{3,20}\s*\/\s*\d{2,4}(?:-\d)?)/i) || [])[1];
   const t0 = tipos.find(x => x !== 'renov');

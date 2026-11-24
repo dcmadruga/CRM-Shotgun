@@ -10,7 +10,7 @@ const texto = h => limpa(ent(h.replace(/<(script|style)[^]*?<\/\1>/gi, ' ').repl
 
 export const TERMOS = ['"posto de combustíveis"', '"posto de combustível"', '"comércio varejista de combustíveis"', '"posto de abastecimento"', '"revenda de combustíveis"', '"auto posto"', '"tanques subterrâneos"', '"armazenamento de combustíveis"', '"licença de operação" combustíveis', '"licença de instalação" combustíveis', '"licença prévia" combustíveis', '"licença ambiental" combustíveis'];
 // Matérias que certamente não são licença nem aviso de licenciamento
-const FORA = /licita|preg[aã]o|contrat|dispensa|inexigib|aditivo|ata\s+de\s+registro|credenciamento|homolog|adjudica|chamamento|concurso|processo\s+seletivo|gabarito|nomea|exonera|di[aá]rias|empenho|or[cç]amento|tomada\s+de\s+pre[cç]o|leil[aã]o|edital\s+n|cotação/i;
+const FORA = /licita|preg[aã]o|contrat|dispensa|inexigib|aditivo|ata\s+de\s+registro|credenciamento|homolog|adjudica|chamamento|concurso|processo\s+seletivo|gabarito|nomea|exonera|di[aá]rias|empenho|or[cç]amento|tomada\s+de\s+pre[cç]o|leil[aã]o|edital\s+n|cotação|^(gabinete\s+)?lei\s+(municipal\s+|complementar\s+|ordin[aá]ria\s+|org[aâ]nica\s+)*(n[º°]|do\s+munic)|c[oó]digo\s+tribut/i;
 const SINAL = /licen[cç]a|ambiental|meio\s+ambiente|torna\s+p[uú]blic|requer|\bL[PIO]C?\b/i;
 
 const br2iso = d => { const m = String(d).match(/(\d{2})\/(\d{2})\/(\d{4})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ''; };
