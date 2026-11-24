@@ -726,6 +726,14 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .crmcol[data-etapa=salva] h4 span{color:var(--warn-text)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .pill.pend{color:var(--sg-disparo)}}:root[data-theme="dark"] .pill.pend{color:var(--sg-disparo)}
 .ucard.upend{background:color-mix(in srgb,var(--sg-disparo) 5%,transparent);border-radius:12px}
+/* Filtros da lista de usuários */
+.ufiltros{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;padding:0 0 14px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+.ufiltros label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:600;color:var(--muted);flex:1 1 180px;max-width:260px}
+.ufiltros select{width:100%;font-size:14px;font-weight:500;color:var(--fg)}
+.ufiltros select.ativo{border-color:var(--accent)}
+.ufiltros .lnk{margin-bottom:10px;font-size:13px}
+.uvazio{color:var(--muted);font-size:14px;padding:14px 2px}
+@media (max-width:560px){.ufiltros label{max-width:none;flex-basis:100%}}
 /* Revendas (ADM) */
 .rvlista{display:flex;flex-direction:column;gap:12px}
 .rvvazio{color:var(--muted);font-size:14px;padding:8px 2px}
@@ -1200,6 +1208,12 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div class="tools"><button type="button" class="primary" id="btnAddUser">Cadastrar usuário</button><span id="uStatus" class="hint"></span></div>
   </div></section>
   <section class="sec"><h2>Usuários cadastrados <span id="uCount"></span></h2><div class="body">
+    <div class="ufiltros" role="search" aria-label="Filtrar usuários">
+      <label>Revenda<select id="ufRev"><option value="">Todas</option></select></label>
+      <label>Estado de atuação<select id="ufUf"><option value="">Todos</option></select></label>
+      <label>Perfil<select id="ufPerfil"><option value="">Todos</option><option value="vendedor">Vendedor</option><option value="task">TASK</option><option value="adm">Administrador</option><option value="gerente">Gerente de revenda</option></select></label>
+      <button type="button" class="lnk" id="ufLimpar" hidden>Limpar filtros</button>
+    </div>
     <div id="usersBody" class="ulista"></div>
     <p class="hint">Bloquear corta o acesso na hora, sem apagar o cadastro. Excluir corta o acesso na hora e apaga a conta do Firebase em até 1 hora. "Nova senha" manda um e-mail para a pessoa criar outra senha.</p>
   </div></section>
