@@ -17,6 +17,9 @@ export const info = { id: 'simlam-pa', uf: 'PA', nome: 'SEMAS-PA: consulta públ
 // a consulta não filtra por atividade: pesquisa por pedaços de nome comuns em postos
 export const NOMES = ['posto', 'combust', 'petro', 'abastec', 'derivad'];
 const ATIV_POSTO = /posto\s+(revendedor|flutuante|de\s+abastecimento|varejista)|revend\w*\s+de\s+combust|com[eé]rcio\s+varejista\s+de\s+combust/i;
+// troca ou instalação de tanques em posto (código 312 da tabela COEMA)
+const ATIV_TANQUE = /instala\w*\s*\/?\s*substitui\w*\s+de\s+tanques/i;
+const ATIV_FORA = /descomission/i;
 
 // sessão ASP.NET: guarda o cookie entre a página de pesquisa e os postbacks
 function sessao() {
@@ -89,7 +92,8 @@ export function detalhe(html, id) {
 // transforma o processo num registro do Radar (mesmos campos do classificador)
 export function registro(d) {
   if (!/licenciamento|renova|prorroga/i.test(d.tipo)) return null;
-  const ativ = d.atividades.find(a => ATIV_POSTO.test(a.nome) || a.codigo === '310');
+  const ativ = d.atividades.find(a => (ATIV_POSTO.test(a.nome) || a.codigo === '310') && !ATIV_FORA.test(a.nome)) || d.atividades.find(a => ATIV_TANQUE.test(a.nome));
+  const tanque = ATIV_TANQUE.test(ativ?.nome || '');
   if (!ativ) return null;
   const lic = d.titulos.filter(t => /^licen[cç]a\s+(pr[eé]via|de\s+instala|de\s+opera)/i.test(t.modelo) && !/cancel|suspens/i.test(t.situacao));
   const sigla = t => /pr[eé]via/i.test(t.modelo) ? 'LP' : /instala/i.test(t.modelo) ? 'LI' : 'LO';
@@ -98,7 +102,7 @@ export function registro(d) {
   const negada = !lic.length && /indeferid|arquivad|cancelad/i.test(d.situacao);
   const t0 = tipos.includes('LP') ? 'LP' : tipos.includes('LI') ? 'LI' : tipos[0] || '';
   const evento = negada ? 'indeferido' : t0 ? 'emitida_' + t0.toLowerCase() : renov ? 'req_renov' : /instala/i.test(d.tipo) ? 'req_li' : /pr[eé]via/i.test(d.tipo) ? 'req_lp' : 'req_outro';
-  const categoria = renov ? 'renovacao' : (t0 === 'LP' || t0 === 'LI' || /\b(LP|LI)\b|pr[eé]via|instala/i.test(d.tipo)) ? 'novo' : 'outro';
+  const categoria = tanque ? 'tanques' : renov ? 'renovacao' : (t0 === 'LP' || t0 === 'LI' || /\b(LP|LI)\b|pr[eé]via|instala/i.test(d.tipo)) ? 'novo' : 'outro';
   const primeiro = /primeiro/i.test(d.tipo);
   return {
     tipoDoc: lic.length ? 'licenca_emitida' : 'requerimento', evento, categoria,
@@ -106,7 +110,7 @@ export function registro(d) {
     razao: d.empreendimento, fantasia: '', cnpj: '', municipio: '', ibge: '', endereco: '', coord: null,
     processo: d.numero, licencas: lic.map(t => ({ tipo: sigla(t), numero: t.numero })),
     atividade: `${ativ.codigo} ${ativ.nome}`.slice(0, 200), orgao: 'SEMAS-PA (Secretaria de Estado de Meio Ambiente e Sustentabilidade do Pará)', esfera: 'estadual',
-    confianca: categoria === 'novo' ? 'confirmado' : 'analise',
+    confianca: categoria === 'novo' || categoria === 'tanques' ? 'confirmado' : 'analise',
     fase: limpa(`${d.tipo} · ${d.situacao}${primeiro ? ' (primeiro licenciamento: pode ser posto novo ou regularização de posto existente)' : ''}`),
     trecho: limpa(`Processo ${d.numero} · ${d.tipo} · ${d.situacao} · Empreendimento ${d.empreendimento} · Interessado ${d.interessado} · Atividade ${ativ.codigo} ${ativ.nome} · ${lic.map(t => `${t.modelo} ${t.numero}${t.objetivo ? ' (' + t.objetivo + ')' : ''}`).join(' · ') || 'Nenhuma licença emitida ainda'} · ${d.setor} · Protocolo ${iso2br(d.protocolo)} · Última movimentação ${iso2br(d.ultima)} · Município, CNPJ e endereço não aparecem na consulta pública`).slice(0, 1500),
     dataDoc: lic.length || negada ? d.ultima : d.protocolo

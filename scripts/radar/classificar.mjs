@@ -106,21 +106,24 @@ function licencasPedidas(t) {
 }
 
 function empresa(t) {
+  // aviso publicado pelo próprio município ("O MUNICÍPIO DE X, com CNPJ ..., torna público que ... o empreendimento Y,
+  // inscrito no CNPJ"): o nome é o do empreendimento, não o do município
+  if (/^\s*(?:O\s+|A\s+)?(?:MUNIC[IÍ]PIO|PREFEITURA|SECRETARIA)\b/i.test(t)) { const m = t.match(/(?:o\s+empreendimento|a\s+empresa)\s+(?=[A-ZÀ-Ú][^,;]{3,120}?\s*,?\s*(?:inscrit|CNPJ))/i); if (m) t = t.slice(m.index + m[0].length); }
   const i = t.search(/[,(\-–]?\s*(inscrit[oa]\s+no\s+|portador[a]?\s+do\s+|devidamente\s+inscrit[oa]\s+no\s+)?(CNPJ|CPF)\b/i);
   let nome = i > 0 ? t.slice(0, i) : (t.match(/^(.{5,120}?)(?:,|\s+torna|\s+-\s+)/) || [])[1] || '';
   const cab = /^(EDITAL DE COMUNICA[CÇ][AÃ]O|C\.\d|A\s+empresa|O\s+empreendimento|(?:A|O)\s+(?=[A-ZÀ-Ú])|A\s+Pessoa\s+Jur[ií]dica\s+de\s+Direito\s+Privado|[“"])\s*/i;
   for (let k = 0; k < 6 && cab.test(nome); k++) nome = nome.replace(cab, '');
   // cabeçalho de outra matéria colado antes do nome: fica o que vem depois do último cabeçalho
-  const hdr = [...nome.matchAll(/\b(EDITAL\s+DE\s+[A-ZÇÃ]+|ASSEMBLEIA\s+GERAL(\s+(EXTRA)?ORDIN[AÁ]RIA)?|AVISO\s+DE\s+[A-ZÇÃ]+|CONVOCA[CÇ][AÃ]O)\b/g)].pop();
-  if (hdr) nome = nome.slice(hdr.index + hdr[0].length);
-  nome = limpa(nome.replace(/^[\s\-–:]+/, '').replace(/[.,;:\-–\s]+$/, ''));
+  const hdr = [...nome.matchAll(/\b(EDITAL\s+DE\s+[A-ZÇÃ]+|ASSEMBLEIA\s+GERAL(\s+(EXTRA)?ORDIN[AÁ]RIA)?|AVISO\s+DE\s+[A-ZÇÃ]+(\s+DE\s+LICEN[CÇ]A(\s+AMBIENTAL)?(\s+DE\s+(OPERA[CÇ][AÃ]O|INSTALA[CÇ][AÃ]O)|\s+PR[EÉ]VIA)?)?|CONVOCA[CÇ][AÃ]O|LICEN[CÇ]A\s+(DE\s+)?(OPERA[CÇ][AÃ]O|INSTALA[CÇ][AÃ]O|PR[EÉ]VIA)(\s*[–-]\s*L[PIO]C?)?(\s+N[º°]\s*[\d./]+)?)(?=\s|$)/g)].pop();
+  if (hdr) { nome = nome.slice(hdr.index + hdr[0].length).replace(/^[\s\-–:]+/, ''); for (let k = 0; k < 3 && cab.test(nome); k++) nome = nome.replace(cab, ''); }
+  nome = limpa(nome.replace(/^[\s\-–:]+/, '').replace(/,\s*pessoa\s+jur[ií]dica.*$/i, '').replace(/[.,;:\-–\s]+$/, ''));
   // lixo de outra matéria antes do nome (valores, datas, cargos): fica o último pedaço
   const pedacos = nome.split(/\s*(?:R\$[-\s\d.,]+|\b\d{2}\/\d{2}\/\d{4}\b|Portaria\s+n[º°]?\s*\d+|Comiss[aã]o\s+Eleitoral|\bVALOR\b)\s*/i).filter(x => x.trim().split(/\s+/).length >= 2);
   if (pedacos.length > 1) nome = limpa(pedacos.pop());
   let fantasia = '';
   const pf = nome.match(/\(([^)]{3,60})\)/) || t.slice(0, 260).match(/nome\s+fantasia:?\s*([^,;]{3,60})/i);
   if (pf) { fantasia = limpa(pf[1]); nome = limpa(nome.replace(pf[0], '')); }
-  const hf = nome.match(/^(.{4,}?)\s+[-–]\s+((?:AUTO\s+)?POSTO\b.{2,50})$/i);
+  const hf = nome.match(/^(.{4,}?)\s+[-–]\s+((?:AUTO\s+)?POSTO\b.{2,50})$/i) || nome.match(/^(.{4,}?\b(?:LTDA|EIRELI|ME|EPP|S\.?A)\.?)\s+[\/–-]\s+(.{2,50})$/i);
   if (hf) { nome = limpa(hf[1]); fantasia = fantasia || limpa(hf[2]); }
   nome = nome.replace(/[.,;:\-–\s]+$/, '');
   if (nome.length > 140 || nome.length < 3) nome = '';
@@ -137,7 +140,8 @@ export function analisarAviso(texto, municipios, uf = municipios.uf || 'MT') {
   if (!POSTO.test(texto) || NAO_POSTO.test(texto.slice(0, 400))) return null;
   if (!REQUER.test(texto)) return null;
   const mun = municipios.achar(texto);
-  const cnpjs = [...texto.matchAll(/\b\d{2}\.?\d{3}\.?\d{3}\s?\/\s?\d{4}\s?-?\s?\d{2}\b/g)].map(m => m[0].replace(/\D/g, '')).filter(cnpjValido);
+  // fica de fora o CNPJ do próprio município/órgão ("O MUNICÍPIO DE X, com CNPJ ...")
+  const cnpjs = [...texto.matchAll(/\b\d{2}\.?\d{3}\.?\d{3}\s?\/\s?\d{4}\s?-?\s?\d{2}\b/g)].filter(m => !/(munic[ií]pio|prefeitura|secretaria|fundo\s+municipal)\s+(de\s+)?[^,;]{0,40},?\s*(com|inscrit[oa]\s+no|sob\s+o)?\s*(o\s+)?CNPJ[^\d]{0,12}$/i.test(texto.slice(Math.max(0, m.index - 90), m.index))).map(m => m[0].replace(/\D/g, '')).filter(cnpjValido);
   const { razao, fantasia } = empresa(texto);
   const proc = (texto.match(/processo\s*(?:SEMA\s*)?(?:n[º°o.]*|n[uú]mero)?\s*:?\s*(\d{1,7}\s*\/\s*\d{4})/i) || [])[1];
   const { evento, categoria, agua } = INDEFERE.test(texto) ? { evento: 'indeferido', categoria: 'outro', agua: false } : licencasPedidas(texto);
@@ -190,19 +194,30 @@ export function analisarEmitidas(texto, municipios) {
 // "LICENÇA DE INSTALAÇÃO Nº 12/2026 ... concede a presente licença a FULANO LTDA, CNPJ ..., para a atividade de
 // comércio varejista de combustíveis". Só vale se o texto disser que a licença foi emitida e a atividade for de posto.
 const TIPO_LIC = [['LP', /licen[cç]a\s+pr[eé]via|\bLP\s*(?:n[º°.]|\d)/i], ['LI', /licen[cç]a\s+(?:de\s+)?instala[cç][aã]o|\bLI\s*(?:n[º°.]|\d)/i], ['LO', /licen[cç]a\s+(?:de\s+)?opera[cç][aã]o|\bLOC?\s*(?:n[º°.]|\d)/i]];
-const EMITE = /\b(expede|concede|emite|outorga|licencia|fica\s+licenciad|presente\s+licen[cç]a|v[aá]lid[ao]\s+at[eé]|prazo\s+de\s+validade|validade\s*:|com\s+base\s+nos\s+autos)/i;
+const EMITE = /\b(expede|concede|emite|outorga|licencia|fica\s+licenciad|presente\s+licen[cç]a|v[aá]lid[ao]\s+at[eé]|prazo\s+de\s+validade|validade\s*:|com\s+base\s+nos\s+autos|concedeu|foi\s+concedid|aprova\s+a\s+(?:emiss[aã]o|renova[cç][aã]o)\s+da\s+licen[cç]a|recebeu\s+d[ao]\s+(?:secretaria|semma|semas|prefeitura|munic[ií]pio|funda[cç][aã]o|instituto)[^.]{0,80}licen[cç]a)/i;
 export function analisarLicenca(texto, municipios, { titulo = '', uf = municipios.uf || 'MT', entidade = '' } = {}) {
   const cab = titulo + ' ' + texto.slice(0, 700);
   if (!POSTO.test(texto) || NAO_POSTO.test(titulo) || !EMITE.test(texto)) return null;
+  // matéria com vários avisos (ex.: a secretaria publica várias licenças juntas) e o primeiro não é de posto:
+  // devolve null para o texto ser separado aviso por aviso
+  const avisos = [...texto.matchAll(/torna[mr]?\s+p[uú]blico/gi)];
+  if (avisos.length >= 2 && !POSTO.test(texto.slice(0, avisos[1].index))) return null;
   const tipos = TIPO_LIC.filter(([, re]) => re.test(titulo)).map(([t]) => t);
   if (!tipos.length) TIPO_LIC.forEach(([t, re]) => { if (re.test(texto.slice(0, 700))) tipos.push(t); });
   if (!tipos.length) return null;
   if (/renova/i.test(cab)) tipos.push('renov');
   const mun = (entidade && municipios.achar(entidade + ' ' + uf)) || municipios.achar(texto);
-  const cnpjs = [...texto.matchAll(/\b\d{2}\.?\d{3}\.?\d{3}\s?\/\s?\d{4}\s?-?\s?\d{2}\b/g)].map(m => m[0].replace(/\D/g, '')).filter(cnpjValido);
-  const rot = texto.match(/(?:empreendedor|raz[aã]o\s+social|interessad[oa]|requerente|titular|nome)\s*:\s*([^:\n]{3,120}?)\s*(?:[,;–-]\s*)?(?:CNPJ|CPF|C\.N\.P\.J|endere[cç]o|ativ)/i);
+  // fica de fora o CNPJ do próprio município/órgão ("O MUNICÍPIO DE X, com CNPJ ...")
+  const cnpjs = [...texto.matchAll(/\b\d{2}\.?\d{3}\.?\d{3}\s?\/\s?\d{4}\s?-?\s?\d{2}\b/g)].filter(m => !/(munic[ií]pio|prefeitura|secretaria|fundo\s+municipal)\s+(de\s+)?[^,;]{0,40},?\s*(com|inscrit[oa]\s+no|sob\s+o)?\s*(o\s+)?CNPJ[^\d]{0,12}$/i.test(texto.slice(Math.max(0, m.index - 90), m.index))).map(m => m[0].replace(/\D/g, '')).filter(cnpjValido);
+  const rot = texto.match(/(?:empreendedor|raz[aã]o\s+social|interessad[oa]|requerente|titular|nome)\s*:\s*([^:\n]{3,120}?)\s*(?:[,;–-]\s*)?(?:CNPJ|CPF|C\.N\.P\.J|endere[cç]o|ativ)/i)
+    // "Aprova a emissão da Licença ... para um Posto ... de propriedade da empresa X" (conselho municipal) e
+    // "Essa licença foi concedida à X – NOME FANTASIA, inscrito no CNPJ"
+    || texto.match(/EMPREENDIMENTO\s*:\s*([^:]{3,120}?)\s+(?:Trata-se|Vistos|CNPJ|Endere[cç]o)/i)
+    || texto.match(/de\s+propriedade\s+d[ae]\s+(?:empresa\s+)?([A-ZÀ-Ú].{2,110}?)\.?\s+O\s+CONSELHO/)
+    || texto.match(/de\s+propriedade\s+d[ae]\s+(?:empresa\s+)?([A-ZÀ-Ú][^.;:]{3,100}?)(?:\.\s|\s*,|\s+inscrit)/)
+    || texto.match(/(?:concedid[ao]|emitid[ao])\s+(?:à|ao|em\s+favor\s+d[ae])\s+(?:empresa\s+)?([A-ZÀ-Ú][^,;]{3,120}?)\s*,?\s*(?:inscrit|CNPJ|pessoa)/);
   const { razao: r2, fantasia } = empresa(texto.replace(/^[^]*?\b(?:a|à)\s+(?=[A-ZÀ-Ú][A-ZÀ-Ú0-9 .&-]{3,}\s*,?\s*(?:inscrit|CNPJ))/, ''));
-  const razao = limpa(rot ? rot[1] : r2).replace(/^(a\s+empresa|empresa)\s+/i, '');
+  const razao = limpa(rot ? rot[1] : r2).replace(/^[\s,.;–-]*(a\s+empresa|empresa)\s+/i, '').replace(/[.,;\s]+$/, '');
   const numero = (cab.match(/\b(?:L[PIO]C?|licen[cç]a[^\dº°]{0,40})\s*n?[º°.]*\s*(\d{1,6}\s*\/\s*\d{2,4})/i) || [])[1];
   const proc = (texto.match(/processo\s*(?:administrativo\s*)?(?:n[º°o.]*|n[uú]mero)?\s*:?\s*([\d.\-]{3,20}\s*\/\s*\d{2,4}(?:-\d)?)/i) || [])[1];
   const t0 = tipos.find(x => x !== 'renov');
@@ -219,4 +234,16 @@ export function analisarLicenca(texto, municipios, { titulo = '', uf = municipio
     orgao: og.orgao, esfera: og.esfera || (entidade ? 'municipal' : ''),
     confianca: forte && legivel && (cnpjs.length || numero) && !proprio ? 'confirmado' : forte ? 'possivel' : 'analise', trecho: limpa(texto).slice(0, 1500)
   };
+}
+
+// Separa uma matéria com várias publicações seguidas, cada uma com o seu "torna público" (ex.: a secretaria municipal
+// publica várias licenças juntas). Cada parte começa na frase do "torna público". Com menos de 2, devolve [].
+export function separarPublicacoes(texto) {
+  const pos = [...texto.matchAll(/torna[mr]?\s+p[uú]blico/gi)].map(m => {
+    const antes = texto.slice(Math.max(0, m.index - 250), m.index);
+    const ini = Math.max(antes.lastIndexOf('. '), antes.lastIndexOf('” '), antes.lastIndexOf('" '));
+    return m.index - antes.length + (ini >= 0 ? ini + 2 : 0);
+  });
+  if (pos.length < 2) return [];
+  return pos.map((p, i) => limpa(texto.slice(i ? p : 0, pos[i + 1] ?? texto.length))).filter(p => p.length > 40);
 }

@@ -23,8 +23,8 @@ export const CONFIANCA = { confirmado: 'Processo confirmado', possivel: 'Possív
 // Registro antigo, sem Estado, é de MT (o Radar começou por lá)
 const ufDe = x => x?.uf || 'MT';
 const daUF = x => ufDe(x) === uf;
-const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', PR: 'Paraná', SP: 'São Paulo' };
-const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7], PR: [[-24.6, -51.4], 7], SP: [[-22.3, -48.6], 7] };
+const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', PR: 'Paraná', SP: 'São Paulo', SE: 'Sergipe', PA: 'Pará', TO: 'Tocantins', RO: 'Rondônia' };
+const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7], PR: [[-24.6, -51.4], 7], SP: [[-22.3, -48.6], 7], SE: [[-10.6, -37.4], 8], PA: [[-4.0, -52.5], 5], TO: [[-10.2, -48.3], 6], RO: [[-10.9, -62.8], 6] };
 const FONTES_RS = [
   { id: 'famurs', nome: 'Diário Oficial dos Municípios do RS (FAMURS)', url: 'https://www.diariomunicipal.com.br/famurs/' },
   { id: 'doe-rs', nome: 'Diário Oficial do Estado do RS (DOE-RS)', url: 'https://www.diariooficial.rs.gov.br/' },
@@ -52,6 +52,32 @@ const FONTES_SP = [
   { id: 'querido-sp', nome: 'Querido Diário (diários próprios das cidades de SP)', url: 'https://queridodiario.ok.org.br/' },
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
   { id: 'cetesb', nome: 'CETESB: licenças ambientais de posto', url: 'https://e.cetesb.sp.gov.br/', obs: 'Bloqueia acesso automático e o e-CETESB exige login. Não monitorada' }
+];
+const FONTES_SE = [
+  { id: 'dom-se', nome: 'Diário Oficial dos Municípios de Sergipe (SIGPub)', url: 'https://www.diariomunicipal.com.br/sergipe/' },
+  { id: 'querido-se', nome: 'Querido Diário (diários próprios das cidades de SE)', url: 'https://queridodiario.ok.org.br/' },
+  { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
+  { id: 'adema', nome: 'ADEMA: licenciamento ambiental de SE', url: 'https://licenciamento.adema.se.gov.br/', obs: 'Recusa conexão de servidores fora do Brasil: não monitorada' }
+];
+const FONTES_PA = [
+  { id: 'simlam-pa', nome: 'SEMAS-PA: consulta pública de processos (SIMLAM)', url: 'https://monitoramento.semas.pa.gov.br/simlam/ListarProcessos.aspx' },
+  { id: 'famep', nome: 'Diário Oficial dos Municípios do Pará (FAMEP)', url: 'https://www.diariomunicipal.com.br/famep/' },
+  { id: 'querido-pa', nome: 'Querido Diário (diários próprios das cidades do PA)', url: 'https://queridodiario.ok.org.br/' },
+  { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
+  { id: 'ioepa', nome: 'Diário Oficial do Estado do PA (IOEPA)', url: 'https://www.ioepa.com.br/', obs: 'A pesquisa por texto do site dá erro: não monitorada' }
+];
+const FONTES_TO = [
+  { id: 'querido-to', nome: 'Querido Diário (diários próprios das cidades do TO)', url: 'https://queridodiario.ok.org.br/' },
+  { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
+  { id: 'naturatins', nome: 'NATURATINS: licenciamento ambiental do TO', url: 'https://www.to.gov.br/naturatins', obs: 'Recusa conexão de servidores fora do Brasil: não monitorada' },
+  { id: 'doe-to', nome: 'Diário Oficial do Estado do TO', url: 'https://diariooficial.to.gov.br/', obs: 'Recusa conexão de servidores fora do Brasil: não monitorada' }
+];
+const FONTES_RO = [
+  { id: 'arom', nome: 'Diário Oficial dos Municípios de Rondônia (AROM)', url: 'https://www.diariomunicipal.com.br/arom/' },
+  { id: 'querido-ro', nome: 'Querido Diário (diários próprios das cidades de RO)', url: 'https://queridodiario.ok.org.br/' },
+  { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
+  { id: 'sedam', nome: 'SEDAM: licenciamento ambiental de RO', url: 'https://transparencia.sedam.ro.gov.br/', obs: 'Recusa conexão de servidores fora do Brasil: não monitorada' },
+  { id: 'diof-ro', nome: 'Diário Oficial do Estado de RO (DIOF)', url: 'https://diof.ro.gov.br/', obs: 'Acesso automático instável e sem busca aberta: não monitorada' }
 ];
 const FONTES_PREVISTAS_MT = [
   { id: 'iomat', nome: 'Diário Oficial de MT (IOMAT)', url: 'https://iomat.mt.gov.br/' },
@@ -84,7 +110,7 @@ const ativos = () => doUF().filter(e => !filtro.mun || e.ibge === filtro.mun);
 const daCidade = x => !filtro.mun || x.ibge === filtro.mun || (x.eid && ativos().some(e => e.id === x.eid));
 const alertasUF = () => alertas.filter(a => daUF(a) && daCidade(a));
 const naoLidos = () => alertasUF().filter(a => !(a.lidoPor || []).includes(perfil?.uid));
-const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : uf === 'PR' ? FONTES_PR : uf === 'SP' ? FONTES_SP : FONTES_PREVISTAS_MT;
+const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : uf === 'PR' ? FONTES_PR : uf === 'SP' ? FONTES_SP : uf === 'SE' ? FONTES_SE : uf === 'PA' ? FONTES_PA : uf === 'TO' ? FONTES_TO : uf === 'RO' ? FONTES_RO : FONTES_PREVISTAS_MT;
 const fontesUF = () => fontes.filter(f => f.id === 'anp' ? true : f.uf ? f.uf === uf : uf === 'MT');
 const ultimaExec = () => execs[0];
 

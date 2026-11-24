@@ -7,7 +7,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { firestore } from './firestore.mjs';
 import { municipiosUF } from './municipios.mjs';
-import { avisosDaPagina, analisarAviso, analisarEmitidas, analisarLicenca, hash, slug } from './classificar.mjs';
+import { avisosDaPagina, analisarAviso, analisarEmitidas, analisarLicenca, separarPublicacoes, hash, slug } from './classificar.mjs';
 import * as iomat from './fontes/iomat.mjs';
 import * as famurs from './fontes/famurs.mjs';
 import { paraSigpub } from './fontes/famurs.mjs';
@@ -94,7 +94,12 @@ for (const { mod, uf } of FONTES) {
       lidos += (r.registros || []).length;
       for (const d of r.docs) {
         const lic = analisarLicenca(d.texto, mun[uf], { titulo: d.titulo, uf, entidade: d.entidade });
-        const rs = lic ? [lic] : avisosDaPagina(d.texto).map(a => analisarAviso(a.texto, mun[uf], uf)).filter(Boolean);
+        // matéria com várias publicações juntas ("A Secretaria ... torna público que CONCEDEU ..." uma atrás da outra):
+        // se alguma delas é licença de posto, lê uma por uma; senão segue a separação de avisos de sempre
+        const partes = lic ? [] : separarPublicacoes(d.texto);
+        const licPartes = partes.map(p => analisarLicenca(p, mun[uf], { uf, entidade: d.entidade }));
+        const rs = lic ? [lic] : licPartes.some(Boolean) ? partes.map((p, i) => licPartes[i] || analisarAviso(p, mun[uf], uf)).filter(Boolean)
+          : avisosDaPagina(d.texto).map(a => analisarAviso(a.texto, mun[uf], uf)).filter(Boolean);
         for (const x of rs) {
           // publicação de lista do órgão (ex.: "licenças concedidas pela Fundação X"): o nome achado é o do órgão, não o da empresa
           if (x.razao && (/^(funda[cç][aã]o|prefeitura|munic[ií]pio|instituto|secretaria|departamento)\b/i.test(x.razao) || (d.entidade && slug(d.entidade).includes(slug(x.razao))))) { x.razao = ''; x.confianca = 'analise'; }
