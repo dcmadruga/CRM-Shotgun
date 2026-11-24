@@ -1,5 +1,5 @@
 // Modelo padrão da Etapa 3 (contrato da Argo). O administrador altera pela aba "Parâmetros Contrato".
-// Marcadores entre chaves, como {razao}, são trocados pelos dados da proposta e da Etapa 2 na hora
+// Marcadores entre chaves, como {razao}, são trocados pelos dados da proposta e do Pré-Contrato na hora
 // de gerar o contrato. Linha começando com "# " vira título.
 window.ETAPA3_PADRAO = {
   titulo: 'Contrato de Licenciamento de Uso de Programa de Informática e de Prestação de Serviços de Instalação e Manutenção do Sistema por Prazo Determinado',

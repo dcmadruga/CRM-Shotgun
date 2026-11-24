@@ -1,6 +1,6 @@
-// Formulário padrão da Etapa 2 (Dados Primários: só o que o contrato usa; o resto o vendedor completa na Pré TASK).
-// O administrador altera pela aba "Etapa 2" do app; isto é só o ponto de partida.
-// pretask: true = o cliente não vê o campo; o vendedor completa na Pré TASK (fica guardado junto com os Dados Primários).
+// Formulário padrão do Pré-Contrato (só o que o contrato usa; o resto o vendedor completa na Pré TASK).
+// O administrador altera pela aba "Parâmetros Pré-Contrato" do app; isto é só o ponto de partida.
+// pretask: true = o cliente não vê o campo; o vendedor completa na Pré TASK (fica guardado junto com o Pré-Contrato).
 // Tipos: texto, email, telefone, cpf, cnpj, cep, numero, data, simnao, opcoes, textolongo
 window.ETAPA2_PADRAO = {
   titulo: 'Dados para o contrato',

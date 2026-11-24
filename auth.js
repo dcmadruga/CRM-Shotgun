@@ -504,7 +504,7 @@ async function iniciar() {
     return { cls: 'wait', txt: 'Aguardando aprovação' };
   }
   /* Jornada: 5 passos da proposta até o TASK */
-  const PASSOS = ['Proposta', 'Dados Primários', 'Contrato', 'Pré TASK', 'TASK'];
+  const PASSOS = ['Proposta', 'Pré-Contrato', 'Contrato', 'Pré TASK', 'TASK'];
   const feitosDe = p => [p.status === 'aprovada', !!p.e2Em, !!p.ctAceitoEm, !!p.e4Em, !!p.e4Em];
   const passoAtual = p => { const i = feitosDe(p).indexOf(false); return i < 0 ? 4 : i; };
   const passoSel = {};
@@ -520,7 +520,7 @@ async function iniciar() {
   /* Quadro por etapa */
   let modoQuadro = true, foco = null;
   try { modoQuadro = localStorage.getItem('argo-pmodo') !== 'lista'; } catch (_) {}
-  const COLS = ['Proposta', 'Dados Primários', 'Contrato', 'Pré TASK', 'No TASK'];
+  const COLS = ['Proposta', 'Pré-Contrato', 'Contrato', 'Pré TASK', 'No TASK'];
   function miniStatus(p) {
     const c = passoAtual(p), ven = p.status !== 'aprovada' && p.validade && p.validade < hojeIso();
     return [ehPend(p) ? ['salva', 'pendente de envio'] : ven ? ['exp', 'vencida'] : ['wait', 'aguardando aprovação'], ['wait', 'aguardando dados'], p.ctEm ? ['wait', 'aguardando aceite'] : ['', 'gerar contrato'], ['', 'com o vendedor'], ['ok', 'no TASK']][c];
@@ -554,7 +554,7 @@ async function iniciar() {
     if (ehPend(p)) return { t: 'Enviar a proposta ao cliente', d: `Salva em ${fmtTs(p.criado) || fmtD(p.data)} e ainda não enviada.${ven ? ' A validade já passou: revise antes de enviar.' : ''}`, passo: 0, b: 'Enviar proposta' };
     if (p.status !== 'aprovada') return ven ? { t: 'Proposta vencida', d: `Válida até ${fmtD(p.validade)}. Revise e reenvie ao cliente.`, passo: 0, b: 'Abrir proposta' }
       : { t: 'Aguardando o cliente aprovar', d: `Enviada em ${fmtTs(p.criado) || fmtD(p.data)}. Se demorar, reenvie o link.`, passo: 0, b: 'Ver proposta', cli: true };
-    if (!p.e2Em) return { t: 'Enviar o formulário dos Dados Primários', d: `Aprovada em ${fmtTs(p.aprovadoEm)}. Envie o link ao cliente ou preencha por ele.`, passo: 1, b: 'Enviar dados' };
+    if (!p.e2Em) return { t: 'Enviar o formulário do Pré-Contrato', d: `Aprovada em ${fmtTs(p.aprovadoEm)}. Envie o link ao cliente ou preencha por ele.`, passo: 1, b: 'Enviar dados' };
     if (!p.ctEm) return { t: 'Gerar e enviar o contrato', d: `Dados recebidos em ${fmtTs(p.e2Em)}.`, passo: 2, b: 'Gerar contrato' };
     if (!p.ctAceitoEm) return { t: 'Aguardando o aceite do contrato', d: `Contrato gerado em ${fmtTs(p.ctEm)}. Se demorar, reenvie o link.`, passo: 2, b: 'Ver contrato', cli: true };
     if (!p.e4Em) return { t: 'Preencher o Pré TASK', d: `Contrato aceito em ${fmtTs(p.ctAceitoEm)}. Ao salvar, o card vai para o TASK.`, passo: 3, b: 'Preencher agora' };
@@ -613,19 +613,19 @@ async function iniciar() {
             ${p.duvidaEm ? `<button type="button" data-a="duvidas"${duvNova(p) ? ' class="primary"' : ''}>Dúvidas do cliente${p.duvidaN ? ' (' + p.duvidaN + ')' : ''}${duvNova(p) ? ' · nova' : ''}</button>` : ''}
             <span class="pill ${st.cls}">${st.txt}</span>
           </div><div class="duvbox" hidden></div></div>
-        <div class="etapa${ok ? '' : ' bloq'}" data-passo="1"${oc(1)}><div class="etit">Passo 2 · Dados complementares ${p.e2Em ? `<span class="pill ok">DADOS RECEBIDOS</span> <span class="meta">em ${esc(fmtTs(p.e2Em))}${p.e2Anexos ? ' · ' + p.e2Anexos + ' anexo' + (p.e2Anexos > 1 ? 's' : '') : ''}</span>` : ''}${p.e2Em && (p.e2Pendentes || []).length ? ' <span class="pill wait">DOCUMENTO PENDENTE</span>' : ''}</div>
-          ${p.e2Em && (p.e2Pendentes || []).length ? `<div class="meta e2pend">Falta o cliente enviar: <b>${esc(p.e2Pendentes.join(', '))}</b>. Ele envia pelo mesmo link da Etapa 2.</div>` : ''}
+        <div class="etapa${ok ? '' : ' bloq'}" data-passo="1"${oc(1)}><div class="etit">Passo 2 · Pré-Contrato ${p.e2Em ? `<span class="pill ok">DADOS RECEBIDOS</span> <span class="meta">em ${esc(fmtTs(p.e2Em))}${p.e2Anexos ? ' · ' + p.e2Anexos + ' anexo' + (p.e2Anexos > 1 ? 's' : '') : ''}</span>` : ''}${p.e2Em && (p.e2Pendentes || []).length ? ' <span class="pill wait">DOCUMENTO PENDENTE</span>' : ''}</div>
+          ${p.e2Em && (p.e2Pendentes || []).length ? `<div class="meta e2pend">Falta o cliente enviar: <b>${esc(p.e2Pendentes.join(', '))}</b>. Ele envia pelo mesmo link do Pré-Contrato.</div>` : ''}
           <div class="acts">
             ${p.e2Em ? '<button type="button" class="primary" data-a="e2ver">Ver dados e anexos</button>' : ''}
             ${p.e2Em && (p.e2Pendentes || []).length ? '<button type="button" data-a="e2cobrar">Cobrar documento pelo WhatsApp</button>' : ''}
-            ${ok ? `<button type="button"${p.e2Em ? '' : ' class="primary"'} data-a="etapa2">Enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link da Etapa 2</button><button type="button" data-a="etapa2vend">Preencher pelo vendedor</button>`
-                 : '<button type="button" disabled>Enviar pelo WhatsApp</button><button type="button" disabled>Copiar link da Etapa 2</button><span class="hint">Libera quando o cliente aprovar a proposta.</span>'}
+            ${ok ? `<button type="button"${p.e2Em ? '' : ' class="primary"'} data-a="etapa2">Enviar pelo WhatsApp</button><button type="button" data-a="etapa2copy">Copiar link do Pré-Contrato</button><button type="button" data-a="etapa2vend">Preencher pelo vendedor</button>`
+                 : '<button type="button" disabled>Enviar pelo WhatsApp</button><button type="button" disabled>Copiar link do Pré-Contrato</button><span class="hint">Libera quando o cliente aprovar a proposta.</span>'}
           </div>
           <div class="e2dados" hidden></div></div>
         <div class="etapa${p.e2Em ? '' : ' bloq'}" data-passo="2"${oc(2)}><div class="etit">Passo 3 · Contrato ${p.ctAceitoEm ? '<span class="pill ok">CONTRATO ACEITO</span>' : p.ctEm ? '<span class="pill wait">Aguardando aceite</span>' : ''}</div>
           ${p.ctAceitoEm ? `<div class="ctinfo">Aceito por ${esc(p.ctAceitoNome)}${p.ctAceitoCargo ? ' (' + esc(p.ctAceitoCargo) + ')' : ''}, CPF ${esc(p.ctAceitoCpf || '')}, em ${esc(fmtTs(p.ctAceitoEm))}</div>` : p.ctEm ? `<div class="meta">Contrato gerado em ${esc(fmtTs(p.ctEm))}</div>` : ''}
           <div class="acts">
-            ${!p.e2Em ? '<button type="button" disabled>Gerar e enviar pelo WhatsApp</button><button type="button" disabled>Copiar link do contrato</button><span class="hint">Libera quando o cliente enviar os Dados Primários.</span>'
+            ${!p.e2Em ? '<button type="button" disabled>Gerar e enviar pelo WhatsApp</button><button type="button" disabled>Copiar link do contrato</button><span class="hint">Libera quando o cliente enviar o Pré-Contrato.</span>'
               : p.ctAceitoEm ? '<button type="button" class="primary" data-a="ctpdf">Ver contrato aceito (PDF)</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>'
               : `<button type="button" class="primary" data-a="ctenviar">${p.ctEm ? 'Gerar de novo e enviar pelo WhatsApp' : 'Gerar e enviar pelo WhatsApp'}</button><button type="button" data-a="ctcopy">Copiar link do contrato</button>${p.ctEm ? '<button type="button" data-a="ctpdf">Ver contrato (PDF)</button>' : ''}`}
           </div></div>
@@ -843,7 +843,7 @@ async function iniciar() {
     bt.disabled = true; box.querySelector('.e4msg').textContent = 'Salvando…';
     try {
       const por = perfil.nome || perfil.email;
-      // Envia os anexos novos em partes (mesmo formato dos anexos da Etapa 2)
+      // Envia os anexos novos em partes (mesmo formato dos anexos do Pré-Contrato)
       let n = 0;
       for (const u of subir) {
         n++; box.querySelector('.e4msg').textContent = `Enviando anexo ${n} de ${subir.length}…`;
@@ -989,16 +989,16 @@ async function iniciar() {
       abrirWa(p.waCli, `Olá${p.contato ? ' ' + p.contato : ''}! Recebemos os dados da proposta nº ${p.numero}. Ficou faltando enviar: ${pend.join(', ')}.\n\nQuando tiver em mãos, é só abrir o mesmo link e anexar:\n${linkEtapa2(p)}\n\n${perfil.nome || p.vendedor || ''} - Argo`);
       pMsg('WhatsApp aberto com a cobrança do documento pendente.'); return;
     }
-    if (a === 'etapa2vend') { window.open(linkEtapa2(p) + '&vend=1', '_blank'); pMsg('Formulário da Etapa 2 aberto em outra aba para você preencher.'); return; }
+    if (a === 'etapa2vend') { window.open(linkEtapa2(p) + '&vend=1', '_blank'); pMsg('Formulário do Pré-Contrato aberto em outra aba para você preencher.'); return; }
     if (a === 'etapa2' || a === 'etapa2copy') {
       const link = linkEtapa2(p);
       if (a === 'etapa2copy') {
-        try { await navigator.clipboard.writeText(link); pMsg('Link da Etapa 2 (proposta nº ' + p.numero + ') copiado. Cole no WhatsApp ou e-mail do cliente.'); }
-        catch (_) { pMsg('Link da Etapa 2: ' + link); }
+        try { await navigator.clipboard.writeText(link); pMsg('Link do Pré-Contrato (proposta nº ' + p.numero + ') copiado. Cole no WhatsApp ou e-mail do cliente.'); }
+        catch (_) { pMsg('Link do Pré-Contrato: ' + link); }
         return;
       }
       abrirWa(p.waCli, msgEtapa2(p, link));
-      pMsg('WhatsApp aberto com o formulário da Etapa 2.');
+      pMsg('WhatsApp aberto com o formulário do Pré-Contrato.');
     }
     if (a === 'ctenviar' || a === 'ctcopy') {
       if (!p.e2Em) return;
@@ -1052,7 +1052,7 @@ async function iniciar() {
     });
     return ls.length ? ls.join('\n') : '- (nenhum item)';
   }
-  // Dados disponíveis como marcadores: proposta + Etapa 2 + dados da Argo.
+  // Dados disponíveis como marcadores: proposta + Pré-Contrato + dados da Argo.
   async function valoresContrato(p) {
     const cfg2 = E2 || E2PUB || window.ETAPA2_PADRAO;
     const campos = (cfg2.secoes || []).flatMap(s => s.campos || []);
@@ -1064,7 +1064,7 @@ async function iniciar() {
     campos.forEach(c => { if (c.tipo === 'data' && /^\d{4}-\d{2}-\d{2}$/.test(V[c.k] || '')) V[c.k] = fmtD(V[c.k]); });
     if (V.uf) V.uf = String(V.uf).toUpperCase();
     const ar = cfgE3().argo || {}, t = new Date(), sc = splitCidade(p.cidade);
-    // Sede: campos da Etapa 2; se o formulário não pede endereço, busca pelo CNPJ (Receita, via BrasilAPI).
+    // Sede: campos do Pré-Contrato; se o formulário não pede endereço, busca pelo CNPJ (Receita, via BrasilAPI).
     const E = { log: V.logradouro, num: V.numero, comp: V.complemento, bai: V.bairro, cid: V.cidade, uf: V.uf, cep: V.cep };
     const cnpjD = dig(V.cnpj || p.cnpj);
     if (!E.log && cnpjD.length === 14) {
@@ -1101,7 +1101,7 @@ async function iniciar() {
   // Sem a data desejada (o cliente não informa mais), a frase do contrato fala em data combinada entre as partes
   const semDataImpl = (modelo, V) => V.dataImpl ? String(modelo || '') : String(modelo || '').replace(/na data prevista de \{dataImpl\}/gi, 'em data a ser combinada entre as partes').replace(/\{dataImpl\}/g, 'a combinar');
   const preencherModelo = (modelo, V) => semDataImpl(modelo, V).replace(/\{([A-Za-z0-9_]+)\}/g, (_, k) => V[k] == null ? '' : String(V[k]));
-  // Aceite do contrato: nome, CPF e cargo já lançados (responsável legal da Etapa 2 ou quem aprovou a proposta) vêm como sugestão na página do cliente
+  // Aceite do contrato: nome, CPF e cargo já lançados (responsável legal do Pré-Contrato ou quem aprovou a proposta) vêm como sugestão na página do cliente
   function sugestaoAceite(p, V) {
     const nz = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/\s+/g, ' ').trim();
     const nome = String(V.respNome || p.aprovadoNome || '').trim();
@@ -1125,7 +1125,7 @@ async function iniciar() {
   }
 
 
-  /* ---------- Parâmetros da Etapa 2 (ADM) ---------- */
+  /* ---------- Parâmetros do Pré-Contrato (ADM) ---------- */
   const E2DOC = F.doc(db, 'publico', 'etapa2');
   const TIPOS = window.ETAPA2_TIPOS || {};
   let E2 = null, e2Sujo = false;
@@ -1140,12 +1140,12 @@ async function iniciar() {
     // o modelo do contrato publicado decide o que precisa ficar com o cliente
     if (E2 && !E2.divisaoPretask && !E3) try { const s3 = await F.getDoc(F.doc(db, 'publico', 'etapa3')); if (s3.exists() && s3.data().json && !E3) E3PUB = JSON.parse(s3.data().json); } catch (e) {}
     if (dividirE2(E2)) { marcarE2(); e2Status('Divisão nova aplicada: os campos que não entram no contrato passaram para a Pré TASK (coluna "Pré TASK"). Confira e toque em Publicar para valer no link do cliente.'); }
-    // a data desejada para a implantação saiu da Etapa 2 (o link do cliente já a ignora); some do editor e sai do formulário no próximo Publicar
+    // a data desejada para a implantação saiu do Pré-Contrato (o link do cliente já a ignora); some do editor e sai do formulário no próximo Publicar
     (E2.secoes || []).forEach(s => { s.campos = (s.campos || []).filter(c => !(c.k === 'dataImpl' || /data desejada.*implanta/i.test(c.label || ''))); });
     desenharE2();
   }
   function marcarE2() { e2Sujo = true; e2Status('Alterações ainda não publicadas.'); }
-  // Dados Primários só com o que o contrato usa: o resto passa para a Pré TASK (aplicado uma vez no formulário publicado)
+  // Pré-Contrato só com o que o contrato usa: o resto passa para a Pré TASK (aplicado uma vez no formulário publicado)
   // pretask = o vendedor completa na Pré TASK; oculto = a Pré TASK já tem campo próprio (bandeira, sistema atual, certificado, logo)
   const MARCADORES_CT = () => new Set((String(cfgE3().modelo || '').match(/\{([A-Za-z0-9_]+)\}/g) || []).map(x => x.slice(1, -1)));
   function dividirE2(cfg) {
@@ -1176,7 +1176,7 @@ async function iniciar() {
     $('e2Titulo').value = E2.titulo || ''; $('e2Intro').value = E2.intro || ''; $('e2Final').value = E2.final || ''; $('e2Contrato').checked = E2.contratoSocial !== false;
     $('e2Secoes').innerHTML = htmlSecoes(E2, TIPOS, 'o cliente');
   }
-  // Editor de seções/campos (usado na Etapa 2 e na Etapa 4)
+  // Editor de seções/campos (usado no Pré-Contrato e na Etapa 4)
   // Editor do Multi condicional: para cada opção, a lista de campos adicionais
   const TIPOSCOND = { texto: 'Texto', textolongo: 'Texto longo', numero: 'Número', data: 'Data', cnpj: 'CNPJ', telefone: 'Telefone', email: 'E-mail', filiais: 'Filiais (quantidade + F1, F2… com Posto/Loja e CNPJ)' };
   function condEditor(c, ci) {
@@ -1269,7 +1269,7 @@ async function iniciar() {
   }
   $('e4Secoes').addEventListener('change', e => { if (!e.target.matches('[data-porfil]') || !E4) return; E4.secoes[+e.target.closest('[data-si]').dataset.si].porFilial = e.target.checked; marcarE4(); });
 
-  /* ---------- Logos das Bandeiras (ADM): publico/bandeiras, lido pelo Pré TASK e pelos Dados Primários ---------- */
+  /* ---------- Logos das Bandeiras (ADM): publico/bandeiras, lido pelo Pré TASK e pelo Pré-Contrato ---------- */
   const BANDDOC = F.doc(db, 'publico', 'bandeiras');
   const BAND_PADRAO = [{ nome: 'Petrobras', img: 'icons/bandeiras/petrobras.svg' }, { nome: 'Ipiranga', img: 'icons/bandeiras/ipiranga.svg' }, { nome: 'ALE', img: 'icons/bandeiras/ale.svg' }, { nome: 'Shell', img: '' }, { nome: 'Bandeira Branca', img: '' }];
   let BAND = null;
@@ -1415,7 +1415,7 @@ async function iniciar() {
       const em = new Date().toISOString();
       await F.setDoc(E2DOC, { json: JSON.stringify(E2), em, por: perfil.nome || perfil.email });
       try { localStorage.setItem('argo-etapa2-cfg', JSON.stringify(E2)); } catch (_) {}
-      e2Sujo = false; e2Status('Formulário publicado em ' + fmtQuando(em) + '. Vale para todos os links da Etapa 2.');
+      e2Sujo = false; e2Status('Formulário publicado em ' + fmtQuando(em) + '. Vale para todos os links do Pré-Contrato.');
     } catch (err) { e2Status('Não foi possível publicar (' + (err.code || err.message) + ').'); }
     finally { btn.disabled = false; }
   });
@@ -1458,7 +1458,7 @@ async function iniciar() {
         ['total_licencas', 'Total licenças'], ['total_mensalidade', 'Total mensalidade'], ['total_deslocamento', 'Deslocamento'], ['itens_licencas', 'Lista de licenças'], ['itens_mensalidades', 'Lista de mensalidades']]],
       ['Montados automaticamente', [['endereco_cliente', 'Endereço completo do cliente'], ['cidade_cliente', 'Cidade/UF do cliente'], ['rg_responsavel', 'RG do responsável'], ['endereco_responsavel', 'Endereço do responsável']]],
       ['Argo (contratada)', [['argo_razao', 'Razão social'], ['argo_cnpj', 'CNPJ'], ['argo_endereco', 'Endereço'], ['argo_representante', 'Representante'], ['argo_foro', 'Foro']]],
-      ...(cfg2.secoes || []).map(s => ['Etapa 2 · ' + s.titulo, (s.campos || []).filter(c => c.tipo !== 'arquivo').map(c => [c.k, c.label])])
+      ...(cfg2.secoes || []).map(s => ['Pré-Contrato · ' + s.titulo, (s.campos || []).filter(c => c.tipo !== 'arquivo').map(c => [c.k, c.label])])
     ];
     $('e3Marc').innerHTML = grupos.filter(g => g[1].length).map(([t, ms]) => `<div class="mg">${esc(t)}</div>` + ms.map(([k, l]) => `<button type="button" data-mk="${esc(k)}" title="{${esc(k)}}">${esc(l)}</button>`).join('')).join('');
   }
@@ -1498,7 +1498,7 @@ async function iniciar() {
       const doc = window.contratoPdf({ titulo: E3.titulo, texto, numero: V.numero, logo: logoAtual(), logoW: CFG.logoW, logoH: CFG.logoH });
       const url = URL.createObjectURL(doc.output('blob'));
       if (janela && !janela.closed) janela.location.href = url; else { const l = document.createElement('a'); l.href = url; l.download = 'Contrato exemplo.pdf'; l.click(); }
-      e3Status(ex ? 'Exemplo gerado com os dados da proposta nº ' + ex.numero + ' (nada foi enviado).' : 'Exemplo gerado sem dados: nenhuma proposta com Dados Primários recebidos ainda.');
+      e3Status(ex ? 'Exemplo gerado com os dados da proposta nº ' + ex.numero + ' (nada foi enviado).' : 'Exemplo gerado sem dados: nenhuma proposta com Pré-Contrato recebido ainda.');
     };
     gerar().catch(err => { if (janela) janela.close(); e3Status('Não foi possível gerar o exemplo (' + (err.code || err.message) + ').'); });
   });
