@@ -2,12 +2,21 @@ import fs from 'fs';
 fs.mkdirSync('rs-sondas',{recursive:true});
 const out=[]; const log=(...a)=>{const s=a.join(' ');console.log(s);out.push(s);};
 const B='https://apigateway.procempa.com.br/apiman-gateway/ambiental-urbanismo/lam-api-public/1.0/public/';
-async function j(p){try{const r=await fetch(B+p,{signal:AbortSignal.timeout(60000),headers:{accept:'application/json'}});const t=await r.text();return [r.status,t];}catch(e){return ['ERR '+e.message,''];}}
-let [s,t]=await j('tiposLicenca'); log('tipos',s,t.slice(0,1500));
-[s,t]=await j('processamentoUltimo'); log('ultimo',s,t.slice(0,500));
-[s,t]=await j('consultaLicencas?page=1&limit=5'); log('lista',s,t.slice(0,4000));
-let d; try{d=JSON.parse(t);}catch{}
-const arr=d&&(Array.isArray(d)?d:(d.data||d.items||d.licencas||d.content||d.rows||Object.values(d).find(Array.isArray)));
-if(arr?.[0]){const x=arr[0];const id=`${x.id}|${x.numero}|${x.ano}`;[s,t]=await j('consultaLicencas/'+encodeURIComponent(id));log('detalhe',s,t.slice(0,4000));}
-for(const q of ['empreendedor=posto','empreendedor=combust','empreendedor=auto%20posto']){[s,t]=await j('consultaLicencas?'+q+'&limit=50');log('busca',q,s,t.length,t.slice(0,3000));}
+async function j(p){const t0=Date.now();try{const r=await fetch(B+p,{signal:AbortSignal.timeout(120000)});const d=await r.json();return [r.status,d,Date.now()-t0];}catch(e){return ['ERR '+e.message,null,Date.now()-t0];}}
+const all=[];let pag;
+for(let page=1;page<=40;page++){const [s,d,ms]=await j(`consultaLicencas?page=${page}&limit=100`);
+ if(!d){log('page',page,s,ms);break;}
+ pag=d.paginacao; const L=d.consultaLicencas||[];
+ for(const x of L){delete x.doc; all.push(x);}
+ log('page',page,s,ms+'ms',L.length,'anos',[...new Set(L.map(x=>x.ano))].join(','),'nums',L[0]?.numero,L.at(-1)?.numero);
+ if(!pag?.next_page) break;}
+log('paginacao',JSON.stringify(pag));
+log('keys',Object.keys(all[0]||{}).join(','));
+const re=/posto|combust|abastec|revenda de/i;
+const hit=all.filter(x=>re.test([x.descricao,x.descricaoAtividade,x.nomeRazaoSocial,x.nomeEmpresaInteressado].join(' ')));
+log('total lido',all.length,'postos',hit.length);
+for(const x of hit) log(' ',x.ano,x.numero,x.tipoLicenca,'|',x.nomeRazaoSocial,'|',x.descricaoAtividade,'|',x.descricao,'|',x.cnpjCpf,'|log',x.logradouroEmpreendimento,x.imovelEmpreendimento);
+const cnt={};for(const x of all){cnt[x.descricao]=(cnt[x.descricao]||0)+1;}
+log('top descricoes',Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,25).map(e=>e[1]+' '+e[0]).join(' || '));
+const [s2,d2]=await j('logradourosSugestoes?q=ipiranga&limit=3');log('logr',s2,JSON.stringify(d2).slice(0,500));
 fs.writeFileSync('rs-sondas/novas.txt',out.join('\n'));
