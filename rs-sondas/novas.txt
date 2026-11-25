@@ -1,0 +1,14 @@
+POA 200 https://licencas-ambientais.portoalegre.rs.gov.br/ text/html 72170
+scripts https://licencas-ambientais.portoalegre.rs.gov.br/polyfills-FFHMD2TL.js https://licencas-ambientais.portoalegre.rs.gov.br/main-RX4QA7RZ.js
+JS https://licencas-ambientais.portoalegre.rs.gov.br/polyfills-FFHMD2TL.js 200 34519
+  endpoints 
+JS https://licencas-ambientais.portoalegre.rs.gov.br/main-RX4QA7RZ.js 200 639803
+  endpoints https://apigateway.procempa.com.br/apiman-gateway/ambiental-urbanismo/lam-api-public/1.0/public/ | /detalhe-licenca
+QD cities ERR The operation was aborted due to timeout 0
+QD parse Unexpected end of JSON input 
+FEPAM https://www.fepam.rs.gov.br/ 200 https://www.fepam.rs.gov.br/ 244
+  links 
+FEPAM https://secweb.procergs.com.br/sra/ 200 https://secweb.procergs.com.br/sra/ 10214
+  links mailto:atendimento-sol@sema.rs.gov.br?Subject=Atendimento%20Sistema%20SOL | mailto:auto-constatacao@fepam.rs.gov.br?Subject=Atendimento%20Sistema%20SOL%20Auto%20Infracao | mailto:jjia@sema.rs.gov.br?Subject=Atendimento%20Sistema%20SOL%20Auto%20Infracao | public/docs/sol_manual_empreendedor.pdf | public/docs/sol_manual_juntada_auto_infracao.pdf | public/docs/sol_manual_denuncias.pdf | public/docs/portaria322018sol.pdf | public/docs/portaria20200505sol.pdf
+FEPAM https://secweb.procergs.com.br/sra/public/consultaDocumento.xhtml 404 https://secweb.procergs.com.br/sra/public/consultaDocumento.xhtml 5080
+  links 
