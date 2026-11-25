@@ -7,6 +7,10 @@
 // sem gravar nada); o aviso some quando a pessoa é liberada ou o cadastro é excluído. Tocar abre a tela Usuários.
 // Proposta aceita: quando o cliente aprova a proposta (página de aprovação), o vendedor dono e o ADM recebem um aviso,
 // montado a partir da própria proposta (status 'aprovada', últimos 30 dias), sem gravar nada. Tocar abre a proposta.
+// Postos novos na ANP: um aviso por dia e por Estado com os postos que entraram na base da ANP (anp/novos.json, a mesma
+// lista da Telemetria ANP), só nos Estados de atuação da pessoa (usuarios/{uid}.estados, a mesma regra dos filtros do CRM).
+// Vale para todos, inclusive o ADM; quem não tem Estado marcado não recebe. Últimos 7 dias, sem gravar nada. Tocar abre a
+// Telemetria ANP já filtrada no Estado. Se mais postos entram no mesmo dia, o aviso volta como não lido.
 // Para criar uma notificação em qualquer parte do app: window.shotgunNotificar({ titulo, texto, setor, para, aba })
 // Regras do Firestore: docs/notificacoes-firestore.rules
 (() => {
@@ -25,7 +29,7 @@
 
   // Setores = módulos principais do TASK (mesma lista da tela Usuários)
   const setoresTop = () => ((MODS || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai);
-  const nomeSetor = id => id === 'todos' ? 'Todos' : id === 'pessoal' ? 'Para você' : id === 'usuarios' ? 'Usuários' : id === 'propostas' ? 'Propostas' : (setoresTop().find(m => m.id === id) || {}).titulo || id;
+  const nomeSetor = id => id === 'todos' ? 'Todos' : id === 'anp' ? 'Telemetria ANP' : id === 'pessoal' ? 'Para você' : id === 'usuarios' ? 'Usuários' : id === 'propostas' ? 'Propostas' : (setoresTop().find(m => m.id === id) || {}).titulo || id;
   const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
   // Quem pode ver (o Firestore aplica a mesma regra no servidor)
   const podeVer = n => admin || n.auto || n.setor === 'todos' || (n.setor === 'pessoal' && n.para === uid) || meusSetores().includes(n.setor);
@@ -62,6 +66,7 @@
       const n = lista().find(x => x.id === it.dataset.nid); if (!n) return;
       if (!lida(n)) marcar(n.id);
       if (n.prop) { abrir(false); window.dispatchEvent(new CustomEvent('shotgun-abrir-proposta', { detail: { id: n.prop } })); }
+      else if (n.anp) { abrir(false); window.dispatchEvent(new CustomEvent('shotgun-abrir-anp', { detail: n.anp })); }
       else if (n.aba && $(n.aba)) { abrir(false); $(n.aba).click(); }
     });
     $('sgnLista').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-nid]')) { e.preventDefault(); e.target.click(); } });
@@ -98,8 +103,10 @@
     if (!aberto) return;
     $('sgnLerTodas').hidden = !nao;
     const ss = meusSetores().map(nomeSetor);
-    $('sgnEscopo').textContent = admin ? 'Administrador: você vê as notificações de todos os setores.' : ss.length ? 'Seu setor: ' + ss.join(', ') + '.' : 'Avisos gerais e os enviados para você.';
-    $('sgnLista').innerHTML = ns.length ? ns.map(n => `<div class="sgnit${lida(n) ? '' : ' nova'}${n.aba || n.prop ? ' link' : ''}" data-nid="${esc(n.id)}" role="button" tabindex="0">
+    const ufs = anpUfs();
+    $('sgnEscopo').textContent = (admin ? 'Administrador: você vê as notificações de todos os setores.' : ss.length ? 'Seu setor: ' + ss.join(', ') + '.' : 'Avisos gerais e os enviados para você.')
+      + (anpLiberado() ? ufs.length ? ' Postos novos da ANP em ' + ufs.join(', ') + '.' : ' Marque seus Estados de atuação para receber os postos novos da ANP.' : '');
+    $('sgnLista').innerHTML = ns.length ? ns.map(n => `<div class="sgnit${lida(n) ? '' : ' nova'}${n.aba || n.prop || n.anp ? ' link' : ''}" data-nid="${esc(n.id)}" role="button" tabindex="0">
         <span class="sgnponto" aria-hidden="true"></span>
         <div class="sgncorpo"><b>${esc(n.titulo)}</b>${n.texto ? `<p>${esc(n.texto)}</p>` : ''}
           <span class="sgnmeta"><span class="sgnsetor">${esc(nomeSetor(n.setor))}</span>${esc(quando(n.t))}${n.por ? ' · ' + esc(n.por) : ''}</span></div>
@@ -136,6 +143,7 @@
   function parar() {
     unsubs.forEach(u => { try { u(); } catch (e) {} }); unsubs = [];
     [unsubMod, unsubLidas].forEach(u => { if (u) try { u(); } catch (e) {} }); unsubMod = unsubLidas = null;
+    if (anpTimer) { clearInterval(anpTimer); anpTimer = null; }
     porQuery = {}; lidas = { ate: 0, ids: [] }; uid = null; perfil = null; admin = false;
     if ($('sgNotif')) { abrir(false); $('sgNotif').hidden = true; }
   }
@@ -173,8 +181,53 @@
     }, e => { console.warn('notificações (propostas aceitas)', e.code || e); porQuery.aceitas = []; desenhar(); }));
   }
 
+  // Postos novos na ANP nos Estados de atuação da pessoa (quem é só TASK não tem a Telemetria e não recebe)
+  const ANP_DIAS = 7, UF_OK = /^[A-Z]{2}$/;
+  let anpTimer = null;
+  const anpLiberado = () => { if (!perfil) return false; if (admin) return true; const ps = Array.isArray(perfil.papeis) && perfil.papeis.length ? perfil.papeis : [perfil.papel || 'vendedor']; return ps.includes('vendedor') || ps.includes('adm'); };
+  const anpUfs = () => (perfil && Array.isArray(perfil.estados) ? perfil.estados : []).filter(u => UF_OK.test(u)).sort();
+  const diaLocal = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const diaMenos = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() - n); return diaLocal(d); };
+  const brData = iso => iso.split('-').reverse().slice(0, 2).join('/');
+  const titulo1 = s => window.anpTitulo ? window.anpTitulo(s) : String(s || '');
+  async function atualizarAnp() {
+    const meu = uid, ufs = anpUfs();
+    if (!meu) return;
+    if (!anpLiberado() || !ufs.length) { porQuery.anp = []; desenhar(); return; }
+    let j, meta = {};
+    try {
+      [j, meta] = await Promise.all([
+        fetch('anp/novos.json', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); }),
+        fetch('anp/meta.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : {}).catch(() => ({}))
+      ]);
+    } catch (e) { console.warn('notificações (ANP)', e.message || e); return; } // sem internet: mantém o que já tinha
+    if (uid !== meu) return;
+    const hoje = diaLocal(), corte = diaMenos(hoje, ANP_DIAS - 1), atu = Date.parse(meta.atualizado || '') || 0, grupos = new Map();
+    (j.postos || []).forEach(x => {
+      const d = [x.v || '', x.at || ''].sort().pop();
+      if (d < corte || d > hoje || !ufs.includes(x.uf)) return;
+      const k = d + '|' + x.uf; if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(x);
+    });
+    porQuery.anp = [...grupos].map(([k, l]) => {
+      const [d, uf] = k.split('|'), n = l.length;
+      l.sort((a, b) => (a.r || '').localeCompare(b.r || ''));
+      const nomes = l.slice(0, 3).map(x => titulo1(x.r || '(sem nome)') + (x.m ? ' · ' + titulo1(x.m) : ''));
+      // Hora do aviso: a da atualização da base, se foi nesse dia; senão 5h (horário da tarefa diária)
+      const t = atu && diaLocal(new Date(atu)) === d ? atu : new Date(d + 'T05:00:00').getTime();
+      return { id: `anp:${d}:${uf}:${n}`, auto: true, anp: { uf, dia: d }, setor: 'anp', t,
+        titulo: `${n} ${n === 1 ? 'posto novo' : 'postos novos'} na ANP em ${uf}${d === hoje ? ' hoje' : ' em ' + brData(d)}`,
+        texto: nomes.join('\n') + (n > 3 ? `\ne mais ${n - 3}` : '') };
+    });
+    desenhar();
+  }
+  function ouvirAnp() {
+    atualizarAnp();
+    anpTimer = setInterval(atualizarAnp, 30 * 60000); // a base muda uma vez por dia; confere a cada 30 min e ao voltar para o app
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && uid) atualizarAnp(); });
+
   function iniciar(det) {
-    if (det.perfil && det.perfil.uid === uid) { admin = !!det.admin || admin; desenhar(); return; } // o mesmo login avisa por dois eventos
+    if (det.perfil && det.perfil.uid === uid) { admin = !!det.admin || admin; perfil = det.perfil; atualizarAnp(); return; } // o mesmo login avisa por dois eventos
     parar(); ({ F, db, perfil } = det); admin = !!det.admin; uid = perfil.uid;
     montar(); $('sgNotif').hidden = false;
     const col = F.collection(db, 'notificacoes');
@@ -184,7 +237,7 @@
       ['todos', ...meusSetores()].forEach(s => ouvir('s:' + s, F.query(col, F.where('setor', '==', s))));
       ouvir('eu', F.query(col, F.where('para', '==', uid)));
     }
-    ouvirAceitas();
+    ouvirAceitas(); ouvirAnp();
     unsubLidas = F.onSnapshot(F.doc(db, 'notifLidas', uid), d => { const x = d.exists() ? d.data() : {}; lidas = { ate: ms(x.ate) || (x.ate === null ? Date.now() : 0), ids: Array.isArray(x.ids) ? x.ids : [] }; desenhar(); }, () => {});
     unsubMod = F.onSnapshot(F.doc(db, 'config', 'modulos'), d => { try { const j = d.exists() && d.data().json; if (j) MODS = JSON.parse(j); if (MODS && window.modulosCompletar) window.modulosCompletar(MODS); } catch (e) {} desenhar(); }, () => {});
   }
