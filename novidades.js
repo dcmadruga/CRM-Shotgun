@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 237, data: '2026-11-25', titulo: 'Atalhos de prazo no Próximo contato', itens: [
+    'CRM → ficha do lead, em Negociação: embaixo de Próximo contato agora tem os botões 7 dias, 15 dias, 30 dias e 60 dias. Um toque marca a data de hoje mais esse prazo, e o botão fica destacado.',
+    'A data continua editável à mão. Passando o dedo ou o mouse sobre o botão aparece a data que ele vai marcar.'
+  ] },
   { v: 235, data: '2026-11-24', titulo: 'Postos em construção em Sergipe, Pará, Tocantins e Rondônia', itens: [
     'Telemetria → Postos em construção: o Estado agora tem também Sergipe (SE), Pará (PA), Tocantins (TO) e Rondônia (RO), com os mesmos filtros de Cidade, mapa, lista, alertas e fontes.',
     'No Pará o Radar lê os processos de licenciamento de posto na consulta pública da SEMAS-PA e as licenças publicadas pelas prefeituras no Diário dos Municípios (FAMEP). Nos processos da SEMAS o município, o CNPJ e o endereço não aparecem: ficam como pendente de confirmação.',
