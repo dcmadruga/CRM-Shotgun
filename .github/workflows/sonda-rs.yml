@@ -13,15 +13,8 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
-      - name: RS 12 meses em modo de teste
-        env:
-          RADAR_TESTE: 'true'
-          RADAR_GATILHO: 'push'
-          RADAR_DIAS: '365'
-          RADAR_FONTES: 'famurs,doe-rs,querido-rs'
-        run: node scripts/radar/radar.mjs 2>&1 | tee radar-log.txt
+      - run: node scripts/sonda/rs.mjs
       - if: always()
         run: |
-          rm -rf rs-sondas; mkdir -p rs-sondas; cp -r radar-saida/* rs-sondas/ 2>/dev/null; cp radar-log.txt rs-sondas/log.txt
           git config user.name "sonda-bot"; git config user.email "sonda-bot@users.noreply.github.com"
           git add rs-sondas && git commit -m "sonda RS: respostas" && git pull --no-rebase --no-edit && git push
