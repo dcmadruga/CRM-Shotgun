@@ -10,7 +10,7 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 236, data: '2026-11-25', titulo: 'Agenda de demonstrações', itens: [
+  { v: 238, data: '2026-11-25', titulo: 'Agenda de demonstrações', itens: [
     'Novo item Agenda no menu, logo depois de Hoje. Nele você marca as demonstrações do sistema, sempre ligadas a um lead do CRM.',
     'Toque em + Agendar demonstração, escolha o lead (ou cadastre um novo ali mesmo), a data, a hora, a duração, se é online (com o link da reunião) ou presencial (o endereço vem do lead) e quem do cliente vai participar.',
     'Três jeitos de ver: Semana, Dia e Próximas. Os Próximos contatos dos leads também aparecem como lembrete, e os atrasados ficam em vermelho. Para esconder, desmarque Próximos contatos.',
