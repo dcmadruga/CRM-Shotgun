@@ -1,0 +1,32 @@
+Modo de teste (RADAR_TESTE=true): nada será gravado.
+Gatilho: push · fontes: famurs (2025-11-25 a 2026-11-25), doe-rs (2025-11-25 a 2026-11-25), querido-rs (2025-11-25 a 2026-11-25)
+Municípios de RS: 497 · postos de RS na base da ANP: 3135
+FAMURS "posto de combustíveis": 25 matéria(s) no período
+FAMURS "posto de combustível": 17 matéria(s) no período
+FAMURS "comércio varejista de combustíveis": 1 matéria(s) no período
+FAMURS "posto de abastecimento": 16 matéria(s) no período
+FAMURS "revenda de combustíveis": 0 matéria(s) no período
+FAMURS "auto posto": 25 matéria(s) no período
+FAMURS "tanques subterrâneos": 0 matéria(s) no período
+FAMURS "armazenamento de combustíveis": 2 matéria(s) no período
+FAMURS "licença de operação" combustíveis: 5 matéria(s) no período
+FAMURS "licença de instalação" combustíveis: 0 matéria(s) no período
+FAMURS "licença prévia" combustíveis: 2 matéria(s) no período
+FAMURS "licença ambiental" combustíveis: 25 matéria(s) no período
+FAMURS: 110 matérias encontradas, 13 candidatas lidas por inteiro
+Diário Oficial dos Municípios do RS (FAMURS): 25 consultas, 13 páginas/matérias lidas, 0 documentos de posto
+DOE-RS "posto de combustíveis": 1705 matéria(s) no período
+DOE-RS "comércio varejista de combustíveis": 2312 matéria(s) no período
+DOE-RS "posto de abastecimento": 2327 matéria(s) no período
+DOE-RS "revenda de combustíveis": 198 matéria(s) no período
+DOE-RS: campos da matéria: id, protocolo, nomeEntidade, nomeEntidadeCliente, tipoEntidade, nomeTipoMateria, nomeAssunto, nomeTipoAssunto, responsavelUnidade, responsavelOrgao, cargoResponsavelOrgao, cargoResponsavelUnidade, dataPublicacao, dataFormatada, conteudo, tipoDiario, pagina, edicaoDoDia, endereco, enderecoUnidade, pdf, balancoPDF
+DOE-RS: 822 matérias encontradas, 36 candidatas lidas por inteiro
+Diário Oficial do Estado do RS (DOE-RS): 146 consultas, 36 páginas/matérias lidas, 0 documentos de posto
+Error: Querido Diário: HTTP 503 (https://api.queridodiario.org.br/gazettes?querystring=%22posto+de+combust%C3%ADveis%22&published_since=2025-11-25&published_until=2026-11-25&excerpt_size=1500&n)
+    at json (file:///home/runner/work/CRM-Shotgun/CRM-Shotgun/scripts/radar/fontes/querido.mjs:21:9)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Module.coletar (file:///home/runner/work/CRM-Shotgun/CRM-Shotgun/scripts/radar/fontes/querido.mjs:37:19)
+    at async file:///home/runner/work/CRM-Shotgun/CRM-Shotgun/scripts/radar/radar.mjs:88:17
+Resultado: 0 avisos únicos · 0 empreendimentos · 0 novos · 0 atualizados · 0 documentos novos · 0 alertas
+
+Novos/ampliações/tanques (0):

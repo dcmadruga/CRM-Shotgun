@@ -1,0 +1,1179 @@
+{
+ "pagina1": "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\"/><script type=\"text/javascript\">(window.NREUM||(NREUM={})).init={\"ajax\":{\"deny_list\":[\"bam.nr-data.net\"]},\"feature_flags\":[\"rum_v2\"]};(window.NREUM||(NREUM={})).loader_config={\"licenseKey\":\"0f2031a664\",\"applicationID\":\"67094569\",\"browserID\":\"67094618\"};;/*! For license information please see nr-loader-rum-1.324.1.min.js.LICENSE.txt */\n(()=>{var e={8122(e,t,r){\"use strict\";r.d(t,{a:()=>i});var n=r(944);function i(e,t){try{if(!e||\"object\"!=typeof e)return(0,n.R)(3);if(!t||\"object\"!=typeof t)return(0,n.R)(4);const r=Object.create(Object.getPrototypeOf(t),Object.getOwnPropertyDescriptors(t)),a=0===Object.keys(r).length?e:r;for(let s in a)if(void 0!==e[s])try{if(null===e[s]){r[s]=null;continue}Array.isArray(e[s])&&Array.isArray(t[s])?r[s]=Array.from(new Set([...e[s],...t[s]])):e[s]instanceof Map||e[s]instanceof Set||e[s]instanceof Date||e[s]instanceof RegExp?r[s]=e[s]:\"object\"==typeof e[s]&&null!==t[s]&&\"object\"==typeof t[s]?r[s]=i(e[s],t[s]):r[s]=e[s]}catch(e){r[s]||(0,n.R)(1,e)}return r}catch(e){(0,n.R)(2,e)}}},2555(e,t,r){\"use strict\";r.d(t,{f:()=>s});var n=r(384),i=r(8122);const a={beacon:n.NT.beacon,errorBeacon:n.NT.errorBeacon,licenseKey:void 0,applicationID:void 0,sa:void 0,queueTime:void 0,applicationTime:void 0,ttGuid:void 0,user:void 0,account:void 0,product:void 0,extra:void 0,jsAttributes:{},userAttributes:void 0,atts:void 0,transactionName:void 0,tNamePlain:void 0};function s(e){try{return!!e.licenseKey&&!!e.errorBeacon&&!!e.applicationID}catch(e){return!1}}r.d(t,[\"D\",0,e=>(0,i.a)(e,a)])},7699(e,t,r){\"use strict\";var n=r(860);const i=1e6,a={[n.K7.logging]:!0,[n.K7.genericEvents]:!0,[n.K7.jserrors]:!0,[n.K7.ajax]:!0};r.d(t,[\"It\",0,i,\"KC\",0,a,\"qh\",0,\"SESSION_ERROR\",\"zd\",0,5e5])},9324(e,t,r){\"use strict\";r.d(t,[\"xv\",0,\"1.324.1\"])},981(e,t,r){\"use strict\";r.d(t,[\"R\",0,{AJAX:\"AjaxRequest\",PA:\"PageAction\",UA:\"UserAction\",BP:\"BrowserPerformance\",WS:\"WebSocket\",SPV:\"SecurityPolicyViolation\",JSE:\"JavaScriptError\",LOG:\"Log\",PVE:\"PageView\",PVT:\"PageViewTiming\",SR:\"SessionReplay\",ST:\"SessionTrace\",BI:\"BrowserInteraction\"}])},6154(e,t,r){\"use strict\";var n=r(1863);const i=\"undefined\"!=typeof window&&!!window.document,a=\"undefined\"!=typeof WorkerGlobalScope&&(\"undefined\"!=typeof self&&self instanceof WorkerGlobalScope&&self.navigator instanceof WorkerNavigator||\"undefined\"!=typeof globalThis&&globalThis instanceof WorkerGlobalScope&&globalThis.navigator instanceof WorkerNavigator),s=i?window:\"undefined\"!=typeof WorkerGlobalScope&&(\"undefined\"!=typeof self&&self instanceof WorkerGlobalScope&&self||\"undefined\"!=typeof globalThis&&globalThis instanceof WorkerGlobalScope&&globalThis),o=Boolean(\"hidden\"===s?.document?.visibilityState),c=\"\"+s?.location,u=/iPad|iPhone|iPod/.test(s.navigator?.userAgent),d=u&&\"undefined\"==typeof SharedWorker,l=((()=>{const e=s.navigator?.userAgent?.match(/Firefox[/\\s](\\d+\\.\\d+)/);Array.isArray(e)&&e.length>=2&&e[1]})(),Date.now()-(0,n.t)());r.d(t,[\"OF\",0,u,\"RI\",0,i,\"WN\",0,l,\"bv\",0,a,\"gm\",0,s,\"m\",0,c,\"mw\",0,o,\"sb\",0,d,\"zk\",0,()=>{const e=s?.performance?.getEntriesByType?.(\"navigation\")?.[0];if(e&&e.responseStart>0&&e.responseStart<s.performance.now())return e}])},3241(e,t,r){\"use strict\";r.d(t,{W:()=>i});var n=r(6154);function i(e={}){try{n.gm.dispatchEvent(new CustomEvent(\"newrelic\",{detail:e}))}catch(e){}}},1687(e,t,r){\"use strict\";r.d(t,{Ak:()=>o,Ze:()=>u,x3:()=>c});var n=r(3241),i=r(3606),a=r(860),s=r(2646);function o(e,t){if(!e)return;const r={staged:!1,priority:a.P3[t]||0};e.runtime.drainRegistry.get(t)||e.runtime.drainRegistry.set(t,r)}function c(e,t){if(!e)return;const r=e.runtime.drainRegistry;r&&(r.get(t)&&r.delete(t),l(e,t,!1),r.size&&d(e))}function u(e,t=\"feature\",r=!1){if(e){if(!e.runtime.drainRegistry.get(t)||r)return l(e,t);e.runtime.drainRegistry.get(t).staged=!0,d(e)}}function d(e){if(!e)return;const t=Array.from(e.runtime.drainRegistry);t.every(([e,t])=>t.staged)&&(t.sort((e,t)=>e[1].priority-t[1].priority),t.forEach(([t])=>{e.runtime.drainRegistry.delete(t),l(e,t)}))}function l(e,t,r=!0){if(!e)return;const a=e.ee,o=i.i.handlers;if(a&&!a.aborted&&a.backlog&&o){if((0,n.W)({type:\"lifecycle\",name:\"drain\",feature:t}),r){const e=a.backlog[t],r=o[t];if(r){for(let t=0;e&&t<e.length;++t)f(e[t],r);Object.entries(r).forEach(([e,t])=>{Object.values(t||{}).forEach(t=>{t[0]?.on&&t[0].context()instanceof s.y&&!t[0].listeners(e).includes(t[1])&&t[0].on(e,t[1])})})}}a.isolatedBacklog||delete o[t],a.backlog[t]=null,a.emit(\"drain-\"+t,[])}}function f(e,t){var r=e[1];Object.values(t[r]||{}).forEach(t=>{var r=e[0];if(t[0]===r){var n=t[1],i=e[3],a=e[2];n.apply(i,a)}})}},7836(e,t,r){\"use strict\";var n=r(384),i=r(8990),a=r(2646),s=r(5607);const o=\"nr@context:\".concat(s.W),c=function e(t,r){var n={},s={},d={},l=!1;try{l=16===r.length&&u.initializedAgents?.[r]?.runtime.isolatedBacklog}catch(e){}var f={on:p,addEventListener:p,removeEventListener:function(e,t){var r=n[e];if(!r)return;for(var i=0;i<r.length;i++)r[i]===t&&r.splice(i,1)},emit:function(e,r,n,i,a){!1!==a&&(a=!0);if(c.aborted&&!i)return;t&&a&&t.emit(e,r,n);var o=g(n);m(e).forEach(e=>{e.apply(o,r)});var u=v()[s[e]];u&&u.push([f,e,r,o]);return o},get:h,listeners:m,context:g,buffer:function(e,t){const r=v();if(t=t||\"feature\",f.aborted)return;Object.entries(e||{}).forEach(([e,n])=>{s[n]=t,t in r||(r[t]=[])})},abort:function(){f._aborted=!0,Object.keys(f.backlog).forEach(e=>{delete f.backlog[e]})},isBuffering:function(e){return!!v()[s[e]]},debugId:r,backlog:l?{}:t&&\"object\"==typeof t.backlog?t.backlog:{},isolatedBacklog:l};return Object.defineProperty(f,\"aborted\",{get:()=>{let e=f._aborted||!1;return e||(t&&(e=t.aborted),e)}}),f;function g(e){return e&&e instanceof a.y?e:e?(0,i.I)(e,o,()=>new a.y(o)):new a.y(o)}function p(e,t){n[e]=m(e).concat(t)}function m(e){return n[e]||[]}function h(t){return d[t]=d[t]||e(f,t)}function v(){return f.backlog}}(void 0,\"globalEE\"),u=(0,n.Zm)();u.ee||(u.ee=c),r.d(t,[\"P\",0,o,\"ee\",0,c])},2646(e,t,r){\"use strict\";r.d(t,{y:()=>n});class n{constructor(e){this.contextId=e}}},9908(e,t,r){\"use strict\";r.d(t,{d:()=>n,p:()=>i});var n=r(7836).ee.get(\"handle\");function i(e,t,r,i,a){a?(a.buffer([e],i),a.emit(e,t,r)):(n.buffer([e],i),n.emit(e,t,r))}},3606(e,t,r){\"use strict\";r.d(t,{i:()=>a});var n=r(9908);a.on=s;var i=a.handlers={};function a(e,t,r,a){s(a||n.d,i,e,t,r)}function s(e,t,r,i,a){a||(a=\"feature\"),e||(e=n.d);var s=t[a]=t[a]||{};(s[r]=s[r]||[]).push([e,i])}},3878(e,t,r){\"use strict\";function n(e,t){return{capture:e,passive:!1,signal:t}}function i(e,t,r=!1,i){window.addEventListener(e,t,n(r,i))}function a(e,t,r=!1,i){document.addEventListener(e,t,n(r,i))}r.d(t,{DD:()=>a,jT:()=>n,sp:()=>i})},5607(e,t,r){\"use strict\";const n=(0,r(9566).bz)();r.d(t,[\"W\",0,n])},9566(e,t,r){\"use strict\";r.d(t,{LA:()=>s,bz:()=>a});var n=r(6154);function i(e,t){return e?15&e[t]:16*Math.random()|0}function a(){const e=n.gm?.crypto||n.gm?.msCrypto;let t,r=0;return e&&e.getRandomValues&&(t=e.getRandomValues(new Uint8Array(30))),\"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx\".split(\"\").map(e=>\"x\"===e?i(t,r++).toString(16):\"y\"===e?(3&i()|8).toString(16):e).join(\"\")}function s(e){const t=n.gm?.crypto||n.gm?.msCrypto;let r,a=0;t&&t.getRandomValues&&(r=t.getRandomValues(new Uint8Array(e)));const s=[];for(var o=0;o<e;o++)s.push(i(r,a++).toString(16));return s.join(\"\")}},2614(e,t,r){\"use strict\";r.d(t,[\"BB\",0,18e5,\"Wt\",0,\"NRBA_SESSION::\",\"iL\",0,{SAME_TAB:\"same-tab\",CROSS_TAB:\"cross-tab\"},\"tS\",0,{STARTED:\"session-started\",PAUSE:\"session-pause\",RESET:\"session-reset\",RESUME:\"session-resume\",UPDATE:\"session-update\"},\"wk\",0,144e5])},1863(e,t,r){\"use strict\";function n(){return Math.floor(performance.now())}r.d(t,{t:()=>n})},944(e,t,r){\"use strict\";r.d(t,{R:()=>i});var n=r(3241);function i(e,t){\"function\"==typeof console.debug&&(console.debug(\"New Relic Warning: https://github.com/newrelic/newrelic-browser-agent/blob/main/docs/warning-codes.md#\".concat(e),t),(0,n.W)({drained:null,type:\"data\",name:\"warn\",feature:\"warn\",data:{code:e,secondary:t}}))}},8990(e,t,r){\"use strict\";r.d(t,{I:()=>i});var n=Object.prototype.hasOwnProperty;function i(e,t,r){if(n.call(e,t))return e[t];var i=r();if(Object.defineProperty&&Object.keys)try{return Object.defineProperty(e,t,{value:i,writable:!0,enumerable:!1}),i}catch(e){}return e[t]=i,i}},6389(e,t,r){\"use strict\";function n(e,t=500,r={}){const n=r?.leading||!1;let i;return(...r)=>{n&&void 0===i&&(e.apply(this,r),i=setTimeout(()=>{i=clearTimeout(i)},t)),n||(clearTimeout(i),i=setTimeout(()=>{e.apply(this,r)},t))}}function i(e){let t=!1;return(...r)=>{t||(t=!0,e.apply(this,r))}}r.d(t,{J:()=>i,s:()=>n})},1910(e,t,r){\"use strict\";r.d(t,{i:()=>a});var n=r(944);const i=new Map;function a(...e){return e.every(e=>{if(i.has(e))return i.get(e);const t=\"function\"==typeof e?e.toString():\"\",r=t.includes(\"[native code]\"),a=t.includes(\"nrWrapper\");return r||a||(0,n.R)(64,e?.name||t),i.set(e,r),r})}},5289(e,t,r){\"use strict\";r.d(t,{GG:()=>s,Qr:()=>c,sB:()=>o});var n=r(3878),i=r(6389);function a(){return\"undefined\"==typeof document||\"complete\"===document.readyState}function s(e,t){if(a())return e();const r=(0,i.J)(e),s=setInterval(()=>{a()&&(clearInterval(s),r())},500);(0,n.sp)(\"load\",r,t)}function o(e){if(a())return e();(0,n.DD)(\"DOMContentLoaded\",e)}function c(e){if(a())return e();(0,n.sp)(\"popstate\",e)}},384(e,t,r){\"use strict\";r.d(t,{Zm:()=>c,bQ:()=>d,dV:()=>u,pV:()=>l});var n=r(6154),i=r(1863),a=r(944),s=r(1910);const o={beacon:\"bam.nr-data.net\",errorBeacon:\"bam.nr-data.net\"};function c(){return n.gm.NREUM||(n.gm.NREUM={}),void 0===n.gm.newrelic&&(n.gm.newrelic=n.gm.NREUM),n.gm.NREUM}function u(){let e=c();return e.o||(e.o={ST:n.gm.setTimeout,SI:n.gm.setImmediate||n.gm.setInterval,CT:n.gm.clearTimeout,XHR:n.gm.XMLHttpRequest,REQ:n.gm.Request,EV:n.gm.Event,PR:n.gm.Promise,MO:n.gm.MutationObserver,FETCH:n.gm.fetch,WS:n.gm.WebSocket},(0,s.i)(...Object.values(e.o))),e}function d(e,t){let r=c();r.initializedAgents??={},t.initializedAt={ms:(0,i.t)(),date:new Date},r.initializedAgents[e]=t,2===Object.keys(r.initializedAgents).length&&(0,a.R)(69)}function l(){return function(){let e=c();const t=e.info||{};e.info={beacon:o.beacon,errorBeacon:o.errorBeacon,...t}}(),function(){let e=c();const t=e.init||{};e.init={...t}}(),u(),function(){let e=c();const t=e.loader_config||{};e.loader_config={...t}}(),c()}r.d(t,[\"NT\",0,o])},2843(e,t,r){\"use strict\";r.d(t,{G:()=>a,u:()=>i});var n=r(3878);function i(e,t=!1,r,i){(0,n.DD)(\"visibilitychange\",function(){if(t)return void(\"hidden\"===document.visibilityState&&e());e(document.visibilityState)},r,i)}function a(e,t,r){(0,n.sp)(\"pagehide\",e,t,r)}},9300(e,t,r){\"use strict\";r(860).K7.ajax;r.d(t,[\"mo\",0,{NONE:\"none\",FAILURES:\"failures\",ALL:\"all\"}])},3969(e,t,r){\"use strict\";const n=r(860).K7.metrics;r.d(t,[\"TZ\",0,n,\"XG\",0,\"storeEventMetrics\",\"xV\",0,\"storeSupportabilityMetrics\"])},6630(e,t,r){\"use strict\";const n=r(860).K7.pageViewEvent;r.d(t,[\"T\",0,n])},782(e,t,r){\"use strict\";const n=r(860).K7.pageViewTiming;r.d(t,[\"T\",0,n])},4234(e,t,r){\"use strict\";r.d(t,{W:()=>i});var n=r(1687);class i{constructor(e,t){this.agentRef=e,this.ee=e?.ee,this.featureName=t,this.blocked=!1}deregisterDrain(){(0,n.x3)(this.agentRef,this.featureName)}}},7767(e,t,r){\"use strict\";var n=r(6154);r.d(t,[\"V\",0,e=>n.RI&&!0===e?.privacy.cookies_enabled])},8362(e,t,r){\"use strict\";r.d(t,{d:()=>a});var n=r(9566),i=r(1741);class a extends i.W{agentIdentifier=(0,n.LA)(16)}},1741(e,t,r){\"use strict\";r.d(t,{W:()=>a});var n=r(944),i=r(4261);class a{#e(e,...t){if(this[e]!==a.prototype[e])return this[e](...t);(0,n.R)(35,e)}addPageAction(e,t){return this.#e(i.hG,e,t)}register(e){return this.#e(i.eY,e)}recordCustomEvent(e,t){return this.#e(i.fF,e,t)}setPageViewName(e,t){return this.#e(i.Fw,e,t)}setCustomAttribute(e,t,r){return this.#e(i.cD,e,t,r)}noticeError(e,t){return this.#e(i.o5,e,t)}setUserId(e,t=!1){return this.#e(i.Dl,e,t)}setApplicationVersion(e){return this.#e(i.nb,e)}setErrorHandler(e){return this.#e(i.bt,e)}addRelease(e,t){return this.#e(i.k6,e,t)}log(e,t){return this.#e(\"log\",e,t)}start(){return this.#e(\"start\")}finished(e){return this.#e(i.BL,e)}recordReplay(){return this.#e(i.CH)}pauseReplay(){return this.#e(i.Tb)}addToTrace(e){return this.#e(i.U2,e)}setCurrentRouteName(e){return this.#e(i.PA,e)}interaction(e){return this.#e(i.dT,e)}wrapLogger(e,t,r){return this.#e(i.Wb,e,t,r)}measure(e,t){return this.#e(i.V1,e,t)}consent(e){return this.#e(i.Pv,e)}}},4261(e,t,r){\"use strict\";r.d(t,[\"BL\",0,\"finished\",\"CH\",0,\"recordReplay\",\"Dl\",0,\"setUserId\",\"Fw\",0,\"setPageViewName\",\"PA\",0,\"setCurrentRouteName\",\"Pv\",0,\"consent\",\"Tb\",0,\"pauseReplay\",\"U2\",0,\"addToTrace\",\"V1\",0,\"measure\",\"Wb\",0,\"wrapLogger\",\"bt\",0,\"setErrorHandler\",\"cD\",0,\"setCustomAttribute\",\"dT\",0,\"interaction\",\"eY\",0,\"register\",\"fF\",0,\"recordCustomEvent\",\"hG\",0,\"addPageAction\",\"k6\",0,\"addRelease\",\"nb\",0,\"setApplicationVersion\",\"o5\",0,\"noticeError\"])},1738(e,t,r){\"use strict\";r.d(t,{U:()=>l,Y:()=>d});var n=r(3241),i=r(9908),a=r(1863),s=r(944),o=r(3969),c=r(8362),u=r(860);function d(e,t,r,a){const d=a||r;!d||d[e]&&d[e]!==c.d.prototype[e]||(d[e]=function(){(0,i.p)(o.xV,[\"API/\"+e+\"/called\"],void 0,u.K7.metrics,r.ee),(0,n.W)({drained:!!r.runtime?.activatedFeatures,type:\"data\",name:\"api\",feature:\"api-\"+e,data:{}});try{return t.apply(this,arguments)}catch(e){(0,s.R)(23,e)}})}function l(e,t,r,n,s){const o=e.info;null===r?delete o.jsAttributes[t]:o.jsAttributes[t]=r,(s||null===r)&&(0,i.p)(\"api-\"+n,[(0,a.t)(),t,r],void 0,\"session\",e.ee)}},8374(e,t,r){r.nc=(()=>{try{return document?.currentScript?.nonce}catch(e){}return\"\"})()},860(e,t,r){\"use strict\";const n=\"events\",i=\"jserrors\",a=\"browser/blobs\",s=\"browser/logs\",o={ajax:\"ajax\",genericEvents:\"generic_events\",jserrors:i,logging:\"logging\",metrics:\"metrics\",pageAction:\"page_action\",pageViewEvent:\"page_view_event\",pageViewTiming:\"page_view_timing\",sessionReplay:\"session_replay\",sessionTrace:\"session_trace\",softNav:\"soft_navigations\"},c={[o.pageViewEvent]:1,[o.pageViewTiming]:2,[o.metrics]:3,[o.jserrors]:4,[o.softNav]:5,[o.ajax]:6,[o.sessionTrace]:7,[o.sessionReplay]:8,[o.logging]:9,[o.genericEvents]:10},u={[o.pageViewEvent]:\"rum\",[o.pageViewTiming]:n,[o.ajax]:n,[o.softNav]:n,[o.metrics]:i,[o.jserrors]:i,[o.sessionTrace]:a,[o.sessionReplay]:a,[o.logging]:s,[o.genericEvents]:\"ins\"};r.d(t,[\"$J\",0,u,\"K7\",0,o,\"P3\",0,c,\"XX\",0,i,\"Yy\",0,s,\"df\",0,a,\"hg\",0,\"connect\"])}};const t={};function r(n){const i=t[n];if(void 0!==i)return i.exports;const a=t[n]={exports:{}};return e[n](a,a.exports,r),a.exports}r.m=e,r.d=(e,t)=>{if(Array.isArray(t))for(var n=0;n<t.length;){var i=t[n++],a=t[n++];r.o(e,i)?0===a&&n++:0===a?Object.defineProperty(e,i,{enumerable:!0,value:t[n++]}):Object.defineProperty(e,i,{enumerable:!0,get:a})}else for(var i in t)r.o(t,i)&&!r.o(e,i)&&Object.defineProperty(e,i,{enumerable:!0,get:t[i]})},r.f={},r.e=e=>Promise.all(Object.keys(r.f).reduce((t,n)=>(r.f[n](e,t),t),[])),r.u=e=>\"nr-rum-1.324.1.min.js\",r.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),(()=>{const e={},t=\"NRBA-1.324.1.PROD:\";r.l=(n,i,a,s)=>{if(e[n])return void e[n].push(i);let o,c;if(void 0!==a){const e=document.getElementsByTagName(\"script\");for(var u=0;u<e.length;u++){const r=e[u];if(r.getAttribute(\"src\")==n||r.getAttribute(\"data-webpack\")==t+a){o=r;break}}}if(!o){c=!0;var d={296:\"sha512-zuv39xzZ8AH/HwpVrtkixvcBuOFo2ydcFzMtXjx+3Iwr5g++inX+6YDH7J/8fOCAtBetz8aDyaYCRkGy2nnG/w==\"};o=document.createElement(\"script\"),o.charset=\"utf-8\",r.nc&&o.setAttribute(\"nonce\",r.nc),o.setAttribute(\"data-webpack\",t+a),o.src=n,0!==o.src.indexOf(window.location.origin+\"/\")&&(o.crossOrigin=\"anonymous\"),d[s]&&(o.integrity=d[s])}e[n]=[i];const l=(t,r)=>{o.onerror=o.onload=null,clearTimeout(f);const i=e[n];if(delete e[n],o.parentNode?.removeChild(o),i?.forEach(e=>e(r)),t)return t(r)},f=setTimeout(l.bind(null,void 0,{type:\"timeout\",target:o}),12e4);o.onerror=l.bind(null,o.onerror),o.onload=l.bind(null,o.onload),c&&document.head.appendChild(o)}})(),r.r=e=>{Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:\"Module\"}),Object.defineProperty(e,\"__esModule\",{value:!0})},r.p=\"https://js-agent.newrelic.com/\",(()=>{const e={374:0,840:0};r.f.j=(t,n)=>{let i=r.o(e,t)?e[t]:void 0;if(0!==i)if(i)n.push(i[2]);else{const a=new Promise((r,n)=>i=e[t]=[r,n]);n.push(i[2]=a);const s=r.p+r.u(t),o=new Error,c=n=>{if(r.o(e,t)&&(i=e[t],0!==i&&(e[t]=void 0),i)){const e=n&&(\"load\"===n.type?\"missing\":n.type),r=n&&n.target&&n.target.src;o.message=\"Loading chunk \"+t+\" failed: (\"+e+\": \"+r+\")\",o.name=\"ChunkLoadError\",o.type=e,o.request=r,i[1](o)}};r.l(s,c,\"chunk-\"+t,t)}};const t=(t,n)=>{let[i,a,s]=n;var o,c,u=0;if(i.some(t=>0!==e[t])){for(o in a)r.o(a,o)&&(r.m[o]=a[o]);if(s)s(r)}for(t&&t(n);u<i.length;u++)c=i[u],r.o(e,c)&&e[c]&&e[c][0](),e[c]=0},n=self[\"webpackChunk:NRBA-1.324.1.PROD\"]=self[\"webpackChunk:NRBA-1.324.1.PROD\"]||[];n.forEach(t.bind(null,0)),n.push=t.bind(null,n.push.bind(n))})(),(()=>{\"use strict\";r(8374);var e=r(8362),t=r(860);const n=Object.values(t.K7);var i=r(384),a=r(1741);var s=r(2555),o=r(981);t.K7.genericEvents,o.R.PA,o.R.UA,o.R.BP;const c={RESOURCES:\"experimental.resources\",REGISTER:\"register\"};var u=r(9300);const d=e=>{if(!e||\"string\"!=typeof e)return!1;try{document.createDocumentFragment().querySelector(e)}catch{return!1}return!0};var l=r(2614),f=r(944),g=r(8122);const p=\"[data-nr-mask]\",m=e=>(0,g.a)(e,(()=>{const e={feature_flags:[],experimental:{register:!1,resources:!1,iframe_bridge:!1,iframe_domains:[]},mask_selector:\"*\",block_selector:\"[data-nr-block]\",mask_input_options:{color:!1,date:!1,\"datetime-local\":!1,email:!1,month:!1,number:!1,range:!1,search:!1,tel:!1,text:!1,time:!1,url:!1,week:!1,textarea:!1,select:!1,password:!0}};return{ajax:{deny_list:void 0,block_internal:!0,enabled:!0,autoStart:!0,capture_payloads:u.mo.NONE},api:{register:{get enabled(){return e.feature_flags.includes(c.REGISTER)||e.experimental.register},set enabled(t){e.experimental.register=t},duplicate_data_to_container:!1,get allow_iframe_bridge(){return e.feature_flags.includes(c.IFRAME_BRIDGE)||e.experimental.iframe_bridge},set allow_iframe_bridge(t){e.experimental.iframe_bridge=t},get iframe_domains(){return e.experimental.iframe_domains},set iframe_domains(t){Array.isArray(t)?e.experimental.iframe_domains=t:(0,f.R)(1,t)}}},browser_consent_mode:{enabled:!1},distributed_tracing:{enabled:void 0,exclude_newrelic_header:void 0,cors_use_newrelic_header:void 0,cors_use_tracecontext_headers:void 0,allowed_origins:void 0},get feature_flags(){return e.feature_flags},set feature_flags(t){e.feature_flags=t},generic_events:{enabled:!0,autoStart:!0},harvest:{interval:30},jserrors:{enabled:!0,autoStart:!0},logging:{enabled:!0,autoStart:!0},metrics:{enabled:!0,autoStart:!0},obfuscate:void 0,page_action:{enabled:!0},page_view_event:{enabled:!0,autoStart:!0},page_view_timing:{enabled:!0,autoStart:!0},performance:{capture_marks:!1,capture_measures:!1,capture_detail:!0,resources:{get enabled(){return e.feature_flags.includes(c.RESOURCES)||e.experimental.resources},set enabled(t){e.experimental.resources=t},asset_types:[],first_party_domains:[],ignore_newrelic:!0}},privacy:{cookies_enabled:!0},proxy:{assets:void 0,beacon:void 0},session:{expiresMs:l.wk,inactiveMs:l.BB},session_replay:{autoStart:!0,enabled:!1,preload:!1,collect_fonts:!1,inline_images:!1,fix_stylesheets:!0,mask_all_inputs:!0,get mask_text_selector(){return e.mask_selector},set mask_text_selector(t){d(t)?e.mask_selector=\"\".concat(t,\",\").concat(p):\"\"===t||null===t?e.mask_selector=p:(0,f.R)(5,t)},get block_class(){return\"nr-block\"},get ignore_class(){return\"nr-ignore\"},get mask_text_class(){return\"nr-mask\"},get block_selector(){return e.block_selector},set block_selector(t){d(t)?e.block_selector+=\",\".concat(t):\"\"!==t&&(0,f.R)(6,t)},get mask_input_options(){return e.mask_input_options},set mask_input_options(t){t&&\"object\"==typeof t?e.mask_input_options={...t,password:!0}:(0,f.R)(7,t)}},session_trace:{enabled:!0,autoStart:!0},soft_navigations:{enabled:!0,autoStart:!0},ssl:void 0,user_actions:{enabled:!0,elementAttributes:[\"id\",\"className\",\"tagName\",\"type\"]},web_sockets:{enabled:!1}}})());var h=r(6154),v=r(9324);let b=0;const y={buildEnv:\"PROD\",distMethod:\"CDN\",version:v.xv,originTime:h.WN},_={consented:!1},w={activatedFeatures:void 0,appMetadata:{},configured:!1,get consented(){return this.session?.state?.consent||_.consented},set consented(e){_.consented=e},customTransaction:void 0,denyList:[],disabled:!1,drainRegistry:new Map,connector:void 0,harvester:void 0,v2Target:void 0,isolatedBacklog:!1,isRecording:!1,loaderType:void 0,maxBytes:3e4,obfuscator:void 0,onerror:void 0,ptid:void 0,releaseIds:{},session:void 0,timeKeeper:void 0,registeredEntities:[],jsAttributesMetadata:{bytes:0},get harvestCount(){return++b},listeningForIframeMessages:!1},R=\"BA\";var A=r(7836),x=r(3241);const E={accountID:void 0,trustKey:void 0,agentID:void 0,licenseKey:void 0,applicationID:void 0,xpid:void 0};var S=r(9908);const k=\"newrelic-iframe-\";function T(e,t={},n,o){let{init:c,info:u,loader_config:d,runtime:l={},exposed:f=!0}=t;if(!u){const e=(0,i.pV)();c=e.init,u=e.info,d=e.loader_config}var p;e.init=m(c||{}),e.loader_config=(p=d||{},(0,g.a)(p,E)),u.jsAttributes??={},h.bv&&(u.jsAttributes.isWorker=!0),e.info=(0,s.D)(u);const v=e.init;e.runtime??=(e=>{const t=(0,g.a)(e,w),r=Object.keys(y).reduce((e,t)=>(e[t]={value:y[t],writable:!1,configurable:!0,enumerable:!0},e),{});return Object.defineProperties(t,r)})(l),e.runtime.v2Target??={type:R,instance:e.agentIdentifier,get id(){return e.runtime.appMetadata?.agents?.[0]?.entityGuid},get attributes(){return{\"entity.guid\":this.id,appId:e.info.applicationID}}},v.proxy.assets&&(e=>{const t=e.startsWith(\"http\");e+=\"/\",r.p=t?e:\"https://\"+e})(v.proxy.assets),e.runtime.configured||(Object.defineProperty(e,\"beacons\",{get:()=>[e.info.beacon,e.info.errorBeacon,e.init.proxy.assets,e.init.proxy.beacon].filter(Boolean)}),Object.defineProperty(e.runtime,\"denyList\",{get:()=>[...e.init.ajax.deny_list||[],...e.init.ajax.block_internal?e.beacons:[]]}),e.runtime.ptid=e.agentIdentifier,function(e){const t=(0,i.pV)();Object.getOwnPropertyNames(a.W.prototype).forEach(r=>{const n=a.W.prototype[r];if(\"function\"!=typeof n||\"constructor\"===n)return;let i=t[r];e[r]&&!1!==e.exposed&&\"micro-agent\"!==e.runtime?.loaderType&&(t[r]=(...t)=>{const n=e[r](...t);return i?i(...t):n})})}(e),e.runtime.loaderType=n,e.ee=A.ee.get(e.agentIdentifier),e.exposed=f,(0,x.W)({drained:!!e.runtime.activatedFeatures,type:\"lifecycle\",name:\"initialize\",feature:void 0,data:e.config}),e.init.api.register.allow_iframe_bridge&&h.gm.addEventListener(\"message\",t=>{\"string\"==typeof t.data?.type&&t.data.type.startsWith(k)&&(0,S.p)(\"iframe-message\",[t],void 0,\"IFRAME\",e.ee)}),e.runtime.configured=!0)}var j=r(1863),P=r(4261),N=r(1738);var O=r(1687),M=r(4234),I=r(5289),D=r(7767);function V(e){return!!(0,i.dV)().o.MO&&(0,D.V)(e)&&!0===e?.session_trace.enabled}var W=r(6389),B=r(7699);const C=new WeakSet,K=new WeakMap;class U extends M.W{constructor(e,t){super(e,t),this.abortHandler=void 0,this.featAggregate=void 0,this.loadedSuccessfully=void 0,this.onAggregateImported=new Promise(e=>{this.loadedSuccessfully=e}),this.deferred=Promise.resolve(),!1===e.init[this.featureName].autoStart?this.deferred=new Promise((t,r)=>{this.ee.on(\"manual-start-all\",(0,W.J)(()=>{(0,O.Ak)(e,this.featureName),t()}))}):(0,O.Ak)(e,t)}importAggregator(e,t,n={}){if(this.featAggregate)return;const i=async()=>{if(await this.deferred,this.#t(e),!(0,s.f)(e.info))return(0,f.R)(43),e.ee.abort(),void this.loadedSuccessfully(!1);try{await async function(e,t,n){if(K.has(e))return K.get(e);const i=(async()=>{if((0,D.V)(e.init))try{const{setupAgentSession:t}=await r.e(296).then(r.bind(r,1768));t(e)}catch(e){(0,f.R)(20,e),t.emit(\"internal-error\",[e]),(0,S.p)(B.qh,[e],void 0,n,t)}if(e.init.api.register.allow_iframe_bridge)try{const{setupIframeMFEMessageListener:t}=await Promise.resolve().then(function(){const e=new Error(\"Cannot find module '../../loaders/configure/iframe-message-handler'\");throw e.code=\"MODULE_NOT_FOUND\",e});t(e)}catch(e){(0,f.R)(23,e)}const[{Connector:i},{Harvester:a}]=await Promise.all([r.e(296).then(r.bind(r,6589)),r.e(296).then(r.bind(r,5237))]);e.runtime.connector=new i(e),e.runtime.harvester=new a(e);const s=Object.values(e.features).filter(t=>e.runtime.drainRegistry.has(t.featureName));Promise.all(s.map(e=>e.onAggregateImported)).then(()=>e.runtime.harvester.startTimer())})();K.set(e,i),await i}(e,this.ee,this.featureName)}catch(e){return(0,f.R)(79,e),this.ee.abort(),void this.loadedSuccessfully(!1)}try{if(!this.#r(this.featureName,e.runtime.session,e.init))return this.abortHandler?.(),(0,O.Ze)(this.agentRef,this.featureName),void this.loadedSuccessfully(!1);const{Aggregate:r}=await t();this.featAggregate=new r(e,n),e.runtime.harvester.initializedAggregates.push(this.featAggregate),this.loadedSuccessfully(!0)}catch(e){(0,f.R)(34,e),this.abortHandler?.(),(0,O.Ze)(this.agentRef,this.featureName,!0),this.loadedSuccessfully(!1)}};h.RI?(0,I.GG)(()=>i(),!0):i()}#r(e,r,n){if(this.blocked)return!1;switch(e){case t.K7.sessionReplay:return V(n)&&!!r;case t.K7.sessionTrace:return!!r;default:return!0}}#t(e){if(!C.has(e)&&(C.add(e),!(0,s.f)(e.info))){const t=(0,i.pV)();let r={...t.info?.jsAttributes};try{r={...r,...e.info?.jsAttributes}}catch(e){}T(e,{...t,info:{...t.info,jsAttributes:r},runtime:e.runtime},e.runtime.loaderType)}}}var L=r(6630);class F extends U{static featureName=L.T;constructor(e){var t;super(e,L.T),this.setupInspectionEvents(),t=e,(0,N.Y)(P.Fw,function(e,r){\"string\"==typeof e&&(\"/\"!==e.charAt(0)&&(e=\"/\"+e),t.runtime.customTransaction=(r||\"http://custom.transaction\")+e,(0,S.p)(\"api-\"+P.Fw,[(0,j.t)()],void 0,void 0,t.ee))},t),this.importAggregator(e,()=>e.init.feature_flags.includes(\"rum_v2\")?r.e(296).then(r.bind(r,908)):r.e(296).then(r.bind(r,7927)))}setupInspectionEvents(){const e=(e,t)=>{e&&(0,x.W)({timeStamp:e.timeStamp,loaded:\"complete\"===e.target.readyState,type:\"window\",name:t,data:e.target.location+\"\"})};(0,I.sB)(t=>{e(t,\"DOMContentLoaded\")}),(0,I.GG)(t=>{e(t,\"load\")}),(0,I.Qr)(t=>{e(t,\"navigate\")}),this.ee.on(l.tS.UPDATE,(e,t)=>{(0,x.W)({type:\"lifecycle\",name:\"session\",data:t})})}}class G extends e.d{constructor(e){var t;(super(),h.gm)?(this.features={},(0,i.bQ)(this.agentIdentifier,this),this.desiredFeatures=new Set(e.features||[]),this.desiredFeatures.add(F),T(this,e,e.loaderType||\"agent\"),t=this,(0,N.Y)(P.cD,function(e,r,n=!1){if(\"string\"==typeof e){if([\"string\",\"number\",\"boolean\"].includes(typeof r)||null===r)return(0,N.U)(t,e,r,P.cD,n);(0,f.R)(40,typeof r)}else(0,f.R)(39,typeof e)},t),function(e){(0,N.Y)(P.Dl,function(t,r=!1){if(\"string\"!=typeof t&&null!==t)return void(0,f.R)(41,typeof t);const n=e.info.jsAttributes[\"enduser.id\"];r&&null!=n&&n!==t?(0,S.p)(\"api-setUserIdAndResetSession\",[t],void 0,\"session\",e.ee):(0,N.U)(e,\"enduser.id\",t,P.Dl,!0)},e)}(this),function(e){(0,N.Y)(P.nb,function(t){if(\"string\"==typeof t||null===t)return(0,N.U)(e,\"application.version\",t,P.nb,!1);(0,f.R)(42,typeof t)},e)}(this),function(e){(0,N.Y)(\"start\",function(){e.ee.emit(\"manual-start-all\")},e)}(this),function(e){(0,N.Y)(P.Pv,function(t=!0){if(\"boolean\"==typeof t){if((0,S.p)(\"api-\"+P.Pv,[t],void 0,\"session\",e.ee),e.runtime.consented=t,t){const t=e.features.page_view_event;t.onAggregateImported.then(e=>{const r=t.featAggregate;e&&!r.sentRum&&r.sendRum?.()})}}else(0,f.R)(65,typeof t)},e)}(this),this.run()):(0,f.R)(21)}get config(){return{info:this.info,init:this.init,loader_config:this.loader_config,runtime:this.runtime}}get api(){return this}run(){try{const e=function(e){const t={};return n.forEach(r=>{t[r]=!!e[r]?.enabled}),t}(this.init),r=[...this.desiredFeatures],i=this.init.feature_flags.includes(\"rum_v2\");r.sort((e,r)=>t.P3[e.featureName]-t.P3[r.featureName]),r.forEach(r=>{if(!e[r.featureName]&&(i||r.featureName!==t.K7.pageViewEvent))return;const n=function(e){switch(e){case t.K7.ajax:return[t.K7.jserrors];case t.K7.sessionTrace:return[t.K7.ajax,t.K7.pageViewEvent];case t.K7.sessionReplay:return[t.K7.sessionTrace];case t.K7.pageViewTiming:return[t.K7.pageViewEvent];default:return[]}}(r.featureName).filter(e=>!(e in this.features));n.length>0&&(0,f.R)(36,{targetFeature:r.featureName,missingDependencies:n}),this.features[r.featureName]=new r(this)})}catch(e){(0,f.R)(22,e);for(const e in this.features)this.features[e].abortHandler?.();const t=(0,i.Zm)();delete t.initializedAgents[this.agentIdentifier]?.features,delete this.sharedAggregator;return t.ee.get(this.agentIdentifier).abort(),!1}}}var H=r(2843),z=r(782);class Y extends U{static featureName=z.T;constructor(e){super(e,z.T),h.RI&&((0,H.u)(()=>(0,S.p)(\"docHidden\",[(0,j.t)()],void 0,z.T,this.ee),!0),(0,H.G)(()=>(0,S.p)(\"winPagehide\",[(0,j.t)()],void 0,z.T,this.ee)),this.importAggregator(e,()=>r.e(296).then(r.bind(r,9981))))}}var Z=r(3969);class q extends U{static featureName=Z.TZ;constructor(e){super(e,Z.TZ),this.importAggregator(e,()=>r.e(296).then(r.bind(r,9623)))}}new G({features:[F,Y,q],loaderType:\"lite\"})})()})();</script>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>\n    <title>Diário Oficial dos Municípios SIGPub - Sistema Gerenciador de Publicações Legais</title>\n        <link rel=\"stylesheet\" type=\"text/css\" href=\"/dist/css/externo.min.css\">\n        <link rel=\"stylesheet\" type=\"text/css\" href=\"/dist/css/navegacao.min.css\">\n    <link rel=\"icon\" type=\"image/x-icon\" href=\"/favicon.ico\"/>\n\n    <link rel=\"stylesheet\" type=\"text/css\" href=\"/dist/lib/css/lib.min.css\">\n    <link rel=\"stylesheet\" type=\"text/css\" href=\"/dist/lib/npm/sweetalert2.min.css\">\n    <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n    <link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n    <link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@200;300;500;600;700&display=swap\" rel=\"stylesheet\">\n    <link rel=\"stylesheet\" href=\"//cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css\"\n    integrity=\"sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==\"\n    crossorigin=\"anonymous\" referrerpolicy=\"no-referrer\"/>\n\n            <!-- Global site tag (gtag.js) - Google Analytics -->\n<script async src=\"https://www.googletagmanager.com/gtag/js?id=G-KJYBF0PFGT\"></script>\n<script>\n    window.dataLayer = window.dataLayer || [];\n    function gtag(){dataLayer.push(arguments);}\n    gtag('js', new Date());\n\n    gtag('config', 'UA-18200099-1');\n    gtag('config', 'G-KJYBF0PFGT');\n</script>\n    </head>\n<body class=\"diario-famurs\">\n\n<input type='hidden' name='gethostname' value='vox-prod-web-06.ipa.voxtecnologia.com.br' />\n\n    <section id=\"popup\" class=\"modal-edicao none\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"modal-edicao-titulo\">\n    <div class=\"modal-edicao__fundo\" data-fechar-modal></div>\n\n    <div class=\"modal-edicao__janela\">\n        <header class=\"modal-edicao__cabecalho\">\n            <div>\n                <p class=\"modal-edicao__rotulo\">Edição do dia</p>\n                <h1 class=\"modal-edicao__data\" id=\"modal-edicao-titulo\"><span id=\"dataDiario\"></span></h1>\n            </div>\n\n            <a href=\"#\" class=\"modal-edicao__fechar bt-fechar\" title=\"Fechar\" aria-label=\"Fechar\">\n                <i class=\"fa-solid fa-xmark\" aria-hidden=\"true\"></i>\n            </a>\n        </header>\n\n        <div class=\"modal-edicao__corpo\">\n                        <p id=\"materia-aviso\" class=\"modal-edicao__vazio\">\n                <i class=\"fa-regular fa-calendar-xmark\" aria-hidden=\"true\"></i>\n                Nenhuma edição publicada nesta data\n            </p>\n\n                        <div id=\"containerDownload\" class=\"modal-edicao__bloco\">\n                <ul class=\"modal-edicao__arquivos\">\n                    <li>\n                        <a id=\"btDownloadSimples\" href=\"#\" class=\"botao-edicao\" title=\"Clique aqui para baixar a edição simples\">\n                            <i class=\"fa-solid fa-file-pdf\" aria-hidden=\"true\"></i>\n                            <span>\n                                <strong>Baixar a edição</strong>\n                                <small>Arquivo PDF</small>\n                            </span>\n                        </a>\n                    </li>\n                    <li>\n                        <a id=\"btDownloadCertificada\" href=\"#\" class=\"botao-edicao botao-edicao--secundario\" title=\"Clique aqui para baixar certificada. Requer software\">\n                            <i class=\"fa-solid fa-file-shield\" aria-hidden=\"true\"></i>\n                            <span>\n                                <strong>Baixar a versão certificada</strong>\n                                <small>Requer software de leitura</small>\n                            </span>\n                        </a>\n                    </li>\n                </ul>\n\n                <p class=\"modal-edicao__nota\">\n                    As edições publicadas são arquivos em <strong>PDF assinados com certificado digital</strong>, o\n                    que assegura a autenticidade, a integridade e a validade jurídica do documento eletrônico. A\n                    assinatura usa o padrão XML DSIG: para abrir a edição certificada é preciso um leitor próprio.\n                    <a href=\"#\" id=\"verificar-assinatura\" title=\"Verificar Assinatura Digital\">Verificar assinatura digital</a>\n                </p>\n            </div>\n\n                        <div id=\"containerDownloadNova\" class=\"modal-edicao__bloco none\">\n                <ul class=\"modal-edicao__arquivos\">\n                    <li>\n                        <a id=\"btDownloadSimples2\" href=\"#\" class=\"botao-edicao\" title=\"Clique aqui para baixar a edição simples\">\n                            <i class=\"fa-solid fa-file-pdf\" aria-hidden=\"true\"></i>\n                            <span>\n                                <strong>Baixar a edição</strong>\n                                <small>Arquivo PDF assinado digitalmente</small>\n                            </span>\n                        </a>\n                    </li>\n                </ul>\n\n                <p class=\"modal-edicao__nota\">\n                    As edições publicadas são arquivos em <strong>PDF assinados com certificado digital</strong>, o\n                    que assegura a autenticidade, a integridade e a validade jurídica do documento eletrônico.\n                </p>\n            </div>\n\n                        <div id=\"exibeExtra\" class=\"modal-edicao__extra\" style=\"display:none\">\n                <p id=\"texto-extra\" class=\"modal-edicao__extra-aviso\">\n                    <i class=\"fa-solid fa-circle-exclamation\" aria-hidden=\"true\"></i>\n                    Esta data também tem edição extraordinária.\n                </p>\n\n                <ul class=\"lista-extra modal-edicao__arquivos\"></ul>\n            </div>\n        </div>\n    </div>\n</section>\n\n    <!-- container -->\n    <section class=\"grid-diario\" class=\"diario-famurs\" data-entity=\"famurs\">\n        <!-- header -->\n        <header class=\"header\">\n            <div class=\"container flex-center\">\n                <a href=\"https://www.diariomunicipal.com.br/famurs/\" title=\"Federação das Associações de Municípios do Rio Grande do Sul - FAMURS\">\n                    <img\n                                                alt=\"Federação das Associações de Municípios do Rio Grande do Sul - FAMURS\"\n                        src=\"/dist/images/diario/famurs/logo.png\"\n                    />\n                                    </a>\n                <div class=\"btn-login\">\n                    <a class=\"flex-center\" href=\"https://autenticacao.diariomunicipal.com.br/selected-system/sigpub-famurs\" data-url=\"https://autenticacao.diariomunicipal.com.br/selected-system/sigpub-famurs\"> <i class=\"fa-solid fa-lock\"></i><span>Acesso Seguro</span></a>\n                    <div class=\"tooltip\">Área restrita para usuários do Diário Oficial Eletrônico</div>\n                </div>\n            </div>\n        </header>\n        <!-- /header -->\n\n        <section class=\"hero\">\n            <div class=\"container\">\n                <div class=\"orgao-hero\">\n                <a href=\"https://www.diariomunicipal.com.br/famurs/\" id=\"orgao-base\" title=\"Federação das Associações de Municípios do Rio Grande do Sul - FAMURS\">\n                    <img alt=\"Federação das Associações de Municípios do Rio Grande do Sul - FAMURS\" src=\"/dist/images/diario/famurs/bandeira-uf.png\" />\n                        <h1><span>Diário</span> Oficial dos Municípios </h1>\n                </a>\n                </div>\n            </div>\n        </section>\n\n        <!--menu-->\n\n                \n        <nav class=\"menu nav-bar navbar navbar-expand-lg\" aria-label=\"Menu principal\">\n            <div class=\"container justify-center\">\n                                <button class=\"navbar-toggler\" type=\"button\"\n                        data-bs-toggle=\"collapse\" data-bs-target=\"#menu-principal\"\n                        aria-controls=\"menu-principal\" aria-expanded=\"false\"\n                        aria-label=\"Abrir o menu\">\n                    <span class=\"tracos\" aria-hidden=\"true\">\n                        <span class=\"traco\"></span>\n                        <span class=\"traco\"></span>\n                        <span class=\"traco\"></span>\n                    </span>\n                    <span class=\"rotulo\">Menu</span>\n                </button>\n\n                <div class=\"collapse navbar-collapse\" id=\"menu-principal\">\n                                        <div class=\"menu-topo\">\n                        <span class=\"menu-titulo\">Menu</span>\n                        <button class=\"menu-fechar\" type=\"button\"\n                                data-bs-toggle=\"collapse\" data-bs-target=\"#menu-principal\"\n                                aria-controls=\"menu-principal\" aria-expanded=\"false\"\n                                aria-label=\"Fechar o menu\">\n                            <span aria-hidden=\"true\">&times;</span>\n                        </button>\n                    </div>\n\n                    <ul class=\"navbar-nav small-caps\">\n                        <li class=\"nav-item dropdown\">\n                            <a href=\"#\" class=\"nav-link dropdown-toggle item-parent\"\n                               role=\"button\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\"\n                               title=\"O Diário Oficial\">O Diário Oficial</a>\n                            <ul class=\"dropdown-menu sub-menu\">\n                                <li>\n                                    <a class=\"dropdown-item\"\n                                                                              href=\"https://www.diariomunicipal.com.br/famurs/o-que-e\"\n                                       title=\"O que é o Diário Oficial Eletrônico\">O que é</a>\n                                </li>\n                                <li>\n                                    <a class=\"dropdown-item\"\n                                                                              href=\"https://www.diariomunicipal.com.br/famurs/como-funciona\"\n                                       title=\"Como funciona o Diário Oficial Eletrônico\">Como funciona</a>\n                                </li>\n                                <li>\n                                    <a class=\"dropdown-item\"\n                                                                              href=\"https://www.diariomunicipal.com.br/famurs/beneficios\"\n                                       title=\"Benefícios do Diário Oficial Eletrônico\">Benefícios</a>\n                                </li>\n                            </ul>\n                        </li>\n\n                                                    <li class=\"nav-item\">\n                                <a class=\"nav-link mn-legislacao\"\n                                                                      href=\"https://www.diariomunicipal.com.br/famurs/legislacao\"\n                                   title=\"Legislação\">Legislação</a>\n                            </li>\n                        \n                        <li class=\"nav-item\">\n                            <a class=\"nav-link mn-publicado\"\n                                                              href=\"https://www.diariomunicipal.com.br/famurs/atos\"\n                               title=\"Atos que podem ser publicados neste Diário Oficial Eletrônico\">O Que Pode Ser Publicado</a>\n                        </li>\n\n                                                                                <li class=\"nav-item mn-adesao\">\n                                <a class=\"nav-link mn-adesao\"\n                                                                      href=\"https://www.diariomunicipal.com.br/famurs/adesao\"\n                                   title=\"Faça sua Adesão\">Faça sua Adesão</a>\n                            </li>\n                                            </ul>\n                </div>\n            </div>\n        </nav><!--/menu-->\n\n                <div class=\"menu-backdrop\" data-menu-backdrop></div>\n\n        <!-- content -->\n        <section class=\"container mobile-container\">\n                <div class=\"conteudo-interna busca-avancada\">\n\n        <header class=\"busca-avancada__cabecalho\">\n            <h1 id=\"tit-sessao\"><strong>Busca</strong> completa por publicações</h1>\n            <p class=\"busca-avancada__ajuda\">\n                A busca cobre todas as matérias publicadas desde 2009.\n                Informe ao menos um filtro além do período: palavra-chave, título, município ou\n                órgão. Com a palavra-chave preenchida, deixar o município e o órgão em branco\n                procura no diário inteiro. Para buscar uma expressão exata, escreva entre aspas:\n                \"guarda municipal\" traz só as matérias com essas palavras juntas.\n            </p>\n        </header>\n\n        <form name=\"busca_avancada\" method=\"get\" class=\"form-busca\" id=\"form-busca\">\n            \n\n            <div class=\"form-busca__linha\">\n                <div class=\"form-busca__campo form-busca__campo--largo\">\n                    <label for=\"busca_avancada_texto\">Palavra-chave no texto</label>\n                    <input type=\"search\" id=\"busca_avancada_texto\" name=\"busca_avancada[texto]\" class=\"campo-texto\" placeholder=\"Ex.: &quot;guarda municipal&quot;\" value=\"&quot;posto de combustíveis&quot;\" />\n                    \n                </div>\n                <div class=\"form-busca__campo form-busca__campo--largo\">\n                    <label for=\"busca_avancada_titulo\">Título da matéria</label>\n                    <input type=\"search\" id=\"busca_avancada_titulo\" name=\"busca_avancada[titulo]\" class=\"campo-texto\" placeholder=\"Ex.: portaria, decreto\" />\n                    \n                </div>\n            </div>\n\n            <div class=\"form-busca__linha\">\n                <div class=\"form-busca__campo\">\n                    <label for=\"busca_avancada_entidade\">Município (entidade)</label>\n                    <select id=\"busca_avancada_entidade\" name=\"busca_avancada[entidade]\" class=\"campo-texto\" data-busca=\"entidade\"><option value=\"\">Todos os municípios</option><option value=\"146658\">Agência Reguladora Intermunicipal de Saneamento - AGESAN</option><option value=\"13376\">Câmara Municipal de Vereadores de Cachoeira do Sul</option><option value=\"59019\">Condesus</option><option value=\"1916444\">Consórcio de Desenvolvimento dos Municípios do Norte do Rio Grande do Sul</option><option value=\"57471\">Consórcio de Desenvolvimento Intermunicipal dos Municípios Alto Jacuí e Alto da Serra do Botucaraí</option><option value=\"2395869\">Consórcio de Saúde Intermunicipal – CONSIM</option><option value=\"46523\">Consórcio dos Municípios da Região Metropolitana de Porto Alegre</option><option value=\"2758701\">Consórcio Intermunicipal Centro-Sul</option><option value=\"256456\">Consórcio Intermunicipal da Região Centro do Estado</option><option value=\"454107\">Consórcio Intermunicipal da Região do Planalto Médio</option><option value=\"108837\">Consórcio Intermunicipal da Região Nordeste do RS</option><option value=\"2631455\">Consórcio Intermunicipal de Cooperação em Gestão Pública - CONIGEPU</option><option value=\"2306904\">Consórcio Intermunicipal de desenvolvimento do Pampa Gaúcho - Codepampa</option><option value=\"3899229\">Consórcio Intermunicipal de Desenvolvimento Regional Integrado - CDRI</option><option value=\"92951\">Consórcio Intermunicipal de Desenvolvimento Sustentável da Serra Gaúcha</option><option value=\"2256775\">Consórcio Intermunicipal de Esmeralda e Pinhal da Serra</option><option value=\"1036951\">Consórcio Intermunicipal de Gestão Ampliada da Região Carbonífera - CIGA</option><option value=\"165382\">Consórcio Intermunicipal de Gestão de Resíduos Sólidos</option><option value=\"3508573\">Consórcio Intermunicipal de Infraestrutura Rodoviária Urbana e Rural - CIDIRUR</option><option value=\"2235628\">Consórcio Intermunicipal de Saude - COIS</option><option value=\"2893414\">Consórcio Intermunicipal de Saúde - CONISA</option><option value=\"3969469\">Consórcio Intermunicipal de Saúde do Grande Sarandi</option><option value=\"76412\">Consórcio Intermunicipal de Serviços do Vale do Rio Pardo</option><option value=\"1708450\">Consórcio Intermunicipal de Serviços do Vale do Taquari</option><option value=\"69749\">Consórcio Intermunicipal do Médio Alto Uruguai - ‎CIMAU</option><option value=\"3494971\">Consórcio Intermunicipal do Noroeste do Estado do Rio Grande do Sul - CISA</option><option value=\"1737253\">Consórcio Intermunicipal do Vale do Cai - CISCAÍ</option><option value=\"2882158\">Consórcio Público Amlinorte</option><option value=\"85380\">Consórcio Público da Associação dos Municípios do Vale dos Sinos</option><option value=\"64210\">Consórcio Público de Saneamento Básico da Bacia Hidrográfica do Rio dos Sinos</option><option value=\"3589717\">Consórcio Publico Fronteira Noroeste – COFRON</option><option value=\"66066\">Consórcio Público Intermunicipal Desenvolvimento Econômico, Social e Ambiental da Bacia Rio Jaguarão</option><option value=\"2149186\">Consórcio Público Regional do Paranhana - CONPAR</option><option value=\"159\">Federação das Associações de Municípios do Rio Grande do Sul - FAMURS</option><option value=\"3060290\">Município de Aceguá</option><option value=\"2257705\">Município de Água Santa</option><option value=\"2379027\">Município de Agudo</option><option value=\"1675149\">Município de Amaral Ferrador</option><option value=\"2469510\">Município de Ametista do Sul</option><option value=\"1774061\">Município de André da Rocha</option><option value=\"3184784\">Município de Arroio do Tigre</option><option value=\"2783460\">Município de Benjamin Constant do Sul</option><option value=\"1720370\">Município de Bom Progresso</option><option value=\"2285305\">Município de Bossoroca</option><option value=\"3233119\">Município de Cacequi</option><option value=\"2182249\">Município de Canudos do Vale</option><option value=\"1898800\">Município de Capão do Leão</option><option value=\"2552317\">Município de Capivari do Sul</option><option value=\"3927658\">Município de Carlos Gomes</option><option value=\"1779718\">Município de Chapada</option><option value=\"3176388\">Município de Cidreira</option><option value=\"2736935\">Municipio de Constantina</option><option value=\"3283791\">Município de Dezesseis de Novembro</option><option value=\"2535641\">Município de Dilermando de Aguiar</option><option value=\"3210057\">Município de Dom Pedro de Alcântara</option><option value=\"2150275\">Município de Engenho Velho</option><option value=\"1813331\">Município de Entre-Ijuís</option><option value=\"2110637\">Município de Estação</option><option value=\"2604040\">Município de Fontoura Xavier</option><option value=\"2908920\">Município de Itaara</option><option value=\"1911303\">Município de Itapuca</option><option value=\"2213828\">Município de Itati</option><option value=\"1778182\">Município de Lagoão</option><option value=\"2471254\">Município de Maçambará</option><option value=\"1694286\">Município de Maratá</option><option value=\"1617599\">Município de Mariana Pimentel</option><option value=\"2780311\">Município de Mariano Moro</option><option value=\"2153566\">Município de Maximiliano de Almeida</option><option value=\"3911538\">Município de Morrinhos do Sul</option><option value=\"2853953\">Município de Muliterno</option><option value=\"1721500\">Município de Nova Bassano</option><option value=\"2226437\">Município de Nova Boa Vista</option><option value=\"1601147\">Município de Nova Candelária</option><option value=\"2985864\">Município de Nova Pádua</option><option value=\"2783590\">Município de Paulo Bento</option><option value=\"108852\">Município de Pelotas</option><option value=\"1709998\">Município de Presidente Lucena</option><option value=\"1691605\">Município de Protásio Alves</option><option value=\"2271030\">Município de Restinga Sêca</option><option value=\"2174656\">Município de Rio dos Índios</option><option value=\"1700781\">Município de Rio Grande</option><option value=\"2806007\">Município de Rolante</option><option value=\"4193332\">Municipio de Saldanha Marinho</option><option value=\"1937140\">Município de Santa Cecília do Sul</option><option value=\"1604393\">Município de Santa Cruz do Sul</option><option value=\"2237051\">Município de São Borja</option><option value=\"2414325\">Município de São Domingos do Sul</option><option value=\"1612709\">Município de São Francisco de Assis</option><option value=\"2145118\">Município de São José do Hortêncio</option><option value=\"1854631\">Município de São Pedro da Serra</option><option value=\"2913498\">Municipio de São Vendelino</option><option value=\"3292879\">Município de Sentinela do Sul</option><option value=\"2089262\">Município de Sete de Setembro</option><option value=\"1817883\">Município de Sinimbu</option><option value=\"2093093\">Município de Tiradentes do Sul</option><option value=\"1878359\">Município de Três Palmeiras</option><option value=\"4155584\">Município de Tunas</option><option value=\"2272834\">Município de Unistalda</option><option value=\"1896563\">Município de Vacaria</option><option value=\"57434\">Prefeitura Municipal de Alecrim</option><option value=\"91312\">Prefeitura Municipal de Alegrete</option><option value=\"59144\">Prefeitura Municipal de Alegria</option><option value=\"83400\">Prefeitura Municipal de Almirante Tamandaré do Sul</option><option value=\"953998\">Prefeitura Municipal de Alto Feliz</option><option value=\"26392\">Prefeitura Municipal de Alvorada</option><option value=\"544720\">Prefeitura Municipal de Arambaré</option><option value=\"246\">Prefeitura Municipal de Araricá</option><option value=\"75133\">Prefeitura Municipal de Aratiba</option><option value=\"1840449\">Prefeitura Municipal de Arroio do Sal</option><option value=\"64189\">Prefeitura Municipal de Arroio dos Ratos</option><option value=\"27931\">Prefeitura Municipal de Augusto Pestana</option><option value=\"1151036\">Prefeitura Municipal de Balneário Pinhal</option><option value=\"50571\">Prefeitura Municipal de Barão</option><option value=\"169493\">Prefeitura Municipal de Barão de Cotegipe</option><option value=\"161236\">Prefeitura Municipal de Barão do Triunfo</option><option value=\"64176\">Prefeitura Municipal de Barracão</option><option value=\"59939\">Prefeitura Municipal de Barra do Guarita</option><option value=\"2849716\">Prefeitura Municipal de Barra do Rio Azul</option><option value=\"94779\">Prefeitura Municipal de Barra Funda</option><option value=\"572\">Prefeitura Municipal de Barros Cassal</option><option value=\"894897\">Prefeitura Municipal de Boa Vista do Buricá</option><option value=\"250\">Prefeitura Municipal de Boa Vista do Cadeado</option><option value=\"98711\">Prefeitura Municipal de Boa Vista do Sul</option><option value=\"69393\">Prefeitura Municipal de Bom Jesus</option><option value=\"70668\">Prefeitura Municipal de Bom Princípio</option><option value=\"1643332\">Prefeitura Municipal de Bom Retiro do Sul</option><option value=\"54116\">Prefeitura Municipal de Braga</option><option value=\"1034791\">Prefeitura Municipal de Butiá</option><option value=\"263\">Prefeitura Municipal de Caibaté</option><option value=\"24131\">Prefeitura Municipal de Campo Bom</option><option value=\"62885\">Prefeitura Municipal de Campo Novo</option><option value=\"140207\">Prefeitura Municipal de Cândido Godói</option><option value=\"59943\">Prefeitura Municipal de Candiota</option><option value=\"61556\">Prefeitura Municipal de Canela</option><option value=\"52064\">Prefeitura Municipal de Capão Bonito do Sul</option><option value=\"165374\">Prefeitura Municipal de Capão da Canoa</option><option value=\"1450134\">Prefeitura Municipal de Capão do Cipó</option><option value=\"30646\">Prefeitura Municipal de Capitão</option><option value=\"100734\">Prefeitura Municipal de Caseiros</option><option value=\"95754\">Prefeitura Municipal de Cerro Grande</option><option value=\"249\">Prefeitura Municipal de Cerro Largo</option><option value=\"1671960\">Prefeitura Municipal de Charqueadas</option><option value=\"738524\">Prefeitura Municipal de Charrua</option><option value=\"47079\">Prefeitura Municipal de Chiapetta</option><option value=\"138422\">Prefeitura Municipal de Chuí</option><option value=\"51796\">Prefeitura Municipal de Colorado</option><option value=\"256\">Prefeitura Municipal de Coqueiros do Sul</option><option value=\"280\">Prefeitura Municipal de Coronel Barros</option><option value=\"54119\">Prefeitura Municipal de Coronel Bicaco</option><option value=\"30268\">Prefeitura Municipal de Cotiporã</option><option value=\"53015\">Prefeitura Municipal de Coxilha</option><option value=\"31014\">Prefeitura Municipal de Crissiumal</option><option value=\"889045\">Prefeitura Municipal de Cruzeiro do Sul</option><option value=\"62773\">Prefeitura Municipal de Derrubadas</option><option value=\"70829\">Prefeitura Municipal de Dois Irmãos das Missões</option><option value=\"31610\">Prefeitura Municipal de Dois Lajeados</option><option value=\"88016\">Prefeitura Municipal de Dom Feliciano</option><option value=\"61486\">Prefeitura Municipal de Doutor Maurício Cardoso</option><option value=\"246912\">Prefeitura Municipal de Eldorado do Sul</option><option value=\"1067602\">Prefeitura Municipal de Encruzilhada do Sul</option><option value=\"65888\">Prefeitura Municipal de Entre Rios do Sul</option><option value=\"1120455\">Prefeitura Municipal de Erechim</option><option value=\"46515\">Prefeitura Municipal de Ernestina</option><option value=\"64173\">Prefeitura Municipal de Erval Seco</option><option value=\"766\">Prefeitura Municipal de Esteio</option><option value=\"57633\">Prefeitura Municipal de Fagundes Varela</option><option value=\"78154\">Prefeitura Municipal de Faxinal do Soturno</option><option value=\"25059\">Prefeitura Municipal de Faxinalzinho</option><option value=\"48002\">Prefeitura Municipal de Flores da Cunha</option><option value=\"24769\">Prefeitura Municipal de Floriano Peixoto</option><option value=\"406\">Prefeitura Municipal de Formigueiro</option><option value=\"836982\">Prefeitura Municipal de Fortaleza dos Valos</option><option value=\"66140\">Prefeitura Municipal de Garibaldi</option><option value=\"483737\">Prefeitura Municipal de Giruá</option><option value=\"220142\">Prefeitura Municipal de Glorinha</option><option value=\"1022764\">Prefeitura Municipal de Gramado</option><option value=\"1253644\">Prefeitura Municipal de Gramado dos Loureiros</option><option value=\"237\">Prefeitura Municipal de Gramado Xavier</option><option value=\"963876\">Prefeitura Municipal de Guaíba</option><option value=\"61552\">Prefeitura Municipal de Guarani das Missões</option><option value=\"125521\">Prefeitura Municipal de Harmonia</option><option value=\"1219788\">Prefeitura Municipal de Humaitá</option><option value=\"354109\">Prefeitura Municipal de Ibiraiaras</option><option value=\"240\">Prefeitura Municipal de Ibirubá</option><option value=\"57442\">Prefeitura Municipal de Imbé</option><option value=\"30805\">Prefeitura Municipal de Independência</option><option value=\"78161\">Prefeitura Municipal de Inhacorá</option><option value=\"259\">Prefeitura Municipal de Ipê</option><option value=\"235\">Prefeitura Municipal de Iraí</option><option value=\"590\">Prefeitura Municipal de Itacurubi</option><option value=\"79032\">Prefeitura Municipal de Itaqui</option><option value=\"70822\">Prefeitura Municipal de Ivorá</option><option value=\"58659\">Prefeitura Municipal de Ivoti</option><option value=\"740294\">Prefeitura Municipal de Jacuizinho</option><option value=\"30397\">Prefeitura Municipal de Jacutinga</option><option value=\"53012\">Prefeitura Municipal de Jaguarão</option><option value=\"67237\">Prefeitura Municipal de Jari</option><option value=\"266\">Prefeitura Municipal de Lagoa dos Três Cantos</option><option value=\"198766\">Prefeitura Municipal de Lajeado do Bugre</option><option value=\"91938\">Prefeitura Municipal de Liberato Salzano</option><option value=\"825740\">Prefeitura Municipal de Lindolfo Collor</option><option value=\"1299650\">Prefeitura Municipal de Mampituba</option><option value=\"101881\">Prefeitura Municipal de Manoel Viana</option><option value=\"79036\">Prefeitura Municipal de Maquiné</option><option value=\"30649\">Prefeitura Municipal de Marcelino Ramos</option><option value=\"279\">Prefeitura Municipal de Marques de Souza</option><option value=\"241\">Prefeitura Municipal de Mato Castelhano</option><option value=\"261\">Prefeitura Municipal de Monte Alegre dos Campos</option><option value=\"383639\">Prefeitura Municipal de Mormaço</option><option value=\"902895\">Prefeitura Municipal de Morro Redondo</option><option value=\"238\">Prefeitura Municipal de Morro Reuter</option><option value=\"57452\">Prefeitura Municipal de Mostardas</option><option value=\"1344065\">Prefeitura Municipal de Nicolau Vergueiro</option><option value=\"1377268\">Prefeitura Municipal de Nonoai</option><option value=\"767120\">Prefeitura Municipal de Nova Alvorada</option><option value=\"1014846\">Prefeitura Municipal de Nova Hartz</option><option value=\"1265096\">Prefeitura Municipal de Nova Prata</option><option value=\"153225\">Prefeitura Municipal de Nova Santa Rita</option><option value=\"1182565\">Prefeitura Municipal de Novo Barreiro</option><option value=\"97305\">Prefeitura Municipal de Novo Cabrais</option><option value=\"267\">Prefeitura Municipal de Novo Machado</option><option value=\"93555\">Prefeitura Municipal de Novo Tiradentes</option><option value=\"86695\">Prefeitura Municipal de Osório</option><option value=\"1797647\">Prefeitura Municipal de Palmares do Sul</option><option value=\"376419\">Prefeitura Municipal de Palmeira das Missões</option><option value=\"236\">Prefeitura Municipal de Palmitinho</option><option value=\"52394\">Prefeitura Municipal de Paraí</option><option value=\"1444280\">Prefeitura Municipal de Pareci Novo</option><option value=\"78163\">Prefeitura Municipal de Parobé</option><option value=\"529296\">Prefeitura Municipal de Passo do Sobrado</option><option value=\"343806\">Prefeitura Municipal de Pedras Altas</option><option value=\"70835\">Prefeitura Municipal de Pejuçara</option><option value=\"46527\">Prefeitura Municipal de Pinhal</option><option value=\"52208\">Prefeitura Municipal de Pinheiro Machado</option><option value=\"248\">Prefeitura Municipal de Pirapó</option><option value=\"586\">Prefeitura Municipal de Piratini</option><option value=\"64178\">Prefeitura Municipal de Porto Lucena</option><option value=\"101879\">Prefeitura Municipal de Porto Mauá</option><option value=\"28697\">Prefeitura Municipal de Pouso Novo</option><option value=\"67943\">Prefeitura Municipal de Quaraí</option><option value=\"81046\">Prefeitura Municipal de Quevedos</option><option value=\"742653\">Prefeitura Municipal de Quinze de Novembro</option><option value=\"1389687\">Prefeitura Municipal de Redentora</option><option value=\"802518\">Prefeitura Municipal de Riozinho</option><option value=\"69039\">Prefeitura Municipal de Rodeio Bonito</option><option value=\"35529\">Prefeitura Municipal de Rosário do Sul</option><option value=\"25804\">Prefeitura Municipal de Sagrada Familia</option><option value=\"24126\">Prefeitura Municipal de Salto do Jacuí</option><option value=\"66078\">Prefeitura Municipal de Santa Bárbara do Sul</option><option value=\"36682\">Prefeitura Municipal de Santa Margarida do Sul</option><option value=\"67471\">Prefeitura Municipal de Santana da Boa Vista</option><option val",
+ "encontradas": [
+  {
+   "cod": "3FC78255",
+   "titulo": "RETIFICAÇÃO DE EDITAL E APOSTILAMENTO GERAL DE TERMOS DE CREDENCIAMENTO",
+   "entidade": "Prefeitura Municipal de Capitão",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO E FINANÇAS",
+   "trecho": "nº 01/2025 abaixo arrolados: Termo de Credenciamento nº Credenciado Apostilamento nº 02/2025 de 18/02/2025 Posto de Combustíveis Tropeiro Ltda, CNPJ 08.019.850/0001-43 22/2026 03 … /2025 de 20/02/2025 Posto de Combustíveis Capitão Ltda, CNPJ 01.590.786/0001-07 22/2026 2.2 Pelo presente, de acordo com o item 4.2 da Cláusula Quarta dos termos acima mencionados",
+   "data": "2026-11-11",
+   "edicao": "4454"
+  },
+  {
+   "cod": "5AA14910",
+   "titulo": "PREGÃO ELETRÔNICO 011/2026",
+   "entidade": "Município de São José do Hortêncio",
+   "orgao": "DEPARTAMENTO DE LICITAÇÕES",
+   "trecho": "gasolina comum, óleo diesel S-500, óleo diesel S-10 e arla 32, em postos de combustíveis localizados no perímetro urbano do Município. Recebimento das propostas até o dia 18/11/2026, às",
+   "data": "2026-11-05",
+   "edicao": "4450"
+  },
+  {
+   "cod": "D8FA9AE1",
+   "titulo": "EXTRATO DISPENSA 95/2026",
+   "entidade": "Prefeitura Municipal de Ernestina",
+   "orgao": "SETOR DE COMPRAS E LICITAÇÕES",
+   "trecho": "Prefeito Municipal; Contratada: ALIVA POSTOS DE COMBUSTIVEIS – CNPJ 64.923.480/0002-26 – ERNESTINA/RS. O valor estimado para execução dos serviços e fornecimento de combustíveis é de",
+   "data": "2026-10-26",
+   "edicao": "4443"
+  },
+  {
+   "cod": "2B2A36B4",
+   "titulo": "RETIFICAÇÃO DE EDITAL E APOSTILAMENTO GERAL DE TERMOS DE CREDENCIAMENTO",
+   "entidade": "Prefeitura Municipal de Capitão",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO E FINANÇAS",
+   "trecho": "abaixo arrolados: Termo de Credenciamento nº Credenciado Apostilamento nº 02/2025 de 18/02/2025 Posto de Combustíveis Tropeiro Ltda, CNPJ 08.019.850/0001-43 21/2026 03/2025 de 20 … /02/2025 Posto de Combustíveis Capitão Ltda, CNPJ 01.590.786/0001-07 21/2026 Pelo presente, de acordo com o item 4.2 da Cláusula Quarta dos termos acima mencionados, ficam",
+   "data": "2026-10-13",
+   "edicao": "4434"
+  },
+  {
+   "cod": "9D4FC8A3",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": ". Empresa Contratada: POSTO DE COMBUSTÍVEIS DAL RI LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de Óleo Diesel S500, Óleo Diesel S10 e Arla, com abastecimento em",
+   "data": "2026-10-09",
+   "edicao": "4433"
+  },
+  {
+   "cod": "B2D69820",
+   "titulo": "APOSTILA Nº 08/2026",
+   "entidade": "Prefeitura Municipal de Formigueiro",
+   "orgao": "Secretaria Municipal da Fazenda",
+   "trecho": "Pregão Eletrônico nº 18/2026 Processo nº 323/2026 Contratada: POSTO DE COMBUSTÍVEIS FUZER LTDA CNPJ nº 00.624.595/0006-60 Objeto: Constitui objeto da presente licitação contratação de",
+   "data": "2026-10-06",
+   "edicao": "4430"
+  },
+  {
+   "cod": "A3C22DCD",
+   "titulo": "LEI 1861",
+   "entidade": "Município de São Domingos do Sul",
+   "orgao": "Secretaria de Administração",
+   "trecho": "Laudino Ampese, Salão Paroquial, espaços de saúde, farmácia, mercados, postos de combustíveis , instituições financeiras, internet, telefonia, limpeza, iluminação e manutenção viária. A",
+   "data": "2026-09-23",
+   "edicao": "4421"
+  },
+  {
+   "cod": "BD77B299",
+   "titulo": "SUMULA DE CONTRATO 107/2026",
+   "entidade": "Prefeitura Municipal de Ernestina",
+   "orgao": "SETOR DE COMPRAS E LICITAÇÕES",
+   "trecho": "/RS, neste ato representado pelo Prefeito Municipal; Contratada: ALIVA POSTOS DE COMBUSTIVEIS – CNPJ 64.923.480/0002-26 – ERNESTINA/RS. O valor estimado para execução dos serviços e",
+   "data": "2026-09-23",
+   "edicao": "4421"
+  },
+  {
+   "cod": "10EB709D",
+   "titulo": "EXTRATO DE DISPENSA 85/2026",
+   "entidade": "Prefeitura Municipal de Ernestina",
+   "orgao": "SETOR DE COMPRAS E LICITAÇÕES",
+   "trecho": "Prefeito Municipal; Contratada: ALIVA POSTOS DE COMBUSTIVEIS – CNPJ 64.923.480/0002-26 – ERNESTINA/RS. O valor estimado para execução dos serviços e fornecimento de combustíveis é",
+   "data": "2026-09-23",
+   "edicao": "4421"
+  },
+  {
+   "cod": "7E4AD3DE",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": ". Empresa Contratada: POSTO DE COMBUSTÍVEIS DAL RI LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de Óleo Diesel S500, Óleo Diesel S10 e Arla, com abastecimento em posto",
+   "data": "2026-09-23",
+   "edicao": "4421"
+  },
+  {
+   "cod": "DCDC420F",
+   "titulo": "EXTRATO 14º TERMO ADITIVO ATA DE REGISTRO DE PREÇOS Nº 12/2025",
+   "entidade": "Prefeitura Municipal de Novo Cabrais",
+   "orgao": "Secretaria Municipal de Administração",
+   "trecho": ". CONTRATANTE: MUNICÍPIO DE NOVO CABRAIS. EMPRESA REGISTRADA: POSTO DE COMBUSTIVEIS DAL RI LTDA; OBJETO DO TERMO ADITIVO: Equilíbrio Contratual do Registro de Preços nº 12/2025 referente ao",
+   "data": "2026-09-18",
+   "edicao": "4418"
+  },
+  {
+   "cod": "E4063C66",
+   "titulo": "RETIFICAÇÃO DE EDITAL E APOSTILAMENTO GERAL DE TERMOS DE CREDENCIAMENTO",
+   "entidade": "Prefeitura Municipal de Capitão",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO E FINANÇAS",
+   "trecho": "abaixo arrolados: Termo de Credenciamento nº Credenciado Apostilamento nº 02/2025 de 18/02/2025 Posto de Combustíveis Tropeiro Ltda, CNPJ 08.019.850/0001-43 20/2026 03/2025 de 20 … /02/2025 Posto de Combustíveis Capitão Ltda, CNPJ 01.590.786/0001-07 20/2026 Pelo presente, de acordo com o item 4.2 da Cláusula Quarta dos termos acima mencionados, ficam",
+   "data": "2026-09-14",
+   "edicao": "4414"
+  },
+  {
+   "cod": "C633A460",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": "Contratada: POSTO DE COMBUSTÍVEIS FUZER LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de gasolina comum com abastecimento em posto de combustível situado no perímetro",
+   "data": "2026-08-21",
+   "edicao": "4399"
+  },
+  {
+   "cod": "44FE47D4",
+   "titulo": "RETIFICAÇÃO DE EDITAL E APOSTILAMENTO GERAL DE TERMOS DE CREDENCIAMENTO",
+   "entidade": "Prefeitura Municipal de Capitão",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO E FINANÇAS",
+   "trecho": "abaixo arrolados: Termo de Credenciamento nº Credenciado Apostilamento nº 02/2025 de 18/02/2025 Posto de Combustíveis Tropeiro Ltda, CNPJ 08.019.850/0001-43 19/2026 03/2025 de 20 … /02/2025 Posto de Combustíveis Capitão Ltda, CNPJ 01.590.786/0001-07 19/2026 Pelo presente, de acordo com o item 4.2 da Cláusula Quarta dos termos acima mencionados, ficam",
+   "data": "2026-08-14",
+   "edicao": "4394"
+  },
+  {
+   "cod": "AB0001F7",
+   "titulo": "ATA DE REGISTRO DE PREÇO Nº 51/2026",
+   "entidade": "Prefeitura Municipal de Formigueiro",
+   "orgao": "Secretaria Municipal da Fazenda",
+   "trecho": "Contratação, homologada em 27/07/2026, resolve REGISTRAR OS PREÇOS da empresa POSTO DE COMBUSTÍVEIS FUZER LTDA, inscrita no CNPJ sob nº 00.624.595/0006-60, com sede à Avenida João … representante legal da EMPRESA REGISTRADA. Formigueiro, 28 de julho de 2026. ____________________________ Cristiano Cezar Cassol Rubert Prefeito Municipal – Contratante ______________________________________ Posto de Combustíveis Fuzer Ltda - Contratada CNPJ nº 00.624.595/0006-60",
+   "data": "2026-07-30",
+   "edicao": "4383"
+  },
+  {
+   "cod": "2EE097B5",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": ". Empresa Contratada: POSTO DE COMBUSTÍVEIS DAL RI LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de Óleo Diesel S500, Óleo Diesel S10 e Arla, com abastecimento em",
+   "data": "2026-07-22",
+   "edicao": "4377"
+  },
+  {
+   "cod": "2C164B9C",
+   "titulo": "RETIFICAÇÃO DE EDITAL E APOSTILAMENTO GERAL DE TERMOS DE CREDENCIAMENTO",
+   "entidade": "Prefeitura Municipal de Capitão",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO E FINANÇAS",
+   "trecho": "abaixo arrolados: Termo de Credenciamento nº Credenciado Apostilamento nº 02/2025 de 18/02/2025 Posto de Combustíveis Tropeiro Ltda, CNPJ 08.019.850/0001-43 18/2026 03/2025 de 20 … /02/2025 Posto de Combustíveis Capitão Ltda, CNPJ 01.590.786/0001-07 18/2026 Pelo presente, de acordo com o item 4.2 da Cláusula Quarta dos termos acima mencionados, ficam",
+   "data": "2026-07-15",
+   "edicao": "4372"
+  },
+  {
+   "cod": "EF3A89E3",
+   "titulo": "TERMO DE CONCESSÃO DE REEQUILÍBRIO ECONÔMICO FINANCEIRO",
+   "entidade": "Prefeitura Municipal de Augusto Pestana",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO-PROCURADORIA JURIDICA",
+   "trecho": "pesquisa de preços juntos a postos de combustíveis locais. CLÁUSULA QUARTA – DA VIGÊNCIA: Os novos valores produzirão efeitos a partir de 09 de julho de 2026, data da formalização",
+   "data": "2026-07-14",
+   "edicao": "4371"
+  },
+  {
+   "cod": "F487DFDB",
+   "titulo": "EXTRATO DO CONTRATO DE PRESTAÇÃO DE SERVIÇOS Nº 051/2026, DE 12 DE JUNHO DE 2026",
+   "entidade": "Prefeitura Municipal de Travesseiro",
+   "orgao": "SECRETARIA MUNICIPAL DA ADMINISTRAÇÃO E FINANÇAS",
+   "trecho": "mínima de 40 (quarenta) passageiros) UN 1 R$ 600,00 3 ITINERÁRIO B.3.1 - (BAILE EM BARRA DO FÃO): Saindo do posto de combustíveis do Centro, seguindo pela Avenida 10 de Novembro … , totalizando aproximadamente 66 km; (Veículo com capacidade mínima de 40 (quarenta) passageiros) UN 1 R$ 800,00 5 ITINERÁRIO C.3.1 - (BAILE EM SÃO JOÃO): Saindo do posto de combustíveis do",
+   "data": "2026-06-15",
+   "edicao": "4350"
+  },
+  {
+   "cod": "C1FEBBA7",
+   "titulo": "RETIFICAÇÃO DE EDITAL E APOSTILAMENTO GERAL DE TERMOS DE CREDENCIAMENTO",
+   "entidade": "Prefeitura Municipal de Capitão",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO E FINANÇAS",
+   "trecho": "abaixo arrolados: Termo de Credenciamento nº Credenciado Apostilamento nº 02/2025 de 18/02/2025 Posto de Combustíveis Tropeiro Ltda, CNPJ 08.019.850/0001-43 17/2026 03/2025 de 20 … /02/2025 Posto de Combustíveis Capitão Ltda, CNPJ 01.590.786/0001-07 17/2026 Pelo presente, de acordo com o item 4.2 da Cláusula Quarta dos termos acima mencionados, ficam",
+   "data": "2026-06-15",
+   "edicao": "4350"
+  },
+  {
+   "cod": "2A2134E4",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": "Contratada: POSTO DE COMBUSTÍVEIS DAL RI LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de Óleo Diesel S500, Óleo Diesel S10 e Arla, com abastecimento em posto de",
+   "data": "2026-06-01",
+   "edicao": "4340"
+  },
+  {
+   "cod": "67DE21B8",
+   "titulo": "RETIFICAÇÃO DE EDITAL E APOSTILAMENTO GERAL DE TERMOS DE CREDENCIAMENTO",
+   "entidade": "Prefeitura Municipal de Capitão",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO E FINANÇAS",
+   "trecho": "abaixo arrolados: Termo de Credenciamento nº Credenciado Apostilamento nº 02/2025 de 18/02/2025 Posto de Combustíveis Tropeiro Ltda, CNPJ 08.019.850/0001-43 16/2026 03/2025 de 20 … /02/2025 Posto de Combustíveis Capitão Ltda, CNPJ 01.590.786/0001-07 16/2026 Pelo presente, de acordo com o item 4.2 da Cláusula Quarta dos termos acima mencionados, ficam",
+   "data": "2026-05-18",
+   "edicao": "4330"
+  },
+  {
+   "cod": "3F01520E",
+   "titulo": "PORTARIA Nº 556/2026 “DESIGNA SERVIDORES”",
+   "entidade": "Prefeitura Municipal de Imbé",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO",
+   "trecho": "cartão eletrônico tipo smart com chip, vinculado à rede credenciada de postos de combustíveis , a fim de atender as necessidades dos veículos, máquinas leves e pesadas, inclusive motores",
+   "data": "2026-05-11",
+   "edicao": "4325"
+  },
+  {
+   "cod": "A2EADE11",
+   "titulo": "DEPARTAMENTO DE LICITAÇÕES AVISO DE EXTRATO CONTRATO Nº023/2026 – FAMURS",
+   "entidade": "Prefeitura Municipal de Imbé",
+   "orgao": "DEPARTAMENTO DE LICITAÇÕES",
+   "trecho": ", vinculado à rede credenciada de postos de combustíveis , a fim de atender as necessidades dos veículos, máquinas leves e pesadas, inclusive motores estacionários e equipamentos à",
+   "data": "2026-05-11",
+   "edicao": "4325"
+  },
+  {
+   "cod": "897CBAC3",
+   "titulo": "DECRETO Nº 5.022/2026 DE 07 DE MAIO DE 2026",
+   "entidade": "Prefeitura Municipal de Ibirubá",
+   "orgao": "Gabinete da Prefeita",
+   "trecho": "GABINETE DA PREFEITADECRETO Nº 5.022/2026 DE 07 DE MAIO DE 2026 Dispõe sobre o credenciamento de postos de combustíveis para abastecimento da frota municipal no perímetro urbano … Decreto regulamenta o procedimento de credenciamento de postos de combustíveis destinados ao abastecimento da frota municipal no perímetro urbano de Ibirubá/RS, pagamento por utilização",
+   "data": "2026-05-08",
+   "edicao": "4324"
+  },
+  {
+   "cod": "45C9F0B9",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": "por objeto a aquisição parcelada de combustíveis, compreendendo gasolina comum, óleo diesel S500 e óleo diesel S10, com abastecimento diretamente em posto de combustível situado",
+   "data": "2026-11-25",
+   "edicao": "4463"
+  },
+  {
+   "cod": "50E8A295",
+   "titulo": "RESUMO DE CONTRATOS E ADITIVOS: EXERCICIO 2026",
+   "entidade": "Município de Protásio Alves",
+   "orgao": "Secretaria Municipal da Fazenda - LICITAÇÕES",
+   "trecho": ": A alteração se faz necessária em razão de que o único posto de combustível localizado no Município fornece exclusivamente óleo diesel S10 aditivado. Dessa forma, a modificação",
+   "data": "2026-09-28",
+   "edicao": "4424"
+  },
+  {
+   "cod": "C25D73E4",
+   "titulo": "TERMO ADITIVO",
+   "entidade": "Prefeitura Municipal de Alegria",
+   "orgao": "Administração",
+   "trecho": "a Empresa POSTO DE COMBUSTIVEL SEU JOAO LTDA, inscrita no CNPJ/MF n.º 00.871.975/0001-95. Objeto restabelecimento do equilíbrio econômico-financeiro da Ata de Registro de Preços",
+   "data": "2026-07-15",
+   "edicao": "4372"
+  },
+  {
+   "cod": "4B9756C1",
+   "titulo": "PORTARIA Nº 48, DE 03 DE JUNHO DE 2026. NOMEIA COMISSÃO PARA RECEBIMENTO DE VEÍCULO DE SERVIÇO ADMINISTRATIVO, PARA TRANSPORTE DE PESSOAL URBANO OU EM VIAGEM, TIPO VAN OU MINIBUS, PARA A SECRETARIA DE SAÚDE.",
+   "entidade": "Prefeitura Municipal de Independência",
+   "orgao": "Secretaria de Administração",
+   "trecho": "deverá ser entregue com o tanque abastecido na sua totalidade ou com autorização do contratado para o abastecimento completo no posto de combustível mais próximo da concessionária",
+   "data": "2026-06-04",
+   "edicao": "4343"
+  },
+  {
+   "cod": "D07208BD",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": "Contratada: POSTO DE COMBUSTÍVEIS FUZER LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de gasolina comum com abastecimento em posto de combustível situado no perímetro",
+   "data": "2026-04-08",
+   "edicao": "4304"
+  },
+  {
+   "cod": "FAAEEECB",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": "Contratada: POSTO DE COMBUSTÍVEIS DAL RI LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de Óleo Diesel S500, Óleo Diesel S10 e Arla, com abastecimento em posto de combustível situado",
+   "data": "2026-03-31",
+   "edicao": "4299"
+  },
+  {
+   "cod": "020D25B0",
+   "titulo": "TERMO ADITIVO À ATA DE REGISTRO DE PREÇOS",
+   "entidade": "Prefeitura Municipal de Alegria",
+   "orgao": "Administração",
+   "trecho": "o MUNICÍPIO DE ALEGRIA-RS, e a Empresa POSTO DE COMBUSTIVEL SEU JOAO LTDA, inscrita no CNPJ/MF n.º 00.871.975/0001-95. Objeto reequilíbrio econômico-financeiro, nos termos do",
+   "data": "2026-03-26",
+   "edicao": "4296"
+  },
+  {
+   "cod": "3FA22471",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": "Contratada: POSTO DE COMBUSTÍVEIS DAL RI LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de Óleo Diesel S500, Óleo Diesel S10 e Arla, com abastecimento em posto de combustível situado",
+   "data": "2026-03-19",
+   "edicao": "4291"
+  },
+  {
+   "cod": "49DC563A",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": "Contratada: POSTO DE COMBUSTÍVEIS DAL RI LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de Óleo Diesel S500, Óleo Diesel S10 e Arla, com abastecimento em posto de combustível situado",
+   "data": "2026-03-17",
+   "edicao": "4289"
+  },
+  {
+   "cod": "15DFD025",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": "Contratada: POSTO DE COMBUSTÍVEIS DAL RI LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de Óleo Diesel S500, Óleo Diesel S10 e Arla, com abastecimento em posto de combustível situado",
+   "data": "2026-03-09",
+   "edicao": "4283"
+  },
+  {
+   "cod": "ABFD1977",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": "Contratada: POSTO DE COMBUSTÍVEIS DAL RI LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de Óleo Diesel S500 e Óleo Diesel S10, com abastecimento em posto de combustível situado",
+   "data": "2026-01-19",
+   "edicao": "4249"
+  },
+  {
+   "cod": "CC84D647",
+   "titulo": "SETOR DE LICITAÇÕES E CONTRATOS",
+   "entidade": "Município de Agudo",
+   "orgao": "Secretaria de Administração e Gestão",
+   "trecho": "Contratada: POSTO DE COMBUSTÍVEIS FUZER LTDA. Objeto: Constitui objeto da presente Ata, a aquisição de gasolina comum com abastecimento em posto de combustível situado no perímetro",
+   "data": "2026-01-12",
+   "edicao": "4244"
+  },
+  {
+   "cod": "B99210B5",
+   "titulo": "DECRETO Nº 4.450, DE 19 DE OUTUBRO DE 2026.",
+   "entidade": "Prefeitura Municipal de Santo Ângelo",
+   "orgao": "SEC. DE GOVERNO E RELAÇÕES INSTITUCIONAIS",
+   "trecho": "",
+   "data": "2026-10-21",
+   "edicao": "4440"
+  },
+  {
+   "cod": "3EA6B010",
+   "titulo": "TERMO ADITIVO Nº 41.2026",
+   "entidade": "Prefeitura Municipal de Formigueiro",
+   "orgao": "Secretaria Municipal da Fazenda",
+   "trecho": "(acidentes ou problemas insanáveis de forma rápida). X-Quando o acionamento por pane seca ou problemas elétricos e/ou mecânicos, a remoção do veículo segurado poderá se dar até o posto de abastecimento mais",
+   "data": "2026-09-30",
+   "edicao": "4426"
+  },
+  {
+   "cod": "F8A12152",
+   "titulo": "TERMO ADITIVO Nº39.2026",
+   "entidade": "Prefeitura Municipal de Formigueiro",
+   "orgao": "Secretaria Municipal da Fazenda",
+   "trecho": "elétricos e/ou mecânicos, a remoção do veículo segurado poderá se dar até o posto de abastecimento mais próximo (pane seca) ou até a concessionária mais próxima (problema mecânico",
+   "data": "2026-09-21",
+   "edicao": "4419"
+  },
+  {
+   "cod": "565BF286",
+   "titulo": "AUTORIZAÇÃO",
+   "entidade": "Prefeitura Municipal de Augusto Pestana",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO-PROCURADORIA JURIDICA",
+   "trecho": "especializados consistentes na elaboração de projeto técnico para renovação da Licença de Operação (LO) do Posto de Abastecimento do Município, a ser protocolado e analisado junto",
+   "data": "2026-07-30",
+   "edicao": "4383"
+  },
+  {
+   "cod": "3B4F47DB",
+   "titulo": "LEI MUNICIPAL Nº 2.837/2026 DE 27 DE JULHO DE 2026",
+   "entidade": "Prefeitura Municipal de Ibiraiaras",
+   "orgao": "Secretaria da Administração e Planejamento",
+   "trecho": "(inclusive com o passei público); deverão localizar-se a, no mínimo, 20 (vinte) metros do posto de abastecimento de água potável. Art.10 Fica alterado a alínea c) do Art. 33 da Lei",
+   "data": "2026-07-28",
+   "edicao": "4381"
+  },
+  {
+   "cod": "0468D4C0",
+   "titulo": "TERMO ADITIVO Nº25.2026",
+   "entidade": "Prefeitura Municipal de Formigueiro",
+   "orgao": "Secretaria Municipal da Fazenda",
+   "trecho": "poderá se dar até o posto de abastecimento mais próximo (pane seca) ou até a concessionária mais próxima (problema mecânico ou elétrico). XI- Para os veículos da categoria leve e",
+   "data": "2026-06-23",
+   "edicao": "4356"
+  },
+  {
+   "cod": "85D5124A",
+   "titulo": "EXTRATO DE CONTRATO ADMINISTRATIVO Nº 33/2026",
+   "entidade": "Prefeitura Municipal de Crissiumal",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO",
+   "trecho": ": LEANDRO VOSS LTDA Valor: 64.000,00 Vigência: Início:24/03/2026 Término: 20/09/2026 Objeto da Contratação: CONTRATAÇÃO DE EMPRESA ESPECIALIZADA PARA EXECUÇÃO DO PROJETO DO POSTO DE ABASTECIMENTO . Crissiumal, 23 de Março de 2026. MARCO AURÉLIO NEDEL Prefeito Municipal",
+   "data": "2026-03-24",
+   "edicao": "4294"
+  },
+  {
+   "cod": "93D0E778",
+   "titulo": "EXTRATO DE PUBLICAÇÃO DE EDITAL DE CONCORRÊNCIA PRESENCIAL N° 006/2026",
+   "entidade": "Prefeitura Municipal de Crissiumal",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO",
+   "trecho": "posto de abastecimento . Data da abertura das propostas no dia 20 de março 2026 às 08:30 horas. Edital e informações pelo fone: 55 3524 1180, via e-mail: licitacoes@crissiumal-rs.com.br",
+   "data": "2026-03-06",
+   "edicao": "4282"
+  },
+  {
+   "cod": "9718C8A8",
+   "titulo": "TERMO ADITIVO Nº06.2026",
+   "entidade": "Prefeitura Municipal de Formigueiro",
+   "orgao": "Secretaria Municipal da Fazenda",
+   "trecho": "problemas insanáveis de forma rápida). X-Quando o acionamento por pane seca ou problemas elétricos e/ou mecânicos, a remoção do veículo segurado poderá se dar até o posto de abastecimento mais",
+   "data": "2026-03-02",
+   "edicao": "4278"
+  },
+  {
+   "cod": "70F0F12E",
+   "titulo": "AVISO DE LICITAÇÃO DE CONCORRÊNCIA PRESENCIAL N° 002/2026",
+   "entidade": "Prefeitura Municipal de Crissiumal",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO",
+   "trecho": "licitação na modalidade concorrência presencial, cujo objeto é a contratação de empresa especializada para execução do projeto do posto de abastecimento . Data da abertura das propostas",
+   "data": "2026-01-14",
+   "edicao": "4246"
+  },
+  {
+   "cod": "E1E619A9",
+   "titulo": "PE 01/2025 - CARTÃO COMBUSTÍVEL",
+   "entidade": "Prefeitura Municipal de Quevedos",
+   "orgao": "Secretaria Municipal de Administração e Planejamento",
+   "trecho": "SUAS SECRETARIAS, POR MEIO DE CARTÕES MAGNÉTICOS, COM DISPONIBILIZAÇÃO DE REDE CREDENCIADA DE POSTOS DE ABASTECIMENTO , PLATAFORMA ONLINE DE GESTÃO, SUPORTE TÉCNICO E DEMAIS SERVIÇOS",
+   "data": "2026-01-07",
+   "edicao": "4241"
+  },
+  {
+   "cod": "CEB54650",
+   "titulo": "LEI N.º 1701 DE 03 DE DEZEMBRO DE 2025",
+   "entidade": "MUNICIPIO DE SÃO VENDELINO",
+   "orgao": "SECRETARIA MUNICIPAL DA ADMINISTRAÇÃO E MEIO AMBIENTE",
+   "trecho": "",
+   "data": "2025-12-23",
+   "edicao": "4232"
+  },
+  {
+   "cod": "1448BA39",
+   "titulo": "LEI MUNICIPAL Nº 4.039 DE 17 DE DEZEMBRO DE 2025",
+   "entidade": "Prefeitura Municipal de São Pedro do Sul",
+   "orgao": "SECRETARIA MUNICIPAL DA ADMINISTRAÇÃO",
+   "trecho": ", ferrovias e rodovias expressas ou de características diversas das previstas na legislação municipal. III–​ Construção de terminais rodoviários e postos de abastecimento e serviços que",
+   "data": "2025-12-18",
+   "edicao": "4229"
+  },
+  {
+   "cod": "38114155",
+   "titulo": "PE 80/2025 - CARTÃO COMBUSTÍVEL",
+   "entidade": "Prefeitura Municipal de Quevedos",
+   "orgao": "Secretaria Municipal de Administração e Planejamento",
+   "trecho": "CARTÕES MAGNÉTICOS, COM DISPONIBILIZAÇÃO DE REDE CREDENCIADA DE POSTOS DE ABASTECIMENTO , PLATAFORMA ONLINE DE GESTÃO, SUPORTE TÉCNICO E DEMAIS SERVIÇOS CORRELATOS,conforme",
+   "data": "2025-12-15",
+   "edicao": "4226"
+  },
+  {
+   "cod": "450DD1FD",
+   "titulo": "LEI COMPLEMENTAR Nº 271/2025, DE 10 DE DEZEMBRO DE 2025.",
+   "entidade": "Prefeitura Municipal de Ibirubá",
+   "orgao": "Gabinete da Prefeita",
+   "trecho": ", laboratórios de análises clínicas; estabelecimento destinado ao tratamento veterinário. 16 - POSTO DE ABASTECIMENTO VEICULAR - Edificação construída para atender ao abastecimento de veículos",
+   "data": "2025-12-12",
+   "edicao": "4225"
+  },
+  {
+   "cod": "81E02D4D",
+   "titulo": "EXTRATO DE PUBLICAÇÃO DE EDITAL DE CONCORRÊNCIA PRESENCIAL N° 022/2025",
+   "entidade": "Prefeitura Municipal de Crissiumal",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO",
+   "trecho": "posto de abastecimento . Data da abertura das propostas no dia 24 de dezembro 2025 às 08:30 horas. Edital e informações pelo fone: 55 3524 1180, via e-mail: licitacoes@crissiumal",
+   "data": "2025-12-10",
+   "edicao": "4223"
+  },
+  {
+   "cod": "CEBD892A",
+   "titulo": "TERMO ADITIVO Nº63.2025",
+   "entidade": "Prefeitura Municipal de Formigueiro",
+   "orgao": "Secretaria Municipal da Fazenda",
+   "trecho": "acionamento por pane seca ou problemas elétricos e/ou mecânicos, a remoção do veículo segurado poderá se dar até o posto de abastecimento mais próximo (pane seca) ou até a",
+   "data": "2025-12-03",
+   "edicao": "4218"
+  },
+  {
+   "cod": "EA8A4E64",
+   "titulo": "EXTRATOS DE CONTRATOS REFERENTES AO MÊS DE NOVEMBRO/2026 – 1ª QUINZENA",
+   "entidade": "Prefeitura Municipal de Charrua",
+   "orgao": "SECRETARIA DE ADMINISTRAÇÃO E PLANEJAMENTO",
+   "trecho": "Lei nº 14.133/21, TORNA PÚBLICO os extratos de contratos referentes ao mês de NOVEMBRO/2026 – 1ª QUINZENA, conforme seguem: Contrato nº 77/2026Empresa: AUTO POSTO CHARRUA LTDA",
+   "data": "2026-11-25",
+   "edicao": "4463"
+  },
+  {
+   "cod": "4195F414",
+   "titulo": "EXTRATOS DE ADITIVOS REFERENTES AO MÊS DE NOVEMBRO/2026 – 1ª QUINZENA",
+   "entidade": "Prefeitura Municipal de Charrua",
+   "orgao": "SECRETARIA DE ADMINISTRAÇÃO E PLANEJAMENTO",
+   "trecho": "ADITIVO 24 AO CONTRATO Nº 01/2026PREGÃO ELETRÔNICO Nº 15/2025Contratada: AUTO POSTO CHARRUA LTDA - EPP, inscrita no CNPJ sob o nº 06.115.717/0001-65Objeto: contratação de empresa … CONTRATO Nº 01/2026PREGÃO ELETRÔNICO Nº 15/2025Contratada: AUTO POSTO CHARRUA LTDA - EPP, inscrita no CNPJ sob o nº 06.115.717/0001-65Objeto: contratação de empresa para AQUISIÇÃO DE",
+   "data": "2026-11-19",
+   "edicao": "4460"
+  },
+  {
+   "cod": "2BD1E31F",
+   "titulo": "EXTRATOS DE DISPENSAS",
+   "entidade": "Prefeitura Municipal de Charrua",
+   "orgao": "SECRETARIA DE ADMINISTRAÇÃO E PLANEJAMENTO",
+   "trecho": "contratadas: MARCIO PANISSON, CNPJ nº 13.923.408/0001-87, SUPERMERCADO SAO JOAO LTDA, CNPJ nº 01.390.709/0001-03 e AUTO POSTO CHARRUA LTDA, CNPJ nº 06.115.717/0001-65Objeto: Necessário a",
+   "data": "2026-11-18",
+   "edicao": "4459"
+  },
+  {
+   "cod": "1584C9CF",
+   "titulo": "SÚMULA DE ADITIVO TERCEIRO AO CONTRATO ADMINISTRATIVO Nº 084/2026 PREGÃO PRESENCIAL Nº 024/2026",
+   "entidade": "Prefeitura Municipal de Barracão",
+   "orgao": "SECRETARIA DA FAZENDA",
+   "trecho": ". Contratada: AUTO POSTO COMPARIN LTDA, CNPJ nº 03.533.920/0015-69. Reequilíbrio Econômico-Financeiro.Conforme solicitação da empresa contratada houve aumento no valor dos produtos, conforme",
+   "data": "2026-11-12",
+   "edicao": "4455"
+  },
+  {
+   "cod": "B328AAD6",
+   "titulo": "SÚMULA DO DÉCIMO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026",
+   "entidade": "Prefeitura Municipal de Porto Mauá",
+   "orgao": "Secretaria de Administração e Finanças",
+   "trecho": "SECRETARIA DE ADMINISTRAÇÃO E FINANÇAS - SÚMULA DO DÉCIMO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026CONTRATANTE: MUNICÍPIO DE PORTO MAUÁCONTRATADO: AUTO POSTO MARINA",
+   "data": "2026-11-12",
+   "edicao": "4455"
+  },
+  {
+   "cod": "D775C55A",
+   "titulo": "SÚMULA DE CONTRATO N° 086/2026 LICITAÇÃO N° 087/2026 DISPENSA N° 039/2026 DO PROCESSO ADMINISTRATIVO N° 3.504/2026",
+   "entidade": "Município de Maratá",
+   "orgao": "Secretaria Municipal da Administração e Fazenda",
+   "trecho": ": Município de Maratá. CONTRATADO: AUTO POSTO IRMAOS PLETSCH LTDA. OBJETO: Aquisição emergencial de combustíveis, compreendendo gasolina comum, óleo diesel e ARLA 32, destinados ao",
+   "data": "2026-11-09",
+   "edicao": "4452"
+  },
+  {
+   "cod": "2C191D40",
+   "titulo": "EXTRATOS DE CONTRATOS E ADITIVOS REFERENTES AO MÊS DE OUTUBRO/2026 – 2ª QUINZENA",
+   "entidade": "Prefeitura Municipal de Charrua",
+   "orgao": "SECRETARIA DE ADMINISTRAÇÃO E PLANEJAMENTO",
+   "trecho": "decorrência da aquisição de 48 sacos de ureia e 10 sacos de adubo. Data: 26/10/2026 ADITIVO 23 AO CONTRATO Nº 01/2026 PREGÃO ELETRÔNICO Nº 15/2025 Contratada: AUTO POSTO CHARRUA",
+   "data": "2026-11-06",
+   "edicao": "4451"
+  },
+  {
+   "cod": "70E71FF3",
+   "titulo": "SÚMULAS",
+   "entidade": "Prefeitura Municipal de Barão de Cotegipe",
+   "orgao": "PREFEITURA MUNICIPAL DE BARÃO DE COTEGIPE",
+   "trecho": "de Registro de Preços nº 049/2025 6º TERMO ADITIVO: AUTO POSTO COMPARIN. Termo Aditivo de prorrogação de prazo de vigência a Ata de Registro de Preços nº 050/2025. 2º TERMO",
+   "data": "2026-10-30",
+   "edicao": "4447"
+  },
+  {
+   "cod": "A372798C",
+   "titulo": "EXTRATO DE DISPENSA",
+   "entidade": "Prefeitura Municipal de Charrua",
+   "orgao": "SECRETARIA DE ADMINISTRAÇÃO E PLANEJAMENTO",
+   "trecho": "– Art. 75, I Contratante: Município de Charrua, CNPJ nº 92.450.733/0001-46 Empresas contratadas: AUTO POSTO CHARRUA LTDA - EPP, CNPJ nº 06.115.717/0001-65 Objeto: Necessário a",
+   "data": "2026-10-29",
+   "edicao": "4446"
+  },
+  {
+   "cod": "A7F344DC",
+   "titulo": "SÚMULA DO NONO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026",
+   "entidade": "Prefeitura Municipal de Porto Mauá",
+   "orgao": "Secretaria de Administração e Finanças",
+   "trecho": "SECRETARIA DE ADMINISTRAÇÃO E FINANÇASSÚMULA DO NONO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026 CONTRATANTE: MUNICÍPIO DE PORTO MAUÁ CONTRATADO: AUTO POSTO MARINA MAUA",
+   "data": "2026-10-26",
+   "edicao": "4443"
+  },
+  {
+   "cod": "57A2DD39",
+   "titulo": "EXTRATO DO CONTRATO ADMINISTRATIVO Nº 190/2026",
+   "entidade": "Prefeitura Municipal de Barros Cassal",
+   "orgao": "LICITAÇÕES",
+   "trecho": "Contratada: AUTO POSTO TIO BIBA LTDA - EPP CNPJ: 07.356.684/0001-08 OBJETO: O presente Pregão Eletrônico tem por objeto o registro de preços para a futura e eventual aquisição de",
+   "data": "2026-10-23",
+   "edicao": "4442"
+  },
+  {
+   "cod": "E40ED9DC",
+   "titulo": "SÚMULA DO OITAVO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026",
+   "entidade": "Prefeitura Municipal de Porto Mauá",
+   "orgao": "Secretaria de Administração e Finanças",
+   "trecho": "SECRETARIA DE ADMINISTRAÇÃO E FINANÇASSÚMULA DO OITAVO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026 CONTRATANTE: MUNICÍPIO DE PORTO MAUÁ CONTRATADO: AUTO POSTO MARINA MAUA",
+   "data": "2026-10-23",
+   "edicao": "4442"
+  },
+  {
+   "cod": "1504AC39",
+   "titulo": "EXTRATOS DE CONTRATOS E ADITIVOS REFERENTES AO MÊS DE OUTUBRO/2026 – 1ª QUINZENA",
+   "entidade": "Prefeitura Municipal de Charrua",
+   "orgao": "SECRETARIA DE ADMINISTRAÇÃO E PLANEJAMENTO",
+   "trecho": "limite previsto na Lei Federal nº 14.133/2021. Data: 15/10/2026 ADITIVO 22 AO CONTRATO Nº 01/2026 PREGÃO ELETRÔNICO Nº 15/2025 Contratada: AUTO POSTO CHARRUA LTDA - EPP, inscrita no",
+   "data": "2026-10-21",
+   "edicao": "4440"
+  },
+  {
+   "cod": "0A2B6CCD",
+   "titulo": "EXTRATO CONTRATUAL",
+   "entidade": "Prefeitura Municipal de Doutor Maurício Cardoso",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO E FAZENDA",
+   "trecho": "Administrativo nº 426/2026 – Pregão Eletrônico 037/2026 – Adição de Quantidade e Valor, aditando o valor de R$1.260,00. Assinatura: 19/10/2026 – BOER AUTO POSTO LTDA - EPP CNPJ nº",
+   "data": "2026-10-20",
+   "edicao": "4439"
+  },
+  {
+   "cod": "DA02861A",
+   "titulo": "EXTRATO DA ATA DE REGISTRO DE PREÇOS N° 38/2026 PREGÃO ELETRONICO Nº 21/2026 PROCESSO Nº 146/2026",
+   "entidade": "Prefeitura Municipal de Erval Seco",
+   "orgao": "Secretaria Municipal de Administração e Coordenação Geral",
+   "trecho": "DE ERVAL SECO/RS. CONTRATADA: AUTO POSTO STEFANELLO LTDA OBJETO: REGISTRO DE PREÇOS PARA FUTURA E EVENTUAL AQUISIÇÃO DE COMBUSTÍVEIS, ARLA 32, ADITIVOS E DEMAIS INSUMOS CORRELATOS",
+   "data": "2026-10-16",
+   "edicao": "4437"
+  },
+  {
+   "cod": "31F22EB4",
+   "titulo": "SÚMULA DE ADITIVO SEGUNDO AO CONTRATO ADMINISTRATIVO Nº 084/2026 PREGÃO PRESENCIAL Nº 024/2026",
+   "entidade": "Prefeitura Municipal de Barracão",
+   "orgao": "SECRETARIA DA FAZENDA",
+   "trecho": ": AUTO POSTO COMPARIN LTDA, CNPJ nº 03.533.920/0015-69. Reequilíbrio Econômico-Financeiro. Conforme solicitação da empresa contratada houve aumento no valor dos produtos, conforme",
+   "data": "2026-10-15",
+   "edicao": "4436"
+  },
+  {
+   "cod": "C81200E7",
+   "titulo": "SÚMULA DO SÉTIMO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026",
+   "entidade": "Prefeitura Municipal de Porto Mauá",
+   "orgao": "Secretaria de Administração e Finanças",
+   "trecho": "SECRETARIA DE ADMINISTRAÇÃO E FINANÇASSÚMULA DO SÉTIMO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026 CONTRATANTE: MUNICÍPIO DE PORTO MAUÁ CONTRATADO: AUTO POSTO MARINA MAUA",
+   "data": "2026-10-13",
+   "edicao": "4434"
+  },
+  {
+   "cod": "5413549D",
+   "titulo": "EXTRATO CONTRATUAL",
+   "entidade": "Prefeitura Municipal de Doutor Maurício Cardoso",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO E FAZENDA",
+   "trecho": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO E FAZENDAEXTRATO CONTRATUAL – BOER AUTO POSTO LTDA CNPJ nº 22.154.232/0001-37 Termo Aditivo nº 009/2026 Contrato Administrativo nº 001/2026",
+   "data": "2026-10-08",
+   "edicao": "4432"
+  },
+  {
+   "cod": "8490B093",
+   "titulo": "EXTRATOS DE CONTRATOS E ADITIVOS REFERENTES AO MÊS DE SETEMBRO/2026 – 2ª QUINZENA",
+   "entidade": "Prefeitura Municipal de Charrua",
+   "orgao": "SECRETARIA DE ADMINISTRAÇÃO E PLANEJAMENTO",
+   "trecho": ", pelo período de 03 (três) meses, a contar de 1° de outubro de 2026. Data: 30/09/2026 ADITIVO 20 AO CONTRATO Nº 01/2026 PREGÃO ELETRÔNICO Nº 15/2025 Contratada: AUTO POSTO CHARRUA LTDA … Sexta do contrato original. Data: 16/09/2026 ADITIVO 21 AO CONTRATO Nº 01/2026 PREGÃO ELETRÔNICO Nº 15/2025 Contratada: AUTO POSTO CHARRUA LTDA - EPP, inscrita no CNPJ sob o nº",
+   "data": "2026-10-07",
+   "edicao": "4431"
+  },
+  {
+   "cod": "BEB653D6",
+   "titulo": "SÚMULA DO SEXTO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026",
+   "entidade": "Prefeitura Municipal de Porto Mauá",
+   "orgao": "Secretaria de Administração e Finanças",
+   "trecho": "SECRETARIA DE ADMINISTRAÇÃO E FINANÇASSÚMULA DO SEXTO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026 CONTRATANTE: MUNICÍPIO DE PORTO MAUÁ CONTRATADO: AUTO POSTO MARINA MAUA",
+   "data": "2026-10-06",
+   "edicao": "4430"
+  },
+  {
+   "cod": "21996C31",
+   "titulo": "CONTRATOS 2-1",
+   "entidade": "Prefeitura Municipal de Entre Rios do Sul",
+   "orgao": "SETOR DE CONTRATOS E CONVÊNIOS",
+   "trecho": "SETOR DE CONTRATOS E CONVÊNIOSCONTRATOS 2-1 SÚMULA DE CONTRATOS- 01ª PAGINA – SETEMBRO/26 Contratante: Prefeitura Municipal de Entre Rios do Sul. Contratada: AUTO POSTO AB LTDA",
+   "data": "2026-10-05",
+   "edicao": "4429"
+  },
+  {
+   "cod": "CBCA2A80",
+   "titulo": "ADITIVO 2-1",
+   "entidade": "Prefeitura Municipal de Entre Rios do Sul",
+   "orgao": "SETOR DE CONTRATOS E CONVÊNIOS",
+   "trecho": "de consultas médicas Prazo: 28.11.26 Data Assinatura: 27.08.26 Contratante: Prefeitura Municipal de Entre Rios do Sul. Contratada: AUTO POSTO AB LTDA Contrato Adm.:SEGUNDO ADITIVO N",
+   "data": "2026-10-05",
+   "edicao": "4429"
+  },
+  {
+   "cod": "6D73D91F",
+   "titulo": "SÚMULA DO QUINTO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026",
+   "entidade": "Prefeitura Municipal de Porto Mauá",
+   "orgao": "Secretaria de Administração e Finanças",
+   "trecho": "SECRETARIA DE ADMINISTRAÇÃO E FINANÇASSÚMULA DO QUINTO TERMO ADITIVO A ATA DE REGISTRO DE PREÇOS Nº 86/2026 CONTRATANTE: MUNICÍPIO DE PORTO MAUÁ CONTRATADO: AUTO POSTO MARINA MAUA",
+   "data": "2026-10-05",
+   "edicao": "4429"
+  },
+  {
+   "cod": "D70D4A51",
+   "titulo": "EXTRATO DE APOSTILAMENTO AO TERMO DE CREDENCIAMENTO",
+   "entidade": "Prefeitura Municipal de Osório",
+   "orgao": "SECRETARIA DE ADMINISTRAÇÃO",
+   "trecho": "09.143.889/0001- 30, em conformidade com o expediente n.º 32377/2026, para que passe a constar como “ AUTO POSTO LAVAGEM RENASCENCA LTDA”. Nome empresarial anterior CUNHA & PUGENS … LTDA. Novo nome AUTO POSTO LAVAGEM RENASCENCA LTDA. DA RATIFICAÇÃO: Permanecem inalteradas as demais cláusulas e condições do Contrato Original, as quais ficam ratificadas em todos os seus termos. EXPEDIENTE: 32377/2026 ROMILDO BOLZAN JÚNIOR Prefeito Municipal",
+   "data": "2026-09-30",
+   "edicao": "4426"
+  },
+  {
+   "cod": "C85C89D3",
+   "titulo": "EXTRATO DA ATA DE REGISTRO DE PREÇOS N° 12/2026 PREGÃO ELETRONICO Nº 15/2026 PROCESSO Nº 130/2026",
+   "entidade": "Prefeitura Municipal de Erval Seco",
+   "orgao": "Secretaria Municipal de Administração e Coordenação Geral",
+   "trecho": "DE ERVAL SECO/RS. CONTRATADA: AUTO POSTO BOTTEGA LTDA OBJETO: REGISTRO DE PREÇOS PARA FUTURA E EVENTUAL AQUISIÇÃO DE GASOLINA COMUM DESTINADA AO ABASTECIMENTO, FUNCIONAMENTO E",
+   "data": "2026-09-28",
+   "edicao": "4424"
+  },
+  {
+   "cod": "4CB6ED08",
+   "titulo": "AVISO DE DISPENSA",
+   "entidade": "Prefeitura Municipal de Nova Alvorada",
+   "orgao": "Município de Nova Alvorada",
+   "trecho": "regulamentações pertinentes ao fornecimento e armazenamento de combustíveis .10.3. Eventuais esclarecimentos poderão ser solicitados junto ao Setor de Licitações/Contratações do Município",
+   "data": "2026-11-24",
+   "edicao": "4462"
+  },
+  {
+   "cod": "0C3ED873",
+   "titulo": "EMENDA À LEI ORGÂNICA Nº 103",
+   "entidade": "Município de Pelotas",
+   "orgao": "Câmara Municipal de Pelotas",
+   "trecho": "consumo de água, gás, luz e energia elétrica e todos os demais serviços de caráter e uso coletivo, bem como sobre depósitos e armazenamento de combustíveis inflamáveis, produtos tóxicos",
+   "data": "2026-07-17",
+   "edicao": "4374"
+  },
+  {
+   "cod": "71CD16F8",
+   "titulo": "ERRATA - EDITAL DE CONCORRÊNCIA ELETRÔNICA Nº 003/2026",
+   "entidade": "Prefeitura Municipal de Riozinho",
+   "orgao": "Secretaria de Obras e Trânsito e Serviços Urbanos",
+   "trecho": "materiais pétreos a serem utilizados na execução da obra possui Licença de Operação LO válida, emitida pelo órgão ambiental competente, em atendimento à legislação ambiental vigente … . XIX. Licença de Operação LO da Usina de CBUQ: comprovação de que a usina fornecedora dos materiais asfálticos a serem utilizados na obra possui Licença de Operação LO válida",
+   "data": "2026-08-12",
+   "edicao": "4392"
+  },
+  {
+   "cod": "6E951B83",
+   "titulo": "LICENÇA DE OPERAÇÃO CORRETIVA - LOC 001/2026",
+   "entidade": "Prefeitura Municipal de Salto do Jacuí",
+   "orgao": "Departamento Municipal de Meio Ambiente",
+   "trecho": "DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTELICENÇA DE OPERAÇÃO CORRETIVA - LOC 001/2026 SECRETARIA DE ADMINISTRAÇÃO DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE – DMMA LICENÇA DE OPERAÇÃO CORRETIVA … Administrativo n° 218 de 19 de fevereiro de 2026, concede a Licença de Operação Corretiva. I- EMPREENDEDOR: AURI DE CASTRO CPF: 092.907.020-87 Endereço: Fazenda São Pedro, s/n",
+   "data": "2026-06-15",
+   "edicao": "4350"
+  },
+  {
+   "cod": "564DD54D",
+   "titulo": "LICENÇA DE OPERAÇÃO – LO N° 003/2026-PMSJ",
+   "entidade": "Prefeitura Municipal de Salto do Jacuí",
+   "orgao": "Departamento Municipal de Meio Ambiente",
+   "trecho": "DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTELICENÇA DE OPERAÇÃO – LO N° 003/2026-PMSJ SECRETARIA DE ADMINISTRAÇÃO DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE – DMMA LICENÇA DE OPERAÇÃO – LO … ° 1807 de 28 de agosto de 2025, expede a Renovação da Licença de Operação com alteração de Responsabilidade Ambiental. I- EMPREENDEDOR RESPONSÁVEL: LEANDRO BATISTTI CPF: 689.183.390",
+   "data": "2026-03-13",
+   "edicao": "4287"
+  },
+  {
+   "cod": "E5883E67",
+   "titulo": "LICENÇA DE OPERAÇÃO – LO N° 002/2026-PMSJ",
+   "entidade": "Prefeitura Municipal de Salto do Jacuí",
+   "orgao": "Departamento Municipal de Meio Ambiente",
+   "trecho": "DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTELICENÇA DE OPERAÇÃO – LO N° 002/2026-PMSJ SECRETARIA DE ADMINISTRAÇÃO DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE – DMMA LICENÇA DE OPERAÇÃO – LO … ° 84 de 19 de janeiro de 2026, concede a Licença de Operação . I- EMPREENDEDOR PRINCIPAL: COOPERATIVA DOS GARIMPEIROS DE SALTO DO JACUÍ LTDA CNPJ: 93.944.510/0001-06 Endereço: Avenida",
+   "data": "2026-02-23",
+   "edicao": "4273"
+  },
+  {
+   "cod": "53A4C837",
+   "titulo": "PLANO ANUAL DE CONTRATAÇÕES - EXERCÍCIO 2026",
+   "entidade": "Prefeitura Municipal de Formigueiro",
+   "orgao": "Secretaria Municipal da Fazenda",
+   "trecho": "$ 99.780,00 Janeiro/Dezembro Contratação de empresa ou profissional especializados para encaminhamentos de documentos para renovações de licenças de operações referente às extrações … para renovações de licenças de operações referente à central de podas, localizada no município de Formigueiro R$6.958,50 Janeiro/Dezembro Contratação de empresa especializada no",
+   "data": "2026-01-19",
+   "edicao": "4249"
+  },
+  {
+   "cod": "71C5DE18",
+   "titulo": "LEI N° 2263-02/2026",
+   "entidade": "Prefeitura Municipal de Cruzeiro do Sul",
+   "orgao": "GABINETE DO PREFEITO",
+   "trecho": "instrumento legal ou convênio, no exercício de sua competência de controle; expedir as licenças Prévias , de Instalação e de Operação; elaborar e acompanhar estudo necessário ao … serviços e outros pertinentes ao apoio administrativo; o controle de estoque de matérias primas, peças, óleos lubrificantes, combustíveis e demais materiais necessários para o andamento",
+   "data": "2026-05-08",
+   "edicao": "4324"
+  },
+  {
+   "cod": "A334E479",
+   "titulo": "LEI COMPLEMETAR Nº 5079 DE 23 DE DEZEMBRO DE 2025",
+   "entidade": "Prefeitura Municipal de Tupanciretã",
+   "orgao": "GABINETE DO PREFEITO",
+   "trecho": "",
+   "data": "2025-12-30",
+   "edicao": "4236"
+  },
+  {
+   "cod": "0433D83C",
+   "titulo": "LDO 2027",
+   "entidade": "Prefeitura Municipal de Santa Margarida do Sul",
+   "orgao": "Administração e Fazenda",
+   "trecho": "de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em que for necessária; e d) não … ou etapa ainda não esteja iniciada; V - aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de Educação e Saúde; VI - diárias de viagem; VII",
+   "data": "2026-11-19",
+   "edicao": "4460"
+  },
+  {
+   "cod": "84CBA67B",
+   "titulo": "LEI N° 4.749 DE 23 DE OUTUBRO DE 2026.",
+   "entidade": "Prefeitura Municipal de Dom Feliciano",
+   "orgao": "Jurídico",
+   "trecho": "benefícios pela sociedade;b) ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos … comprometidos;II - obras em geral, cuja fase ou etapa ainda não esteja iniciada;III – aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de educação e",
+   "data": "2026-11-18",
+   "edicao": "4459"
+  },
+  {
+   "cod": "1E5B8FE4",
+   "titulo": "LEI MUNICIPAL Nº 3.053/2026 DE 06 DE NOVEMBRO DE 2026.",
+   "entidade": "Prefeitura Municipal de Redentora",
+   "orgao": "GABINETE",
+   "trecho": "esteja iniciada;III - aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de Saúde e Educação;IV - dotação para materiais de consumo e serviços … que permita o usufruto dos benefícios pela sociedade;b) ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário;c) a ausência de licença",
+   "data": "2026-11-11",
+   "edicao": "4454"
+  },
+  {
+   "cod": "EB6606CE",
+   "titulo": "LEI N° 4.749 DE 23 DE OUTUBRO DE 2026.",
+   "entidade": "Prefeitura Municipal de Dom Feliciano",
+   "orgao": "Jurídico",
+   "trecho": "usufruto dos benefícios pela sociedade; b) ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia … ; III – aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de educação e saúde; IV - dotação para materiais de consumo e outros serviços de",
+   "data": "2026-11-09",
+   "edicao": "4452"
+  },
+  {
+   "cod": "59EA3F21",
+   "titulo": "DISPÕE SOBRE AS DIRETRIZES ORÇAMENTÁRIAS PARA O EXERCÍCIO FINANCEIRO DE 2027.",
+   "entidade": "Município de Sinimbu",
+   "orgao": "Gabinete do Prefeito",
+   "trecho": "geral, cuja fase ou etapa ainda não esteja iniciada; III - aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de educação e saúde; IV - dotação … -financeiro de execução do projeto que permita, no mínimo, a conclusão de etapa útil com funcionalidade que permita o usufruto dos benefícios pela sociedade; b) a ausência de licença",
+   "data": "2026-11-05",
+   "edicao": "4450"
+  },
+  {
+   "cod": "83080FE7",
+   "titulo": "LEI MUNICIPAL N° 3093 DE 14 DE OUTUBRO DE 2026.",
+   "entidade": "Prefeitura Municipal de Salto do Jacuí",
+   "orgao": "GABINETE DO PREFEITO",
+   "trecho": "responsável, nos casos em que for necessário; c) ausência de licença ambiental prévia, nos casos em que for necessária; d) não comprovação, por parte do órgão ou entidade beneficiada pela … não esteja iniciada; III - aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de saúde e educação; IV - Dotação para materiais de consumo e",
+   "data": "2026-10-23",
+   "edicao": "4442"
+  },
+  {
+   "cod": "ED316231",
+   "titulo": "LEI MUNICIPAL N° 3093 DE 14 DE OUTUBRO DE 2026.",
+   "entidade": "Prefeitura Municipal de Salto do Jacuí",
+   "orgao": "GABINETE DO PREFEITO",
+   "trecho": "responsável, nos casos em que for necessário; c) ausência de licença ambiental prévia, nos casos em que for necessária; d) não comprovação, por parte do órgão ou entidade beneficiada pela … não esteja iniciada; III - aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de saúde e educação; IV - Dotação para materiais de consumo e",
+   "data": "2026-10-22",
+   "edicao": "4441"
+  },
+  {
+   "cod": "25AC1202",
+   "titulo": "LEI Nº 2946/2026, DE 20 DE OUTUBRO DE 2026",
+   "entidade": "Prefeitura Municipal de Novo Cabrais",
+   "orgao": "Gabinete do Prefeito",
+   "trecho": "necessário; c) a ausência de licença ambiental prévia, nos casos em que for necessária; e d) não comprovação, por parte do órgão ou entidade beneficiada pela emenda, da capacidade de … etapa ainda não esteja iniciada; III - aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de educação, saneamento e saúde; IV - dotação para",
+   "data": "2026-10-21",
+   "edicao": "4440"
+  },
+  {
+   "cod": "4CCE3EE3",
+   "titulo": "LEGISLAÇÃO MUNICIPAL 2.528/2026",
+   "entidade": "Prefeitura Municipal de Glorinha",
+   "orgao": "Secretaria Municipal de Administração",
+   "trecho": "sociedade; b) ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em que for … ativos, desde que ainda não comprometidos; II - obras em geral, cuja fase ou etapa ainda não esteja iniciada; III – aquisição de combustíveis e derivados, destinada à frota de",
+   "data": "2026-10-19",
+   "edicao": "4438"
+  },
+  {
+   "cod": "6144FC77",
+   "titulo": "LEI 1.965/2026",
+   "entidade": "Prefeitura Municipal de Pedras Altas",
+   "orgao": "GABINETE DO PREFEITO",
+   "trecho": "sociedade; ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; a ausência de licença ambiental prévia, nos casos em que for necessária … que ainda não comprometidos; obras em geral, cuja fase ou etapa ainda não esteja iniciada; aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de",
+   "data": "2026-10-15",
+   "edicao": "4436"
+  },
+  {
+   "cod": "4FBAAF65",
+   "titulo": "LEI N.° 3.197, DE 09 DE OUTUBRO DE 2026 - DISPÕE SOBRE AS DIRETRIZES ORÇAMENTÁRIAS PARA O EXERCÍCIO FINANCEIRO DE 2027.",
+   "entidade": "Prefeitura Municipal de Tuparendi",
+   "orgao": "Secretaria de Administração",
+   "trecho": "engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em que for necessária; d) não comprovação, por parte do … combustíveis e derivados destinada à frota de veículos, exceto dos setores de educação e saúde; IV – dotação para materiais de consumo e serviços de terceiros das diversas atividades",
+   "data": "2026-10-13",
+   "edicao": "4434"
+  },
+  {
+   "cod": "569C456A",
+   "titulo": "LEI Nº. 3.771 DE 06 DE OUTUBRO DE 2026",
+   "entidade": "Prefeitura Municipal de Santana da Boa Vista",
+   "orgao": "Secretaria Municipal de Administração",
+   "trecho": "ausência de licença ambiental prévia, nos casos em que for necessária; e d) não comprovação, por parte do órgão ou entidade beneficiada pela emenda, da capacidade de aportar recursos … , operações de crédito, alienação de ativos, desde que ainda não comprometidos; II - obras em geral, cuja fase ou etapa ainda não esteja iniciada; III - aquisição de combustíveis e",
+   "data": "2026-10-08",
+   "edicao": "4432"
+  },
+  {
+   "cod": "B81DE943",
+   "titulo": "LEI N.º 3.537, DE 07 DE OUTUBRO DE 2026. DISPÕE SOBRE AS DIRETRIZES ORÇAMENTÁRIAS PARA O EXERCÍCIO FINANCEIRO DE 2027.",
+   "entidade": "Prefeitura Municipal de Independência",
+   "orgao": "Secretaria de Administração",
+   "trecho": "; ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; a ausência de licença ambiental prévia, nos casos em que for necessária; e não … voluntárias, operações de crédito, alienação de ativos, desde que ainda não comprometidos; - obras em geral, cuja fase ou etapa ainda não esteja iniciada; - aquisição de combustíveis",
+   "data": "2026-10-08",
+   "edicao": "4432"
+  },
+  {
+   "cod": "E33BE407",
+   "titulo": "LEI N° 2289-02/2026",
+   "entidade": "Prefeitura Municipal de Cruzeiro do Sul",
+   "orgao": "GABINETE DO PREFEITO",
+   "trecho": "projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em que for necessária; d) não … fase ou etapa ainda não esteja iniciada; III – aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de educação e saúde; IV - dotação para",
+   "data": "2026-10-05",
+   "edicao": "4429"
+  },
+  {
+   "cod": "19186CFD",
+   "titulo": "LEI MUNICIPAL Nº 4.843 DE 23 DE SETEMBRO DE 2026",
+   "entidade": "Prefeitura Municipal de Três Coroas",
+   "orgao": "Secretaria Municipal de Administração",
+   "trecho": "casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em que for necessária; e d) não comprovação, por parte do órgão ou entidade beneficiada pela emenda … comprometidos; II - obras em geral, cuja fase ou etapa ainda não esteja iniciada; III - aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos serviços",
+   "data": "2026-09-25",
+   "edicao": "4423"
+  },
+  {
+   "cod": "C16D5E25",
+   "titulo": "LEI COMPLEMENTAR Nº 5215 DE 09 DE SETEMBRO DE 2026",
+   "entidade": "Prefeitura Municipal de Tupanciretã",
+   "orgao": "GABINETE DO PREFEITO",
+   "trecho": "o usufruto dos benefícios pela sociedade; c) Ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; d) A ausência de licença ambiental prévia … iniciada; III - Aquisição de combustíveis e derivados, destinada à frota de veículos, exceto das Secretarias de Obras e Saúde; IV - Dotação para materiais de consumo e serviços de",
+   "data": "2026-09-14",
+   "edicao": "4414"
+  },
+  {
+   "cod": "8D8E28F6",
+   "titulo": "LEI MUNICIPAL Nº 2.614, DE 26 DE AGOSTO DE 2026.",
+   "entidade": "Prefeitura Municipal de Imbé",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO",
+   "trecho": "benefícios pela sociedade; b) ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em que … esteja iniciada; III - aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de Educação e Saúde; IV - dotação para materiais de consumo e",
+   "data": "2026-08-27",
+   "edicao": "4403"
+  },
+  {
+   "cod": "D4D77959",
+   "titulo": "LEI Nº 5.577 DE 19 DE DEZEMBRO DE 2025",
+   "entidade": "Prefeitura Municipal de Bom Retiro do Sul",
+   "orgao": "Secretaria de Administração e Planejamento",
+   "trecho": "usufruto dos benefícios pela sociedade; b) ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia … geral, cuja fase ou etapa ainda não esteja iniciada; III – aquisição de combustíveis e derivados, destinada à frota de veículos, exceto das secretarias de Saúde e Educação; IV",
+   "data": "2026-04-29",
+   "edicao": "4318"
+  },
+  {
+   "cod": "7BCF48B5",
+   "titulo": "LEI Nº 5.577 DE 19 DE DEZEMBRO DE 2025",
+   "entidade": "Prefeitura Municipal de Bom Retiro do Sul",
+   "orgao": "Secretaria de Administração e Planejamento",
+   "trecho": "usufruto dos benefícios pela sociedade; b) ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia … geral, cuja fase ou etapa ainda não esteja iniciada; III – aquisição de combustíveis e derivados, destinada à frota de veículos, exceto das secretarias de Saúde e Educação; IV",
+   "data": "2026-04-28",
+   "edicao": "4317"
+  },
+  {
+   "cod": "65BE8AEA",
+   "titulo": "LEI Nº 5.577 DE 19 DE DEZEMBRO DE 2025",
+   "entidade": "Prefeitura Municipal de Bom Retiro do Sul",
+   "orgao": "Secretaria de Administração e Planejamento",
+   "trecho": "de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em que for necessária; d) não comprovação, por … – aquisição de combustíveis e derivados, destinada à frota de veículos, exceto das secretarias de Saúde e Educação; IV - dotação para materiais de consumo e serviços de terceiros das",
+   "data": "2026-04-24",
+   "edicao": "4315"
+  },
+  {
+   "cod": "0E535870",
+   "titulo": "LEI Nº 4.127/2025",
+   "entidade": "Prefeitura Municipal de Butiá",
+   "orgao": "administração",
+   "trecho": "benefícios pela sociedade; b) ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em … etapa ainda não esteja iniciada; III – aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de educação e saúde; IV - dotação para material de",
+   "data": "2026-04-24",
+   "edicao": "4315"
+  },
+  {
+   "cod": "4C3AD2E4",
+   "titulo": "DECRETO MUNICIPAL Nº 2.467/2025, DE 18 DE DEZEMBRO DE 2025",
+   "entidade": "Prefeitura Municipal de Barão de Cotegipe",
+   "orgao": "PREFEITURA MUNICIPAL DE BARÃO DE COTEGIPE",
+   "trecho": "nº2.987 de 4 de outubro de 2022 : LICENÇA AMBIENTAL REGULARIDADE FISCAL ALVARÁ DE VIGILÂNCIA SANITÁRIA REGULARIZAÇÃO DO IMÓVEL OUTROS (ESPECIFICAR): Contabilista responsável pela … agentes do comercio de matérias-primas agrícolas e animais vivos 4612-5/00 Representantes comerciais e agentes do comercio de combustíveis , minerais, produtos siderúrgicos e",
+   "data": "2026-01-09",
+   "edicao": "4243"
+  }
+ ],
+ "docs": [
+  {
+   "cod": "565BF286",
+   "titulo": "AUTORIZAÇÃO",
+   "entidade": "Prefeitura Municipal de Augusto Pestana",
+   "orgao": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO-PROCURADORIA JURIDICA",
+   "trecho": "especializados consistentes na elaboração de projeto técnico para renovação da Licença de Operação (LO) do Posto de Abastecimento do Município, a ser protocolado e analisado junto",
+   "data": "2026-07-30",
+   "edicao": "4383",
+   "id": "565BF286",
+   "texto": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO-PROCURADORIA JURIDICA AUTORIZAÇÃO AUTORIZAÇÃO Analisando o presente Processo Administrativo nº 832/2026 e com fundamento no art. 75, inciso II, da Lei nº 14.133/2021, AUTORIZO A DISPENSA DE LICITAÇÃO POR LIMITE Nº 779/2026 , para a contratação da empresa GEOLAC GEOLOGIA E MEIO AMBIENTE LTDA., pessoa jurídica de direito privado, inscrita no CNPJ sob n.º 91.053.736/0001-83, para a prestação de serviços técnicos especializados consistentes na elaboração de projeto técnico para renovação da Licença de Operação (LO) do Posto de Abastecimento do Município, a ser protocolado e analisado junto ao órgão ambiental competente, pelo valor total de R$9.000,00 (nove mil reais). Cumpra-se. Publique-se. Augusto Pestana/RS, 29 de julho de 2026. SERGIO LUÍS NEUBERGER Prefeito Municipal Publicado por: Patricia Talita Steirnagel Wunder C digo Identificador: 565BF286",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/565BF286",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/565BF286",
+   "local": "Edição 4383, matéria 565BF286 · Prefeitura Municipal de Augusto Pestana"
+  },
+  {
+   "cod": "CEB54650",
+   "titulo": "LEI N.º 1701 DE 03 DE DEZEMBRO DE 2025",
+   "entidade": "MUNICIPIO DE SÃO VENDELINO",
+   "orgao": "SECRETARIA MUNICIPAL DA ADMINISTRAÇÃO E MEIO AMBIENTE",
+   "trecho": "",
+   "data": "2025-12-23",
+   "edicao": "4232",
+   "id": "CEB54650",
+   "texto": "SECRETARIA MUNICIPAL DA ADMINISTRAÇÃO E MEIO AMBIENTE LEI N.º 1701 DE 03 DE DEZEMBRO DE 2025 LEI N.º 1701 DE 03 DE DEZEMBRO DE 2025 INSTITUI O PLANO DIRETOR DE SÃO VENDELINO/RS, NOS TERMOS DA LEI FEDERAL Nº 10.257/2001, E DÁ OUTRAS PROVIDÊNCIAS. RÉGIS PAULO FRITZEN , Prefeito Municipal de São Vendelino, Estado do Rio Grande do Sul, Faço saber que a Câmara Municipal aprovou e eu sanciono a seguinte LEI : PARTE I DA POLÍTICA DE DESENVOLVIMENTO TERRITORIAL Art. 1º A Política de Desenvolvimento Territorial de São Vendelino objetiva orientar o desenvolvimento municipal, de forma a assegurar aos munícipes o direito à cidade sustentável. Parágrafo único. O direito à cidade sustentável é entendido como o direito à terra urbana, à moradia, ao saneamento ambiental, à infraestrutura urbana, ao transporte e aos serviços públicos, ao trabalho e ao lazer, para as presentes e futuras gerações. Art. 2º É princípio fundamental da Política de Desenvolvimento Territorial de São Vendelino ordenar o pleno desenvolvimento das funções sociais da cidade e da propriedade urbana, através das seguintes diretrizes gerais, dentre as demais dispostas pelo Estatuto da Cidade: I - planejamento do desenvolvimento municipal, da distribuição espacial da população e das atividades econômicas, de modo a evitar e corrigir as distorções do crescimento urbano e seus efeitos negativos sobre o meio ambiente; II - oferta de equipamentos urbanos e comunitários, transporte e serviços públicos adequados aos interesses e necessidades da população e às características locais; III - ordenação e controle do uso do solo; IV - integração e complementaridade entre as atividades urbanas e rurais, tendo em vista o desenvolvimento socioeconômico; V - adoção de padrões de produção e consumo de bens e serviços e de expansão urbana compatíveis com os limites da sustentabilidade ambiental, social e econômica; VI - justa distribuição dos benefícios e ônus decorrentes do processo de urbanização; VII - proteção, preservação e recuperação do meio ambiente natural e construído, do patrimônio cultural, histórico, artístico, paisagístico e arqueológico. Parágrafo único. O Executivo Municipal utilizará dos instrumentos previstos nesta Lei e demais regulamentações pertinentes para assegurar o cumprimento da função social da cidade e da propriedade urbana de São Vendelino. Art. 3º A função social da cidade é definida como o pleno exercício, por todos, do direito à moradia adequada, ao saneamento, ao meio ecologicamente equilibrado, ao transporte público, à mobilidade, a acessibilidade, aos meios de subsistência, ao trabalho, à saúde, à educação, à cultura, à proteção social, à segurança, ao lazer, à informação e aos demais direitos assegurados pela legislação vigente, de forma a promover o uso socialmente justo, sustentável e integrado do território urbano e rural. Parágrafo único. Para alcançar o disposto no caput é necessário, fundamentalmente, garantir o cumprimento da função social da propriedade urbana. Art. 4º As funções sociais da propriedade urbana localizada em São Vendelino são cumpridas quando esta atende às exigências fundamentais de ordenação expressas neste Plano Diretor e demais leis relacionadas, e aos seguintes requisitos, simultaneamente: I - uso autorizado por este Plano Diretor e às demais exigências legais pertinentes, adequado à situação local, considerando os condicionantes ambientais, paisagísticos e as características da vizinhança; II - ocupação de acordo com as normas definidas neste Plano Diretor e demais exigências legais pertinentes, observados os valores ambientais e culturais e o uso adequado da infraestrutura existente; III - uso e ocupação que contribuam para o desenvolvimento local equilibrado, evitando processos especulativos; IV - respeito às restrições ao uso e ocupação determinados neste Plano Diretor e nas demais exigências legais pertinentes, de forma a evitar a exposição da população a riscos de desastres e prejuízos ambientais irreversíveis. Parágrafo ú",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/CEB54650",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/CEB54650",
+   "local": "Edição 4232, matéria CEB54650 · MUNICIPIO DE SÃO VENDELINO"
+  },
+  {
+   "cod": "71CD16F8",
+   "titulo": "ERRATA - EDITAL DE CONCORRÊNCIA ELETRÔNICA Nº 003/2026",
+   "entidade": "Prefeitura Municipal de Riozinho",
+   "orgao": "Secretaria de Obras e Trânsito e Serviços Urbanos",
+   "trecho": "materiais pétreos a serem utilizados na execução da obra possui Licença de Operação LO válida, emitida pelo órgão ambiental competente, em atendimento à legislação ambiental vigente … . XIX. Licença de Operação LO da Usina de CBUQ: comprovação de que a usina fornecedora dos materiais asfálticos a serem utilizados na obra possui Licença de Operação LO válida",
+   "data": "2026-08-12",
+   "edicao": "4392",
+   "id": "71CD16F8",
+   "texto": "SECRETARIA DE OBRAS E TRÂNSITO E SERVIÇOS URBANOS ERRATA - EDITAL DE CONCORRÊNCIA ELETRÔNICA Nº 003/2026 O MUNICÍPIO DE RIOZINHO/RS , por intermédio do Agente de Contratação, torna pública a presente ERRATA ao Edital de Concorrência Eletrônica nº 003/2026 , para retificar a numeração dos itens relativos à habilitação e aos critérios de desempate, nos seguintes termos: 1. DO ITEM 5 – HABILITAÇÃO ONDE SE LÊ: 5. HABILITAÇÃO: X. Certidão Simplificada da Junta Comercial ou documento semelhante ou Declaração firmada por representante legal da empresa, para as empresas que usufruíram dos benefícios da Lei Complementar nº 123/2006. XI. O balanço patrimonial, demonstração de resultado de exercício e demais demonstrações contábeis dos 2 dois últimos exercícios sociais, limitar-se-ão ao último exercício no caso de a pessoa jurídica ter sido constituída há menos de 2 dois anos. XII. Para os documentos citados acima, poderá ser apresentado o recibo de escrituração contábil digital no SPED Sistema da Receita Federal, com o Termo de Abertura e Encerramento, o Balanço Patrimonial e o DRE. XIII. Comprovação dos índices mínimos de Liquidez Geral LG, Liquidez Corrente LC e Solvência Geral SG, conforme parâmetros definidos neste edital; comprovados mediante a apresentação pelo licitante de balanço patrimonial, demonstração de resultado de exercício e demais demonstrações contábeis dos 2 dois últimos exercícios sociais e obtidos pela aplicação das seguintes fórmulas: Liquidez Geral LG = Ativo Circulante + Realizável a Longo Prazo / Passivo Circulante + Passivo elegível a longo prazo; Índice igual ou superior 1,5 - Solvência Geral SG = Ativo Total / Passivo Circulante + Passivo elegível a longo prazo; Índice igual ou superior 1,5 - Liquidez Corrente LC = Ativo Circulante / Passivo Circulante; Índice igual ou superior 1,5. a) Para efeitos de atingimento dos índices previstos no inciso anterior será considerado, para efeito de habilitação, quaisquer dos balanços exigidos nos últimos 2 anos, preponderando o de maior Liquidez Geral LG, Solvência Geral SG ou Liquidez Corrente LC. b) Considerando que o objeto da presente contratação consiste na execução de obra de pavimentação asfáltica, drenagem e sinalização viária, com elevado vulto financeiro, elevada complexidade técnica e execução continuada, faz-se necessária a comprovação da capacidade econômico-financeira dos licitantes, de forma a reduzir os riscos de inexecução contratual, paralisação da obra, abandono dos serviços ou incapacidade de suportar financeiramente as obrigações assumidas. Nesse contexto, exige-se que os licitantes comprovem índices de Liquidez Geral LG, Liquidez Corrente LC e Solvência Geral SG iguais ou superiores a 1,5, demonstrando situação financeira compatível com a execução de contrato de grande porte, assegurando que a empresa possua capacidade de honrar suas obrigações de curto e longo prazo sem comprometer a adequada execução do objeto. A fixação do índice mínimo em 1,5 observa o princípio da proporcionalidade, mostrando-se compatível com a natureza, o vulto e os riscos inerentes à contratação, não constituindo restrição indevida à competitividade, mas medida destinada à seleção de empresas que apresentem capacidade financeira suficiente para suportar a execução integral do contrato. A exigência encontra fundamento no art. 69 da Lei nº 14.133/2021, que autoriza a Administração a exigir demonstração da boa situação financeira dos licitantes mediante índices contábeis objetivamente definidos no edital, desde que compatíveis com a contratação e devidamente justificados nos autos do processo administrativo. c) A fixação dos índices em patamar igual ou superior a 1,5 decorre de critérios técnicos vinculados ao objeto: obra de engenharia rodoviária, pavimentação asfáltica em CBUQ, drenagem pluvial, sarjetas e sinalização viária, de execução continuada por 365 trezentos e sessenta e cinco dias, no valor estimado de R$ 5.773.000,00 cinco milhões, setecentos e setenta e três mil rea",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/71CD16F8",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/71CD16F8",
+   "local": "Edição 4392, matéria 71CD16F8 · Prefeitura Municipal de Riozinho"
+  },
+  {
+   "cod": "6E951B83",
+   "titulo": "LICENÇA DE OPERAÇÃO CORRETIVA - LOC 001/2026",
+   "entidade": "Prefeitura Municipal de Salto do Jacuí",
+   "orgao": "Departamento Municipal de Meio Ambiente",
+   "trecho": "DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTELICENÇA DE OPERAÇÃO CORRETIVA - LOC 001/2026 SECRETARIA DE ADMINISTRAÇÃO DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE – DMMA LICENÇA DE OPERAÇÃO CORRETIVA … Administrativo n° 218 de 19 de fevereiro de 2026, concede a Licença de Operação Corretiva. I- EMPREENDEDOR: AURI DE CASTRO CPF: 092.907.020-87 Endereço: Fazenda São Pedro, s/n",
+   "data": "2026-06-15",
+   "edicao": "4350",
+   "id": "6E951B83",
+   "texto": "DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE LICENÇA DE OPERAÇÃO CORRETIVA - LOC 001/2026 SECRETARIA DE ADMINISTRAÇÃO DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE – DMMA LICENÇA DE OPERAÇÃO CORRETIVA – LOC N° 001/2026-PMSJ A Prefeitura Municipal de Salto do Jacuí/RS, CNPJ 89.658.025/0001-90, através do Departamento Municipal de Meio Ambiente, criado pela Lei Municipal nº 1.782, de 28 de dezembro de 2009, no uso das atribuições e competências que lhe são conferidas pela Lei Complementar Federal nº 140/2011, e com base nos autos do Processo Administrativo n° 218 de 19 de fevereiro de 2026, concede a Licença de Operação Corretiva. I- EMPREENDEDOR: AURI DE CASTRO CPF: 092.907.020-87 Endereço: Fazenda São Pedro, s/n°, Interior Município: Jacuizinho/RS II- EMPREENDIMENTO: Atividade: LAVRA DE GEMAS (ÁGATA/AMETISTA/ETC) – A CÉU ABERTO E COM RECUPERAÇÃO DE ÁREA DEGRADADA CODRAM: 530,04 Localização: Distrito de Júlio Borges - Zona Rural, Salto do Jacuí/RS Coordenadas: Latitude -29.142437 Longitude -53.073813 Processo ANM: 810.502/2016 III- CONDIÇÕES E RESTRIÇÕES: 1- Quanto ao empreendimento : Esta licença autoriza a OPERAÇÃO DE CORREÇÃO da atividade de LAVRA DE GEMAS (ÁGATA/AMETISTA/ETC) - A CÉU ABERTO E COM RECUPERAÇÃO DE ÁREA DEGRADADA localizada sob as coordenadas geográficas (SIRGAS 2000): -29.142437; -53.073813; Esta licença somente terá validade juntamente com a(s) certidão(ões) municipal(is) e os títulos minerários expedidos pela Agência Nacional de Mineração (ANM), todos em vigor; Deverão ser mantidas atualizadas as ART's (Anotação de Responsabilidade Técnica) de execução da área da biota (biólogo/engenheiro agrônomo/engenheiro florestal) e do meio físico (geólogo/engenheiro de minas), referentes às atividades do empreendimento; O empreendedor é responsável por manter as condições operacionais adequadas, respondendo por quaisquer danos ao meio ambiente, decorrentes da má operação do empreendimento; Sempre que empreendedor firmar algum acordo de melhoria ambiental ou ajustamento de conduta com outros órgãos (federal, estadual ou municipal), deverá ser juntada ao processo administrativo em vigor cópia desse documento; O empreendedor deverá estar ciente quanto à obrigatoriedade de inscrição do imóvel rural no Cadastro Ambiental Rural, conforme determina o §1º do Art. 29 da Lei Federal nº. 12.651, de 25 de maio de 2012; O(s) empreendedor(es) deste empreendimento deverá(ão) manter o Certificado de Regularidade do Cadastro Técnico Federal - CTF/APP válido(s) (www.ibama.gov.br) e, caso haja inclusão de novo(s) empreendedor(es), este(s) deverá (ão), no prazo de até 60 (sessenta) dias, apresentar o(s) Certificado(s) de Regularidade do Cadastro Técnico Federal - CTF/APP válido(s), com correlação na Ficha Técnica de Enquadramento: Categoria Código Descrição 1 1-4 Lavra Garimpeira Em caso de qualquer alteração (alteração de processo, ampliação de área ou de produção, troca de endereço entre outros) o empreendedor deverá requerer previamente junto ao DMMA; Limites operacionais específicos do empreendimento: Vida útil estimada do empreendimento: 06 (seis) anos, mantidos os parâmetros operacionais compatíveis com essa previsão; Volume total de solo orgânico a manejar: 870 m³ com controle de estoque e aplicação na recuperação; Cota máxima de profundidade de arrasamento: 226 m. 2- Quanto à Localização: 2.1- A operação deve permanecer integralmente restrita às poligonais licenciadas, sendo vedada lavra, disposição de materiais, abertura de acessos, bota-fora ou qualquer intervenção fora dos limites autorizados. 2.1.1- Poligonal Ambiental (ha): 6,32 ha Poligonal ANM (ha): 5,06 ha Área Útil (ha): 2,50 ha Poligonal de Extração (ha) : 1,42 ha 2.2- O empreendimento é constituído pelas seguintes poligonais e suas respectivas áreas, conforme aprovado no processo administrativo: 2.2.1- Poligonal útil – 2,5 ha Vértice Latitude Longitude 1 -29.143156 -53.072697 2 -29.143295 -53.073417 3 -29.143383 -53.073542 4 -29.143667 -53.073546 5 -29.143707 -53.073848 6 -29.1435",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/6E951B83",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/6E951B83",
+   "local": "Edição 4350, matéria 6E951B83 · Prefeitura Municipal de Salto do Jacuí"
+  },
+  {
+   "cod": "564DD54D",
+   "titulo": "LICENÇA DE OPERAÇÃO – LO N° 003/2026-PMSJ",
+   "entidade": "Prefeitura Municipal de Salto do Jacuí",
+   "orgao": "Departamento Municipal de Meio Ambiente",
+   "trecho": "DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTELICENÇA DE OPERAÇÃO – LO N° 003/2026-PMSJ SECRETARIA DE ADMINISTRAÇÃO DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE – DMMA LICENÇA DE OPERAÇÃO – LO … ° 1807 de 28 de agosto de 2025, expede a Renovação da Licença de Operação com alteração de Responsabilidade Ambiental. I- EMPREENDEDOR RESPONSÁVEL: LEANDRO BATISTTI CPF: 689.183.390",
+   "data": "2026-03-13",
+   "edicao": "4287",
+   "id": "564DD54D",
+   "texto": "DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE LICENÇA DE OPERAÇÃO – LO N° 003/2026-PMSJ SECRETARIA DE ADMINISTRAÇÃO DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE – DMMA LICENÇA DE OPERAÇÃO – LO N° 003/2026-PMSJ A Prefeitura Municipal de Salto do Jacuí/RS, CNPJ 89.658.025/0001-90, através do Departamento Municipal de Meio Ambiente, criado pela Lei Municipal nº 1.782, de 28 de dezembro de 2009, no uso das atribuições e competências que lhe são conferidas pela Lei Complementar Federal nº 140/2011, e com base nos autos do Processo Administrativo n° 1807 de 28 de agosto de 2025, expede a Renovação da Licença de Operação com alteração de Responsabilidade Ambiental. I- EMPREENDEDOR RESPONSÁVEL: LEANDRO BATISTTI CPF: 689.183.390-53 Endereço: Rua das Margaridas, n° 188, Bairro Universitário Município: Santa Cruz do Sul/RS II- EMPREENDIMENTO: Atividade: LAVRA DE GEMAS (ÁGATA/AMETISTA/ETC) – A CÉU ABERTO E COM RECUPERAÇÃO DE ÁREA DEGRADADA CODRAM: 530,04 Localização: Potreirinho - Zona Rural Coordenadas: Latitude -29.099016 Longitude -53.234220 Processo ANM: 810.857/2011 III- CONDIÇÕES E RESTRIÇÕES: 1- Quanto ao empreendimento : Esta licença autoriza a OPERAÇÃO da atividade de LAVRA DE GEMAS (ÁGATA/AMETISTA/ETC) - A CÉU ABERTO E COM RECUPERAÇÃO DE ÁREA DEGRADADA localizada sob as coordenadas geográficas (SIRGAS2000): -29.099016, -53.234220; Esta licença somente terá validade juntamente com a(s) certidão(ões) municipal(is) e os títulos minerários expedidos pela Agência Nacional de Mineração (ANM), todos em vigor; Esta licença foi elaborada de acordo com a descrição técnica feita pela Eng. de Minas JANAINA FÁTIMA CERUTTI MUNARETTI, CREA/RS 226969, ART nº 13846751, responsável técnica pelas informações do meio físico, e pelo Biólogo JULIO CÉSAR DE OLIVEIRA, CRBio 101041/03-D, ART nº 2025/08925 responsável técnico pelas informações do meio biótico; Deverão ser mantidas atualizadas as ART's (Anotação de Responsabilidade Técnica) de execução da área da biota (biólogo/engenheiro agrônomo/engenheiro florestal) e do meio físico (geólogo/engenheiro de minas), referentes às atividades do empreendimento; O empreendedor é responsável por manter as condições operacionais adequadas, respondendo por quaisquer danos ao meio ambiente, decorrentes da má operação do empreendimento; Sempre que o empreendedor firmar algum acordo de melhoria ambiental ou ajustamento de conduta com outros órgãos (federal, estadual ou municipal), deverá ser juntada ao processo administrativo em vigor cópia desse documento; O empreendedor deverá estar ciente quanto à obrigatoriedade de inscrição do imóvel rural no Cadastro Ambiental Rural junto ao DBIO/SEMA, conforme determina o §1º do Art. 29 da Lei Federal nº. 12.651, de 25 de maio de 2012; O empreendedor deste empreendimento deverá manter o Certificado de Regularidade do Cadastro Técnico Federal - CTF/APP válido(s) (www.ibama.gov.br) e, caso haja inclusão de novo(s) empreendedor(es), este(s) deverá (ão), no prazo de até 60 (sessenta) dias, apresentar o(s) Certificado(s) de Regularidade do Cadastro Técnico Federal - CTF/APP válido(s), com correlação na Ficha Técnica de Enquadramento: Categoria Código Descrição 1 1-4 Lavra Garimpeira Em caso de qualquer alteração (alteração de processo, ampliação de área ou de produção, troca de endereço entre outros) o empreendedor deverá requerer previamente junto ao DMMA; 2- Quanto à Localização: 2.1- A operação deve permanecer integralmente restrita às poligonais licenciadas, sendo vedada lavra, disposição de materiais, abertura de acessos, bota-fora ou qualquer intervenção fora dos limites autorizados. 2.1.1- Poligonal Ambiental (ha): 6,38 ha Poligonal ANM (ha): 20,45 ha Área Útil (ha): 2,5 ha Poligonal de Extração (ha) : 2,5 ha 2.2- O empreendimento é constituído pelas seguintes poligonais e suas respectivas áreas, conforme aprovado no processo administrativo: 2.2.1- Poligonal útil e de extração – 2,49 ha Vértices Latitude Longitude 1 -29,099530 -53,234750 2 -29,100008 -53,234737 3 -29,100007 -53,2342",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/564DD54D",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/564DD54D",
+   "local": "Edição 4287, matéria 564DD54D · Prefeitura Municipal de Salto do Jacuí"
+  },
+  {
+   "cod": "E5883E67",
+   "titulo": "LICENÇA DE OPERAÇÃO – LO N° 002/2026-PMSJ",
+   "entidade": "Prefeitura Municipal de Salto do Jacuí",
+   "orgao": "Departamento Municipal de Meio Ambiente",
+   "trecho": "DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTELICENÇA DE OPERAÇÃO – LO N° 002/2026-PMSJ SECRETARIA DE ADMINISTRAÇÃO DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE – DMMA LICENÇA DE OPERAÇÃO – LO … ° 84 de 19 de janeiro de 2026, concede a Licença de Operação . I- EMPREENDEDOR PRINCIPAL: COOPERATIVA DOS GARIMPEIROS DE SALTO DO JACUÍ LTDA CNPJ: 93.944.510/0001-06 Endereço: Avenida",
+   "data": "2026-02-23",
+   "edicao": "4273",
+   "id": "E5883E67",
+   "texto": "DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE LICENÇA DE OPERAÇÃO – LO N° 002/2026-PMSJ SECRETARIA DE ADMINISTRAÇÃO DEPARTAMENTO MUNICIPAL DE MEIO AMBIENTE – DMMA LICENÇA DE OPERAÇÃO – LO N° 002/2026-PMSJ A Prefeitura Municipal de Salto do Jacuí/RS, CNPJ 89.658.025/0001-90, através do Departamento Municipal de Meio Ambiente, criado pela Lei Municipal nº 1.782, de 28 de dezembro de 2009, no uso das atribuições e competências que lhe são conferidas pela Lei Complementar Federal nº 140/2011, e com base nos autos do Processo Administrativo n° 84 de 19 de janeiro de 2026, concede a Licença de Operação. I- EMPREENDEDOR PRINCIPAL: COOPERATIVA DOS GARIMPEIROS DE SALTO DO JACUÍ LTDA CNPJ: 93.944.510/0001-06 Endereço: Avenida Maia Filho 117 Município: Salto do Jacuí/RS I- EMPREENDEDOR SECUNDÁRIO: DARIO SILVA DA COSTA Município: Salto do Jacuí/RS II- EMPREENDIMENTO: Atividade: LAVRA DE GEMAS (ÁGATA/AMETISTA/ETC) – A CÉU ABERTO E COM RECUPERAÇÃO DE ÁREA DEGRADADA CODRAM: 530,04 Localização: Distrito de Júlio Borges - Zona Rural Coordenadas: Latitude -29.144427° Longitude -53.079489° Processo ANM: 810.816/2006 III- CONDIÇÕES E RESTRIÇÕES: 1- Quanto ao empreendimento : Esta licença autoriza a OPERAÇÃO da atividade de LAVRA DE GEMAS (ÁGATA/AMETISTA/ETC) - A CÉU ABERTO E COM RECUPERAÇÃO DE ÁREA DEGRADADA localizada sob as coordenadas geográficas (SIRGAS2000): -29.144427°, -53.079489°; Esta licença somente terá validade juntamente com a(s) certidão(ões) municipal(is) e os títulos minerários expedidos pela Agência Nacional de Mineração (ANM), todos em vigor; Deverão ser mantidas atualizadas as ART's (Anotação de Responsabilidade Técnica) de execução da área da biota (biólogo/engenheiro agrônomo/engenheiro florestal) e do meio físico (geólogo/engenheiro de minas), referentes às atividades do empreendimento; O empreendedor é responsável por manter as condições operacionais adequadas, respondendo por quaisquer danos ao meio ambiente, decorrentes da má operação do empreendimento; Sempre que empreendedor firmar algum acordo de melhoria ambiental ou ajustamento de conduta com outros órgãos (federal, estadual ou municipal), deverá ser juntada ao processo administrativo em vigor cópia desse documento; O empreendedor deverá estar ciente quanto à obrigatoriedade de inscrição do imóvel rural no Cadastro Ambiental Rural junto ao DBIO/SEMA, conforme determina o §1º do Art. 29 da Lei Federal nº. 12.651, de 25 de maio de 2012; O(s) empreendedor(es) deste empreendimento deverá(ão) manter o Certificado de Regularidade do Cadastro Técnico Federal - CTF/APP válido(s) (www.ibama.gov.br) e, caso haja inclusão de novo(s) empreendedor(es), este(s) deverá (ão), no prazo de até 60 (sessenta) dias, apresentar o(s) Certificado(s) de Regularidade do Cadastro Técnico Federal - CTF/APP válido(s), com correlação na Ficha Técnica de Enquadramento: Categoria Código Descrição 1 1-4 Lavra Garimpeira Em caso de qualquer alteração (alteração de processo, ampliação de área ou de produção, troca de endereço entre outros) o empreendedor deverá requerer previamente junto ao DMMA; Limites operacionais específicos do empreendimento: Produção mensal limitada a 20 (vinte) a 40 (quarenta) toneladas/mês; Vida útil estimada do empreendimento: 5 (cinco) a 10 (dez) anos, mantidos os parâmetros operacionais compatíveis com essa previsão; Efetivo operacional: 4 (quatro) a 8 (oito) operadores; Substância mineral: geodos preenchidos por cancedônia (ágata, cornalida); Volume total de solo orgânico a manejar: 9.262,50 m³ com controle de estoque e aplicação na recuperação; Cota máxima de profundidade de arrasamento: 222 m. 2- Quanto à Localização: 2.1- A operação deve permanecer integralmente restrita às poligonais licenciadas, sendo vedada lavra, disposição de materiais, abertura de acessos, bota-fora ou qualquer intervenção fora dos limites autorizados. 2.1.1- Poligonal Ambiental (ha): 7,06 ha Poligonal ANM (ha): 148,17 ha Área Útil (ha): 2,49 ha Poligonal de Extração (ha) : 0,8709+1,6055= 2,4764 há 2.2-",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/E5883E67",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/E5883E67",
+   "local": "Edição 4273, matéria E5883E67 · Prefeitura Municipal de Salto do Jacuí"
+  },
+  {
+   "cod": "0433D83C",
+   "titulo": "LDO 2027",
+   "entidade": "Prefeitura Municipal de Santa Margarida do Sul",
+   "orgao": "Administração e Fazenda",
+   "trecho": "de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em que for necessária; e d) não … ou etapa ainda não esteja iniciada; V - aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de Educação e Saúde; VI - diárias de viagem; VII",
+   "data": "2026-11-19",
+   "edicao": "4460",
+   "id": "0433D83C",
+   "texto": "ADMINISTRAÇÃO E FAZENDA - LDO 2027 LEI MUNICIPAL Nº 1.401, DE 16 DE NOVEMBRO DE 2026 Dispõe sobre as diretrizes orçamentárias para o exercício financeiro de 2027. O PRESIDENTE DA CÂMARA MUNICIPAL DE VEREADORES DE SANTA MARGARIDA DO SUL, no exercício da competência subsidiária de promulgação prevista na Lei Orgânica Municipal, em decorrência da sanção tácita do Projeto de Lei nº 050/2026, PROMULGA a seguinte Lei: Capítulo I Das Disposições Preliminares Art. 1º Ficam estabelecidas, em cumprimento ao disposto no art. 165, § 2º, da Constituição Federal, no art. 77 da Lei Orgânica do Município, e na Lei Complementar nº 101, de 4 de maio de 2000, as diretrizes gerais para elaboração do orçamento do Município, relativas ao exercício de 2027, compreendendo: I - as metas e as prioridades da administração municipal; II - a organização e estrutura do orçamento; III - as diretrizes para elaboração e execução do orçamento e suas alterações; IV - as disposições relativas à dívida pública municipal; V - as disposições relativas às despesas do Município com pessoal e encargos sociais; VI - as disposições sobre alterações na legislação tributária; e VII - as disposições gerais. Parágrafo único. Integram esta Lei os seguintes anexos: I - Anexo I - de Metas Fiscais, composto dos demonstrativos: a) das metas fiscais anuais de acordo com o art. 4º, § 1º, da Lei Complementar nº 101/2000, acompanhado da memória e metodologia de cálculo; b) da avaliação do cumprimento das metas fiscais relativas ao ano de 2025; c) das metas fiscais previstas para 2027, 2028 e 2029, comparadas com as fixadas nos exercícios de 2024, 2025 e 2026; d) da evolução do patrimônio líquido, conforme o art. 4º, § 2º, inciso III, da Lei Complementar nº 101/2000; e) da origem e aplicação dos recursos obtidos com a alienação de ativos, em cumprimento ao disposto no art. 4º, § 2º, inciso III, da Lei Complementar nº 101/2000; f) da estimativa e compensação da renúncia de receita, conforme art. 4º, § 2º, inciso V, da Lei Complementar nº 101/2000; e g) da margem de expansão das Despesas Obrigatórias de Caráter Continuado (DOCC), conforme art. 4º, § 2º, inciso V, da Lei Complementar nº 101/2000, cujo resultado é meramente indicativo de alerta para a criação de novas DOCC, ou da existência de espaço fiscal para a criação de novas despesas; II - Anexo II - de Riscos Fiscais e Providências, contendo a avaliação dos riscos orçamentários e os passivos contingentes capazes de afetar as contas públicas, em cumprimento ao art. 4º, § 3º, da Lei Complementar nº 101/2000; III - Anexo III - de caráter informativo e não normativo, contemplando o detalhamento dos Programas e Ações previstos no Plano Plurianual, com execução prevista para o próximo exercício, o qual deverá servir de referência para o planejamento, podendo ser atualizado pela lei orçamentária ou através de créditos adicionais; e IV - Anexo IV - informando as despesas para conservação do patrimônio público e para os projetos em andamento, em cumprimento ao disposto no art. 45 da Lei Complementar nº 101/2000. Capítulo II Das Metas e Prioridades da Administração Pública Municipal Art. 2º A elaboração e aprovação do Projeto de Lei Orçamentária e a execução da respectiva Lei deverão ser compatíveis com a obtenção da meta de resultado primário consolidado de R$ - 1.922116,35 (Um milhão, novecentos e vinte e dois mil, cento e dezesseis reais e trinta e cinco centavos), conforme demonstrado no Anexo de Metas Fiscais constante do Anexo I a esta Lei. § 1º Para fins da demonstração da compatibilidade referida no caput, a meta de resultado primário poderá ser ajustada quando do encaminhamento do projeto de lei orçamentária anual, se verificadas alterações no comportamento das variáveis macroeconômicas utilizadas nas estimativas das receitas e despesas. § 2º Na hipótese prevista pelo § 1º, o demonstrativo de que trata a alínea “a” do inciso I do parágrafo único do art. 1º desta Lei deverá ser reelaborado e encaminhado juntamente com o projeto de l",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/0433D83C",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/0433D83C",
+   "local": "Edição 4460, matéria 0433D83C · Prefeitura Municipal de Santa Margarida do Sul"
+  },
+  {
+   "cod": "59EA3F21",
+   "titulo": "DISPÕE SOBRE AS DIRETRIZES ORÇAMENTÁRIAS PARA O EXERCÍCIO FINANCEIRO DE 2027.",
+   "entidade": "Município de Sinimbu",
+   "orgao": "Gabinete do Prefeito",
+   "trecho": "geral, cuja fase ou etapa ainda não esteja iniciada; III - aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de educação e saúde; IV - dotação … -financeiro de execução do projeto que permita, no mínimo, a conclusão de etapa útil com funcionalidade que permita o usufruto dos benefícios pela sociedade; b) a ausência de licença",
+   "data": "2026-11-05",
+   "edicao": "4450",
+   "id": "59EA3F21",
+   "texto": "GABINETE DO PREFEITO DISPÕE SOBRE AS DIRETRIZES ORÇAMENTÁRIAS PARA O EXERCÍCIO FINANCEIRO DE 2027. LEI Nº 2.347, DE 30 DE OUTUBRO DE 2026. Dispõe sobre as diretrizes orçamentárias para o exercício financeiro de 2027. WILSON MOLZ , Prefeito Municipal de Sinimbu, Estado do Rio Grande do Sul. FAÇO SABER que a Câmara de Vereadores aprovou e eu sanciono e promulgo a seguinte Lei: CAPÍTULO I DAS DISPOSIÇÕES PRELIMINARES Art. 1 º Ficam estabelecidas, em cumprimento ao disposto no art. 165, § 2º, da Constituição Federal, no art. 122 da Lei Orgânica do Município, e na Lei Complementar nº 101, de 4 de maio de 2000, as diretrizes gerais para elaboração do orçamento do Município, relativas ao exercício de 2027, compreendendo: I - as metas e as prioridades da administração municipal; II - a organização e estrutura do orçamento; III - as diretrizes para elaboração e execução do orçamento e suas alterações; IV - as disposições relativas à dívida pública municipal; V - as disposições relativas às despesas do Município com pessoal e encargos sociais; VI - as disposições sobre alterações na legislação tributária; e VII - as disposições gerais. Parágrafo único. Integram esta Lei os seguintes anexos: I - Anexo I - de Metas Fiscais, composto dos demonstrativos: a) das metas fiscais anuais de acordo com o art. 4º, § 1º, da Lei Complementar nº 101/2000, acompanhado da memória e metodologia de cálculo; b) da avaliação do cumprimento das metas fiscais relativas ao ano de 2025; c) das metas fiscais previstas para 2027, 2028 e 2029, comparadas com as fixadas nos exercícios de 2024, 2025 e 2026; d) da evolução do patrimônio líquido, conforme o art. 4º, § 2º, inciso III, da Lei Complementar nº 101/2000; e) da origem e aplicação dos recursos obtidos com a alienação de ativos, em cumprimento ao disposto no art. 4º, § 2º, inciso III, da Lei Complementar nº 101/2000; f) da estimativa e compensação da renúncia de receita, conforme art. 4º, § 2º, inciso V, da Lei Complementar nº 101/2000; e g) da margem de expansão das Despesas Obrigatórias de Caráter Continuado (DOCC), conforme art. 4º, § 2º, inciso V, da Lei Complementar nº 101/2000, cujo resultado é meramente indicativo de alerta para a criação de novas DOCC, ou da existência de espaço fiscal para a criação de novas despesas; II - Anexo II - de Riscos Fiscais e Providências, contendo a avaliação dos riscos orçamentários e os passivos contingentes capazes de afetar as contas públicas, em cumprimento ao art. 4º, § 3º, da Lei Complementar nº 101/2000; III - Anexo III - de caráter informativo e não normativo, contemplando o detalhamento dos Programas e Ações previstos no Plano Plurianual, com execução prevista para o próximo exercício, o qual deverá servir de referência para o planejamento, podendo ser atualizado pela lei orçamentária ou através de créditos adicionais; e IV - Anexo IV - informando as despesas para conservação do patrimônio público e para os projetos em andamento, em cumprimento ao disposto no art. 45 da Lei Complementar nº 101/2000. CAPÍTULO II DAS METAS E PRIORIDADES DA ADMINISTRAÇÃO PÚBLICA MUNICIPAL Art. 2 º A elaboração e aprovação do Projeto de Lei Orçamentária e a execução da respectiva Lei deverão ser compatíveis com a obtenção da meta de déficit primário consolidado de R$ -1.099.625,24 (Um milhão e noventa e nove mil, seiscentos e vinte e cindo reais e vinte e quatro centavos), conforme demonstrado no Anexo de Metas Fiscais constante do Anexo I a esta Lei. § 1º Para fins da demonstração da compatibilidade referida no caput, a meta de resultado primário poderá ser ajustada quando do encaminhamento do projeto de lei orçamentária anual, se verificadas alterações no comportamento das variáveis macroeconômicas utilizadas nas estimativas das receitas e despesas. § 2º Na hipótese prevista pelo § 1º, o demonstrativo de que trata a alínea “a” do inciso I do parágrafo único do art. 1º desta Lei deverá ser reelaborado e encaminhado juntamente com o projeto de lei orçamentária anual, acompanhado da ",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/59EA3F21",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/59EA3F21",
+   "local": "Edição 4450, matéria 59EA3F21 · Município de Sinimbu"
+  },
+  {
+   "cod": "4CCE3EE3",
+   "titulo": "LEGISLAÇÃO MUNICIPAL 2.528/2026",
+   "entidade": "Prefeitura Municipal de Glorinha",
+   "orgao": "Secretaria Municipal de Administração",
+   "trecho": "sociedade; b) ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em que for … ativos, desde que ainda não comprometidos; II - obras em geral, cuja fase ou etapa ainda não esteja iniciada; III – aquisição de combustíveis e derivados, destinada à frota de",
+   "data": "2026-10-19",
+   "edicao": "4438",
+   "id": "4CCE3EE3",
+   "texto": "SECRETARIA MUNICIPAL DE ADMINISTRAÇÃO LEGISLAÇÃO MUNICIPAL 2.528/2026 dispõe sobre as diretrizes orçamentárias para o exercício financeiro de 2027, e dá outras providências. CARLOS LEONARDO VARGAS CARVALHO , Prefeito Municipal de Glorinha, Estado do Rio Grande do Sul. Faço saber, em cumprimento ao disposto no Artigo 55, Inciso IV, da Lei Orgânica do Município, que a Câmara Municipal de Vereadores aprovou e eu sanciono e promulgo a seguinte, lei: Capítulo I - Disposições Preliminares Art. 1º Ficam estabelecidas, em cumprimento ao disposto no art. 165, § 2.º, da Constituição Federal, no art. 89 da Lei Orgânica do Município, e na Lei Complementar nº 101, de 04 de maio de 2000, as diretrizes gerais para elaboração do orçamento do Município, relativas ao exercício de 2027, compreendendo: I - as metas e as prioridades da administração municipal; II - a organização e estrutura do orçamento; III - as diretrizes para elaboração e execução do orçamento e suas alterações; IV - as disposições relativas à dívida pública municipal; V - as disposições relativas às despesas do Município com pessoal e encargos sociais; VI - as disposições sobre alterações na legislação tributária; e VII - as disposições gerais. Parágrafo único. Integram esta lei os seguintes anexos: I – Anexo I, de metas fiscais, composto dos demonstrativos: a) das metas fiscais anuais de acordo com o art. 4 o , § 1 o , da Lei Complementar nº 101/2000, acompanhado da memória e metodologia de cálculo; b) da avaliação do cumprimento das metas fiscais relativas ao ano de 2025; c) das metas fiscais previstas para 2027, 2028 e 2029, comparadas com as fixadas nos exercícios de 2024, 2025 e 2026; d) da evolução do patrimônio líquido, conforme o art. 4 o , § 2 o , inciso III, da Lei Complementar nº 101/2000; e) da origem e aplicação dos recursos obtidos com a alienação de ativos, em cumprimento ao disposto no art. 4 o , § 2 o , inciso III, da Lei Complementar nº 101/2000; f) da estimativa e compensação da renúncia de receita, conforme art. 4 o , § 2 o , inciso V, da Lei Complementar nº 101/2000; e g) da margem de expansão das Despesas Obrigatórias de Caráter Continuado (DOCC), conforme art. 4 o , § 2 o , inciso V, da Lei Complementar nº 101/2000, cujo resultado, é meramente indicativo de alerta para a criação de novas DOCC, ou, da existência de espaço para a criação de novas DOCC; II – Anexo II, de Riscos Fiscais e providências, contendo a avaliação dos riscos orçamentários e os passivos contingentes capazes de afetar as contas públicas, em cumprimento ao art. 4 o , § 3 o , da Lei Complementar nº 101/2000; III – Anexo III, de caráter informativo e não normativo, contemplando o detalhamento dos Programas e Ações com execução prevista para próximo exercício, o qual deverá servir de referência para o planejamento, podendo ser atualizado pela lei orçamentária ou através de créditos adicionais; e IV – Anexo IV, informando as despesas para conservação do patrimônio público e para os projetos em andamento, em cumprimento ao disposto no art. 45 da Lei Complementar nº 101, de 2000. Capítulo II - Das Metas e Prioridades da Administração Pública Municipal Art. 2º A elaboração e aprovação do Projeto de Lei Orçamentária e a execução da respectiva Lei deverão ser compatíveis com a obtenção da meta de Déficit primário consolidado, de R$ - 2.556.245,75 (dois milhões quinhentos e cinquenta e seis mil duzentos e quarenta e cinco reais e setenta e cinco centavos), conforme demonstrado no Anexo de Metas Fiscais constante do Anexo I a esta Lei. § 1 o Para fins da demonstração da compatibilidade referida no caput, a meta de resultado primário poderá ser ajustada quando do encaminhamento do projeto de lei orçamentária anual, se verificadas alterações no comportamento das variáveis macroeconômicas utilizadas nas estimativas das receitas e despesas; § 2º Na hipótese prevista pelo § 1º, o demonstrativo de que trata a alínea “a” do inciso I do parágrafo único do art. 1º desta Lei deverá ser reelaborado e encami",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/4CCE3EE3",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/4CCE3EE3",
+   "local": "Edição 4438, matéria 4CCE3EE3 · Prefeitura Municipal de Glorinha"
+  },
+  {
+   "cod": "6144FC77",
+   "titulo": "LEI 1.965/2026",
+   "entidade": "Prefeitura Municipal de Pedras Altas",
+   "orgao": "GABINETE DO PREFEITO",
+   "trecho": "sociedade; ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; a ausência de licença ambiental prévia, nos casos em que for necessária … que ainda não comprometidos; obras em geral, cuja fase ou etapa ainda não esteja iniciada; aquisição de combustíveis e derivados, destinada à frota de veículos, exceto dos setores de",
+   "data": "2026-10-15",
+   "edicao": "4436",
+   "id": "6144FC77",
+   "texto": "GABINETE DO PREFEITO LEI 1.965/2026 Dispõe sobre as Diretrizes Orçamentárias para o exercício financeiro de 2027. A Prefeita Municipal de Pedras Altas, no uso de suas atribuições que lhe confere a Lei Orgânica do Município, faz saber que o Poder Legislativo aprovou e sanciona a seguinte Lei: Capítulo I - Disposições Preliminares Art. 1º Ficam estabelecidas, em cumprimento ao disposto no art. 165, § 2º, da Constituição Federal, no art. da Lei Orgânica do Município, e na Lei Complementar nº 101, de 04 de maio de 2000, as diretrizes gerais para elaboração do orçamento do Município, relativas ao exercício de 2027, compreendendo: as metas e as prioridades da administração municipal; a organização e estrutura do orçamento; as diretrizes para elaboração e execução do orçamento e suas alterações; as disposições relativas à dívida pública municipal; as disposições relativas às despesas do Município com pessoal e encargos sociais; as disposições sobre alterações na legislação tributária; as disposições gerais. Parágrafo único. Integram esta lei os seguintes anexos: Anexo I, de metas fiscais, composto dos demonstrativos: das metas fiscais anuais de acordo com o art. 4º, § 1o, da Lei Complementar nº 101/2000, acompanhado da memória e metodologia de cálculo; da avaliação do cumprimento das metas fiscais relativas ao ano de 2025; das metas fiscais previstas para 2027, 2028 e 2029, comparadas com as fixadas nos exercícios de 2024, 2025 e 2026; da evolução do patrimônio líquido, conforme o art. 4º, § 2º, inciso III, da Lei Complementar nº 101/2000; da origem e aplicação dos recursos obtidos com a alienação de ativos, em cumprimento ao disposto no art. 4º, § 2º, inciso III, da Lei Complementar nº 101/2000; da avaliação da situação financeira e atuarial do Regime Próprio de Previdência dos Servidores Públicos Municipais, de acordo com o art. 4º, § 2º, inciso IV, da Lei Complementar nº 101/2000; da estimativa e compensação da renúncia de receita, conforme art. 4º, § 2º, inciso V, da Lei Complementar nº 101/2000; da margem de expansão das Despesas Obrigatórias de Caráter Continuado (DOCC), conforme art. 4º, § 2º, inciso V, da Lei Complementar nº 101/2000, cujo resultado é meramente indicativo de alerta para a criação de novas DOCC, ou da existência de espaço fiscal para a criação de novas despesas. II. Anexo II, de Riscos Fiscais e providências, contendo a avaliação dos riscos orçamentários e os passivos contingentes capazes de afetar as contas públicas, em cumprimento ao art. 4º, § 3º, da Lei Complementar nº 101/2000. III- Anexo III, de caráter informativo e não normativo, contemplando o detalhamento dos Programas e Ações previstos no Plano Plurianual, com execução prevista para próximo exercício, o qual deverá servir de referência para o planejamento, podendo ser atualizado pela lei orçamentária ou através de créditos adicionais. IV- Anexo IV, informando as despesas para conservação do patrimônio público e para os projetos em andamento, em cumprimento ao disposto no art. 45 da Lei Complementar nº 101, de 2000. Capítulo II - Das Metas e Prioridades da Administração Pública Municipal Art. 2º A elaboração e aprovação do Projeto de Lei Orçamentária e a execução da respectiva Lei deverão ser compatíveis com a obtenção da meta do resultado primário consolidado, conforme demonstrado no Anexo de Metas Fiscais constante do Anexo I a esta Lei. § 1º Para fins da demonstração da compatibilidade referida no caput, a meta de resultado primário poderá ser ajustada quando do encaminhamento do projeto de lei orçamentária anual, se verificadas alterações no comportamento das variáveis macroeconômicas utilizadas nas estimativas das receitas e despesas; § 2º Na hipótese prevista pelo § 1º, o demonstrativo de que trata a alínea “a” do inciso I do parágrafo único do art. 1º desta Lei deverá ser reelaborado e encaminhado juntamente com o projeto de lei orçamentária anual, acompanhado da memória e metodologia de cálculo devidamente atualizadas. § 3º Sem prejuízo do di",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/6144FC77",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/6144FC77",
+   "local": "Edição 4436, matéria 6144FC77 · Prefeitura Municipal de Pedras Altas"
+  },
+  {
+   "cod": "4FBAAF65",
+   "titulo": "LEI N.° 3.197, DE 09 DE OUTUBRO DE 2026 - DISPÕE SOBRE AS DIRETRIZES ORÇAMENTÁRIAS PARA O EXERCÍCIO FINANCEIRO DE 2027.",
+   "entidade": "Prefeitura Municipal de Tuparendi",
+   "orgao": "Secretaria de Administração",
+   "trecho": "engenharia aprovado pelo órgão responsável, nos casos em que for necessário; c) a ausência de licença ambiental prévia, nos casos em que for necessária; d) não comprovação, por parte do … combustíveis e derivados destinada à frota de veículos, exceto dos setores de educação e saúde; IV – dotação para materiais de consumo e serviços de terceiros das diversas atividades",
+   "data": "2026-10-13",
+   "edicao": "4434",
+   "id": "4FBAAF65",
+   "texto": "SECRETARIA DE ADMINISTRAÇÃO LEI N.° 3.197, DE 09 DE OUTUBRO DE 2026 - DISPÕE SOBRE AS DIRETRIZES ORÇAMENTÁRIAS PARA O EXERCÍCIO FINANCEIRO DE 2027. LEI N.° 3.197, DE 09 DE OUTUBRO DE 2026. Dispõe sobre as diretrizes orçamentárias para o exercício financeiro de 2027. JULIO CESAR MATTIAZZI, Prefeito Municipal de Tuparendi, Estado do Rio Grande do Sul; FAÇO SABER, que a Câmara de Vereadores aprovou, e eu sanciono e promulgo a seguinte Lei: Capítulo I - Disposições Preliminares Art. 1º. Ficam estabelecidas, em cumprimento ao disposto no art. 165, § 2.º, da Constituição Federal, no art. 144, II, da Lei Orgânica do Município, e na Lei Complementar nº 101, de 04 de maio de 2000, as diretrizes gerais para elaboração do orçamento do Município, relativas ao exercício de 2027, compreendendo: I - as metas e as prioridades da administração municipal; II - a organização e estrutura do orçamento; III - as diretrizes para elaboração e execução do orçamento e suas alterações; IV - as disposições relativas à dívida pública municipal; V - as disposições relativas às despesas do Município com pessoal e encargos sociais; VI - as disposições sobre alterações na legislação tributária; VII - as disposições gerais. Parágrafo único. Integram esta lei os seguintes anexos: I – Anexo I, de metas fiscais, composto dos demonstrativos: a) das metas fiscais anuais de acordo com o art. 4 o , § 1 o , da Lei Complementar nº 101/2000, acompanhado da memória e metodologia de cálculo; b) da avaliação do cumprimento das metas fiscais relativas ao ano de 2025; c) das metas fiscais previstas para 2027, 2028 e 2029, comparadas com as fixadas nos exercícios de 2024, 2025 e 2026; d) da evolução do patrimônio líquido, conforme o art. 4 o , § 2 o , inciso III, da Lei Complementar nº 101/2000; e) da origem e aplicação dos recursos obtidos com a alienação de ativos, em cumprimento ao disposto no art. 4 o , § 2 o , inciso III, da Lei Complementar nº 101/2000; f) da avaliação da situação financeira e atuarial do Regime Próprio de Previdência dos Servidores Públicos Municipais, de acordo com o art. 4 o , § 2 o , inciso IV, da Lei Complementar nº 101/2000; g) da estimativa e compensação da renúncia de receita, conforme art. 4 o , § 2 o , inciso V, da Lei Complementar nº 101/2000; h) da margem de expansão das Despesas Obrigatórias de Caráter Continuado (DOCC), conforme art. 4 o , § 2 o , inciso V, da Lei Complementar nº 101/2000, cujo resultado, caso negativo, é meramente indicativo de alerta para a criação de novas DOCC, ou, se positivo, de espaço para a criação de novas DOCC. II – Anexo II, de Riscos Fiscais e providências, contendo a avaliação dos riscos orçamentários e os passivos contingentes capazes de afetar as contas públicas, em cumprimento ao art. 4 o , § 3 o , da Lei Complementar nº 101/2000. III – Anexo III, de caráter informativo e não normativo, contemplando o detalhamento dos Programas e Ações com execução prevista para próximo exercício, o qual deverá servir de referência para o planejamento, podendo ser atualizado pela lei orçamentária ou através de créditos adicionais. IV – Anexo IV, informando as despesas para conservação do patrimônio público e para os projetos em andamento, em cumprimento ao disposto no art. 45 da Lei Complementar nº 101, de 2000. Capítulo II - Das Metas e Prioridades da Administração Pública Municipal Art. 2º. A elaboração e aprovação do Projeto de Lei Orçamentária e a execução da respectiva Lei deverão ser compatíveis com a obtenção da meta de superávit primário consolidado, conforme demonstrado no Anexo de Metas Fiscais constante do Anexo I a esta Lei. § 1 o A meta de resultado primário poderá ser ajustada quando do encaminhamento do projeto de lei orçamentária anual, se verificadas alterações no comportamento das variáveis macroeconômicas utilizadas nas estimativas das receitas e despesas. § 2º Na hipótese prevista pelo § 1º, o demonstrativo de que trata a alínea “a” do inciso I do parágrafo único do art. 1º desta Lei deverá ser reelabora",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/4FBAAF65",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/4FBAAF65",
+   "local": "Edição 4434, matéria 4FBAAF65 · Prefeitura Municipal de Tuparendi"
+  },
+  {
+   "cod": "B81DE943",
+   "titulo": "LEI N.º 3.537, DE 07 DE OUTUBRO DE 2026. DISPÕE SOBRE AS DIRETRIZES ORÇAMENTÁRIAS PARA O EXERCÍCIO FINANCEIRO DE 2027.",
+   "entidade": "Prefeitura Municipal de Independência",
+   "orgao": "Secretaria de Administração",
+   "trecho": "; ausência de projeto de engenharia aprovado pelo órgão responsável, nos casos em que for necessário; a ausência de licença ambiental prévia, nos casos em que for necessária; e não … voluntárias, operações de crédito, alienação de ativos, desde que ainda não comprometidos; - obras em geral, cuja fase ou etapa ainda não esteja iniciada; - aquisição de combustíveis",
+   "data": "2026-10-08",
+   "edicao": "4432",
+   "id": "B81DE943",
+   "texto": "SECRETARIA DE ADMINISTRAÇÃO LEI N.º 3.537, DE 07 DE OUTUBRO DE 2026. DISPÕE SOBRE AS DIRETRIZES ORÇAMENTÁRIAS PARA O EXERCÍCIO FINANCEIRO DE 2027. O PREFEITO MUNICIPAL DE INDEPENDÊNCIA , Estado do Rio Grande do Sul, no uso de suas atribuições legais, faz saber que o Poder Legislativo aprova e eu sanciono a seguinte lei: Capítulo I Das Disposições Preliminares Art. 1º Ficam estabelecidas, em cumprimento ao disposto no art. 165, § 2º, da Constituição Federal, no art. 44 da Lei Orgânica do Município, e na Lei Complementar nº 101, de 4 de maio de 2000, as diretrizes gerais para elaboração do orçamento do Município, relativas ao exercício de 2027, compreendendo: - as metas e as prioridades da administração municipal; - a organização e estrutura do orçamento; - as diretrizes para elaboração e execução do orçamento e suas alterações; - as disposições relativas à dívida pública municipal; - as disposições relativas às despesas do Município com pessoal e encargos sociais; - as disposições sobre alterações na legislação tributária; e - as disposições gerais. Parágrafo único. Integram esta Lei os seguintes anexos: I - Anexo I - de Metas Fiscais, composto dos demonstrativos: das metas fiscais anuais de acordo com o art. 4º, § 1º, da Lei Complementar nº 101/2000, acompanhado da memória e metodologia de cálculo; da avaliação do cumprimento das metas fiscais relativas ao ano de 2025; das metas fiscais previstas para 2027, 2028 e 2029, comparadas com as fixadas nos exercícios de 2024, 2025 e 2026; da evolução do patrimônio líquido, conforme o art. 4º, § 2º, inciso III, da Lei Complementar nº 101/2000; da origem e aplicação dos recursos obtidos com a alienação de ativos, em cumprimento ao disposto no art. 4º, § 2º, inciso III, da Lei Complementar nº 101/2000; da avaliação da situação financeira e atuarial do Regime Próprio de Previdência dos Servidores Públicos Municipais, de acordo com o art. 4º, § 2º, inciso IV, da Lei Complementar nº 101/2000; da estimativa e compensação da renúncia de receita, conforme art. 4º, § 2º, inciso V, da Lei Complementar nº 101/2000; e da margem de expansão das Despesas Obrigatórias de Caráter Continuado (DOCC), conforme art. 4º, § 2º, inciso V, da Lei Complementar nº 101/2000, cujo resultado é meramente indicativo de alerta para a criação de novas DOCC, ou da existência de espaço fiscal para a criação de novas despesas; - Anexo II - de Riscos Fiscais e Providências, contendo a avaliação dos riscos orçamentários e os passivos contingentes capazes de afetar as contas públicas, em cumprimento ao art. 4º, § 3º, da Lei Complementar nº 101/2000; - Anexo III - de caráter informativo e não normativo, contemplando o detalhamento dos Programas e Ações previstos no Plano Plurianual, com execução prevista para o próximo exercício, o qual deverá servir de referência para o planejamento, podendo ser atualizado pela lei orçamentária ou através de créditos adicionais; e Capítulo II Das Metas e Prioridades da Administração Pública Municipal Art. 2º A elaboração e aprovação do Projeto de Lei Orçamentária e a execução da respectiva Lei deverão ser compatíveis com a obtenção da meta de resultado primário consolidado, conforme demonstrado no Anexo de Metas Fiscais constante do Anexo I a esta Lei. § 1º Para fins da demonstração da compatibilidade referida no caput, a meta de resultado primário poderá ser ajustada quando do encaminhamento do projeto de lei orçamentária anual, se verificadas alterações no comportamento das variáveis macroeconômicas utilizadas nas estimativas das receitas e despesas. § 2º Na hipótese prevista pelo § 1º, o demonstrativo de que trata a alínea “a” do inciso I do parágrafo único do art. 1º desta Lei deverá ser reelaborado e encaminhado juntamente com o projeto de lei orçamentária anual, acompanhado da memória e metodologia de cálculo devidamente atualizadas. § 3º Sem prejuízo do disposto no art. 65, II, da Lei Complementar nº 101/2000, em caso de não atingimento da meta de resultado primário estabelecida par",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/B81DE943",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/B81DE943",
+   "local": "Edição 4432, matéria B81DE943 · Prefeitura Municipal de Independência"
+  },
+  {
+   "cod": "4C3AD2E4",
+   "titulo": "DECRETO MUNICIPAL Nº 2.467/2025, DE 18 DE DEZEMBRO DE 2025",
+   "entidade": "Prefeitura Municipal de Barão de Cotegipe",
+   "orgao": "PREFEITURA MUNICIPAL DE BARÃO DE COTEGIPE",
+   "trecho": "nº2.987 de 4 de outubro de 2022 : LICENÇA AMBIENTAL REGULARIDADE FISCAL ALVARÁ DE VIGILÂNCIA SANITÁRIA REGULARIZAÇÃO DO IMÓVEL OUTROS (ESPECIFICAR): Contabilista responsável pela … agentes do comercio de matérias-primas agrícolas e animais vivos 4612-5/00 Representantes comerciais e agentes do comercio de combustíveis , minerais, produtos siderúrgicos e",
+   "data": "2026-01-09",
+   "edicao": "4243",
+   "id": "4C3AD2E4",
+   "texto": "PREFEITURA MUNICIPAL DE BARÃO DE COTEGIPE DECRETO MUNICIPAL Nº 2.467/2025, DE 18 DE DEZEMBRO DE 2025 “Regulamenta a Lei Municipal nº 2.987, de 4 de outubro de 2022, que institui a adoção dos princípios da Lei Federal nº 13.874, de 20 de setembro de 2019 (Lei da Liberdade Econômica), no âmbito do Município de Barão de Cotegipe, e dá outras providências.”. Franciel Tiago Izycki , Prefeito Municipal de Barão de Cotegipe, Estado do Rio Grande do Sul, no uso de suas atribuições legais que lhe foram conferidas pela Lei Orgânica do Município de Barão de Cotegipe/RS, e CONSIDERANDO o disposto no Art. 170, caput e parágrafo único, da Constituição Federal, que estabelece a livre iniciativa como fundamento da ordem econômica e a busca pelo pleno emprego; CONSIDERANDO a Lei Federal nº 13.874, de 20 de setembro de 2019, que institui a Declaração de Direitos de Liberdade Econômica e estabelece garantias de livre mercado; CONSIDERANDO a Lei Municipal nº 2.987, de 4 de outubro de 2022, que adota os princípios da Lei Federal de Liberdade Econômica no âmbito do Município de Barão de Cotegipe, visando à desburocratização e à simplificação do ambiente de negócios; CONSIDERANDO a necessidade de regulamentar a Lei Municipal nº 2.987/2022 para garantir sua plena aplicabilidade e efetividade, promovendo o desenvolvimento econômico e social do Município; DECRETA: Art. 1º - Este Decreto regulamenta a Lei Municipal nº2.987, de 4 de outubro de 2022, que institui Declaração Municipal de Direitos de Liberdade Econômica, que estabelece normas para atos de liberação de atividade econômica e regulamenta, ainda, os procedimentos de desburocratização para abertura de empresas, alteração e baixa de empresas, conforme previsto na Lei Federal 11.598/2007, que dispõe sobre a RedeSim–Rede Nacional para Simplificação do Registro e da Legalização de Empresas e Negócios, e dá outras providências. § 1º Consideram-se para fins de Baixo Risco nos termos do caput deste artigo os casos constantes do anexo I deste decreto elaborado conforme o entendimento dos órgãos municipais de fiscalização ambiental e de vigilância sanitária, como de Baixo Risco, Baixo Risco Condicionado e Não-Aplicável. § 2º São consideradas atividades de Baixo Risco aquelas que são classificadas nos termos do parágrafo anterior em todos os órgãos de licenciamento do município, resguardadas as competências estaduais e de competência federal. § 3º São consideradas como atividades de Baixo Risco condicionado aquelas em que o usuário de serviços públicos (empreendedor) deverá responder questões relacionadas à atividade que pretende exercer para garantir que os critérios de enquadramento na categoria de Baixo Risco ou Não Aplicável de um ou mais órgãos estejam atendidos. § 4º Em havendo necessidade de alteração da classificação dos órgãos de licenciamento ambiental, de vigilância sanitária quanto às classificações constantes desta resolução, deverão os órgãos provocar a alteração deste instrumento através do comitê municipal da RedeSim. (Comitê Gestor Local) § 5º São consideradas atividades de \"Não-Aplicáveis (NA)\" aquelas em que não há previsão legal de avaliação de determinado órgão, devendo a mesma estar alinhada com classificações de Baixo Risco, Baixo Risco condicionado ou não interesse de outros órgãos para estar liberada de qualquer procedimento para o seu exercício. § 6º A atividade considerada como Baixo Risco ou não interesse em apenas um ou dois órgãos não dispensa a atividade do licenciamento do órgão em que for considerada como de médio ou alto risco. Art. 2º No Anexo II deste decreto, para fins de licenciamento, são consideradas as atividades descritas como de Baixo Risco I ou não aplicáveis \"NA\". § 1º Nas atividades em que não houverem condicionantes, na coluna relativa a condição para classificação de Baixo Risco constante na lista do anexo I deste decreto, a atividade para o CNAE correspondente é considerada como Não-Aplicável. § 2º Nas atividades em que houverem condicionantes na coluna rel",
+   "url": "https://www.diariomunicipal.com.br/famurs/materia/4C3AD2E4",
+   "pdf": "https://www.diariomunicipal.com.br/famurs/download/edicao/4C3AD2E4",
+   "local": "Edição 4243, matéria 4C3AD2E4 · Prefeitura Municipal de Barão de Cotegipe"
+  }
+ ]
+}
