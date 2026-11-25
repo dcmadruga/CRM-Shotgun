@@ -45,6 +45,12 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 - `acao.html` é a página das ações de conta do Firebase (criar nova senha, confirmar e-mail), em português e com a marca Shotgun. O app pede os e-mails em `pt-BR`.
 - Configuração no Console do Firebase (idioma dos modelos e URL de ação): `docs/emails-firebase.md`.
 
+## Agenda de demonstrações
+
+- Menu Agenda (`agenda.js`): demonstrações do sistema, sempre ligadas a um lead do CRM. Quem apresenta é o vendedor dono do lead. Modos Semana, Dia e Próximas; os "Próximo contato" dos leads em aberto aparecem como lembrete (atrasados em vermelho).
+- As demonstrações ficam no próprio lead, em `crm/{id}.demos` (lista com `id`, `data`, `hora`, `dur`, `formato`, `link`, `local`, `participantes`, `obs`, `status`). Por isso valem as mesmas regras do CRM, sem regra nova no Firestore: o vendedor vê as dele e o ADM vê todas (com filtro por usuário).
+- A Agenda não lê o banco: recebe os leads do `crm.js` pelo evento `crm-dados`. O formulário avisa quando a pessoa já tem outra demonstração no mesmo horário.
+
 ## Fluxo até o TASK pronto
 
 - O cliente entra por três caminhos: **Lead** (CRM), **Proposta** (o app cria o lead sozinho, `crm/auto-<id da proposta>`, origem "Proposta direta", se ainda não houver lead com o mesmo CNPJ ou nome) e **cadastro direto no TASK** (perfis TASK e ADM, sem proposta nem contrato). O card mostra a origem e a fase: "Em preparação" (Pré TASK incompleto) ou "Pronto para as equipes".

@@ -10,6 +10,13 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 236, data: '2026-11-25', titulo: 'Agenda de demonstrações', itens: [
+    'Novo item Agenda no menu, logo depois de Hoje. Nele você marca as demonstrações do sistema, sempre ligadas a um lead do CRM.',
+    'Toque em + Agendar demonstração, escolha o lead (ou cadastre um novo ali mesmo), a data, a hora, a duração, se é online (com o link da reunião) ou presencial (o endereço vem do lead) e quem do cliente vai participar.',
+    'Três jeitos de ver: Semana, Dia e Próximas. Os Próximos contatos dos leads também aparecem como lembrete, e os atrasados ficam em vermelho. Para esconder, desmarque Próximos contatos.',
+    'Se você já tiver outra demonstração no mesmo horário, o app avisa antes de salvar.',
+    'No CRM, a ficha do lead ganhou o bloco Demonstrações, com o botão para agendar, e o card do lead no funil mostra a data da próxima demonstração.'
+  ] },
   { v: 235, data: '2026-11-24', titulo: 'Postos em construção em Sergipe, Pará, Tocantins e Rondônia', itens: [
     'Telemetria → Postos em construção: o Estado agora tem também Sergipe (SE), Pará (PA), Tocantins (TO) e Rondônia (RO), com os mesmos filtros de Cidade, mapa, lista, alertas e fontes.',
     'No Pará o Radar lê os processos de licenciamento de posto na consulta pública da SEMAS-PA e as licenças publicadas pelas prefeituras no Diário dos Municípios (FAMEP). Nos processos da SEMAS o município, o CNPJ e o endereço não aparecem: ficam como pendente de confirmação.',
