@@ -14,6 +14,14 @@ window.SHOTGUN_NOVIDADES = [
     'Dados para o contrato: quando o PDF do contrato social mistura páginas digitais (como o requerimento da Junta) com páginas escaneadas, o app agora lê as páginas escaneadas uma a uma e encontra os sócios. Antes ele achava que o PDF inteiro tinha texto e pulava a leitura das imagens.',
     'Se o texto do PDF não trouxer nenhum sócio, o app lê todas as páginas como imagem antes de desistir. Pode levar alguns minutos, e a tela mostra a página que está sendo lida.'
   ] },
+  { v: 247, data: '2026-11-26', titulo: 'Regime Tributário no Pré TASK', itens: [
+    'Pré TASK, aba Implantação: o Regime Tributário informado pelo cliente nos dados para o contrato agora aparece no bloco Base, já preenchido.',
+    'É o mesmo campo do Pré-Contrato: corrigir aqui corrige lá também, com o registro de quem alterou. Se o cliente não informou (contratos antigos), o Pré TASK sugere o regime pela Receita Federal, para conferir.'
+  ] },
+  { v: 246, data: '2026-11-26', titulo: 'Cidade / UF nos avisos e na tela Hoje', itens: [
+    'Tela Hoje: em Demonstrações de hoje e na lista do próximo passo de cada proposta, a Cidade / UF do cliente aparece logo depois do nome da empresa.',
+    'Sino: os avisos de demonstração (agendada para você, hoje e registrar resultado) e de proposta aceita também mostram a Cidade / UF. Se o cadastro não tiver cidade, o aviso fica como antes.'
+  ] },
   { v: 245, data: '2026-11-26', titulo: 'Link para achar a Inscrição Estadual', itens: [
     'Página de dados para o contrato: abaixo do campo Inscrição estadual aparece o link "Consultar no SINTEGRA". Depois de pesquisar o CNPJ, ele abre direto a consulta da SEFAZ do Estado da empresa.',
     'Serve para quando a busca do CNPJ não traz a IE, o que é comum em empresa aberta há pouco tempo: as bases públicas gratuitas demoram a receber esse dado.'

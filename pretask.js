@@ -540,7 +540,7 @@
     // Salvar parcial também no fim de cada tela de Validação
     corpo.querySelectorAll(':scope > [data-ptp]').forEach(pn => { const id = pn.dataset.ptp; if (id !== 'status' && id !== 'base' && !(/^e2c\d+$/.test(id) && C.e2) && !(id === 'e2' && C.direto) && !/^p\d+$/.test(id)) return; pn.insertAdjacentHTML('beforeend', '<div class="ptpfoot"><span class="hint" role="status"></span><button type="button" data-ptparc="1">Salvar parcial</button></div>'); });
     corpo.addEventListener('click', ev => { if (ev.target.closest('[data-ptparc]')) salvar(true); });
-    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo); marcarAuto(corpo);
+    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo); marcarAuto(corpo); ligarRegime(corpo);
     corpo.addEventListener('pt-mudou', ev => { cabecalhoMudou(ev); conferirFinal(); });
     corpo.addEventListener('input', () => conferirFinal()); corpo.addEventListener('change', () => conferirFinal());
     conferirFinal(true);
@@ -585,6 +585,43 @@
       <td><input data-ff="cidade" placeholder="Cidade - UF" value="${esc([f.cidade, f.uf].filter(Boolean).join(' - '))}" aria-label="Cidade"></td>
       ${central ? `<td class="f1"><input type="radio" name="ptf100" data-ff="f100" ${on ? 'checked' : ''} aria-label="Esta é a F100">${on ? '<span class="tag100">F100</span>' : ''}</td>` : ''}</tr>`;
   }
+  // Regime Tributário: é o mesmo campo do Pré-Contrato (seção da empresa), espelhado na Implantação.
+  // Mudar aqui muda lá (e vice-versa) e é gravado no Pré-Contrato, com o registro de quem alterou.
+  function campoRegime() {
+    const cs = [].concat(...secs2().map(s => s.campos));
+    return cs.find(c => /regime\s+tribut/i.test(c.label || '')) || cs.find(c => /regime/i.test(c.label || '') && !/bens|casamento|uni[aã]o/i.test(c.label || ''));
+  }
+  function regimeHtml() {
+    const c = campoRegime(); if (!c) return '';
+    if (!C.e2 && !C.direto) return `<div class="ptf"><span>${esc(c.label)}</span><div class="ptro"><small>Vem do Pré-Contrato quando o cliente enviar</small></div></div>`;
+    const h = campoHtml({ ...c, detalhe: '', full: false }, 'e2:' + c.k, prefixar(C.v2, 'e2:'), {});
+    return h.replace(/data-pk=/g, 'data-espelho=').replace(/data-outro=/g, 'data-espelho-outro=').replace('</label>', '<small class="ptauto">Mesmo campo do Pré-Contrato</small></label>');
+  }
+  function ligarRegime(corpo) {
+    const el = corpo.querySelector('[data-espelho]'); if (!el) return;
+    const k = el.dataset.espelho, src = corpo.querySelector(`[data-pk="${CSS.escape(k)}"]`); if (!src) { el.closest('.ptf').remove(); return; }
+    const ou = corpo.querySelector(`[data-espelho-outro="${CSS.escape(k)}"]`), srcOu = corpo.querySelector(`[data-outro="${CSS.escape(k)}"]`);
+    const mostraOu = () => { if (ou) ou.hidden = !ehOutro(el.value); };
+    const deSrc = () => { el.value = src.value; if (ou && srcOu) ou.value = srcOu.value; el.classList.toggle('erro', src.classList.contains('erro')); mostraOu(); };
+    const paraSrc = () => { src.value = el.value; if (ou && srcOu) srcOu.value = ou.value; src.classList.remove('erro', 'falta'); el.classList.remove('erro', 'falta'); mostraOu(); src.dispatchEvent(new Event('change', { bubbles: true })); };
+    const nota = () => { const n = el.parentElement.querySelector('.ptauto'); if (n) n.textContent = 'Mesmo campo do Pré-Contrato'; };
+    el.addEventListener('change', ev => { if (ev.isTrusted) nota(); paraSrc(); }); el.addEventListener('input', paraSrc); if (ou) ou.addEventListener('input', paraSrc);
+    src.addEventListener('change', ev => { if (ev.isTrusted) { deSrc(); nota(); } }); src.addEventListener('input', deSrc); if (srcOu) srcOu.addEventListener('input', deSrc);
+    new MutationObserver(() => el.classList.toggle('erro', src.classList.contains('erro'))).observe(src, { attributes: true, attributeFilter: ['class'] });
+    deSrc();
+    if (!src.value) regimeDaReceita(el, src);
+  }
+  // Pré-Contrato sem o regime (contratos antigos, antes do campo existir): sugere pela Receita, pelo CNPJ da empresa
+  async function regimeDaReceita(el, src) {
+    if (src.tagName !== 'SELECT' || !window.cnpjInfo) return;
+    const cnpj = [C.v2.cnpj, (C.pre.filiais[0] || {}).cnpj, C.leadCnpj, C.p.cnpj].find(x => dig(x).length === 14); if (!cnpj) return;
+    let j = null; try { j = await window.cnpjInfo(dig(cnpj)); } catch (e) {}
+    if (!j || !document.body.contains(el) || src.value) return;
+    const re = j.mei ? /\bmei\b|microempreendedor/i : j.simples ? /simples/i : /presumido/i.test(j.regime) ? /presumido/i : /real/i.test(j.regime) ? /\breal\b/i : null;
+    const o = re && [...src.options].find(o => re.test(o.text)); if (!o) return;
+    el.value = o.value; el.dispatchEvent(new Event('change'));
+    const n = el.parentElement.querySelector('.ptauto'); if (n) n.textContent = '✓ Sugerido pela Receita Federal · CNPJ ' + fmtCnpj(cnpj) + '. Confira.';
+  }
   function painelBase(anexos) {
     const P = C.pre, central = P.tipoBase === 'Central', simples = P.tipoBase === 'Simples';
     const f100 = central && P.f100 ? P.filiais.find(f => f.cod === P.f100) : null;
@@ -593,6 +630,7 @@
       <div class="ptf"><span>Tipo de Base <b>*</b></span>${seg('tipoBase', ['Simples', 'Central'], P.tipoBase)}</div>
       <div class="ptf"><span>Inclusão <b>*</b></span>${seg('inclusao', ['Base Nova', 'Filial Nova em Central'], P.inclusao)}</div>
       <div class="ptf"><span>Cliente Potencial + de 5 Unidades <b>*</b></span>${seg('potencial', ['Sim', 'Não'], P.potencial)}</div>
+      ${regimeHtml()}
       ${P.inclusao === 'Filial Nova em Central' ? `<label class="ptf"><span>Central que recebe a filial <b>*</b></span>${C.centrais.length ? `<select data-hk="centralExistente"><option value="">Escolha a Central</option>${C.centrais.map(n => `<option${n === P.centralExistente ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>` : `<input data-hk="centralExistente" value="${esc(P.centralExistente || '')}" placeholder="Nome da Central já existente">`}</label>` : ''}
     </div></div>
     ${blocosBase().map(b => `<div class="ptsec"${b.band ? ' data-ptband' : ''}><h5>${esc(b.titulo)}</h5><div class="ptgrid">${camposHtml(b.campos, '', C.v, C.anx)}</div></div>`).join('')}

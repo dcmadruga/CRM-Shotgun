@@ -95,8 +95,8 @@ async function leadsAutomaticos() {
 const UF_NOMES = { AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PA: 'Pará', PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SP: 'São Paulo', SE: 'Sergipe', TO: 'Tocantins' };
 // UF do lead/proposta: fim da cidade ("Nova Mutum - MT") ou a UF da ANP
 const ufDe = x => { const m = String(x.cidade || '').trim().match(/[-\/,]\s*([A-Za-z]{2})$/); const uf = (m ? m[1] : x.anp?.uf || x.uf || '').toUpperCase(); return UF_NOMES[uf] ? uf : ''; };
-// "Cidade / UF" para os cards: separa a UF do fim da cidade ("Nova Mutum - MT"), ou usa o município e a UF da ANP. Sem nada, volta vazio.
-const cidadeUf = x => { const s = String(x.cidade || '').trim(), m = s.match(/^(.*?)\s*[-\/,]\s*([A-Za-z]{2})$/); const cid = (m && UF_NOMES[m[2].toUpperCase()] ? m[1] : s).trim() || String(x.anp?.municipio || '').trim(); return [cid, ufDe(x)].filter(Boolean).join(' / '); };
+// "Cidade / UF" dos cards: helper global em cidade-uf.js
+const cidadeUf = x => window.sgCidadeUf ? window.sgCidadeUf(x) : '';
 const estadosDe = uid => (uid === perfil.uid && Array.isArray(perfil.estados) ? perfil.estados : usuarios[uid]?.estados) || [];
 const meu = x => (!fUser || x.owner === fUser) && (!fUf || ufDe(x) === fUf);
 const leads = () => docs.filter(d => d.tipo === 'lead' && meu(d));
