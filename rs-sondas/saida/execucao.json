@@ -1,0 +1,69 @@
+{
+ "inicio": "2026-11-26T13:13:09.777Z",
+ "fim": "2026-11-26T13:23:29.203Z",
+ "status": "erro",
+ "gatilho": "agendado",
+ "pedidoPor": "",
+ "periodo": {
+  "de": "2025-11-26",
+  "ate": "2026-11-26"
+ },
+ "porFonte": {
+  "semad-go": {
+   "ok": true,
+   "uf": "GO",
+   "consultas": 3,
+   "lidos": 124,
+   "docs": 124,
+   "de": "2025-11-26",
+   "novos": 124
+  },
+  "doe-go": {
+   "ok": true,
+   "uf": "GO",
+   "consultas": 211,
+   "lidos": 716,
+   "docs": 709,
+   "de": "2025-11-26",
+   "novos": 708
+  },
+  "agm": {
+   "ok": true,
+   "uf": "GO",
+   "consultas": 57,
+   "lidos": 45,
+   "docs": 1,
+   "de": "2025-11-26",
+   "novos": 1
+  },
+  "fgm": {
+   "ok": true,
+   "uf": "GO",
+   "consultas": 17,
+   "lidos": 5,
+   "docs": 4,
+   "de": "2025-11-26",
+   "novos": 4
+  },
+  "querido-go": {
+   "ok": false,
+   "uf": "GO",
+   "erro": "Querido Diário: HTTP 503 (https://api.queridodiario.org.br/gazettes?querystring=%22posto+de+combust%C3%ADveis%22&published_since=2025-11-26&published_until=2026-11-26&excerpt_size=1500&n)",
+   "de": "2025-11-26"
+  },
+  "anp-GO": {
+   "ok": true,
+   "uf": "GO",
+   "docs": 0,
+   "postos": 2073,
+   "novos": 0
+  }
+ },
+ "documentos": 837,
+ "novos": 663,
+ "atualizados": 0,
+ "novosDocumentos": 837,
+ "alertas": 1,
+ "teste": true,
+ "duracaoSeg": 619
+}
