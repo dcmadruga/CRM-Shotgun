@@ -15,6 +15,10 @@ window.SHOTGUN_NOVIDADES = [
     'Reagendada: o app abre uma demonstração nova com tudo igual à original (lead, online ou presencial, link ou endereço, duração, participantes e observações) e obriga a informar a nova data e hora. A original fica marcada como Reagendada, com a nova data no card.',
     'Cancelada: pede o motivo (opcional) e fica anotado no histórico do lead. As demonstrações canceladas e reagendadas continuam aparecendo na Agenda, mais apagadas, para você ver o que aconteceu.'
   ] },
+  { v: 256, data: '2026-11-26', titulo: 'Cartão de contribuinte salvo sem extensão também é lido', itens: [
+    'Dados para o contrato: ao anexar o cartão de contribuinte, a página descobre o tipo pelo conteúdo do arquivo, e não pelo nome. Um PDF ou print salvo sem extensão, ou a página da SEFAZ salva no navegador, agora é lido e preenche a Inscrição estadual na hora.',
+    'Se o conteúdo não der para ler, mas o nome do arquivo trouxer o número da IE (como "Cartão Contribuinte Inscrição Estadual 141994762"), esse número é usado, com o aviso para conferir.'
+  ] },
   { v: 255, data: '2026-11-26', titulo: 'CNPJ copiado ao consultar o SINTEGRA', itens: [
     'Dados para o contrato: ao tocar em "Consultar no SINTEGRA", o CNPJ da empresa vai copiado (só os números) antes de o site da SEFAZ abrir. No site, é só tocar no campo do CNPJ e colar.',
     'A mensagem mostra o CNPJ copiado. Se o navegador não deixar copiar, ela mostra o número para colar à mão. Sem CNPJ digitado, pede para preencher primeiro.'
