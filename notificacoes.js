@@ -25,7 +25,7 @@
 
   // Setores = módulos principais do TASK (mesma lista da tela Usuários)
   const setoresTop = () => ((MODS || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai);
-  const nomeSetor = id => id === 'todos' ? 'Todos' : id === 'pessoal' ? 'Para você' : id === 'usuarios' ? 'Usuários' : id === 'propostas' ? 'Propostas' : (setoresTop().find(m => m.id === id) || {}).titulo || id;
+  const nomeSetor = id => id === 'todos' ? 'Todos' : id === 'agenda' ? 'Agenda' : id === 'pessoal' ? 'Para você' : id === 'usuarios' ? 'Usuários' : id === 'propostas' ? 'Propostas' : (setoresTop().find(m => m.id === id) || {}).titulo || id;
   const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
   // Quem pode ver (o Firestore aplica a mesma regra no servidor)
   const podeVer = n => admin || n.auto || n.setor === 'todos' || (n.setor === 'pessoal' && n.para === uid) || meusSetores().includes(n.setor);
@@ -61,7 +61,8 @@
       const it = e.target.closest('[data-nid]'); if (!it) return;
       const n = lista().find(x => x.id === it.dataset.nid); if (!n) return;
       if (!lida(n)) marcar(n.id);
-      if (n.prop) { abrir(false); window.dispatchEvent(new CustomEvent('shotgun-abrir-proposta', { detail: { id: n.prop } })); }
+      if (typeof n.abrir === 'function') { abrir(false); n.abrir(); }
+      else if (n.prop) { abrir(false); window.dispatchEvent(new CustomEvent('shotgun-abrir-proposta', { detail: { id: n.prop } })); }
       else if (n.aba && $(n.aba)) { abrir(false); $(n.aba).click(); }
     });
     $('sgnLista').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-nid]')) { e.preventDefault(); e.target.click(); } });
@@ -99,7 +100,7 @@
     $('sgnLerTodas').hidden = !nao;
     const ss = meusSetores().map(nomeSetor);
     $('sgnEscopo').textContent = admin ? 'Administrador: você vê as notificações de todos os setores.' : ss.length ? 'Seu setor: ' + ss.join(', ') + '.' : 'Avisos gerais e os enviados para você.';
-    $('sgnLista').innerHTML = ns.length ? ns.map(n => `<div class="sgnit${lida(n) ? '' : ' nova'}${n.aba || n.prop ? ' link' : ''}" data-nid="${esc(n.id)}" role="button" tabindex="0">
+    $('sgnLista').innerHTML = ns.length ? ns.map(n => `<div class="sgnit${lida(n) ? '' : ' nova'}${n.aba || n.prop || n.abrir ? ' link' : ''}" data-nid="${esc(n.id)}" role="button" tabindex="0">
         <span class="sgnponto" aria-hidden="true"></span>
         <div class="sgncorpo"><b>${esc(n.titulo)}</b>${n.texto ? `<p>${esc(n.texto)}</p>` : ''}
           <span class="sgnmeta"><span class="sgnsetor">${esc(nomeSetor(n.setor))}</span>${esc(quando(n.t))}${n.por ? ' · ' + esc(n.por) : ''}</span></div>
@@ -132,6 +133,9 @@
     const d = { titulo, texto: String(texto || '').trim().slice(0, 500), setor: para ? 'pessoal' : String(setor || 'todos'), para: para || null, aba: String(aba || ''), criado: F.serverTimestamp(), por: perfil.nome || perfil.email || '', porUid: uid };
     return (await F.addDoc(F.collection(db, 'notificacoes'), d)).id;
   };
+
+  // Avisos montados por outros módulos sem gravar nada (ex.: Agenda). Cada aviso: { id, titulo, texto, setor, t, abrir }
+  window.shotgunAvisos = (chave, lista) => { porQuery['x:' + chave] = (lista || []).map(n => ({ auto: true, ...n })); desenhar(); };
 
   function parar() {
     unsubs.forEach(u => { try { u(); } catch (e) {} }); unsubs = [];
