@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 255, data: '2026-11-26', titulo: 'CNPJ copiado ao consultar o SINTEGRA', itens: [
+    'Dados para o contrato: ao tocar em "Consultar no SINTEGRA", o CNPJ da empresa vai copiado (só os números) antes de o site da SEFAZ abrir. No site, é só tocar no campo do CNPJ e colar.',
+    'A mensagem mostra o CNPJ copiado. Se o navegador não deixar copiar, ela mostra o número para colar à mão. Sem CNPJ digitado, pede para preencher primeiro.'
+  ] },
   { v: 254, data: '2026-11-26', titulo: 'Telefone do responsável legal já preenchido', itens: [
     'Dados para o contrato: quando o nome do Responsável legal (vindo do contrato social ou digitado) é o mesmo de um contato cadastrado na proposta ou no lead do CRM, o Telefone / WhatsApp dele já vem preenchido. Embaixo aparece de qual contato veio, para conferir.',
     'O campo continua editável: o que for digitado nele fica. Vale para links do Pré-Contrato gerados a partir desta versão.'
