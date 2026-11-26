@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 241, data: '2026-11-26', titulo: 'Postos em construção: licenças de Porto Alegre no RS', itens: [
+    'Telemetria → Postos em construção, Estado RS: o Radar passa a ler também a consulta pública de licenças ambientais da Prefeitura de Porto Alegre e mostra as licenças de posto de combustível emitidas lá (LP e LI entram como novo posto).',
+    'A fonte aparece na lista de fontes do RS. Porto Alegre emite poucas licenças de posto, então os achados devem ser raros.'
+  ] },
   { v: 240, data: '2026-11-26', titulo: 'Atalhos de prazo no Próximo contato', itens: [
     'CRM → ficha do lead, em Negociação: embaixo de Próximo contato agora tem os botões 7 dias, 15 dias, 30 dias e 60 dias. Um toque marca a data de hoje mais esse prazo, e o botão fica destacado.',
     'A data continua editável à mão. Passando o dedo ou o mouse sobre o botão aparece a data que ele vai marcar.'

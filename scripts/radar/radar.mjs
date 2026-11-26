@@ -18,6 +18,7 @@ import * as domsc from './fontes/domsc.mjs';
 import * as dioepr from './fontes/dioepr.mjs';
 import * as doesp from './fontes/doesp.mjs';
 import * as simlampa from './fontes/simlampa.mjs';
+import * as poa from './fontes/poa.mjs';
 import * as anpFonte from './fontes/anp.mjs';
 
 const inicio = new Date();
@@ -28,7 +29,7 @@ const teste = process.env.RADAR_TESTE === 'true';
 const db = teste ? null : firestore();
 const gatilhoBase = process.env.RADAR_GATILHO || 'agendado';
 // Fontes de diário oficial integradas, por Estado. RADAR_FONTES (ex.: "famurs,doe-rs") limita a rodada.
-const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }, { mod: querido, uf: 'RS' }, { mod: sinfat, uf: 'SC' }, { mod: domsc, uf: 'SC' }, { mod: querido.paraUF('SC', 'SC'), uf: 'SC' },
+const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doers, uf: 'RS' }, { mod: querido, uf: 'RS' }, { mod: poa, uf: 'RS' }, { mod: sinfat, uf: 'SC' }, { mod: domsc, uf: 'SC' }, { mod: querido.paraUF('SC', 'SC'), uf: 'SC' },
   { mod: dioepr, uf: 'PR' }, { mod: querido.paraUF('PR', 'PR'), uf: 'PR' },
   { mod: doesp, uf: 'SP' }, { mod: querido.paraUF('SP', 'SP'), uf: 'SP' },
   { mod: paraSigpub('sergipe', 'SE', 'Diário Oficial dos Municípios de Sergipe (SIGPub)', 'dom-se', 'DOM-SE'), uf: 'SE' }, { mod: querido.paraUF('SE', 'SE'), uf: 'SE' },
