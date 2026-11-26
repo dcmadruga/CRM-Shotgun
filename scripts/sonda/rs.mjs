@@ -2,15 +2,33 @@ import fs from 'fs';
 fs.mkdirSync('rs-sondas', { recursive: true });
 const out = []; const log = (...a) => { const s = a.join(' '); console.log(s); out.push(s); };
 const UA = { 'user-agent': 'Mozilla/5.0 (compatible; shotgun-radar/1.0)' };
-async function get(u, o = {}) { const t0 = Date.now(); try { const r = await fetch(u, { redirect: 'follow', signal: AbortSignal.timeout(45000), ...o, headers: { ...UA, ...(o.headers || {}) } }); const t = await r.text(); return { s: r.status, u: r.url, t, ms: Date.now() - t0 }; } catch (e) { return { s: 'ERR ' + (e.cause?.code || e.message), t: '', ms: Date.now() - t0 }; } }
+async function get(u, o = {}) { const t0 = Date.now(); try { const r = await fetch(u, { redirect: 'follow', signal: AbortSignal.timeout(60000), ...o, headers: { ...UA, ...(o.headers || {}) } }); const t = await r.text(); return { s: r.status, u: r.url, t, ms: Date.now() - t0 }; } catch (e) { return { s: 'ERR ' + (e.cause?.code || e.message), t: '', ms: Date.now() - t0 }; } }
 const txt = h => h.replace(/<(script|style)[^]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-const links = (h, re) => [...new Set([...h.matchAll(/href="([^"]+)"/g)].map(m => m[1]).filter(x => re.test(x)))].slice(0, 40).join(' | ');
-for (const s of ['agm', 'fgm', 'goias', 'go', 'amg', 'famgo']) { const r = await get(`https://www.diariomunicipal.com.br/${s}/`); log('SIGPUB', s, r.s, r.u, r.t.length, txt(r.t).slice(0, 200)); }
-const r1 = await get('https://www.diariomunicipal.com.br/'); log('SIGPUB home', r1.s, links(r1.t, /diariomunicipal\.com\.br\/[a-z]+\/?$|^\/[a-z]+\/?$/));
-for (const u of ['https://diariooficial.abc.go.gov.br/', 'https://diariooficial.abc.go.gov.br/buscanova/', 'https://diariooficial.abc.go.gov.br/api/']) { const r = await get(u); log('DOEGO', u, r.s, r.u, r.ms + 'ms', r.t.length, txt(r.t).slice(0, 300)); log('  links', links(r.t, /busca|pesquis|api|edic|portal|materia/i)); }
-for (const u of ['https://goias.gov.br/meioambiente/licenciamento-ambiental/', 'https://ipe.meioambiente.go.gov.br/', 'https://portal.meioambiente.go.gov.br/', 'https://goias.gov.br/meioambiente/?p=340562']) { const r = await get(u); log('SEMAD', u, r.s, r.u, r.ms + 'ms', r.t.length, txt(r.t).slice(0, 200)); log('  links', links(r.t, /ipe|consulta|sistema|licen|portal|sigam|processo/i)); }
-for (const u of ['https://www.goiania.go.gov.br/casa-civil/diario-oficial/', 'https://www.goiania.go.gov.br/shtml/portal/diariooficial.shtml']) { const r = await get(u); log('GYN', u, r.s, r.u, r.t.length, txt(r.t).slice(0, 200)); log('  links', links(r.t, /diario|Download|busca|pesquis/i)); }
-const q = await get('https://api.queridodiario.org.br/cities?city_name=', { signal: AbortSignal.timeout(90000) });
-try { const c = JSON.parse(q.t).cities.filter(x => String(x.territory_id).startsWith('52')); log('QD GO', c.length, c.map(x => x.territory_name + '(' + (x.level || '') + ')').join(', ')); } catch (e) { log('QD', q.s, q.t.slice(0, 200)); }
-const q2 = await get('https://api.queridodiario.org.br/gazettes?querystring=%22posto%20de%20combust%C3%ADveis%22&territory_ids=5208707&published_since=2025-11-01&size=5&excerpt_size=300', { signal: AbortSignal.timeout(90000) }); log('QD Goiania', q2.s, q2.t.slice(0, 1500));
+// SIGPub AGM / FGM
+for (const s of ['agm', 'fgm']) {
+  const h = await get(`https://www.diariomunicipal.com.br/${s}/`);
+  log('SIGPUB', s, (h.t.match(/<title>([^<]*)/) || [])[1], '|', [...new Set([...h.t.matchAll(/Goi[aá]s|GO\b/g)].map(m => m[0]))].join(','));
+  for (const termo of ['"posto de combustíveis"', '"posto de combustível"', '"licença de instalação" combustíveis', '"licença prévia" posto']) {
+    const u = `https://www.diariomunicipal.com.br/${s}/pesquisar?busca_avancada%5Btexto%5D=${encodeURIComponent(termo)}&busca_avancada%5BdataInicio%5D=2025-11-26&busca_avancada%5BdataFim%5D=2026-11-26&busca_avancada%5Bpagina%5D=1`;
+    const r = await get(u);
+    const cards = r.t.split('<li class="materia-card">').slice(1).map(li => txt([(li.match(/materia-card__titulo">([^]*?)<\/h2>/) || [])[1], '·', (li.match(/materia-card__entidade">([^]*?)<\/span>/) || [])[1], '·', (li.match(/materia-card__trecho">([^]*?)<\/p>/) || [])[1]].join(' ')).slice(0, 260));
+    const tot = (txt(r.t).match(/(\d[\d.]*)\s+resultado/i) || [])[0];
+    log(' ', s, termo, r.s, tot || '', cards.length + ' cards');
+    for (const c of cards.slice(0, 12)) log('    ', c);
+  }
+}
+// DOE-GO busca nova: descobrir a API
+const b = await get('https://diariooficial.abc.go.gov.br/buscanova/');
+const scripts = [...b.t.matchAll(/src="([^"]+\.js[^"]*)"/g)].map(m => new URL(m[1], 'https://diariooficial.abc.go.gov.br/buscanova/').href);
+log('DOEGO scripts', scripts.join(' '));
+for (const s of scripts.filter(x => !/jquery|angular\.min|bootstrap|google/i.test(x)).slice(0, 6)) { const j = await get(s); const m = [...new Set([...j.t.matchAll(/["'`]((?:https?:)?\/\/?[^"'`\s]*(?:api|search|busca|elastic|_search|materia)[^"'`\s]*)["'`]/gi)].map(x => x[1]))]; log('  JS', s, j.s, j.t.length, m.slice(0, 20).join(' | ')); const i = j.t.search(/\$http|fetch\(|\.post\(|\.get\(/); if (i > 0) log('   ctx', j.t.slice(Math.max(0, i - 300), i + 700).replace(/\s+/g, ' ')); }
+log('DOEGO inline', (b.t.match(/<script>[^]*?<\/script>/g) || []).map(s => s.replace(/\s+/g, ' ').slice(0, 800)).join(' ### '));
+// SEMAD portal
+for (const u of ['https://portal.meioambiente.go.gov.br/portal/', 'https://portal.meioambiente.go.gov.br/portal/consulta', 'https://goias.gov.br/meioambiente/licenciamento-ambiental/']) { const r = await get(u); log('SEMAD', u, r.s, r.u, r.t.length, r.t.slice(0, 600).replace(/\s+/g, ' ')); }
+// Querido Diário GO
+const ids = ['5208707', '5201108', '5201405', '5204508', '5205109', '5205497', '5208004', '5211503', '5211909', '5212501', '5215231', '5218805', '5220454', '5221403', '5221858', '5200258'];
+for (const t of ['"posto de combustíveis"', '"licença de instalação"', '"licença prévia"']) {
+  const q = await get(`https://api.queridodiario.org.br/gazettes?querystring=${encodeURIComponent(t)}&${ids.map(i => 'territory_ids=' + i).join('&')}&published_since=2025-11-26&size=10&excerpt_size=300&number_of_excerpts=2`, { signal: AbortSignal.timeout(90000) });
+  try { const d = JSON.parse(q.t); log('QD', t, 'total', d.total_gazettes); for (const g of d.gazettes) log('   ', g.date, g.territory_name, '|', (g.excerpts || []).join(' … ').replace(/\s+/g, ' ').slice(0, 400)); } catch { log('QD', t, q.s, q.t.slice(0, 200)); }
+}
 fs.writeFileSync('rs-sondas/go.txt', out.join('\n'));
