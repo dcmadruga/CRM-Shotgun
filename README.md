@@ -15,6 +15,8 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 - As faixas de porte (Pequeno, Médio, Grande) ficam em Parâmetros Proposta > Valores de base.
 - `anp/novos.json` alimenta a tela Telemetria > Telemetria ANP (postos novos dos últimos 15 dias, com destaque para os que entraram hoje). Gerado na mesma tarefa diária por `scripts/anp-novos.mjs`: entra o posto cuja autorização na ANP é recente ou cujo CNPJ apareceu pela primeira vez na base naquele dia.
 
+- Os postos novos também viram aviso no sino (`notificacoes.js`): um por dia e por Estado, dos últimos 7 dias, só nos Estados de atuação da pessoa (`usuarios/{uid}.estados`, a mesma regra dos filtros do CRM). Vale para o ADM também; sem Estado marcado não há aviso. Tocar abre a Telemetria ANP filtrada no Estado.
+
 ## Identidade visual
 
 - `tema.css` concentra os design tokens (cores, Montserrat, espaçamentos, raios, sombras e tempos de animação) e a camada visual compartilhada: cabeçalho, menu lateral recolhível no computador, login, tela de carregamento, botões e cards. Telas novas devem usar as variáveis de lá (`--bg`, `--surface`, `--fg`, `--muted`, `--line`, `--accent`, `--accent-fg`, `--accent-text`, `--danger`, `--ok-text`...) em vez de cores fixas.

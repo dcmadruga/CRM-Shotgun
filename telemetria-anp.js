@@ -166,4 +166,13 @@
   // Desenha quando a aba Telemetria é aberta (o dia pode ter virado com o app aberto)
   const tab = $('tabTele'); if (tab) tab.addEventListener('click', () => setTimeout(() => { if (!box.hidden && !$('viewTele').hidden) desenhar(); }));
   mostrar(abas.some(b => b.dataset.tele === ini) ? ini : 'anp');
+  // Aviso do sino (notificacoes.js): abre a Telemetria ANP filtrada no Estado do aviso
+  window.addEventListener('shotgun-abrir-anp', e => {
+    const uf = e.detail && e.detail.uf;
+    if (uf && UFS.includes(uf)) { selUf.value = uf; try { localStorage.setItem('tanpUf', uf); } catch { } }
+    selCid.value = ''; selBand.value = ''; busca.value = ''; aberto = '';
+    try { localStorage.setItem('teleAba', 'anp'); } catch { }
+    if (tab) tab.click();
+    mostrar('anp');
+  });
 })();
