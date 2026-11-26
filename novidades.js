@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 254, data: '2026-11-26', titulo: 'Telefone do responsável legal já preenchido', itens: [
+    'Dados para o contrato: quando o nome do Responsável legal (vindo do contrato social ou digitado) é o mesmo de um contato cadastrado na proposta ou no lead do CRM, o Telefone / WhatsApp dele já vem preenchido. Embaixo aparece de qual contato veio, para conferir.',
+    'O campo continua editável: o que for digitado nele fica. Vale para links do Pré-Contrato gerados a partir desta versão.'
+  ] },
   { v: 252, data: '2026-11-26', titulo: 'Formulário aguarda a leitura do contrato social', itens: [
     'Dados para o contrato: enquanto o app lê o contrato social, os demais campos e o botão Enviar ficam bloqueados, com o aviso "Aguarde a leitura do contrato social terminar". Assim ninguém preenche um campo que a leitura vai sobrescrever logo depois.',
     'Tudo é liberado quando a leitura termina, achando os sócios ou não. Durante a leitura dá para trocar o arquivo ou marcar "Não tenho disponível agora", que também libera os campos na hora.'

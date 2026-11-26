@@ -287,6 +287,13 @@ let aposNovo = null; // Agenda: o que fazer depois de cadastrar um lead novo (vo
 window.crmAbrirLead = id => { const l = docs.find(d => d.id === id && d.tipo === 'lead'); if (l) formLead(l); };
 window.crmNovoLead = fn => { formLead(); aposNovo = fn || null; dmsg('Cadastre o lead e toque em Salvar: a demonstração continua de onde parou.'); };
 window.crmGerarProposta = id => { const l = docs.find(d => d.id === id && d.tipo === 'lead'); if (l) gerarProposta(l); };
+// Contatos (nome e telefone) cadastrados nos leads e na ficha do cliente com este CNPJ/nome: vão no link dos dados para o contrato
+window.crmContatosDe = (cnpj, nome) => {
+  const k = chave(cnpj, nome), out = [];
+  docs.filter(d => d.tipo === 'lead' && chave(d.cnpj, d.empresa) === k).forEach(l => contatosDe(l).forEach(x => out.push({ nome: x.nome || '', fone: dig(x.fone) })));
+  const cd = docs.find(d => d.id === 'c_' + k); (cd?.contatos || []).forEach(x => out.push({ nome: x.nome || '', fone: dig(x.fone) }));
+  return out;
+};
 window.crmFecharDlg = () => { if (dlg() && dlg().open) dlg().close(); };
 window.crmMicBtn = () => micBtn();
 window.crmDitar = btn => ditar(btn);

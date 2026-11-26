@@ -1036,6 +1036,13 @@ async function iniciar() {
   function linkEtapa2(p) {
     const sc = splitCidade(p.cidade);
     const dados = { c: p.cnpj, r: p.cliente, cid: sc.cidade, uf: sc.uf, v: perfil.nome || p.vendedor, w: dig(perfil.fone) || p.vendedorFone, n: p.numero, p: p.id };
+    // Contatos com telefone (da proposta e do CRM): se o responsável legal tiver o mesmo nome, o telefone já vem preenchido
+    const ct = [{ nome: p.contato, fone: dig(p.waCli) }];
+    try { if (window.crmContatosDe) ct.push(...window.crmContatosDe(p.cnpj, p.cliente)); } catch (_) {}
+    const vistos = new Set();
+    dados.ct = ct.filter(x => String(x.nome || '').trim() && dig(x.fone).length >= 10).map(x => [String(x.nome).trim(), dig(x.fone)])
+      .filter(([n, f]) => { const k = n.toLowerCase() + f; if (vistos.has(k)) return false; vistos.add(k); return true; }).slice(0, 12);
+    if (!dados.ct.length) delete dados.ct;
     const b = btoa(unescape(encodeURIComponent(JSON.stringify(dados)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     return baseUrl('dados.html') + '#d=' + b;
   }
