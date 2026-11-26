@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 253, data: '2026-11-26', titulo: 'Cartão de contribuinte aceita qualquer arquivo', itens: [
+    'Dados para o contrato: o botão "Anexar cartão de contribuinte" aceita agora qualquer tipo de arquivo. PDF e imagem continuam sendo lidos para preencher a Inscrição estadual. Os outros tipos ficam guardados nos anexos da proposta, e a IE é digitada à mão.'
+  ] },
   { v: 251, data: '2026-11-26', titulo: 'Regime Tributário só no Pré TASK', itens: [
     'Dados para o contrato: o cliente não precisa mais escolher o Regime Tributário. Se ele anexar o cartão de contribuinte ou pesquisar o CNPJ, o regime encontrado segue junto com os dados, sem aparecer na tela.',
     'Pré TASK, aba Implantação: o Regime Tributário passou a ser exigido aqui. Ele abre preenchido pelo cartão de contribuinte ou pela Receita Federal, com a origem indicada embaixo, para conferir.'
