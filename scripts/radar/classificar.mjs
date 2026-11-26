@@ -35,6 +35,13 @@ function coordenadas(t) {
 export function avisosDaPagina(texto) {
   const t = limpa(texto)
     .replace(/GOVERNO DO ESTADO DE MATO GROSSO Secretaria de Estado de Planejamento e Gest[aã]o - SEPLAG - Imprensa Oficial - IOMAT C[oó]digo de Autenticidade: \w+( N[ºo°] [\d.]+ P[aá]gina \d+)?/g, ' ')
+    // cabeçalho e rodapé das páginas do Diário Oficial de GO (mesmo sistema do IOMAT)
+    .replace(/GOI[AÂ]NIA,\s+[A-ZÇ-]+FEIRA,\s+\d{1,2}\s+DE\s+[A-ZÇ]+\s+DE\s+\d{4}\s+ANO\s+\d+\s+-\s+DI[AÁ]RIO\s+OFICIAL\/GO\s+N[°º]\s+[\d.]+(\s+Di[aá]rio\s+Oficial)?(\s+\d+)?/g, ' ')
+    .replace(/GOI[AÂ]NIA,\s+(S[AÁ]BADO|DOMINGO),\s+\d{1,2}\s+DE\s+[A-ZÇ]+\s+DE\s+\d{4}\s+ANO\s+\d+\s+-\s+DI[AÁ]RIO\s+OFICIAL\/GO\s+N[°º]\s+[\d.]+/g, ' ')
+    .replace(/DIARIO OFICIAL DO ESTADO DE GOIAS Assinado digitalmente pela ABC - AGENCIA BRASIL CENTRAL CODIGO DE AUTENTICACAO: \w+/g, ' ')
+    .replace(/PUBLICA[CÇ][OÕ]ES\s+PARTICULARES/g, ' ')
+    .replace(/(^|\s)Di[aá]rio\s+Oficial(\s+\d{1,3})?(?=\s+[A-ZÀ-Ú])/g, ' ')
+    .replace(/_{4,}/g, ' Protocolo 000000 ') // linha separadora entre avisos
     .replace(/(Di[aá]rio Oficial )?\d{1,2} de [a-zç]+ de \d{4}( Di[aá]rio Oficial)?( P[aá]gina \d+)?( N[ºo°] [\d.]+)?( P[aá]gina \d+)?/gi, ' ');
   const out = [];
   for (const bloco of t.split(/Protocolo\s+\d{6,8}/)) {
@@ -62,7 +69,7 @@ export function avisosDaPagina(texto) {
 
 function orgao(t, mun, uf = 'MT') {
   const m = t.match(/((?:Secretaria|Departamento|Diretoria)\s+Municipal[^,.;]{0,90}?)(?:\s*[-–(]\s*[A-Z]{3,8}|,|\.|\s+a\s+|\s+o\s+)/i) || t.match(/Prefeitura\s+Municipal\s+de\s+[A-ZÀ-Úa-zà-ú' ]{3,40}/);
-  const sig = t.match(/\b(SMADESS?|SMURB|SEMMA|SEMMEA|SEMAM|SMMA|SAMA|SMAMA|SEMAGRI)\b/) || t.match(/(Secretaria\s+(?:Municipal\s+)?de\s+Agricultura[^,.;]{0,60}Meio\s+Ambiente|Prefeitura\s+(?:Municipal\s+)?de\s+[A-ZÀ-Ú][A-Za-zÀ-ú' ]{2,30}|Coordenadoria\s+de\s+Meio\s+Ambiente[^,.;]{0,50})/);
+  const sig = t.match(/\b(SMADESS?|SMURB|SEMMA|SEMMEA|SEMAM|SMMA|SAMA|SMAMA|SEMAGRI|SEMMARH|SEMMAS|SEFIC|AMMA)\b/) || t.match(/(Secretaria\s+(?:Municipal\s+)?de\s+Agricultura[^,.;]{0,60}Meio\s+Ambiente|Prefeitura\s+(?:Municipal\s+)?de\s+[A-ZÀ-Ú][A-Za-zÀ-ú' ]{2,30}|Coordenadoria\s+de\s+Meio\s+Ambiente[^,.;]{0,50})/);
   if (m || sig) return { orgao: limpa((m ? m[1] || m[0] : sig[1]).replace(/\s+-\s*$/, '')) + (mun ? ` (${mun.nome})` : ''), esfera: 'municipal' };
   if (uf === 'RS' && /\bFEPAM\b|Funda[cç][aã]o\s+Estadual\s+de\s+Prote[cç][aã]o\s+Ambiental/i.test(t)) return { orgao: 'FEPAM (Fundação Estadual de Proteção Ambiental)', esfera: 'estadual' };
   if (uf === 'SP' && /\bCETESB\b|Companhia\s+Ambiental\s+do\s+Estado\s+de\s+S[ãa]o\s+Paulo/i.test(t)) return { orgao: 'CETESB (Companhia Ambiental do Estado de SP)', esfera: 'estadual' };
@@ -71,6 +78,7 @@ function orgao(t, mun, uf = 'MT') {
   if (uf === 'RO' && /\bSEDAM\b|Secretaria\s+de\s+Estado\s+do\s+Desenvolvimento\s+Ambiental/i.test(t)) return { orgao: 'SEDAM (Secretaria de Estado do Desenvolvimento Ambiental de RO)', esfera: 'estadual' };
   if (uf === 'TO' && /\bNATURATINS\b|Instituto\s+Natureza\s+do\s+Tocantins/i.test(t)) return { orgao: 'NATURATINS (Instituto Natureza do Tocantins)', esfera: 'estadual' };
   if (uf === 'SE' && /\bADEMA\b|Administra[cç][aã]o\s+Estadual\s+do\s+Meio\s+Ambiente/i.test(t)) return { orgao: 'ADEMA (Administração Estadual do Meio Ambiente de SE)', esfera: 'estadual' };
+  if (uf === 'GO' && /\bSEMAD\b|Secretaria\s+de\s+Estado\s+de\s+Meio\s+Ambiente\s+e\s+Desenvolvimento\s+Sustent/i.test(t)) return { orgao: 'SEMAD-GO (Secretaria de Estado de Meio Ambiente e Desenvolvimento Sustentável)', esfera: 'estadual' };
   if (uf === 'SC' && /\bIMA\b|Instituto\s+do\s+Meio\s+Ambiente\s+de\s+Santa\s+Catarina/i.test(t)) return { orgao: 'IMA (Instituto do Meio Ambiente de SC)', esfera: 'estadual' };
   if (/\bSEMA\b|Secretaria\s+(de\s+Estado|Estadual)\s+d[eo]\s+Meio\s+Ambiente/i.test(t)) return { orgao: `SEMA-${uf} (Secretaria de Estado de Meio Ambiente)`, esfera: 'estadual' };
   return { orgao: '', esfera: '' };
@@ -117,6 +125,9 @@ function empresa(t) {
   const hdr = [...nome.matchAll(/\b(EDITAL\s+DE\s+[A-ZÇÃ]+|ASSEMBLEIA\s+GERAL(\s+(EXTRA)?ORDIN[AÁ]RIA)?|AVISO\s+DE\s+[A-ZÇÃ]+(\s+DE\s+LICEN[CÇ]A(\s+AMBIENTAL)?(\s+DE\s+(OPERA[CÇ][AÃ]O|INSTALA[CÇ][AÃ]O)|\s+PR[EÉ]VIA)?)?|CONVOCA[CÇ][AÃ]O|LICEN[CÇ]A\s+(DE\s+)?(OPERA[CÇ][AÃ]O|INSTALA[CÇ][AÃ]O|PR[EÉ]VIA)(\s*[–-]\s*L[PIO]C?)?(\s+N[º°]\s*[\d./]+)?)(?=\s|$)/g)].pop();
   if (hdr) { nome = nome.slice(hdr.index + hdr[0].length).replace(/^[\s\-–:]+/, ''); for (let k = 0; k < 3 && cab.test(nome); k++) nome = nome.replace(cab, ''); }
   nome = limpa(nome.replace(/^[\s\-–:]+/, '').replace(/,\s*pessoa\s+jur[ií]dica.*$/i, '').replace(/[.,;:\-–\s]+$/, ''));
+  // aviso publicado pela consultoria em nome do cliente ("X ENGENHARIA torna público que a empresa Y"): fica Y
+  nome = nome.replace(/^.*?\b(?:torna\s+p[uú]blico\s+que\s+(?:a\s+empresa|o\s+empreendimento)|informa\s+que\s+(?:a\s+empresa|o\s+empreendimento|o|a))\s+(?=[A-ZÀ-Ú0-9])/i, '')
+    .replace(/,\s*(?:estabelecid|registrad|sediad|situad|localizad)[oa]s?\b.*$/i, '');
   // lixo de outra matéria antes do nome (valores, datas, cargos): fica o último pedaço
   const pedacos = nome.split(/\s*(?:R\$[-\s\d.,]+|\b\d{2}\/\d{2}\/\d{4}\b|Portaria\s+n[º°]?\s*\d+|Comiss[aã]o\s+Eleitoral|\bVALOR\b)\s*/i).filter(x => x.trim().split(/\s+/).length >= 2);
   if (pedacos.length > 1) nome = limpa(pedacos.pop());
