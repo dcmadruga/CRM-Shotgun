@@ -387,6 +387,14 @@ async function pegaIe(d,uf,vivo){
 const SINTEGRA={AC:'http://sefaznet.ac.gov.br/sefazonline/servlet/hpfsincon',AL:'http://www.sefaz.al.gov.br/asp/sintegra/sintegra.asp?estado=AL',AP:'http://www.sefaz.ap.gov.br/sate/seg/SEGf_AcessarFuncao.jsp?cdFuncao=CAD_011',AM:'http://www.sefaz.am.gov.br/sintegra/sintegra0.asp',BA:'https://portal.sefaz.ba.gov.br/scripts/cadastro/cadastroBa/consultaBa.asp',CE:'https://servicos.sefaz.ce.gov.br/internet/Sintegra/Sintegra.Asp?estado=CE',DF:'https://ww1.receita.fazenda.df.gov.br/icms/sintegra-consulta',ES:'http://www.sintegra.es.gov.br/',GO:'http://appasp.sefaz.go.gov.br/Sintegra/Consulta/default.asp?',MA:'http://aplicacoes.ma.gov.br/sintegra/jsp/consultaSintegra/consultaSintegraFiltro.jsf',MT:'https://www.sefaz.mt.gov.br/cadastro/emissaocartao/emissaocartaocontribuinteacessodireto',MS:'https://servicos.efazenda.ms.gov.br/consultapublica/Home/Index',MG:'http://consultasintegra.fazenda.mg.gov.br/',PA:'http://app.sefa.pa.gov.br/Sintegra/',PB:'https://www4.sefaz.pb.gov.br/sintegra',PR:'https://sintegra.paas.pr.gov.br/',PE:'http://www.sintegra.sefaz.pe.gov.br/',PI:'http://web.sintegra.sefaz.pi.gov.br/',RJ:'https://sucief-sincad-web.fazenda.rj.gov.br/sincad-web/index.jsf',RN:'http://www.set.rn.gov.br/uvt/consultacontribuinte.aspx',RS:'https://www.sefaz.rs.gov.br/consultas/contribuinte',RO:'http://www.sefin.ro.gov.br/sint_consul.asp',RR:'https://portalapp.sefaz.rr.gov.br/siate/servlet/wp_siate_consultasintegra',SC:'https://sat.sef.sc.gov.br/tax.NET/Sat.Cadastro.Web/ComprovanteIE/Consulta.aspx',SP:'https://www.cadesp.fazenda.sp.gov.br/Pages/Cadastro/Consultas/ConsultaPublica/ConsultaPublica.aspx',SE:'https://security.sefaz.se.gov.br/SIC/sintegra/index.jsp',TO:'http://sintegra.sefaz.to.gov.br/'};
 let ufEmpresa='';
 function ieInputDe(sec){ return (tem('ie')&&f.elements.ie)||[...(sec||f).querySelectorAll('label')].find(l=>/inscri[cç][aã]o estadual|^ie\b/i.test((l.querySelector('span')?.textContent||'').trim()))?.querySelector('input') }
+// Copia texto de forma síncrona (funciona dentro do toque em todos os navegadores, inclusive iPhone e app instalado)
+function copiarTexto(t){
+  const ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly',''); ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px';
+  document.body.appendChild(ta); const ativo=document.activeElement; ta.focus(); ta.select(); ta.setSelectionRange(0,t.length);
+  let ok=false; try{ ok=document.execCommand('copy') }catch(e){}
+  ta.remove(); if(ativo&&ativo.focus) try{ ativo.focus({preventScroll:true}) }catch(e){}
+  return ok;
+}
 function linkSintegra(){
   const inp=ieInputDe(), lab=inp&&inp.closest('label'); if(!lab) return;
   const uf=String(ufEmpresa||(tem('uf')&&f.elements.uf.value)||'').trim().toUpperCase().slice(0,2), url=SINTEGRA[uf]||'http://www.sintegra.gov.br/';
@@ -399,7 +407,12 @@ function linkSintegra(){
       if(e.target.closest('.iecartao button')){ e.preventDefault(); arq.click(); return }
       if(e.target.closest('.iearq button')){ e.preventDefault(); CARTAO_IE=null; mostrarCartaoIe(box); msg.textContent=''; msg.className=''; return }
       const a=e.target.closest('a'); if(!a) return; const c=f.elements.cnpj&&dig(f.elements.cnpj.value);
-      if(c&&c.length===14&&navigator.clipboard) navigator.clipboard.writeText(c).then(()=>{ msg.textContent='CNPJ copiado: é só colar no site. Depois salve o resultado (PDF ou print) e anexe aqui.'; msg.className='' },()=>{}) });
+      // Copia ainda dentro do toque, antes da aba nova abrir (depois disso o navegador bloqueia a área de transferência)
+      if(!c||c.length!==14){ msg.textContent='Digite o CNPJ da empresa acima para ele ir copiado para o site.'; msg.className='erro'; return }
+      const ok=copiarTexto(c), fim=' No site, toque no campo do CNPJ e cole (Ctrl+V ou segure e Colar). Depois salve o resultado (PDF ou print) e anexe aqui.';
+      const certo=()=>{ msg.textContent='CNPJ '+fmtCnpj(c)+' copiado.'+fim; msg.className='ok' };
+      if(ok) certo(); else { msg.textContent='Não deu para copiar sozinho. CNPJ para colar: '+c+'.'; msg.className='erro' }
+      if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(c).then(certo,()=>{}) });
     arq.addEventListener('change',()=>{ const fs=[...arq.files]; arq.value=''; if(fs.length) lerCartaoIe(fs, inp, msg) });
   }
   box.querySelector('.ielinkA').innerHTML=`Não sabe? <a href="${esc(url)}" target="_blank" rel="noopener">Consultar no SINTEGRA${SINTEGRA[uf]?' ('+uf+')':''}</a>`;
