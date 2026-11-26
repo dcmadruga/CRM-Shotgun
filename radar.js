@@ -30,7 +30,8 @@ const FONTES_RS = [
   { id: 'doe-rs', nome: 'Diário Oficial do Estado do RS (DOE-RS)', url: 'https://www.diariooficial.rs.gov.br/' },
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
   { id: 'fepam', nome: 'FEPAM: consulta de licenças e SOL', url: 'https://www.fepam.rs.gov.br/', obs: 'A consulta pública antiga saiu do ar e o SOL exige login: não monitorada' },
-  { id: 'querido-rs', nome: 'Querido Diário (diários próprios das cidades do RS)', url: 'https://queridodiario.ok.org.br/' }
+  { id: 'querido-rs', nome: 'Querido Diário (diários próprios das cidades do RS)', url: 'https://queridodiario.ok.org.br/' },
+  { id: 'poa-rs', nome: 'Porto Alegre: consulta pública de licenças ambientais (SMAMUS)', url: 'https://licencas-ambientais.portoalegre.rs.gov.br/' }
 ];
 const FONTES_SC = [
   { id: 'sinfat-sc', nome: 'CIGA SINFAT: licenciamento das prefeituras de SC', url: 'https://sinfatmunicipal.ciga.sc.gov.br/consulta' },
