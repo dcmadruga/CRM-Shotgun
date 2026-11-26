@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 240, data: '2026-11-26', titulo: 'Atalhos de prazo no Próximo contato', itens: [
+    'CRM → ficha do lead, em Negociação: embaixo de Próximo contato agora tem os botões 7 dias, 15 dias, 30 dias e 60 dias. Um toque marca a data de hoje mais esse prazo, e o botão fica destacado.',
+    'A data continua editável à mão. Passando o dedo ou o mouse sobre o botão aparece a data que ele vai marcar.'
+  ] },
   { v: 239, data: '2026-11-26', titulo: 'Postos novos da ANP no sino', itens: [
     'O sino de notificações agora avisa quando entram postos novos na base da ANP, todo dia, só nos seus Estados de atuação (os mesmos dos filtros do CRM). Vem um aviso por Estado e por dia, com os nomes dos postos e a cidade.',
     'Tocar no aviso abre Telemetria → Telemetria ANP já filtrada no Estado. Se mais postos entram no mesmo dia, o aviso volta como não lido. Quem não tem Estado de atuação marcado não recebe esses avisos.'
