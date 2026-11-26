@@ -1,4 +1,4 @@
-// Robô do Radar de Novos Postos (MT, RS, SC, PR, SP, SE, PA, TO e RO). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
+// Robô do Radar de Novos Postos (MT, RS, SC, PR, SP, SE, PA, TO, RO e GO). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
 // 1) decide se é hora de pesquisar (frequência e "Pesquisar agora" ficam em radar_config/geral);
 // 2) coleta as fontes integradas; 3) separa e classifica os avisos; 4) cruza com a ANP;
 // 5) deduplica e grava empreendimentos, processos, documentos, histórico, alertas e a execução.
@@ -9,6 +9,7 @@ import { firestore } from './firestore.mjs';
 import { municipiosUF } from './municipios.mjs';
 import { avisosDaPagina, analisarAviso, analisarEmitidas, analisarLicenca, separarPublicacoes, hash, slug } from './classificar.mjs';
 import * as iomat from './fontes/iomat.mjs';
+import { paraImprensa } from './fontes/iomat.mjs';
 import * as famurs from './fontes/famurs.mjs';
 import { paraSigpub } from './fontes/famurs.mjs';
 import * as doers from './fontes/doers.mjs';
@@ -19,6 +20,7 @@ import * as dioepr from './fontes/dioepr.mjs';
 import * as doesp from './fontes/doesp.mjs';
 import * as simlampa from './fontes/simlampa.mjs';
 import * as poa from './fontes/poa.mjs';
+import * as semadgo from './fontes/semadgo.mjs';
 import * as anpFonte from './fontes/anp.mjs';
 
 const inicio = new Date();
@@ -35,8 +37,10 @@ const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doer
   { mod: paraSigpub('sergipe', 'SE', 'Diário Oficial dos Municípios de Sergipe (SIGPub)', 'dom-se', 'DOM-SE'), uf: 'SE' }, { mod: querido.paraUF('SE', 'SE'), uf: 'SE' },
   { mod: simlampa, uf: 'PA' }, { mod: paraSigpub('famep', 'PA', 'Diário Oficial dos Municípios do Pará (FAMEP)'), uf: 'PA' }, { mod: querido.paraUF('PA', 'PA'), uf: 'PA' },
   { mod: querido.paraUF('TO', 'TO'), uf: 'TO' },
-  { mod: paraSigpub('arom', 'RO', 'Diário Oficial dos Municípios de Rondônia (AROM)'), uf: 'RO' }, { mod: querido.paraUF('RO', 'RO'), uf: 'RO' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
-const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ', SP: 'SÃO PAULO', SE: 'SERGIPE', PA: 'PARÁ', TO: 'TOCANTINS', RO: 'RONDÔNIA' };
+  { mod: paraSigpub('arom', 'RO', 'Diário Oficial dos Municípios de Rondônia (AROM)'), uf: 'RO' }, { mod: querido.paraUF('RO', 'RO'), uf: 'RO' },
+  { mod: semadgo, uf: 'GO' }, { mod: paraImprensa({ id: 'doe-go', nome: 'Diário Oficial do Estado de GO (avisos de licença)', url: 'https://diariooficial.abc.go.gov.br/', base: 'https://diariooficial.abc.go.gov.br/', sigla: 'DOE-GO' }), uf: 'GO' },
+  { mod: paraSigpub('agm', 'GO', 'Diário Oficial dos Municípios de Goiás (AGM)'), uf: 'GO' }, { mod: paraSigpub('fgm', 'GO', 'Diário Oficial dos Municípios Goianos (FGM)'), uf: 'GO' }, { mod: querido.paraUF('GO', 'GO'), uf: 'GO' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
+const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ', SP: 'SÃO PAULO', SE: 'SERGIPE', PA: 'PARÁ', TO: 'TOCANTINS', RO: 'RONDÔNIA', GO: 'GOIÁS' };
 
 const PRIOR_CAT = ['novo', 'tanques', 'ampliacao', 'reforma', 'renovacao', 'titularidade', 'ponto_proprio', 'outro'];
 const PRIOR_CONF = ['confirmado', 'possivel', 'analise', 'nao_confirmado'];
@@ -78,11 +82,11 @@ for (const { mod, uf } of FONTES) {
   const id = mod.info.id, deF = periodo(id);
   try {
     let n = 0, consultas = 0, lidos = 0;
-    if (id === 'iomat') {
+    if (id === 'iomat' || id === 'doe-go') { // diário por páginas (mesmo sistema de busca): avisos separados por "Protocolo"
       const r = await mod.coletar(deF, ate, log); consultas = r.consultas; lidos = r.paginas.length;
       for (const pg of r.paginas) for (const a of avisosDaPagina(pg.texto)) {
-        const rs = a.tipo === 'emitidas' ? analisarEmitidas(a.texto, mun.MT) : [analisarAviso(a.texto, mun.MT, 'MT')].filter(Boolean);
-        for (const x of rs) { avisos.push({ ...x, uf, fonte: id, fonteNome: mod.info.nome, dataPublicacao: pg.data, url: pg.url, pdf: pg.pdf, local: `Edição ${pg.diario}, página ${pg.pagina}`, docId: `iomat-${pg.diario}-${pg.pagina}-${hash(x.trecho)}` }); n++; }
+        const rs = a.tipo === 'emitidas' ? (uf === 'MT' ? analisarEmitidas(a.texto, mun.MT) : []) : [analisarAviso(a.texto, mun[uf], uf)].filter(Boolean);
+        for (const x of rs) { avisos.push({ ...x, uf, fonte: id, fonteNome: mod.info.nome, dataPublicacao: pg.data, url: pg.url, pdf: pg.pdf, local: `Edição ${pg.diario}, página ${pg.pagina}`, docId: `${id}-${pg.diario}-${pg.pagina}-${hash(x.trecho)}` }); n++; }
       }
     } else {
       // uma matéria por documento: licença emitida (prefeitura/FEPAM) ou aviso de requerimento
