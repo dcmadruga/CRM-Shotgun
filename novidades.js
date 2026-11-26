@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 257, data: '2026-11-26', titulo: 'Status da demonstração direto na Agenda', itens: [
+    'Cada demonstração na Agenda agora mostra o status (Agendada, Realizada, Reagendada, Cancelada…) e tem os botões Realizada, Reagendada e Cancelada logo abaixo do card. Realizada aparece a partir do dia da demonstração.',
+    'Reagendada: o app abre uma demonstração nova com tudo igual à original (lead, online ou presencial, link ou endereço, duração, participantes e observações) e obriga a informar a nova data e hora. A original fica marcada como Reagendada, com a nova data no card.',
+    'Cancelada: pede o motivo (opcional) e fica anotado no histórico do lead. As demonstrações canceladas e reagendadas continuam aparecendo na Agenda, mais apagadas, para você ver o que aconteceu.'
+  ] },
   { v: 256, data: '2026-11-26', titulo: 'Cartão de contribuinte salvo sem extensão também é lido', itens: [
     'Dados para o contrato: ao anexar o cartão de contribuinte, a página descobre o tipo pelo conteúdo do arquivo, e não pelo nome. Um PDF ou print salvo sem extensão, ou a página da SEFAZ salva no navegador, agora é lido e preenche a Inscrição estadual na hora.',
     'Se o conteúdo não der para ler, mas o nome do arquivo trouxer o número da IE (como "Cartão Contribuinte Inscrição Estadual 141994762"), esse número é usado, com o aviso para conferir.'
