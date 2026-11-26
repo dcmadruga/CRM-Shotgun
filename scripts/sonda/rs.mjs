@@ -3,22 +3,14 @@ fs.mkdirSync('rs-sondas', { recursive: true });
 const out = []; const log = (...a) => { const s = a.join(' '); console.log(s); out.push(s); };
 const UA = { 'user-agent': 'Mozilla/5.0 (compatible; shotgun-radar/1.0)' };
 async function get(u, o = {}) { const t0 = Date.now(); try { const r = await fetch(u, { redirect: 'follow', signal: AbortSignal.timeout(60000), ...o, headers: { ...UA, ...(o.headers || {}) } }); const t = await r.text(); return { s: r.status, u: r.url, t, ms: Date.now() - t0, ct: r.headers.get('content-type') }; } catch (e) { return { s: 'ERR ' + (e.cause?.code || e.message), t: '', ms: Date.now() - t0 }; } }
-const txt = h => h.replace(/<(script|style)[^]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-const B = 'https://diariooficial.abc.go.gov.br/busca/busca/buscar/query/';
-let r = await get(B + '0/di:2026-10-01/df:2026-11-26/?1=1&q=' + encodeURIComponent('"posto de combustíveis"'));
-let d = JSON.parse(r.t);
-log('DOEGO total', d.hits.total, 'hits nesta página', d.hits.hits.length, 'ms', r.ms);
-const h0 = d.hits.hits[0]; log('chaves', Object.keys(h0), Object.keys(h0._source).join(','));
-log('fonte sem conteudo', JSON.stringify({ ...h0._source, conteudo: undefined }).slice(0, 800));
-log('highlight', JSON.stringify(h0.highlight || {}).slice(0, 500));
-log('aggs', JSON.stringify(d.aggregations).slice(0, 600));
-for (const h of d.hits.hits) { const c = h._source.conteudo || ''; const i = c.search(/posto de combust/i); log(' HIT', h._id, JSON.stringify({ ...h._source, conteudo: undefined }).slice(0, 200), '|', c.length, '|', c.slice(Math.max(0, i - 400), i + 300).replace(/\s+/g, ' ')); }
-r = await get(B + '1/di:2026-10-01/df:2026-11-26/?1=1&q=' + encodeURIComponent('"posto de combustíveis"')); d = JSON.parse(r.t); log('pagina 1', d.hits.hits.map(h => h._id).join(','));
-// transparência ambiental SEMAD
-for (const u of ['https://portal.meioambiente.go.gov.br/transparencia-web', 'https://portal.meioambiente.go.gov.br/transparencia-web/']) {
-  const t = await get(u); log('TRANSP', u, t.s, t.u, t.ct, t.t.length, txt(t.t).slice(0, 1500));
-  log('  links', [...new Set([...t.t.matchAll(/(?:href|action|src)="([^"]+)"/g)].map(m => m[1]).filter(x => !/\.css|\.ico|fonts\.g/.test(x)))].slice(0, 60).join(' | '));
-  const scripts = [...t.t.matchAll(/src="([^"]+\.js[^"]*)"/g)].map(m => new URL(m[1], t.u).href).filter(x => /main|app|chunk|index/i.test(x));
-  for (const s of scripts.slice(0, 4)) { const j = await get(s); const m = [...new Set([...j.t.matchAll(/["'`]((?:https?:)?\/[^"'`\s]{2,120})["'`]/g)].map(x => x[1]).filter(x => /api|boletim|publica|licen|rest|consulta/i.test(x)))]; log('  JS', s, j.s, j.t.length, m.slice(0, 40).join(' | ')); }
-}
+const js = (await get('https://portal.meioambiente.go.gov.br/transparencia-web/main.00220232a298b3c4.js')).t;
+let i = js.indexOf('boletim-ambiental-server'); log('ENV', js.slice(Math.max(0, i - 400), i + 400));
+// chamadas http do Angular: this.http.get(`${...}/xxx`)
+const calls = [...new Set([...js.matchAll(/(?:\.get|\.post|\.put)\(\s*`?([^`),]{0,40}\$\{[^}]+\}[^`),]{0,120})`?/g)].map(m => m[1]))];
+log('CALLS', calls.slice(0, 80).join('\n'));
+const strs = [...new Set([...js.matchAll(/["'`](\/[a-zA-Z][\w\-\/]{3,80})["'`]/g)].map(m => m[1]))].filter(x => !/^\/(assets|node_modules)/.test(x));
+log('PATHS', strs.slice(0, 200).join(' | '));
+for (const k of ['publicacao', 'boletim', 'filtro', 'pesquisa']) { let j = -1, n = 0; while ((j = js.indexOf(k, j + 1)) >= 0 && n++ < 3) log('CTX', k, js.slice(Math.max(0, j - 300), j + 500).replace(/\s+/g, ' ')); }
+const S = 'https://portal.meioambiente.go.gov.br/boletim-ambiental-server';
+for (const p of ['', '/', '/api', '/publicacoes', '/api/publicacoes', '/boletim', '/swagger-ui.html', '/v3/api-docs', '/v2/api-docs']) { const r = await get(S + p, { headers: { accept: 'application/json' } }); log('API', p, r.s, r.ct, r.t.slice(0, 600).replace(/\s+/g, ' ')); }
 fs.writeFileSync('rs-sondas/go.txt', out.join('\n'));
