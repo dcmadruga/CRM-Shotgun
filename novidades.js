@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 256, data: '2026-11-26', titulo: 'Cartão de contribuinte salvo sem extensão também é lido', itens: [
+    'Dados para o contrato: ao anexar o cartão de contribuinte, a página descobre o tipo pelo conteúdo do arquivo, e não pelo nome. Um PDF ou print salvo sem extensão, ou a página da SEFAZ salva no navegador, agora é lido e preenche a Inscrição estadual na hora.',
+    'Se o conteúdo não der para ler, mas o nome do arquivo trouxer o número da IE (como "Cartão Contribuinte Inscrição Estadual 141994762"), esse número é usado, com o aviso para conferir.'
+  ] },
   { v: 255, data: '2026-11-26', titulo: 'CNPJ copiado ao consultar o SINTEGRA', itens: [
     'Dados para o contrato: ao tocar em "Consultar no SINTEGRA", o CNPJ da empresa vai copiado (só os números) antes de o site da SEFAZ abrir. No site, é só tocar no campo do CNPJ e colar.',
     'A mensagem mostra o CNPJ copiado. Se o navegador não deixar copiar, ela mostra o número para colar à mão. Sem CNPJ digitado, pede para preencher primeiro.'

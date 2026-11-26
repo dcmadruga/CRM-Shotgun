@@ -454,25 +454,64 @@ const CAMPO_CARTAO='Cartão de contribuinte (IE)';
 function mostrarCartaoIe(box){ const el=box.querySelector('.iearq'); el.hidden=!CARTAO_IE; el.innerHTML=CARTAO_IE?`📎 <b>${esc(CARTAO_IE.name)}</b> <span>${L.p?'fica salvo junto com os dados':'(este link não guarda anexos)'}</span> <button type="button" aria-label="Remover">remover</button>`:'' }
 async function lerCartaoIe(arquivos, inp, msg){
   const aviso=(t,cls)=>{ msg.textContent=t; msg.className=cls||'' }, id=++leituraIe, a0=arquivos[0], box=msg.closest('.ielink');
-  // Aceita qualquer arquivo: guarda sempre (até 10 MB) e só tenta ler PDF e imagem
+  // Aceita qualquer arquivo: guarda sempre (até 10 MB) e tenta ler o que der
   if(a0.size>MAXF){ aviso('O arquivo tem mais de 10 MB e não pode ser guardado. Escolha um arquivo menor.','erro'); return }
   CARTAO_IE=a0; mostrarCartaoIe(box);
-  const legivel=/pdf$/i.test(a0.type)||/\.pdf$/i.test(a0.name)||/^image\/(png|jpe?g|webp|gif|bmp)$/i.test(a0.type);
-  if(!legivel){ aviso('Arquivo guardado. Este tipo de arquivo não dá para ler aqui (só PDF ou imagem): digite a inscrição estadual.',''); return }
-  if(!window.ContratoSocial||!window.ContratoSocial.texto){ aviso('Arquivo guardado, mas não foi possível ler o documento aqui. Digite a inscrição estadual.','erro'); return }
+  // O tipo vem do conteúdo (o cartão costuma ser salvo sem extensão): PDF, imagem ou página/texto salvo da SEFAZ
   aviso('Lendo o cartão…','lendo');
+  let tipo='', texto='', ocr=false, falhou=false;
   try{
-    const lido=await window.ContratoSocial.texto(arquivos, t=>{ if(id===leituraIe) aviso(t,'lendo') }); if(id!==leituraIe) return;
-    const c=f.elements.cnpj?dig(f.elements.cnpj.value):'', d=dadosCartaoIe(lido.texto, c.length===14?c:'');
-    if(d.outroCnpj){ if(CARTAO_IE===a0){ CARTAO_IE=null; mostrarCartaoIe(box) } aviso('Este documento é de outro CNPJ ('+fmtCnpj(d.cnpjs[0])+'). Confira se anexou o cartão certo.','erro'); return }
-    const feito=[];
-    if(d.ie||d.isento){ inp.value=d.isento?'ISENTO':d.ie; if(inp.classList.contains('bad')) valida(inp); feito.push('inscrição estadual '+inp.value) }
-    if(d.regime) guardaRegime(d.regime,'cartão de contribuinte');
-    if(feito.length) f.dispatchEvent(new Event('input'));
-    const alerta=/baixad|suspens|cancelad|inapt|nul|nao habilitad/.test(d.situacao)?' Atenção: a situação no cartão consta como '+d.situacao.toUpperCase()+'.':'';
-    if(feito.length) aviso('Preenchido pelo cartão: '+feito.join(' e ')+'. Confira.'+alerta, alerta?'erro':'ok');
-    else aviso('Não encontramos a inscrição estadual neste arquivo'+(lido.ocr?' (a imagem pode estar pouco nítida)':'')+'. Digite à mão.'+alerta,'erro');
-  }catch(e){ if(id!==leituraIe) return; console.error(e); aviso('Não conseguimos ler o arquivo, mas ele fica guardado. Digite a inscrição estadual.','erro') }
+    tipo=await tipoPeloConteudo(a0); if(id!==leituraIe) return;
+    if(tipo==='texto') texto=await textoDeArquivo(a0);
+    else if(tipo){
+      if(!window.ContratoSocial||!window.ContratoSocial.texto) throw new Error('leitor indisponível');
+      const lido=await window.ContratoSocial.texto([new File([a0], /pdf/.test(tipo)?'cartao.pdf':'cartao', {type:tipo})], t=>{ if(id===leituraIe) aviso(t,'lendo') });
+      texto=lido.texto; ocr=lido.ocr;
+    }
+  }catch(e){ console.error(e); falhou=true }
+  if(id!==leituraIe) return;
+  const c=f.elements.cnpj?dig(f.elements.cnpj.value):'', d=dadosCartaoIe(texto, c.length===14?c:'');
+  if(d.outroCnpj){ if(CARTAO_IE===a0){ CARTAO_IE=null; mostrarCartaoIe(box) } aviso('Este documento é de outro CNPJ ('+fmtCnpj(d.cnpjs[0])+'). Confira se anexou o cartão certo.','erro'); return }
+  const preenche=v=>{ inp.value=v; if(inp.classList.contains('bad')) valida(inp); f.dispatchEvent(new Event('input')) };
+  const alerta=/baixad|suspens|cancelad|inapt|nul|nao habilitad/.test(d.situacao)?' Atenção: a situação no cartão consta como '+d.situacao.toUpperCase()+'.':'';
+  if(d.ie||d.isento){
+    preenche(d.isento?'ISENTO':d.ie); if(d.regime) guardaRegime(d.regime,'cartão de contribuinte');
+    aviso('Preenchido pelo cartão: inscrição estadual '+inp.value+'. Confira.'+alerta, alerta?'erro':'ok'); return;
+  }
+  // Reforço: o nome do arquivo baixado da SEFAZ costuma trazer a IE ("Cartão Contribuinte Inscrição Estadual 141994762")
+  const n=dadosCartaoIe(String(a0.name||'').replace(/\.[a-z0-9]{2,5}$/i,'')).ie;
+  if(n){ preenche(n); aviso('Preenchido pelo número que está no nome do arquivo: inscrição estadual '+n+'. Confira se é a IE certa.'+alerta,'ok'); return }
+  if(!tipo&&!falhou) aviso('Arquivo guardado. Não deu para ler este tipo de arquivo: digite a inscrição estadual.'+alerta,'');
+  else if(falhou) aviso('Não conseguimos ler o arquivo, mas ele fica guardado. Digite a inscrição estadual.','erro');
+  else aviso('Não encontramos a inscrição estadual neste arquivo'+(ocr?' (a imagem pode estar pouco nítida)':'')+'. Digite à mão.'+alerta,'erro');
+}
+// Descobre o tipo pelos primeiros bytes; sem assinatura conhecida, usa o tipo/extensão; texto legível (HTML salvo) vira 'texto'
+async function tipoPeloConteudo(file){
+  const b=new Uint8Array(await file.slice(0,2048).arrayBuffer()), ini=String.fromCharCode(...b.slice(0,12));
+  if(String.fromCharCode(...b.slice(0,1024)).includes('%PDF-')) return 'application/pdf';
+  if(b[0]===0x89&&ini.slice(1,4)==='PNG') return 'image/png';
+  if(b[0]===0xFF&&b[1]===0xD8&&b[2]===0xFF) return 'image/jpeg';
+  if(ini.startsWith('GIF8')) return 'image/gif';
+  if(ini.startsWith('RIFF')&&ini.slice(8,12)==='WEBP') return 'image/webp';
+  if(ini.startsWith('BM')) return 'image/bmp';
+  if(/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)) return 'application/pdf';
+  if(/^image\/(png|jpe?g|webp|gif|bmp)$/i.test(file.type)) return file.type;
+  if(!b.length) return '';
+  const ruins=[...b].filter(x=>x===0||(x<9)||(x>13&&x<32)).length;
+  return ruins/b.length<0.02?'texto':'';
+}
+// Texto de uma página salva (HTML, MHTML) ou .txt, com quebras de linha nos blocos para os rótulos ficarem separados
+async function textoDeArquivo(file){
+  let bytes=new Uint8Array(await file.arrayBuffer()), bruto=new TextDecoder('latin1').decode(bytes);
+  if(/quoted-printable/i.test(bruto)){
+    const qp=bruto.replace(/=\r?\n/g,''), out=[]; for(let i=0;i<qp.length;i++){ const m=qp[i]==='='&&/^[0-9A-F]{2}$/i.test(qp.substr(i+1,2)); out.push(m?parseInt(qp.substr(i+1,2),16):qp.charCodeAt(i)&255); if(m) i+=2 } bytes=new Uint8Array(out);
+  }
+  let t; try{ t=new TextDecoder('utf-8',{fatal:true}).decode(bytes) }catch(e){ t=new TextDecoder('windows-1252').decode(bytes) }
+  if(/<(html|body|table|div|td|p)\b/i.test(t)){
+    t=t.replace(/<(script|style)[\s\S]*?<\/\1>/gi,' ').replace(/<(br|\/p|\/div|\/tr|\/td|\/th|\/li|\/h\d|\/label|\/span)\b[^>]*>/gi,'$&\n');
+    const doc=new DOMParser().parseFromString(t,'text/html'); t=(doc.body||doc.documentElement).textContent;
+  }
+  return t.replace(/[ \t ]+/g,' ');
 }
 // Guarda a consulta de cada CNPJ: o botão "Usar endereço do estabelecimento" reaproveita sem consultar de novo
 const CNPJ_CACHE={};
