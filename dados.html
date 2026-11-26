@@ -393,7 +393,7 @@ function linkSintegra(){
   let box=lab.querySelector('.ielink');
   if(!box){
     box=document.createElement('span'); box.className='hint ielink'; lab.appendChild(box);
-    box.innerHTML=`<span class="ielinkA"></span><span class="iecartao"><button type="button">Anexar cartão de contribuinte</button><input type="file" accept="application/pdf,image/*" hidden></span><span class="iearq" hidden></span><small></small>`;
+    box.innerHTML=`<span class="ielinkA"></span><span class="iecartao"><button type="button">Anexar cartão de contribuinte</button><input type="file" hidden></span><span class="iearq" hidden></span><small></small>`;
     const msg=box.querySelector('small'), arq=box.querySelector('input[type=file]');
     box.addEventListener('click',e=>{
       if(e.target.closest('.iecartao button')){ e.preventDefault(); arq.click(); return }
@@ -440,14 +440,18 @@ let leituraIe=0, CARTAO_IE=null;
 const CAMPO_CARTAO='Cartão de contribuinte (IE)';
 function mostrarCartaoIe(box){ const el=box.querySelector('.iearq'); el.hidden=!CARTAO_IE; el.innerHTML=CARTAO_IE?`📎 <b>${esc(CARTAO_IE.name)}</b> <span>${L.p?'fica salvo junto com os dados':'(este link não guarda anexos)'}</span> <button type="button" aria-label="Remover">remover</button>`:'' }
 async function lerCartaoIe(arquivos, inp, msg){
-  const aviso=(t,cls)=>{ msg.textContent=t; msg.className=cls||'' }, id=++leituraIe;
-  if(!window.ContratoSocial||!window.ContratoSocial.texto){ aviso('Não foi possível ler o documento aqui. Digite a inscrição estadual.','erro'); return }
+  const aviso=(t,cls)=>{ msg.textContent=t; msg.className=cls||'' }, id=++leituraIe, a0=arquivos[0], box=msg.closest('.ielink');
+  // Aceita qualquer arquivo: guarda sempre (até 10 MB) e só tenta ler PDF e imagem
+  if(a0.size>MAXF){ aviso('O arquivo tem mais de 10 MB e não pode ser guardado. Escolha um arquivo menor.','erro'); return }
+  CARTAO_IE=a0; mostrarCartaoIe(box);
+  const legivel=/pdf$/i.test(a0.type)||/\.pdf$/i.test(a0.name)||/^image\/(png|jpe?g|webp|gif|bmp)$/i.test(a0.type);
+  if(!legivel){ aviso('Arquivo guardado. Este tipo de arquivo não dá para ler aqui (só PDF ou imagem): digite a inscrição estadual.',''); return }
+  if(!window.ContratoSocial||!window.ContratoSocial.texto){ aviso('Arquivo guardado, mas não foi possível ler o documento aqui. Digite a inscrição estadual.','erro'); return }
   aviso('Lendo o cartão…','lendo');
   try{
     const lido=await window.ContratoSocial.texto(arquivos, t=>{ if(id===leituraIe) aviso(t,'lendo') }); if(id!==leituraIe) return;
     const c=f.elements.cnpj?dig(f.elements.cnpj.value):'', d=dadosCartaoIe(lido.texto, c.length===14?c:'');
-    if(!d.outroCnpj && arquivos[0].size<=MAXF){ CARTAO_IE=arquivos[0]; mostrarCartaoIe(msg.closest('.ielink')) }
-    if(d.outroCnpj){ aviso('Este documento é de outro CNPJ ('+fmtCnpj(d.cnpjs[0])+'). Confira se anexou o cartão certo.','erro'); return }
+    if(d.outroCnpj){ if(CARTAO_IE===a0){ CARTAO_IE=null; mostrarCartaoIe(box) } aviso('Este documento é de outro CNPJ ('+fmtCnpj(d.cnpjs[0])+'). Confira se anexou o cartão certo.','erro'); return }
     const feito=[];
     if(d.ie||d.isento){ inp.value=d.isento?'ISENTO':d.ie; if(inp.classList.contains('bad')) valida(inp); feito.push('inscrição estadual '+inp.value) }
     if(d.regime) guardaRegime(d.regime,'cartão de contribuinte');
@@ -455,7 +459,7 @@ async function lerCartaoIe(arquivos, inp, msg){
     const alerta=/baixad|suspens|cancelad|inapt|nul|nao habilitad/.test(d.situacao)?' Atenção: a situação no cartão consta como '+d.situacao.toUpperCase()+'.':'';
     if(feito.length) aviso('Preenchido pelo cartão: '+feito.join(' e ')+'. Confira.'+alerta, alerta?'erro':'ok');
     else aviso('Não encontramos a inscrição estadual neste arquivo'+(lido.ocr?' (a imagem pode estar pouco nítida)':'')+'. Digite à mão.'+alerta,'erro');
-  }catch(e){ if(id!==leituraIe) return; console.error(e); aviso('Não conseguimos ler o arquivo agora. Digite a inscrição estadual.','erro') }
+  }catch(e){ if(id!==leituraIe) return; console.error(e); aviso('Não conseguimos ler o arquivo, mas ele fica guardado. Digite a inscrição estadual.','erro') }
 }
 // Guarda a consulta de cada CNPJ: o botão "Usar endereço do estabelecimento" reaproveita sem consultar de novo
 const CNPJ_CACHE={};

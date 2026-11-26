@@ -14,6 +14,9 @@ window.SHOTGUN_NOVIDADES = [
     'Dados para o contrato: quando o nome do Responsável legal (vindo do contrato social ou digitado) é o mesmo de um contato cadastrado na proposta ou no lead do CRM, o Telefone / WhatsApp dele já vem preenchido. Embaixo aparece de qual contato veio, para conferir.',
     'O campo continua editável: o que for digitado nele fica. Vale para links do Pré-Contrato gerados a partir desta versão.'
   ] },
+  { v: 253, data: '2026-11-26', titulo: 'Cartão de contribuinte aceita qualquer arquivo', itens: [
+    'Dados para o contrato: o botão "Anexar cartão de contribuinte" aceita agora qualquer tipo de arquivo. PDF e imagem continuam sendo lidos para preencher a Inscrição estadual. Os outros tipos ficam guardados nos anexos da proposta, e a IE é digitada à mão.'
+  ] },
   { v: 252, data: '2026-11-26', titulo: 'Formulário aguarda a leitura do contrato social', itens: [
     'Dados para o contrato: enquanto o app lê o contrato social, os demais campos e o botão Enviar ficam bloqueados, com o aviso "Aguarde a leitura do contrato social terminar". Assim ninguém preenche um campo que a leitura vai sobrescrever logo depois.',
     'Tudo é liberado quando a leitura termina, achando os sócios ou não. Durante a leitura dá para trocar o arquivo ou marcar "Não tenho disponível agora", que também libera os campos na hora.'
