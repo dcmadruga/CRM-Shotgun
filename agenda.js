@@ -49,7 +49,8 @@
     fone: '<svg class="agic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>',
     esq: '<svg class="agic" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>',
     dir: '<svg class="agic" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>',
-    cal: '<svg class="agic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>'
+    cal: '<svg class="agic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>',
+    whats: '<svg class="agic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>'
   };
 
   window.addEventListener('shotgun-crm', e => { ({ F, db, perfil, admin } = e.detail); pronto = false; fUser = ''; if (!modo) modo = celular() ? 'dia' : 'semana'; ref = hoje(); });
@@ -333,7 +334,8 @@
     try {
       await F.updateDoc(F.doc(db, 'crm', l.id), { demos: lista, ...extra, alterado: F.serverTimestamp(), alteradoPor: quem() });
       l.demos = lista;
-      const volta = atual.volta, novo = !atual.editando;
+      const volta = atual.volta, novo = !atual.editando, remarcou = !!atual.remarca;
+      if (novo || remarcou) { ref = d.data; desenhar(); msgTela(`${remarcou ? 'Demonstração remarcada' : 'Demonstração agendada'}: ${l.empresa || ''}, ${fmtD(d.data)} às ${d.hora}.`); telaAgendada(l, d, remarcou ? 'Demonstração remarcada' : 'Demonstração agendada'); return; }
       fechar();
       msgTela(`${atual && atual.remarca ? 'Demonstração remarcada' : novo ? 'Demonstração agendada' : 'Demonstração salva'}: ${l.empresa || ''}, ${fmtD(d.data)} às ${d.hora}.`);
       if (volta === 'lead' && window.crmAbrirLead) window.crmAbrirLead(l.id, true);
@@ -363,7 +365,8 @@
     else corpo = `${semResultado(d) ? '<p class="agstinfo pend">O horário já passou. Como foi a demonstração?</p>' : ''}<div class="agacoes">
         ${passou ? '<button type="button" class="primary" data-a="realizada">Realizada</button><button type="button" data-a="naocomp">Não compareceu</button>' : ''}
         ${st === 'agendada' && !semResultado(d) ? '<button type="button"' + (passou ? '' : ' class="primary"') + ' data-a="confirmar">Cliente confirmou</button>' : ''}
-        <button type="button" data-a="remarcar">Remarcar</button><button type="button" data-a="cancelar">Cancelar demonstração</button></div>`;
+        <button type="button" data-a="remarcar">Remarcar</button><button type="button" data-a="cancelar">Cancelar demonstração</button></div>
+        ${l && !semResultado(d) ? botoesCliente(l, d) : ''}`;
     return `<section class="crmbloco"><h4>Andamento ${st === 'agendada' && !semResultado(d) ? '<span class="agst st-agendada">Agendada</span>' : pillSt(d)}</h4>${corpo}</section>`;
   }
   // Nota para o histórico do lead (mesmo formato das anotações do CRM)
@@ -446,6 +449,54 @@
     } catch (e) { dmsg('Não foi possível salvar (' + (e.code || e.message) + ').'); btn.disabled = false; }
   }
 
+  /* ---------- WhatsApp e Google Agenda (fase 4) ---------- */
+  // As mensagens para o cliente seguem a marca das outras mensagens do app ao cliente (assinatura "- Argo").
+  const waNum = v => { const d = dig(v); return d.length >= 10 && d.length <= 11 ? '55' + d : d; };
+  const primeiro = n => String(n || '').trim().split(/\s+/)[0] || '';
+  // Contato para o WhatsApp: o primeiro participante com telefone; se não houver, o primeiro contato do lead com telefone
+  function contatoWa(l, d) {
+    const cs = contatosDe(l).filter(c => dig(c.fone).length >= 10);
+    return cs.find(c => (d.participantes || []).includes(String(c.nome || '').trim())) || cs[0] || null;
+  }
+  const diaSemana = s => SEM[dt(s).getDay()];
+  function textoWa(l, d, c) {
+    const onde = d.formato === 'presencial' ? `presencial${d.local ? ', em ' + d.local : ''}` : `online${d.link ? '.\n\nLink da reunião: ' + d.link : ', pelo link que envio antes do horário'}`;
+    return `Olá${c && c.nome ? ' ' + primeiro(c.nome) : ''}! Confirmando a demonstração do sistema para ${l.empresa || 'o posto'}: ${diaSemana(d.data)}, ${fmtDC(d.data)}, às ${d.hora} (duração de ${durTxt(Number(d.dur) || 60)}), ${onde}${d.formato === 'presencial' || !d.link ? '.' : ''}\n\nPode confirmar se o horário continua bom?\n\n${(l.vendedor || quem())} - Argo`;
+  }
+  function linkGoogle(l, d) {
+    const ini = d.data.replace(/-/g, '') + 'T' + d.hora.replace(':', '') + '00';
+    const fimM = min(d.hora) + (Number(d.dur) || 60), fimData = fimM >= 1440 ? soma(d.data, 1) : d.data;
+    const fim = fimData.replace(/-/g, '') + 'T' + hhmm(fimM % 1440).replace(':', '') + '00';
+    const cs = contatosDe(l), parts = (d.participantes || []);
+    const emails = cs.filter(c => parts.includes(String(c.nome || '').trim()) && /@/.test(c.email || '')).map(c => c.email.trim());
+    const det = [`Demonstração do sistema para ${l.empresa || ''}.`, parts.length ? 'Participantes: ' + parts.join(', ') : '', d.formato === 'presencial' ? '' : d.link ? 'Link: ' + d.link : '', d.obs ? 'O que mostrar: ' + d.obs : ''].filter(Boolean).join('\n');
+    let tz = ''; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+    const q = new URLSearchParams({ action: 'TEMPLATE', text: `Demonstração · ${l.empresa || ''}`, dates: ini + '/' + fim, details: det, location: d.formato === 'presencial' ? (d.local || l.cidade || '') : (d.link || 'Online') });
+    if (tz) q.set('ctz', tz);
+    if (emails.length) q.set('add', emails.join(','));
+    return 'https://calendar.google.com/calendar/render?' + q.toString();
+  }
+  function botoesCliente(l, d) {
+    const c = contatoWa(l, d);
+    return `<div class="agacoes agcli">
+      ${c ? `<button type="button" class="agwa" data-a="whats" title="Abre o WhatsApp com a mensagem pronta para ${esc(c.nome || 'o contato')}">${IC.whats}Confirmar pelo WhatsApp${c.nome ? ' com ' + esc(primeiro(c.nome)) : ''}</button>` : '<span class="hint">Cadastre o WhatsApp de um contato no lead para confirmar por mensagem.</span>'}
+      <a class="agg" href="${esc(linkGoogle(l, d))}" target="_blank" rel="noopener">${IC.cal}Adicionar ao Google Agenda</a></div>`;
+  }
+  function abrirWhats(l, d) {
+    const c = contatoWa(l, d); if (!c) return;
+    const url = 'https://wa.me/' + waNum(c.fone) + '?text=' + encodeURIComponent(textoWa(l, d, c));
+    window.open(url, '_blank', 'noopener') || (location.href = url);
+    // Fica no histórico do lead (não bloqueia a abertura do WhatsApp)
+    F.updateDoc(F.doc(db, 'crm', l.id), { notas: F.arrayUnion(nota(`Confirmação da demonstração de ${quando(d)} enviada pelo WhatsApp para ${c.nome || waNum(c.fone)}.`, d)), alterado: F.serverTimestamp() }).catch(() => {});
+  }
+  // Depois de agendar ou remarcar: oferece confirmar com o cliente e pôr na agenda do Google
+  function telaAgendada(l, d, titulo) {
+    atual = { leadId: l.id, demo: { ...d }, editando: true, volta: atual ? atual.volta : '', remarca: '' };
+    abrirDlg(titulo, `<p class="agsub"><b>${esc(l.empresa || '')}</b> · ${esc(diaSemana(d.data))}, ${esc(quando(d))} · ${d.formato === 'presencial' ? 'Presencial' : 'Online'}</p>
+      <section class="crmbloco"><h4>Avisar o cliente</h4>${botoesCliente(l, d)}</section>
+      <div class="tools crmacts"><button type="button" class="primary" data-a="pronto">Pronto</button></div>`, 'feito');
+  }
+
   function msgTela(t) { const el = $('agMsg'); if (!el) return; el.textContent = t || ''; el.hidden = !t; clearTimeout(msgTela.t); if (t) msgTela.t = setTimeout(() => { el.hidden = true; }, 6000); }
 
   /* ---------- Para o CRM ---------- */
@@ -495,6 +546,8 @@
       else if (['confirmar', 'naocomp'].includes(a) || (a === 'cancelar' && dlg().dataset.modo === 'form' && b.closest('.agacoes'))) mudarStatus(b, a);
       else if (a === 'remarcar') { const d = atual.demo; form(atual.leadId, '', { volta: atual.volta, remarca: d.id, rascunho: { data: soma(d.data > hoje() ? d.data : hoje(), 1), hora: d.hora, dur: d.dur, formato: d.formato, link: d.link || '', local: d.local || '', participantes: d.participantes || [], obs: d.obs || '' } }); }
       else if (a === 'vernova') form(atual.leadId, atual.demo.remarcadaPara, { volta: atual.volta });
+      else if (a === 'whats') { const l = leadAtual(); if (l) abrirWhats(l, atual.demo); }
+      else if (a === 'pronto') { const v = atual.volta, id = atual.leadId; fechar(); if (v === 'lead' && id && window.crmAbrirLead) window.crmAbrirLead(id); }
       else if (a === 'gerarprop') { const id = atual.leadId; fechar(); window.crmGerarProposta(id); }
       else if (a === 'cancelar') { const v = atual.volta, id = atual.leadId; fechar(); if (v === 'lead' && id && window.crmAbrirLead) window.crmAbrirLead(id, true); }
       else if (a === 'excluir') excluir(b);
