@@ -39,6 +39,9 @@ export function avisosDaPagina(texto) {
     .replace(/GOI[AÂ]NIA,\s+[A-ZÇ-]+FEIRA,\s+\d{1,2}\s+DE\s+[A-ZÇ]+\s+DE\s+\d{4}\s+ANO\s+\d+\s+-\s+DI[AÁ]RIO\s+OFICIAL\/GO\s+N[°º]\s+[\d.]+(\s+Di[aá]rio\s+Oficial)?(\s+\d+)?/g, ' ')
     .replace(/GOI[AÂ]NIA,\s+(S[AÁ]BADO|DOMINGO),\s+\d{1,2}\s+DE\s+[A-ZÇ]+\s+DE\s+\d{4}\s+ANO\s+\d+\s+-\s+DI[AÁ]RIO\s+OFICIAL\/GO\s+N[°º]\s+[\d.]+/g, ' ')
     .replace(/DIARIO OFICIAL DO ESTADO DE GOIAS Assinado digitalmente pela ABC - AGENCIA BRASIL CENTRAL CODIGO DE AUTENTICACAO: \w+/g, ' ')
+    .replace(/PUBLICA[CÇ][OÕ]ES\s+PARTICULARES/g, ' ')
+    .replace(/(^|\s)Di[aá]rio\s+Oficial(\s+\d{1,3})?(?=\s+[A-ZÀ-Ú])/g, ' ')
+    .replace(/_{4,}/g, ' Protocolo 000000 ') // linha separadora entre avisos
     .replace(/(Di[aá]rio Oficial )?\d{1,2} de [a-zç]+ de \d{4}( Di[aá]rio Oficial)?( P[aá]gina \d+)?( N[ºo°] [\d.]+)?( P[aá]gina \d+)?/gi, ' ');
   const out = [];
   for (const bloco of t.split(/Protocolo\s+\d{6,8}/)) {

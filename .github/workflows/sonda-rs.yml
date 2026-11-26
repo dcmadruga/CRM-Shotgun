@@ -20,7 +20,7 @@ jobs:
           RADAR_FONTES: 'semad-go,doe-go,agm,fgm,querido-go'
           RADAR_AMOSTRA_LOG: '1'
       - if: always()
-        run: cp -r radar-saida rs-sondas/ || true
+        run: mkdir -p rs-sondas/saida && cp radar-saida/*.json rs-sondas/saida/ || true
       - if: always()
         run: |
           git config user.name "sonda-bot"; git config user.email "sonda-bot@users.noreply.github.com"
