@@ -10,6 +10,19 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 238, data: '2026-11-25', titulo: 'Agenda de demonstrações', itens: [
+    'Novo item Agenda no menu, logo depois de Hoje. Nele você marca as demonstrações do sistema, sempre ligadas a um lead do CRM.',
+    'Toque em + Agendar demonstração, escolha o lead (ou cadastre um novo ali mesmo), a data, a hora, a duração, se é online (com o link da reunião) ou presencial (o endereço vem do lead) e quem do cliente vai participar.',
+    'Três jeitos de ver: Semana, Dia e Próximas. Os Próximos contatos dos leads também aparecem como lembrete, e os atrasados ficam em vermelho. Para esconder, desmarque Próximos contatos.',
+    'Se você já tiver outra demonstração no mesmo horário, o app avisa antes de salvar.',
+    'No CRM, a ficha do lead ganhou o bloco Demonstrações, com o botão para agendar, e o card do lead no funil mostra a data da próxima demonstração.',
+    'Andamento: abra a demonstração e marque Cliente confirmou, Realizada, Não compareceu, Remarcar ou Cancelar. Tudo fica anotado no histórico do lead.',
+    'Ao marcar Realizada, escolha o resultado: Quer proposta (o app oferece Gerar proposta), Vai pensar (marca o próximo contato) ou Sem interesse (o lead vai para Perdido). O lead em aberto passa para Qualificado no funil.',
+    'Demonstração que já passou sem resultado aparece com o aviso Registrar resultado, na Agenda e no lead.',
+    'Sino: quem apresenta recebe um aviso quando outra pessoa agenda uma demonstração no lead dele, um lembrete no dia ("Demonstração hoje às 14:00") e, depois do horário, o pedido para registrar como foi. Tocar no aviso abre a demonstração.',
+    'Tela Hoje: as demonstrações do dia e as que ficaram sem resultado aparecem no topo, com o botão Abrir ou Registrar resultado.',
+    'Depois de agendar ou remarcar, e dentro de cada demonstração: Confirmar pelo WhatsApp abre a conversa com o participante com a mensagem pronta (dia, hora, duração e o link ou o endereço), e Adicionar ao Google Agenda cria o evento já preenchido, convidando os participantes que têm e-mail.'
+  ] },
   { v: 235, data: '2026-11-24', titulo: 'Postos em construção em Sergipe, Pará, Tocantins e Rondônia', itens: [
     'Telemetria → Postos em construção: o Estado agora tem também Sergipe (SE), Pará (PA), Tocantins (TO) e Rondônia (RO), com os mesmos filtros de Cidade, mapa, lista, alertas e fontes.',
     'No Pará o Radar lê os processos de licenciamento de posto na consulta pública da SEMAS-PA e as licenças publicadas pelas prefeituras no Diário dos Municípios (FAMEP). Nos processos da SEMAS o município, o CNPJ e o endereço não aparecem: ficam como pendente de confirmação.',
