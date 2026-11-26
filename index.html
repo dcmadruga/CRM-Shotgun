@@ -690,7 +690,7 @@ body.fb #tabProp{display:none!important}
 .hitem{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--field)}
 .hitem .n{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:12px;background:color-mix(in srgb,var(--purple) 14%,transparent);color:var(--purple)}
 .hitem.cli .n{background:rgba(214,140,20,.18);color:var(--warn-text)}
-.hitem b{display:block;font-size:14px}.hitem small{color:var(--muted);font-size:12.5px}
+.hitem b{display:block;font-size:14px}.hitem .hcid{font-weight:500}.hitem small{color:var(--muted);font-size:12.5px}
 @media (max-width:560px){.hitem{grid-template-columns:auto minmax(0,1fr)}.hitem button{grid-column:1/-1}}
 .pcard .e4box{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:10px}
 .e4grid .full{grid-column:1/-1}
@@ -1503,6 +1503,7 @@ if(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey) document.body.classLis
 </script>
 <script src="modulos-padrao.js"></script>
 <script src="pretask.js"></script>
+<script src="cidade-uf.js"></script>
 <script type="module" src="auth.js"></script>
 <script type="module" src="task.js"></script>
 <script src="anp.js"></script>
