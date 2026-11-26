@@ -75,17 +75,19 @@
     return todos.filter(x => x.data === s || (s === h && x.k === 'prox' && x.data < h)).sort((a, b) => a.ord - b.ord || String(a.l.empresa).localeCompare(String(b.l.empresa), 'pt-BR'));
   }
 
+  // Cidade / UF embaixo do nome no quadro da agenda (some quando o cadastro não tem cidade)
+  const cidAg = l => { const c = window.sgCidadeUf ? window.sgCidadeUf(l) : ''; return c ? `<small class="agcid">${esc(c)}</small>` : ''; };
   function itemHtml(x, largo) {
     const l = x.l, dono = admin && l.vendedor ? `<small class="agdono">${esc(l.vendedor)}</small>` : '';
     if (x.k === 'prox') {
       const atras = x.data < hoje(), c0 = contatosDe(l)[0] || {};
       return `<button type="button" class="agit prox${atras ? ' atras' : ''}" data-lead="${esc(l.id)}">
-        <span class="aghora">${atras ? 'Atrasado · ' + fmtDC(x.data) : 'Próximo contato'}</span><b>${esc(l.empresa || '(sem nome)')}</b>
+        <span class="aghora">${atras ? 'Atrasado · ' + fmtDC(x.data) : 'Próximo contato'}</span><b>${esc(l.empresa || '(sem nome)')}</b>${cidAg(l)}
         ${largo && (c0.nome || c0.fone) ? `<small>${esc([c0.nome, c0.fone].filter(Boolean).join(' · '))}</small>` : ''}${dono}</button>`;
     }
     const d = x.d, on = d.formato !== 'presencial', parts = (d.participantes || []).filter(Boolean);
     return `<button type="button" class="agit demo st-${semResultado(d) ? 'pend' : stDe(d)}${x.data < hoje() && !semResultado(d) ? ' passou' : ''}" data-lead="${esc(l.id)}" data-demo="${esc(d.id)}">
-      <span class="aghora">${esc(d.hora)} – ${esc(fimDe(d))}</span><b>${esc(l.empresa || '(sem nome)')}</b>${pillSt(d)}
+      <span class="aghora">${esc(d.hora)} – ${esc(fimDe(d))}</span><b>${esc(l.empresa || '(sem nome)')}</b>${cidAg(l)}${pillSt(d)}
       <small class="agfmt">${on ? IC.video + 'Online' : IC.pin + 'Presencial'} · ${durTxt(Number(d.dur) || 60)}</small>
       ${largo && parts.length ? `<small>Com ${esc(parts.join(', '))}</small>` : ''}
       ${largo && !on && d.local ? `<small>${esc(d.local)}</small>` : ''}${dono}</button>`;
@@ -248,7 +250,7 @@
     const l = leadAtual();
     if (l) {
       const c0 = contatosDe(l)[0] || {};
-      box.innerHTML = `<div class="aglead"><span><b>${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.cidade, c0.nome, l.origem].filter(Boolean).join(' · '))}</small></span>
+      box.innerHTML = `<div class="aglead"><span><b>${esc(l.empresa || '(sem nome)')}</b><small>${esc([window.sgCidadeUf ? window.sgCidadeUf(l) : l.cidade, c0.nome, l.origem].filter(Boolean).join(' · '))}</small></span>
         <span class="aglacts"><button type="button" class="linkbtn" data-a="verlead">Abrir lead</button>${atual.editando || atual.remarca ? '' : '<button type="button" class="linkbtn" data-a="trocar">Trocar</button>'}</span></div>`;
     } else {
       box.innerHTML = `<input id="agLeadQ" type="search" autocomplete="off" placeholder="Busque pelo nome do posto, contato ou CNPJ" aria-label="Buscar lead">
@@ -267,7 +269,7 @@
     const q = norm($('agLeadQ').value.trim()), qd = dig($('agLeadQ').value);
     const base = leads.filter(l => l.etapa !== 'perdido' || q);
     const lista = (q ? base.filter(l => norm([l.empresa, l.contato, l.cidade].join(' ')).includes(q) || (qd.length >= 3 && dig(l.cnpj).includes(qd))) : base.slice().sort((a, b) => (b.criado?.seconds || 0) - (a.criado?.seconds || 0))).slice(0, 8);
-    box.innerHTML = lista.length ? (q ? '' : '<small class="agrestit">Leads mais recentes</small>') + lista.map(l => `<button type="button" class="agresit" data-pick="${esc(l.id)}"><b>${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.cidade, l.contato, admin && l.vendedor].filter(Boolean).join(' · '))}</small></button>`).join('')
+    box.innerHTML = lista.length ? (q ? '' : '<small class="agrestit">Leads mais recentes</small>') + lista.map(l => `<button type="button" class="agresit" data-pick="${esc(l.id)}"><b>${esc(l.empresa || '(sem nome)')}</b><small>${esc([window.sgCidadeUf ? window.sgCidadeUf(l) : l.cidade, l.contato, admin && l.vendedor].filter(Boolean).join(' · '))}</small></button>`).join('')
       : `<p class="hint">${q ? 'Nenhum lead encontrado com essa busca.' : 'Você ainda não tem leads.'}</p>`;
   }
   function desenharPart() {
