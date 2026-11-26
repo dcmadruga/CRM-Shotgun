@@ -94,6 +94,7 @@ button.busca:disabled{opacity:.6;cursor:progress}
 button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1px solid var(--purple);background:var(--purple);color:#fff;font-size:16px;cursor:pointer}
 .send{display:flex;flex-direction:column;gap:8px}
 .hint{color:var(--muted);font-size:13px;margin:0}
+.ielink{display:block;margin-top:4px}.ielink a{color:var(--purple);font-weight:600}.ielink small{font-size:12px}
 #msg{font-weight:500}
 .done{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:6px;padding:14px}
 #csStatus{display:flex;align-items:center;gap:8px}
@@ -342,6 +343,22 @@ async function pegaIe(d,uf,vivo){
   }
   return null;
 }
+// Inscrição estadual: as bases gratuitas nem sempre trazem (empresa nova, por exemplo). Link para a consulta da SEFAZ do Estado
+// da empresa (endereços da lista oficial do sintegra.gov.br); sem Estado conhecido, abre o portal nacional. Ao tocar, copia o CNPJ.
+const SINTEGRA={AC:'http://sefaznet.ac.gov.br/sefazonline/servlet/hpfsincon',AL:'http://www.sefaz.al.gov.br/asp/sintegra/sintegra.asp?estado=AL',AP:'http://www.sefaz.ap.gov.br/sate/seg/SEGf_AcessarFuncao.jsp?cdFuncao=CAD_011',AM:'http://www.sefaz.am.gov.br/sintegra/sintegra0.asp',BA:'https://portal.sefaz.ba.gov.br/scripts/cadastro/cadastroBa/consultaBa.asp',CE:'https://servicos.sefaz.ce.gov.br/internet/Sintegra/Sintegra.Asp?estado=CE',DF:'https://ww1.receita.fazenda.df.gov.br/icms/sintegra-consulta',ES:'http://www.sintegra.es.gov.br/',GO:'http://appasp.sefaz.go.gov.br/Sintegra/Consulta/default.asp?',MA:'http://aplicacoes.ma.gov.br/sintegra/jsp/consultaSintegra/consultaSintegraFiltro.jsf',MT:'https://www.sefaz.mt.gov.br/cadastro/emissaocartao/emissaocartaocontribuinteacessodireto',MS:'https://servicos.efazenda.ms.gov.br/consultapublica/Home/Index',MG:'http://consultasintegra.fazenda.mg.gov.br/',PA:'http://app.sefa.pa.gov.br/Sintegra/',PB:'https://www4.sefaz.pb.gov.br/sintegra',PR:'https://sintegra.paas.pr.gov.br/',PE:'http://www.sintegra.sefaz.pe.gov.br/',PI:'http://web.sintegra.sefaz.pi.gov.br/',RJ:'https://sucief-sincad-web.fazenda.rj.gov.br/sincad-web/index.jsf',RN:'http://www.set.rn.gov.br/uvt/consultacontribuinte.aspx',RS:'https://www.sefaz.rs.gov.br/consultas/contribuinte',RO:'http://www.sefin.ro.gov.br/sint_consul.asp',RR:'https://portalapp.sefaz.rr.gov.br/siate/servlet/wp_siate_consultasintegra',SC:'https://sat.sef.sc.gov.br/tax.NET/Sat.Cadastro.Web/ComprovanteIE/Consulta.aspx',SP:'https://www.cadesp.fazenda.sp.gov.br/Pages/Cadastro/Consultas/ConsultaPublica/ConsultaPublica.aspx',SE:'https://security.sefaz.se.gov.br/SIC/sintegra/index.jsp',TO:'http://sintegra.sefaz.to.gov.br/'};
+let ufEmpresa='';
+function ieInputDe(sec){ return (tem('ie')&&f.elements.ie)||[...(sec||f).querySelectorAll('label')].find(l=>/inscri[cç][aã]o estadual|^ie\b/i.test((l.querySelector('span')?.textContent||'').trim()))?.querySelector('input') }
+function linkSintegra(){
+  const inp=ieInputDe(), lab=inp&&inp.closest('label'); if(!lab) return;
+  const uf=String(ufEmpresa||(tem('uf')&&f.elements.uf.value)||'').trim().toUpperCase().slice(0,2), url=SINTEGRA[uf]||'http://www.sintegra.gov.br/';
+  let box=lab.querySelector('.ielink');
+  if(!box){
+    box=document.createElement('span'); box.className='hint ielink'; lab.appendChild(box);
+    box.addEventListener('click',e=>{ const a=e.target.closest('a'); if(!a) return; const c=f.elements.cnpj&&dig(f.elements.cnpj.value), msg=box.querySelector('small');
+      if(c&&c.length===14&&navigator.clipboard) navigator.clipboard.writeText(c).then(()=>{ msg.textContent='CNPJ copiado: é só colar no site.' },()=>{}) });
+  }
+  box.innerHTML=`Não sabe? <a href="${esc(url)}" target="_blank" rel="noopener">Consultar no SINTEGRA${SINTEGRA[uf]?' ('+uf+')':''}</a> <small></small>`;
+}
 // Guarda a consulta de cada CNPJ: o botão "Usar endereço do estabelecimento" reaproveita sem consultar de novo
 const CNPJ_CACHE={};
 function consultarCnpj(d){ if(!CNPJ_CACHE[d]) CNPJ_CACHE[d]=consultarCnpjBase(d).then(j=>{ if(!j) delete CNPJ_CACHE[d]; return j },e=>{ delete CNPJ_CACHE[d]; throw e }); return CNPJ_CACHE[d] }
@@ -373,6 +390,7 @@ async function buscarCnpj(el,forcar){
       set('razao',j.razao_social); set('fantasia',j.nome_fantasia); set('cep',cep);
       set('logradouro',rua); set('numero',j.numero); set('complemento',j.complemento);
       set('bairro',j.bairro); set('cidade',j.municipio); set('uf',j.uf); set('ie',j.ie);
+      if(j.uf){ ufEmpresa=j.uf; linkSintegra() }
       // Campos criados nos Parâmetros da seção da empresa: telefone e regime tributário pelo nome
       const sec=el.closest('.sec');
       sec && sec.querySelectorAll('label').forEach(l=>{
@@ -626,6 +644,7 @@ function ligarAuto(){
     });
   });
   f.querySelectorAll('[data-busca]').forEach(bt=>bt.addEventListener('click',()=>buscarCnpj(f.elements[bt.dataset.busca],true)));
+  linkSintegra(); if(tem('uf')) f.elements.uf.addEventListener('change',()=>{ ufEmpresa=''; linkSintegra() });
   f.querySelectorAll('[data-v=cep]').forEach(el=>el.addEventListener('blur',async ()=>{
     const c=dig(el.value); if(c.length!==8) return; el.value=c.replace(/^(\d{5})(\d{3})$/,'$1-$2');
     if(tem('logradouro') && f.logradouro.value) return;
