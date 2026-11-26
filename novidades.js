@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 244, data: '2026-11-26', titulo: 'Contrato social ao lado do formulário', itens: [
+    'Dados para o contrato: ao tocar na miniatura do contrato social, o documento agora abre ao lado do formulário (no computador) ou na parte de cima da tela (no celular). Dá para ler o documento e preencher os campos ao mesmo tempo, sem fechar a visualização.',
+    'No painel do documento tem zoom (− e +, tocar na porcentagem volta a ajustar à largura) e todas as páginas e fotos enviadas em sequência. Arraste a borda colorida para aumentar ou diminuir o painel. No celular, Recolher deixa só a barra de cima.',
+    'Quem prefere o jeito antigo toca em Tela cheia, e o aparelho lembra a escolha.'
+  ] },
   { v: 241, data: '2026-11-26', titulo: 'Postos em construção: licenças de Porto Alegre no RS', itens: [
     'Telemetria → Postos em construção, Estado RS: o Radar passa a ler também a consulta pública de licenças ambientais da Prefeitura de Porto Alegre e mostra as licenças de posto de combustível emitidas lá (LP e LI entram como novo posto).',
     'A fonte aparece na lista de fontes do RS. Porto Alegre emite poucas licenças de posto, então os achados devem ser raros.'
