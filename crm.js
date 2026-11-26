@@ -169,6 +169,8 @@ function montarFiltros() {
 /* ---------- Telas ---------- */
 function desenhar() {
   if (!$('viewCrm') || !perfil) return;
+  // Agenda (agenda.js): recebe os leads daqui, com a marca de quem já virou proposta
+  if (docsOk) window.dispatchEvent(new CustomEvent('crm-dados', { detail: { leads: docs.filter(d => d.tipo === 'lead').map(l => ({ ...l, _temProp: propsOk && !!propDoLead(l) })), usuarios } }));
   montarFiltros();
   document.querySelectorAll('#crmNav button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.aba === aba)));
   ['funil', 'leads', 'clientes'].forEach(a => { $('crm-' + a).hidden = a !== aba; });
@@ -189,6 +191,7 @@ function desenharFunil() {
       ${lista.map(c => `<button type="button" class="crmc ${c.tipo}${c.prox && c.prox < h && c.etapa !== 'perdido' ? ' atras' : ''}" draggable="true" data-tipo="${c.tipo}" data-id="${esc(c.id)}">
         <b>${esc(c.titulo)}</b><small>${esc(c.sub)}</small>
         ${c.tipo === 'lead' && c.prox ? `<small class="crmprox">Próximo contato: ${fmtD(c.prox)}</small>` : ''}
+        ${c.tipo === 'lead' && window.agendaProxima && window.agendaProxima(c.ref) ? `<small class="crmdemo">Demonstração: ${esc(window.agendaFmt(window.agendaProxima(c.ref)))}</small>` : ''}
         ${c.tipo === 'prop' && c.ref.crmMotivo ? `<small class="crmprox">${esc(c.ref.crmMotivo)}</small>` : ''}
         ${admin && c.dono ? `<small class="crmdono">${esc(c.dono)}</small>` : ''}
       </button>`).join('') || '<p class="vazio">Nada aqui</p>'}</div>`;
@@ -204,7 +207,7 @@ function desenharLeads() {
     return `<button type="button" class="crmrow${l.prox && l.prox < h && !p && l.etapa !== 'perdido' ? ' atras' : ''}" data-tipo="lead" data-id="${esc(l.id)}">
       <span><b>${l.anp?.bandeira && window.anpSeloBandeira ? window.anpSeloBandeira(l.anp.bandeira, false, true) : ''}${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.contato, l.fone, l.cidade, l.anp?.bandeira, l.anp?.porte && 'Porte ' + l.anp.porte].filter(Boolean).join(' · '))}</small></span>
       <span><small>${esc(l.origem || '')}</small>${admin && l.vendedor ? `<small>${esc(l.vendedor)}</small>` : ''}</span>
-      <span><small>${l.prox ? 'Próx.: ' + fmtD(l.prox) : 'Sem próximo contato'}</small><span class="pill">${esc(et)}</span></span>
+      <span><small>${l.prox ? 'Próx.: ' + fmtD(l.prox) : 'Sem próximo contato'}</small>${window.agendaProxima && window.agendaProxima(l) ? `<small class="crmdemo">Demonstração: ${esc(window.agendaFmt(window.agendaProxima(l)))}</small>` : ''}<span class="pill">${esc(et)}</span></span>
     </button>`; }).join('')}</div>` : `<p class="hint">${q ? 'Nenhum lead encontrado.' : fUser || fUf ? 'Nenhum lead com esses filtros.' : 'Nenhum lead ainda. Clique em "+ Novo lead" para cadastrar o primeiro contato.'}</p>`;
 }
 
@@ -277,6 +280,15 @@ function ditar(btn) {
 
 /* ---------- Diálogo ---------- */
 const dlg = () => $('crmDlg');
+let aposNovo = null; // Agenda: o que fazer depois de cadastrar um lead novo (volta para a demonstração)
+// Para a Agenda (agenda.js): abrir um lead, cadastrar lead novo, fechar o diálogo e usar o ditado
+window.crmAbrirLead = id => { const l = docs.find(d => d.id === id && d.tipo === 'lead'); if (l) formLead(l); };
+window.crmNovoLead = fn => { formLead(); aposNovo = fn || null; dmsg('Cadastre o lead e toque em Salvar: a demonstração continua de onde parou.'); };
+window.crmGerarProposta = id => { const l = docs.find(d => d.id === id && d.tipo === 'lead'); if (l) gerarProposta(l); };
+window.crmFecharDlg = () => { if (dlg() && dlg().open) dlg().close(); };
+window.crmMicBtn = () => micBtn();
+window.crmDitar = btn => ditar(btn);
+window.crmPararDitado = () => pararDitado();
 function abrirDlg(tit, html) { $('crmDlgTit').textContent = tit; $('crmDlgBody').innerHTML = html; $('crmDlgMsg').textContent = ''; if (!dlg().open) dlg().showModal(); }
 const dmsg = t => { $('crmDlgMsg').textContent = t || ''; };
 
@@ -350,6 +362,7 @@ function formLead(l) {
           <label class="full">Observações<span class="ditado"><textarea data-f="obs" rows="2" placeholder="Digite ou toque no microfone e fale">${esc(l.obs || '')}</textarea>${micBtn()}</span><small class="ditst" hidden></small></label>
         </div>
       </section>
+      ${demosHtml(l)}
     </div>
     <div class="tools crmacts">
       <button type="button" class="primary" data-a="salvar">Salvar</button>
@@ -359,6 +372,23 @@ function formLead(l) {
     ${l.id ? notasHtml(l.notas, contatosDe(l).map(c => c.nome)) : ''}`);
   dlg().dataset.modo = 'lead';
   anpAtual = null; anpLead(l.cnpj, false);
+}
+
+/* ---------- Demonstrações do lead (módulo Agenda, agenda.js) ---------- */
+function demosHtml(l) {
+  if (!window.agendaNova) return '';
+  const h = hoje(), ds = (Array.isArray(l.demos) ? l.demos : []).filter(d => d && d.data);
+  const ST = { confirmada: 'Confirmada', realizada: 'Realizada', naocompareceu: 'Não compareceu', remarcada: 'Remarcada', cancelada: 'Cancelada' };
+  const RES = { proposta: 'quer proposta', pensar: 'vai pensar', sem: 'sem interesse' };
+  const aberta = d => !d.status || d.status === 'agendada' || d.status === 'confirmada';
+  const vem = ds.filter(d => aberta(d) && d.data >= h).sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
+  const foi = ds.filter(d => !vem.includes(d)).sort((a, b) => (b.data + b.hora).localeCompare(a.data + a.hora));
+  const st = d => aberta(d) && d.data < h ? '<span class="agst st-pend">Registrar resultado</span>' : ST[d.status] ? `<span class="agst st-${d.status}">${ST[d.status]}${d.status === 'realizada' && RES[d.resultado] ? ' · ' + RES[d.resultado] : ''}</span>` : '';
+  const linha = d => `<button type="button" class="crmdemol${aberta(d) ? '' : ' passou'}" data-a="demo" data-did="${esc(d.id)}"><span><b>${fmtD(d.data)} · ${esc(d.hora)}</b>${st(d)}</span><small>${d.formato === 'presencial' ? 'Presencial' : 'Online'}${(d.participantes || []).length ? ' · com ' + esc(d.participantes.join(', ')) : ''}</small></button>`;
+  return `<section class="crmbloco"><h4>Demonstrações</h4>
+    ${vem.length || foi.length ? `<div class="crmdemos">${vem.map(linha).join('')}${foi.length ? `<small class="crmdemot">Anteriores</small>${foi.map(linha).join('')}` : ''}</div>` : `<p class="hint">${l.id ? 'Nenhuma demonstração agendada.' : 'Salve o lead para agendar uma demonstração.'}</p>`}
+    ${l.id ? '<button type="button" class="crmctadd" data-a="agendar">+ Agendar demonstração</button>' : ''}
+  </section>`;
 }
 
 /* ---------- Base de postos da ANP ---------- */
@@ -405,6 +435,7 @@ async function salvarLead(depois) {
     if (id) { await F.updateDoc(F.doc(db, 'crm', id), { ...d, alterado: F.serverTimestamp(), alteradoPor: quem() }); dmsg('Salvo.'); return id; }
     const ref = await F.addDoc(F.collection(db, 'crm'), { tipo: 'lead', ...d, notas: [], owner: perfil.uid, vendedor: quem(), criado: F.serverTimestamp() });
     $('crmForm').dataset.id = ref.id; dmsg('Lead cadastrado.');
+    if (aposNovo && !depois) { const f = aposNovo; aposNovo = null; dlg().close(); f(ref.id); return ref.id; }
     if (!depois) { const l = { id: ref.id, tipo: 'lead', ...d, notas: [] }; formLead(l); dmsg('Lead cadastrado. Agora dá para anotar o histórico abaixo.'); }
     return ref.id;
   } catch (e) { dmsg('Não foi possível salvar (' + (e.code || e.message) + ').'); return null; }
@@ -585,7 +616,7 @@ function ligar() {
   fun.addEventListener('drop', e => { const col = e.target.closest('.crmcol'); if (!col) return; e.preventDefault(); col.classList.remove('alvo'); const [tipo, id] = String(e.dataTransfer.getData('text/plain')).split(':'); if (id) mover(tipo, id, col.dataset.etapa); });
 
   $('crmDlgFechar').addEventListener('click', () => dlg().close());
-  dlg().addEventListener('close', pararDitado);
+  dlg().addEventListener('close', () => { pararDitado(); aposNovo = null; });
   dlg().addEventListener('input', e => { if (e.target.dataset.f === 'cnpj' && dig(e.target.value).length === 14) anpLead(e.target.value, true); });
   dlg().addEventListener('change', e => { if (e.target.dataset.f === 'etapa') { const m = dlg().querySelector('.crmmot'); if (m) m.hidden = e.target.value !== 'perdido'; } });
   dlg().addEventListener('input', e => { if (e.target.closest('#crmCts')) atualizarNCont(); });
@@ -597,6 +628,7 @@ function ligar() {
     if (a === 'ditar') { ditar(b); return; }
     pararDitado();
     if (a === 'salvar') { if (await salvarLead()) desenhar(); }
+    else if (a === 'agendar' || a === 'demo') { const id = await salvarLead(true); if (id && window.agendaNova) { if (a === 'agendar') window.agendaNova(id); else window.agendaAbrir(id, b.dataset.did); } }
     else if (a === 'gerar') { const id = await salvarLead(true); if (id) gerarProposta({ id, ...lerForm() }); }
     else if (a === 'excluir') {
       if (b.dataset.confirma !== '1') { b.dataset.confirma = '1'; b.textContent = 'Confirmar exclusão'; dmsg('Clique de novo para excluir o lead e o histórico dele.'); return; }

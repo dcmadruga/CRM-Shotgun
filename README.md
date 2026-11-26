@@ -47,6 +47,15 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 - `acao.html` é a página das ações de conta do Firebase (criar nova senha, confirmar e-mail), em português e com a marca Shotgun. O app pede os e-mails em `pt-BR`.
 - Configuração no Console do Firebase (idioma dos modelos e URL de ação): `docs/emails-firebase.md`.
 
+## Agenda de demonstrações
+
+- Menu Agenda (`agenda.js`): demonstrações do sistema, sempre ligadas a um lead do CRM. Quem apresenta é o vendedor dono do lead. Modos Semana, Dia e Próximas; os "Próximo contato" dos leads em aberto aparecem como lembrete (atrasados em vermelho).
+- As demonstrações ficam no próprio lead, em `crm/{id}.demos` (lista com `id`, `data`, `hora`, `dur`, `formato`, `link`, `local`, `participantes`, `obs`, `status`). Por isso valem as mesmas regras do CRM, sem regra nova no Firestore: o vendedor vê as dele e o ADM vê todas (com filtro por usuário).
+- Andamento (`status`): agendada, confirmada, realizada (com `resultado`: proposta, pensar ou sem), naocompareceu, remarcada (`remarcadaPara` aponta a demo nova) e cancelada (`motivoCanc`). Cada mudança grava uma anotação "Reunião" no histórico do lead. Realizada move o lead em aberto para Qualificado, ou para Perdido quando não há interesse; "Vai pensar" grava o Próximo contato.
+- Avisos sem gravar nada: a Agenda monta os avisos do sino (`window.shotgunAvisos('agenda', lista)`, em `notificacoes.js`) só para quem apresenta: demo agendada por outra pessoa, lembrete no dia e "Como foi a demonstração?" depois do horário. O lido/não lido usa o mesmo `notifLidas` do sino. A tela Hoje ganha o bloco "Demonstrações de hoje".
+- Cliente: "Confirmar pelo WhatsApp" (wa.me com a mensagem pronta, assinada "- Argo" como as outras mensagens ao cliente; o envio fica anotado no histórico do lead) e "Adicionar ao Google Agenda" (link `calendar.google.com/calendar/render?action=TEMPLATE`, com fuso do aparelho e convite para os participantes com e-mail). Sem integração automática.
+- A Agenda não lê o banco: recebe os leads do `crm.js` pelo evento `crm-dados`. O formulário avisa quando a pessoa já tem outra demonstração no mesmo horário.
+
 ## Fluxo até o TASK pronto
 
 - O cliente entra por três caminhos: **Lead** (CRM), **Proposta** (o app cria o lead sozinho, `crm/auto-<id da proposta>`, origem "Proposta direta", se ainda não houver lead com o mesmo CNPJ ou nome) e **cadastro direto no TASK** (perfis TASK e ADM, sem proposta nem contrato). O card mostra a origem e a fase: "Em preparação" (Pré TASK incompleto) ou "Pronto para as equipes".
