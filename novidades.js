@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 244, data: '2026-11-26', titulo: 'Contrato social ao lado do formulário', itens: [
+    'Dados para o contrato: ao tocar na miniatura do contrato social, o documento agora abre ao lado do formulário (no computador) ou na parte de cima da tela (no celular). Dá para ler o documento e preencher os campos ao mesmo tempo, sem fechar a visualização.',
+    'No painel do documento tem zoom (− e +, tocar na porcentagem volta a ajustar à largura) e todas as páginas e fotos enviadas em sequência. Arraste a borda colorida para aumentar ou diminuir o painel. No celular, Recolher deixa só a barra de cima.',
+    'Quem prefere o jeito antigo toca em Tela cheia, e o aparelho lembra a escolha.'
+  ] },
   { v: 243, data: '2026-11-26', titulo: 'Cidade / UF nos cards do funil', itens: [
     'CRM → Funil de vendas: cada card de lead e de proposta mostra agora a Cidade / UF do cliente logo abaixo do nome da empresa, em todas as colunas.',
     'Nas listas de Leads e de Clientes a cidade aparece no mesmo formato. Se o cadastro não tiver cidade, o card fica como antes.'
