@@ -125,6 +125,8 @@ button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1
 #csStatus{display:flex;align-items:center;gap:8px}
 #csStatus.ok{color:var(--fg)}
 #csStatus.bad{color:var(--danger)}
+.travado{opacity:.45;pointer-events:none;user-select:none;filter:grayscale(.4);transition:opacity .2s}
+.travaaviso{position:sticky;top:8px;z-index:5;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--purple);color:var(--fg);font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.12)}
 .spin{width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--purple);border-radius:50%;animation:gira .8s linear infinite;flex:none}
 @keyframes gira{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
@@ -158,6 +160,7 @@ label.socio small{display:block;color:var(--muted);font-size:13px;overflow-wrap:
     <p id="csStatus" class="full hint" role="status" hidden></p>
     <div id="csSocios" class="full socios" hidden></div>
   </div></section>
+  <p id="travaAviso" class="travaaviso" role="status" hidden><span class="spin" aria-hidden="true"></span><span>Aguarde a leitura do contrato social terminar. Os demais campos serão liberados em seguida.</span></p>
   <div id="secoes" style="display:flex;flex-direction:column;gap:18px"></div>
   <div class="send">
     <button type="submit" id="btnEnviar">Enviar pelo WhatsApp</button>
@@ -825,7 +828,7 @@ function ligarAuto(){
     };
     const sync=()=>{ const on=csCb.checked; csEl.dataset.manual=on?'1':''; csEl.required=!on; csEl.closest('label').classList.toggle('pend',on); $('#csManualMsg').hidden=!on;
       if(on){
-        if(csEl.value){ csEl.value=''; desenharArquivos(csEl); leitura++; csStatus('') }
+        if(csEl.value){ csEl.value=''; desenharArquivos(csEl); leitura++; csStatus('') } travarTela(false);
         const sr=secRespEl(); if(sr) sr.querySelector('.body').prepend(box);
         sugerirQsa().then(()=>{ if(!csCb.checked) return; const alvo=SOCIOS.length?box:(()=>{ const r=secResp(); const pc=r&&(r.campos||[]).find(c=>f.elements[c.k]&&!f.elements[c.k].value); return pc&&f.elements[pc.k] })(); if(alvo) alvo.scrollIntoView({block:'center',behavior:'smooth'}) });
       } else { qsaId++; QSA=false; SOCIOS=[]; desenharSocios(); casa.insertBefore(box,casaProx) }
@@ -873,12 +876,18 @@ function desenharSocios(){
     return `<label class="socio"><input type="radio" name="_rep" value="${i}"${atual===String(i)?' checked':''}><span><b>${esc(s.nome)}</b>${s.administrador?'<span class="tag">ADMINISTRADOR</span>':''}${l1?`<small>${esc(l1)}</small>`:''}${l2?`<small>${esc(l2)}</small>`:''}</span></label>`;
   }).join('')+`<label class="socio"><input type="radio" name="_rep" value="outro"${atual==='outro'?' checked':''}><span><b>Outra pessoa</b><small>Procurador ou alguém que não está na lista. Preencha os dados abaixo.</small></span></label>`;
 }
+// Enquanto o contrato social é lido, os demais campos ficam bloqueados (só o arquivo e o "Não tenho disponível" seguem livres)
+function travarTela(on){
+  ['#secoes','.send','#csSocios'].forEach(q=>{ const el=$(q); if(!el) return; el.classList.toggle('travado',on); if(on) el.setAttribute('inert',''); else el.removeAttribute('inert') });
+  const b=$('#btnEnviar'); if(b) b.disabled=on;
+  $('#travaAviso').hidden=!on;
+}
 async function lerContrato(el){
   const fs=[...el.files].filter(x=>x.size<=MAXF); const id=++leitura;
-  SOCIOS=[]; QSA=false; desenharSocios();
+  SOCIOS=[]; QSA=false; desenharSocios(); travarTela(false);
   if(!fs.length){ csStatus(''); return }
   if(!window.ContratoSocial){ csStatus('Não foi possível ler o documento. Preencha os dados do representante legal abaixo.','bad'); return }
-  csStatus('Lendo o contrato social…','lendo');
+  csStatus('Lendo o contrato social…','lendo'); travarTela(true);
   try{
     const r=await window.ContratoSocial.ler(fs,(t,parcial)=>{ if(id!==leitura) return; csStatus(t,'lendo'); if(parcial&&parcial.length){ SOCIOS=parcial; desenharSocios() } });
     if(id!==leitura) return;
@@ -887,6 +896,7 @@ async function lerContrato(el){
     csStatus(SOCIOS.length ? (SOCIOS.length===1?'Encontramos 1 sócio no contrato. ':'Encontramos '+SOCIOS.length+' sócios no contrato. ')+(SOCIOS.length===1?'Os dados já foram preenchidos no Responsável legal. Confira.':'Escolha quem é o representante legal.')
       : 'Não conseguimos identificar os sócios neste arquivo'+(r.ocr?' (a imagem pode estar pouco nítida)':'')+'. O arquivo será enviado mesmo assim. Preencha os dados do representante legal abaixo.', SOCIOS.length?'ok':'bad');
   }catch(e){ if(id!==leitura) return; console.error(e); csStatus('Não conseguimos ler o arquivo agora. Ele será enviado mesmo assim. Preencha os dados do representante legal abaixo.','bad') }
+  finally{ if(id===leitura) travarTela(false) }
 }
 // "Praça dos Motoristas, 59, Poção, Cuiabá-MT" -> logradouro, número, complemento, bairro, cidade, UF
 // Cidades do IBGE (lib/municipios.js) e estados por extenso, para reconhecer cidade e UF no endereço do contrato
