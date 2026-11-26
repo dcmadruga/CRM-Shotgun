@@ -9,8 +9,8 @@ const API = 'https://apigateway.procempa.com.br/apiman-gateway/ambiental-urbanis
 const SITE = 'https://licencas-ambientais.portoalegre.rs.gov.br/';
 const espera = ms => new Promise(r => setTimeout(r, ms));
 const limpa = s => String(s || '').replace(/\s+/g, ' ').trim();
-const POR_PAGINA = 50;
-const TEMPO_MAX = 12 * 6e4; // não segura a rodada das outras fontes
+const POR_PAGINA = 20;
+const TEMPO_MAX = 5 * 6e4; // teto da fonte inteira: não segura a rodada das outras fontes
 
 export const info = { id: 'poa-rs', uf: 'RS', nome: 'Porto Alegre: consulta pública de licenças ambientais (SMAMUS)', url: SITE, tipo: 'licenciamento' };
 
@@ -21,12 +21,16 @@ const FORA = /n[aã]o\s+combust|postos?\s+de\s+sa[uú]de|lavagem|g[aá]s(es)?\s+
 export const atividadePosto = x => { const t = [x.descricao, x.descricaoAtividade].join(' '); return POSTO.test(t) && !FORA.test(t); };
 export const ehPosto = x => { const t = [x.descricao, x.descricaoAtividade, x.nomeRazaoSocial].join(' '); return POSTO.test(t) && !(FORA.test(t) && !/posto\s+(de\s+)?(combust|gasolina|abastec|revenda)/i.test(t)); };
 
-async function pega(caminho) {
+// cada tentativa respeita o que sobra do teto da fonte
+async function pega(caminho, prazo) {
   let erro;
-  for (let t = 1; t <= 3; t++) {
-    try { const r = await fetch(API + caminho, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(300000) }); if (!r.ok) throw new Error('HTTP ' + r.status); return await r.json(); }
-    catch (e) { erro = e; await espera(t * 5000); }
+  for (let t = 1; t <= 2; t++) {
+    const resta = prazo - Date.now();
+    if (resta < 15000) break;
+    try { const r = await fetch(API + caminho, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(Math.min(150000, resta)) }); if (!r.ok) throw new Error('HTTP ' + r.status); return await r.json(); }
+    catch (e) { erro = e; await espera(3000); }
   }
+  if (!erro) erro = new Error('sem tempo para nova tentativa');
   throw new Error(`Porto Alegre: ${erro.message} (${caminho})`);
 }
 
@@ -75,15 +79,15 @@ export function registro(x, municipios) {
 
 // de/ate: AAAA-MM-DD. ctx.mun: municípios do RS
 export async function coletar(de, ate, log = console.log, ctx = {}) {
-  const t0 = Date.now();
+  const t0 = Date.now(), prazo = t0 + TEMPO_MAX;
   const anoDe = Number(de.slice(0, 4));
-  // rotina (cursor recente): a primeira página basta; primeira coleta: até 8 páginas
-  const maxPag = Date.parse(ate) - Date.parse(de) > 45 * 864e5 ? 8 : 1;
+  // rotina (cursor recente): a primeira página basta; primeira coleta: até 10 páginas, dentro do teto
+  const maxPag = Date.parse(ate) - Date.parse(de) > 45 * 864e5 ? 10 : 1;
   const registros = [], amostra = [];
   let consultas = 0, lidas = 0, total = 0;
   for (let p = 1; p <= maxPag; p++) {
     let d;
-    try { d = await pega(`consultaLicencas?page=${p}&limit=${POR_PAGINA}`); consultas++; }
+    try { d = await pega(`consultaLicencas?page=${p}&limit=${POR_PAGINA}`, prazo); consultas++; }
     catch (e) { if (p === 1) throw e; log(`${e.message}: parou na página ${p}, fica com o que já leu`); break; }
     const L = d.consultaLicencas || []; total = d.paginacao?.total || total;
     for (const x of L) {
@@ -100,7 +104,7 @@ export async function coletar(de, ate, log = console.log, ctx = {}) {
         local: `Licença ${x.numero}/${x.ano} na consulta pública da SMAMUS${data ? '' : ' · data de emissão pendente de confirmação (data = dia em que o robô encontrou)'}` });
     }
     const ultimoAno = Number(L.at(-1)?.ano || 0);
-    if (!d.paginacao?.next_page || !L.length || (ultimoAno && ultimoAno < anoDe) || Date.now() - t0 > TEMPO_MAX) break;
+    if (!d.paginacao?.next_page || !L.length || (ultimoAno && ultimoAno < anoDe) || prazo - Date.now() < 30000) break;
     await espera(2000);
   }
   log(`Porto Alegre: ${lidas} licenças lidas (de ${total} na consulta), ${registros.length} de posto`);
