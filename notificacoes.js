@@ -179,7 +179,7 @@
       porQuery.aceitas = s.docs.map(d => ({ id: d.id, ...d.data() })).map(p => ({ p, t: ms(p.aprovadoEm) })).filter(x => !x.t || x.t >= lim).map(({ p, t }) => {
         const quem = [p.aprovadoNome, p.aprovadoCargo].filter(Boolean).join(', ');
         const vals = [Number(p.totLic) ? 'Licenças ' + brl(p.totLic) : '', Number(p.totMen) ? 'Mensalidade ' + brl(p.totMen) : ''].filter(Boolean).join(' · ');
-        return { id: 'ace:' + p.id, auto: true, prop: p.id, titulo: 'Proposta aceita: ' + (p.cliente || p.numero || 'cliente'), texto: [vals, quem ? 'Aprovada por ' + quem : ''].filter(Boolean).join('\n'), setor: 'propostas', t, por: admin && p.owner !== uid ? p.vendedor || '' : '' };
+        return { id: 'ace:' + p.id, auto: true, prop: p.id, titulo: 'Proposta aceita: ' + (p.cliente || p.numero || 'cliente') + (window.sgCidadeUf && window.sgCidadeUf(p) ? ' · ' + window.sgCidadeUf(p) : ''), texto: [vals, quem ? 'Aprovada por ' + quem : ''].filter(Boolean).join('\n'), setor: 'propostas', t, por: admin && p.owner !== uid ? p.vendedor || '' : '' };
       });
       desenhar();
     }, e => { console.warn('notificações (propostas aceitas)', e.code || e); porQuery.aceitas = []; desenhar(); }));

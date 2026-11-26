@@ -116,7 +116,7 @@
     const h = hoje(), out = [], lim = soma(h, -7);
     leads.filter(l => l.owner === perfil.uid).forEach(l => (Array.isArray(l.demos) ? l.demos : []).forEach(d => {
       if (!d || !d.data) return;
-      const nome = l.empresa || '(sem nome)', fmt = (d.formato === 'presencial' ? 'Presencial' : 'Online') + ' · ' + durTxt(Number(d.dur) || 60), abrirDemo = () => { const t = $('tabAgenda'); if (t) t.click(); form(l.id, d.id, {}); };
+      const nome = (l.empresa || '(sem nome)') + (window.sgCidadeUf && window.sgCidadeUf(l) ? ' · ' + window.sgCidadeUf(l) : ''), fmt = (d.formato === 'presencial' ? 'Presencial' : 'Online') + ' · ' + durTxt(Number(d.dur) || 60), abrirDemo = () => { const t = $('tabAgenda'); if (t) t.click(); form(l.id, d.id, {}); };
       if (aberta(d) && d.data >= h && d.porUid && d.porUid !== perfil.uid)
         out.push({ id: 'dag:' + d.id, titulo: `Demonstração agendada para você: ${nome}`, texto: `${quando(d)} · ${fmt}${d.por ? '\nAgendada por ' + d.por : ''}`, setor: 'agenda', t: msDe(d.criado), abrir: abrirDemo });
       if (aberta(d) && d.data === h && !semResultado(d))
@@ -126,6 +126,8 @@
     }));
     window.shotgunAvisos('agenda', out);
   }
+  // Cidade / UF ao lado do nome do cliente (some quando o cadastro não tem cidade)
+  const cidHtml = x => { const c = window.sgCidadeUf ? window.sgCidadeUf(x) : ''; return c ? ` <span class="hcid">· ${esc(c)}</span>` : ''; };
   // Tela Hoje: as demos de hoje (e as que ficaram sem resultado) no topo. O ADM vê as de todos, ou só as dele em "Só as minhas".
   function telaHoje() {
     const sec = $('hAgSec'); if (!sec || !perfil) return;
@@ -141,7 +143,7 @@
     $('hAgList').innerHTML = its.map(({ l, d }) => {
       const p = semResultado(d), ok = stDe(d) === 'realizada';
       return `<div class="hitem${p ? ' agpend' : ok ? ' agok' : ''}"><span class="n agn">${d.data === h ? esc(d.hora) : fmtDC(d.data)}</span>
-        <div><b>Demonstração · ${esc(l.empresa || '(sem nome)')}</b><small>${esc([(d.formato === 'presencial' ? 'Presencial' : 'Online') + ' · ' + durTxt(Number(d.dur) || 60), (d.participantes || []).length ? 'com ' + d.participantes.join(', ') : '', ok ? 'Realizada · ' + (RES[d.resultado] || '') : stDe(d) === 'confirmada' ? 'Confirmada' : '', admin && l.owner !== perfil.uid ? l.vendedor : ''].filter(Boolean).join(' · '))}</small></div>
+        <div><b>Demonstração · ${esc(l.empresa || '(sem nome)')}${cidHtml(l)}</b><small>${esc([(d.formato === 'presencial' ? 'Presencial' : 'Online') + ' · ' + durTxt(Number(d.dur) || 60), (d.participantes || []).length ? 'com ' + d.participantes.join(', ') : '', ok ? 'Realizada · ' + (RES[d.resultado] || '') : stDe(d) === 'confirmada' ? 'Confirmada' : '', admin && l.owner !== perfil.uid ? l.vendedor : ''].filter(Boolean).join(' · '))}</small></div>
         <button type="button"${p ? ' class="primary"' : ''} data-hdemo="${esc(d.id)}" data-hlead="${esc(l.id)}">${p ? 'Registrar resultado' : 'Abrir'}</button></div>`;
     }).join('');
   }
