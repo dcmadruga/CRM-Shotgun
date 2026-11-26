@@ -99,7 +99,8 @@ export async function coletar(de, ate, log = console.log, ctx = {}) {
       if (!r) continue;
       // sem data legível no PDF, vale a data em que o robô encontrou a licença (dito no local do documento)
       const dataDoc = data || ate;
-      if (data && data < de) continue;
+      // sem corte pela data: a consulta pública demora a receber as licenças (em nov/2026 a mais nova era de set/2026);
+      // o que já foi gravado não se repete (o documento tem id fixo pelo número/ano)
       registros.push({ ...r, id: `${x.numero}-${x.ano}`, data: dataDoc, url: API + 'documentos/' + encodeURIComponent(pdfId) + '/view', pdf: API + 'documentos/' + encodeURIComponent(pdfId) + '/download',
         local: `Licença ${x.numero}/${x.ano} na consulta pública da SMAMUS${data ? '' : ' · data de emissão pendente de confirmação (data = dia em que o robô encontrou)'}` });
     }
