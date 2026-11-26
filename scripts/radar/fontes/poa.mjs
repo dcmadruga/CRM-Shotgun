@@ -17,6 +17,8 @@ export const info = { id: 'poa-rs', uf: 'RS', nome: 'Porto Alegre: consulta púb
 // atividade de posto: comércio/revenda/abastecimento de combustíveis (fora "gases não combustíveis", postos de saúde, lavagem)
 const POSTO = /combust[ií]ve(l|is)|abastecimento de ve[ií]culos|\bauto\s*posto\b|posto\s+(de\s+)?(gasolina|abastecimento|revenda)/i;
 const FORA = /n[aã]o\s+combust|postos?\s+de\s+sa[uú]de|lavagem|g[aá]s(es)?\s+(industriais|medicinais)/i;
+// a atividade licenciada diz que é posto (o nome da empresa sozinho não basta para confirmar)
+export const atividadePosto = x => { const t = [x.descricao, x.descricaoAtividade].join(' '); return POSTO.test(t) && !FORA.test(t); };
 export const ehPosto = x => { const t = [x.descricao, x.descricaoAtividade, x.nomeRazaoSocial].join(' '); return POSTO.test(t) && !(FORA.test(t) && !/posto\s+(de\s+)?(combust|gasolina|abastec|revenda)/i.test(t)); };
 
 async function pega(caminho) {
@@ -66,7 +68,7 @@ export function registro(x, municipios) {
     municipio: mun?.nome || 'Porto Alegre', ibge: mun?.ibge || '4314902', endereco, coord: null,
     processo: limpa(x.processo), licencas: [{ tipo: sigla || 'LO', numero: `${x.numero}/${x.ano}` }],
     atividade: limpa(x.descricao || x.descricaoAtividade).slice(0, 200), orgao: 'Órgão ambiental municipal: SMAMUS – Porto Alegre', esfera: 'municipal',
-    confianca: cnpj && categoria === 'novo' ? 'confirmado' : 'analise',
+    confianca: cnpj && categoria === 'novo' && atividadePosto(x) ? 'confirmado' : 'analise',
     trecho: limpa(`${t} nº ${x.numero}/${x.ano} · ${razao} · CNPJ/CPF ${x.cnpjCpf || 'pendente de confirmação'} · ${endereco || 'endereço pendente de confirmação'} · Processo ${x.processo || 'pendente de confirmação'} · Atividade: ${x.descricao || ''}${x.descricaoAtividade ? ' (' + x.descricaoAtividade + ')' : ''}`).slice(0, 1500)
   };
 }
