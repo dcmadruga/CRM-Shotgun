@@ -117,7 +117,9 @@ button.busca:disabled{opacity:.6;cursor:progress}
 button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1px solid var(--purple);background:var(--purple);color:#fff;font-size:16px;cursor:pointer}
 .send{display:flex;flex-direction:column;gap:8px}
 .hint{color:var(--muted);font-size:13px;margin:0}
-.ielink{display:block;margin-top:4px}.ielink a{color:var(--purple);font-weight:600}.ielink small{font-size:12px}
+.ielink{display:block;margin-top:4px}.ielink a{color:var(--purple);font-weight:600}.ielink small{display:block;font-size:12px;margin-top:4px}.ielink small:empty{display:none}
+.ielink small.ok{color:#2f9e5b}.ielink small.erro{color:var(--danger)}.ielink small.lendo{color:var(--purple)}
+.iecartao{display:block;margin-top:6px}.iearq{display:block;margin-top:4px;font-size:12.5px;color:var(--fg)}.iearq b{font-weight:600;color:var(--fg);word-break:break-all}.iearq span{color:var(--muted)}.iearq button{font:inherit;font-size:12px;border:0;background:none;color:var(--danger);text-decoration:underline;cursor:pointer;padding:0 2px;width:auto}.iearq[hidden]{display:none}.iecartao button{font:inherit;font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:99px;border:1px solid var(--purple);background:var(--surface);color:var(--purple);cursor:pointer;width:auto}
 #msg{font-weight:500}
 .done{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:6px;padding:14px}
 #csStatus{display:flex;align-items:center;gap:8px}
@@ -377,10 +379,73 @@ function linkSintegra(){
   let box=lab.querySelector('.ielink');
   if(!box){
     box=document.createElement('span'); box.className='hint ielink'; lab.appendChild(box);
-    box.addEventListener('click',e=>{ const a=e.target.closest('a'); if(!a) return; const c=f.elements.cnpj&&dig(f.elements.cnpj.value), msg=box.querySelector('small');
-      if(c&&c.length===14&&navigator.clipboard) navigator.clipboard.writeText(c).then(()=>{ msg.textContent='CNPJ copiado: é só colar no site.' },()=>{}) });
+    box.innerHTML=`<span class="ielinkA"></span><span class="iecartao"><button type="button">Anexar cartão de contribuinte</button><input type="file" accept="application/pdf,image/*" hidden></span><span class="iearq" hidden></span><small></small>`;
+    const msg=box.querySelector('small'), arq=box.querySelector('input[type=file]');
+    box.addEventListener('click',e=>{
+      if(e.target.closest('.iecartao button')){ e.preventDefault(); arq.click(); return }
+      if(e.target.closest('.iearq button')){ e.preventDefault(); CARTAO_IE=null; mostrarCartaoIe(box); msg.textContent=''; msg.className=''; return }
+      const a=e.target.closest('a'); if(!a) return; const c=f.elements.cnpj&&dig(f.elements.cnpj.value);
+      if(c&&c.length===14&&navigator.clipboard) navigator.clipboard.writeText(c).then(()=>{ msg.textContent='CNPJ copiado: é só colar no site. Depois salve o resultado (PDF ou print) e anexe aqui.'; msg.className='' },()=>{}) });
+    arq.addEventListener('change',()=>{ const fs=[...arq.files]; arq.value=''; if(fs.length) lerCartaoIe(fs, inp, msg) });
   }
-  box.innerHTML=`Não sabe? <a href="${esc(url)}" target="_blank" rel="noopener">Consultar no SINTEGRA${SINTEGRA[uf]?' ('+uf+')':''}</a> <small></small>`;
+  box.querySelector('.ielinkA').innerHTML=`Não sabe? <a href="${esc(url)}" target="_blank" rel="noopener">Consultar no SINTEGRA${SINTEGRA[uf]?' ('+uf+')':''}</a>`;
+}
+// Lê o cartão de contribuinte / consulta do SINTEGRA (PDF ou print) no aparelho e tira a IE, o regime e a situação.
+function dadosCartaoIe(txt, cnpjForm){
+  const t=String(txt||'').replace(/\r/g,''), r={ie:'',isento:false,regime:'',cnpjs:[],outroCnpj:false,situacao:''};
+  // CNPJs no documento (para conferir se o cartão é da mesma empresa)
+  (t.match(/\d{2}[.\s]?\d{3}[.\s]?\d{3}\s?\/\s?\d{4}\s?[-–]?\s?\d{2}/g)||[]).forEach(x=>{ const d=dig(x); if(d.length===14&&!r.cnpjs.includes(d)) r.cnpjs.push(d) });
+  const quase=(a,b)=>a.length===b.length&&[...a].filter((c,i)=>c!==b[i]).length<=2;
+  if(cnpjForm&&r.cnpjs.length&&!r.cnpjs.some(c=>quase(c,cnpjForm))) r.outroCnpj=true;
+  // IE: o número logo depois do rótulo "Inscrição Estadual" (mesma linha ou linhas seguintes)
+  const rot=/inscri[cç][aã]o\s*estadual|\bI\.\s?E\.|\bIE\s*[:nN°º]/gi; let m;
+  while(!r.ie && !r.isento && (m=rot.exec(t))){
+    const jan=t.slice(m.index+m[0].length, m.index+m[0].length+220);
+    const tokens=jan.match(/ISENT[OA]|\d[\d.\-\/]{4,20}\d/gi)||[];
+    for(const tk of tokens){
+      if(/^isent/i.test(tk)){ r.isento=true; break }
+      const s0=tk.trim(), d=dig(s0);
+      if(d.length<8||d.length>14) continue;
+      if(/^\d{2}\/\d{2}\/\d{2,4}/.test(s0)||/^\d{5}-\d{3}$/.test(s0)) continue;      // data, CEP
+      if(d.length===14&&(r.cnpjs.includes(d)||cnpjOk(d))) continue;                     // é o CNPJ
+      if(cnpjForm&&d===cnpjForm.slice(0,d.length)) continue;
+      r.ie=s0.replace(/\s+/g,''); break;
+    }
+  }
+  // Regime: valor perto do rótulo; depois, frases claras no texto todo
+  const nt=t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  const qual=v=>/simei|\bmei\b|microempreendedor/.test(v)?'mei':/simples/.test(v)?'simples':/presumido/.test(v)?'presumido':/lucro real|\breal\b/.test(v)?'real':'';
+  const rr=/regime|enquadramento|forma de tributacao|tipo de contribuinte/g;
+  while(!r.regime && (m=rr.exec(nt))){ const v=nt.slice(m.index, m.index+90); if(!/nao optante|optante\s*:\s*nao/.test(v)) r.regime=qual(v.slice(m[0].length)) }
+  if(!r.regime && /optante pelo simples|simples nacional\s*:?\s*sim\b/.test(nt) && !/nao optante/.test(nt)) r.regime='simples';
+  const sit=nt.match(/situacao[^\n]{0,50}?(baixad[ao]|suspens[ao]|cancelad[ao]|inapt[ao]|nul[ao]|ativ[ao]|habilitad[ao]|nao habilitad[ao])/);
+  if(sit) r.situacao=sit[1];
+  return r;
+}
+let leituraIe=0, CARTAO_IE=null;
+const CAMPO_CARTAO='Cartão de contribuinte (IE)';
+function mostrarCartaoIe(box){ const el=box.querySelector('.iearq'); el.hidden=!CARTAO_IE; el.innerHTML=CARTAO_IE?`📎 <b>${esc(CARTAO_IE.name)}</b> <span>${L.p?'fica salvo junto com os dados':'(este link não guarda anexos)'}</span> <button type="button" aria-label="Remover">remover</button>`:'' }
+async function lerCartaoIe(arquivos, inp, msg){
+  const aviso=(t,cls)=>{ msg.textContent=t; msg.className=cls||'' }, id=++leituraIe;
+  if(!window.ContratoSocial||!window.ContratoSocial.texto){ aviso('Não foi possível ler o documento aqui. Digite a inscrição estadual.','erro'); return }
+  aviso('Lendo o cartão…','lendo');
+  try{
+    const lido=await window.ContratoSocial.texto(arquivos, t=>{ if(id===leituraIe) aviso(t,'lendo') }); if(id!==leituraIe) return;
+    const c=f.elements.cnpj?dig(f.elements.cnpj.value):'', d=dadosCartaoIe(lido.texto, c.length===14?c:'');
+    if(!d.outroCnpj && arquivos[0].size<=MAXF){ CARTAO_IE=arquivos[0]; mostrarCartaoIe(msg.closest('.ielink')) }
+    if(d.outroCnpj){ aviso('Este documento é de outro CNPJ ('+fmtCnpj(d.cnpjs[0])+'). Confira se anexou o cartão certo.','erro'); return }
+    const feito=[];
+    if(d.ie||d.isento){ inp.value=d.isento?'ISENTO':d.ie; if(inp.classList.contains('bad')) valida(inp); feito.push('inscrição estadual '+inp.value) }
+    if(d.regime){
+      const sel=[...f.querySelectorAll('label')].find(l=>/regime/i.test(l.querySelector('span')?.textContent||''))?.querySelector('select');
+      const re={mei:/\bmei\b|microempreendedor/i,simples:/simples/i,presumido:/presumido/i,real:/\breal\b/i}[d.regime], o=sel&&[...sel.options].find(o=>re.test(o.text));
+      if(o){ sel.value=o.value; if(sel.classList.contains('bad')) valida(sel); feito.push('regime '+o.text) }
+    }
+    if(feito.length) f.dispatchEvent(new Event('input'));
+    const alerta=/baixad|suspens|cancelad|inapt|nul|nao habilitad/.test(d.situacao)?' Atenção: a situação no cartão consta como '+d.situacao.toUpperCase()+'.':'';
+    if(feito.length) aviso('Preenchido pelo cartão: '+feito.join(' e ')+'. Confira.'+alerta, alerta?'erro':'ok');
+    else aviso('Não encontramos a inscrição estadual neste arquivo'+(lido.ocr?' (a imagem pode estar pouco nítida)':'')+'. Digite à mão.'+alerta,'erro');
+  }catch(e){ if(id!==leituraIe) return; console.error(e); aviso('Não conseguimos ler o arquivo agora. Digite a inscrição estadual.','erro') }
 }
 // Guarda a consulta de cada CNPJ: o botão "Usar endereço do estabelecimento" reaproveita sem consultar de novo
 const CNPJ_CACHE={};
@@ -919,6 +984,7 @@ function montarTexto(o){
     if(c.k==='uf') v=v.toUpperCase();
     if(c.secao!==sec){ linhas.push('','*'+c.secao+'*'); sec=c.secao }
     linhas.push(c.label+': '+v);
+    if(CARTAO_IE && ieInputDe()?.name===c.k) linhas.push(CAMPO_CARTAO+': '+CARTAO_IE.name+(L.p?' (anexado no sistema)':''));
     if(c.k==='contratoSocial' && SOCIOS.length) linhas.push((QSA?'Sócios no CNPJ: ':'Sócios no contrato: ')+SOCIOS.map(x=>x.nome+(x.administrador?' (administrador)':'')).join('; '));
   });
   return linhas.join('\n');
@@ -961,6 +1027,8 @@ async function salvarNoSistema(o, texto){
   const pref=['propostas',L.p];
   const anexos=[], pend=pendentes();
   const arquivos=CAMPOS.filter(c=>c.tipo==='arquivo'&&!f.elements[c.k]?.disabled).flatMap(c=>arqs(f.elements[c.k]).map(file=>({c,file})));
+  // Cartão de contribuinte anexado junto da IE: vira anexo da proposta (aparece no Pré TASK e na TASK)
+  if(CARTAO_IE) arquivos.push({c:{label:CAMPO_CARTAO}, file:CARTAO_IE});
   let n=0;
   for(const {c,file} of arquivos){
     n++; $('#msg').textContent=`Enviando anexo ${n} de ${arquivos.length}…`;
@@ -987,6 +1055,7 @@ async function salvarNoSistema(o, texto){
   }
   const campos={}, valores={}; CAMPOS.forEach(c=>{ if(c.tipo!=='arquivo' && o[c.k]){ campos[c.label]=o[c.k]; valores[c.k]=o[c.k] } });
   pend.forEach(l=>{ campos[l]=PEND_TXT });
+  if(CARTAO_IE) campos[CAMPO_CARTAO]=CARTAO_IE.name+' (anexado)';
   if(f.elements.contratoSocial&&f.elements.contratoSocial.dataset.manual==='1') campos['Contrato social']='Não enviado: o cliente preencheu os dados do representante legal manualmente';
   const socios=SOCIOS.map(({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas})=>Object.fromEntries(Object.entries({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas}).filter(([k,v])=>v!=null&&v!=='')));
   if(socios.length) campos[QSA?'Sócios no CNPJ (Receita)':'Sócios no contrato social']=socios.map(x=>x.nome).join('; ');
