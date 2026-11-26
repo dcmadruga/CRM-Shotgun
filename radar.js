@@ -23,8 +23,8 @@ export const CONFIANCA = { confirmado: 'Processo confirmado', possivel: 'Possív
 // Registro antigo, sem Estado, é de MT (o Radar começou por lá)
 const ufDe = x => x?.uf || 'MT';
 const daUF = x => ufDe(x) === uf;
-const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', PR: 'Paraná', SP: 'São Paulo', SE: 'Sergipe', PA: 'Pará', TO: 'Tocantins', RO: 'Rondônia' };
-const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7], PR: [[-24.6, -51.4], 7], SP: [[-22.3, -48.6], 7], SE: [[-10.6, -37.4], 8], PA: [[-4.0, -52.5], 5], TO: [[-10.2, -48.3], 6], RO: [[-10.9, -62.8], 6] };
+const NOME_UF = { MT: 'Mato Grosso', RS: 'Rio Grande do Sul', SC: 'Santa Catarina', PR: 'Paraná', SP: 'São Paulo', SE: 'Sergipe', PA: 'Pará', TO: 'Tocantins', RO: 'Rondônia', GO: 'Goiás' };
+const CENTRO_UF = { MT: [[-12.9, -55.9], 6], RS: [[-30.0, -53.3], 6], SC: [[-27.3, -50.5], 7], PR: [[-24.6, -51.4], 7], SP: [[-22.3, -48.6], 7], SE: [[-10.6, -37.4], 8], PA: [[-4.0, -52.5], 5], TO: [[-10.2, -48.3], 6], RO: [[-10.9, -62.8], 6], GO: [[-15.9, -49.6], 6] };
 const FONTES_RS = [
   { id: 'famurs', nome: 'Diário Oficial dos Municípios do RS (FAMURS)', url: 'https://www.diariomunicipal.com.br/famurs/' },
   { id: 'doe-rs', nome: 'Diário Oficial do Estado do RS (DOE-RS)', url: 'https://www.diariooficial.rs.gov.br/' },
@@ -80,6 +80,15 @@ const FONTES_RO = [
   { id: 'sedam', nome: 'SEDAM: licenciamento ambiental de RO', url: 'https://transparencia.sedam.ro.gov.br/', obs: 'Recusa conexão de servidores fora do Brasil: não monitorada' },
   { id: 'diof-ro', nome: 'Diário Oficial do Estado de RO (DIOF)', url: 'https://diof.ro.gov.br/', obs: 'Acesso automático instável e sem busca aberta: não monitorada' }
 ];
+const FONTES_GO = [
+  { id: 'semad-go', nome: 'SEMAD-GO: Boletim Ambiental (pedidos e licenças do Ipê)', url: 'https://portal.meioambiente.go.gov.br/transparencia-web/#/boletim-ambiental' },
+  { id: 'doe-go', nome: 'Diário Oficial do Estado de GO (avisos de licença)', url: 'https://diariooficial.abc.go.gov.br/' },
+  { id: 'agm', nome: 'Diário Oficial dos Municípios de Goiás (AGM)', url: 'https://www.diariomunicipal.com.br/agm/' },
+  { id: 'fgm', nome: 'Diário Oficial dos Municípios Goianos (FGM)', url: 'https://www.diariomunicipal.com.br/fgm/' },
+  { id: 'querido-go', nome: 'Querido Diário (diários próprios das cidades de GO)', url: 'https://queridodiario.ok.org.br/' },
+  { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
+  { id: 'ipe-go', nome: 'SEMAD-GO: sistema Ipê (processos)', url: 'https://portal.meioambiente.go.gov.br/ipe', obs: 'Exige login: não monitorado (as publicações do Ipê entram pelo Boletim Ambiental)' }
+];
 const FONTES_PREVISTAS_MT = [
   { id: 'iomat', nome: 'Diário Oficial de MT (IOMAT)', url: 'https://iomat.mt.gov.br/' },
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
@@ -111,7 +120,7 @@ const ativos = () => doUF().filter(e => !filtro.mun || e.ibge === filtro.mun);
 const daCidade = x => !filtro.mun || x.ibge === filtro.mun || (x.eid && ativos().some(e => e.id === x.eid));
 const alertasUF = () => alertas.filter(a => daUF(a) && daCidade(a));
 const naoLidos = () => alertasUF().filter(a => !(a.lidoPor || []).includes(perfil?.uid));
-const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : uf === 'PR' ? FONTES_PR : uf === 'SP' ? FONTES_SP : uf === 'SE' ? FONTES_SE : uf === 'PA' ? FONTES_PA : uf === 'TO' ? FONTES_TO : uf === 'RO' ? FONTES_RO : FONTES_PREVISTAS_MT;
+const FONTES_PREVISTAS_UF = () => uf === 'RS' ? FONTES_RS : uf === 'SC' ? FONTES_SC : uf === 'PR' ? FONTES_PR : uf === 'SP' ? FONTES_SP : uf === 'SE' ? FONTES_SE : uf === 'PA' ? FONTES_PA : uf === 'TO' ? FONTES_TO : uf === 'RO' ? FONTES_RO : uf === 'GO' ? FONTES_GO : FONTES_PREVISTAS_MT;
 const fontesUF = () => fontes.filter(f => f.id === 'anp' ? true : f.uf ? f.uf === uf : uf === 'MT');
 const ultimaExec = () => execs[0];
 

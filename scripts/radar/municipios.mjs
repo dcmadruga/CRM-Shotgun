@@ -5,7 +5,7 @@ export const semAcento = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/
 const chaveMun = s => semAcento(s).replace(/[’'`´]/g, '').replace(/\bnossa\s+s(ra)?\.?\s/g, 'nossa senhora ').replace(/\bsto\.?\s/g, 'santo ').replace(/\bsta\.?\s/g, 'santa ').replace(/\bs\.\s?(?=jose|felix|pedro)/g, 'sao ').replace(/\bd\s?oeste\b/g, 'doeste').replace(/[^a-z0-9]+/g, ' ').trim();
 
 export const UFS = { MT: { cod: 51, nome: 'mato grosso', min: 140 }, RS: { cod: 43, nome: 'rio grande do sul', min: 490 }, SC: { cod: 42, nome: 'santa catarina', min: 290 }, PR: { cod: 41, nome: 'parana', min: 390 }, SP: { cod: 35, nome: 'sao paulo', min: 640 },
-  SE: { cod: 28, nome: 'sergipe', min: 70 }, PA: { cod: 15, nome: 'para', min: 138 }, TO: { cod: 17, nome: 'tocantins', min: 132 }, RO: { cod: 11, nome: 'rondonia', min: 49 } };
+  SE: { cod: 28, nome: 'sergipe', min: 70 }, PA: { cod: 15, nome: 'para', min: 138 }, TO: { cod: 17, nome: 'tocantins', min: 132 }, RO: { cod: 11, nome: 'rondonia', min: 49 }, GO: { cod: 52, nome: 'goias', min: 240 } };
 export const municipiosMT = listaPronta => municipiosUF('MT', listaPronta);
 
 export async function municipiosUF(uf, listaPronta) {
@@ -46,7 +46,8 @@ export async function municipiosUF(uf, listaPronta) {
       for (const f of fortes) for (const m of ordenados) if ((' ' + f + ' ').includes(' ' + m.chave + ' ')) return m;
       const barras = [...t.matchAll(new RegExp(`([a-z ]{3,40}?) ${sigla}\\b`, 'g'))].map(x => x[1]);
       for (const f of barras) for (const m of ordenados) if ((' ' + f + ' ').endsWith(' ' + m.chave + ' ')) return m;
-      for (const m of ordenados) if (m.chave.length > 4 && t.includes(' ' + m.chave + ' ')) return m;
+      // cidade com o nome do Estado (Goiás-GO): só com indicação forte, senão "Estado de Goiás" viraria a cidade
+      for (const m of ordenados) if (m.chave.length > 4 && m.chave !== U.nome && t.includes(' ' + m.chave + ' ')) return m;
       return null;
     }
   };
