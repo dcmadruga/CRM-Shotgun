@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 247, data: '2026-11-26', titulo: 'Regime Tributário no Pré TASK', itens: [
+    'Pré TASK, aba Implantação: o Regime Tributário informado pelo cliente nos dados para o contrato agora aparece no bloco Base, já preenchido.',
+    'É o mesmo campo do Pré-Contrato: corrigir aqui corrige lá também, com o registro de quem alterou. Se o cliente não informou (contratos antigos), o Pré TASK sugere o regime pela Receita Federal, para conferir.'
+  ] },
   { v: 246, data: '2026-11-26', titulo: 'Cidade / UF nos avisos e na tela Hoje', itens: [
     'Tela Hoje: em Demonstrações de hoje e na lista do próximo passo de cada proposta, a Cidade / UF do cliente aparece logo depois do nome da empresa.',
     'Sino: os avisos de demonstração (agendada para você, hoje e registrar resultado) e de proposta aceita também mostram a Cidade / UF. Se o cadastro não tiver cidade, o aviso fica como antes.'
