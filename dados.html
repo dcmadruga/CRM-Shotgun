@@ -207,6 +207,17 @@ async function carregarConfig(){
 }
 
 let CFG=null, CAMPOS=[];
+// Regime Tributário: não é pedido ao cliente (é exigido no Pré TASK). Se o cartão de contribuinte ou a busca do CNPJ
+// trouxerem o regime, ele vai junto com os dados (com a origem) e o Pré TASK já abre preenchido.
+const ehRegime=c=>/regime\s+tribut/i.test(c.label||'')||(/regime/i.test(c.label||'')&&!/bens|casamento|uni[aã]o/i.test(c.label||''));
+let REGIME=null;
+function guardaRegime(qual,de){
+  const c=(CFG&&CFG.secoes||[]).flatMap(s=>s.campos||[]).find(ehRegime); if(!c||!qual) return;
+  if(REGIME&&REGIME.de==='cartão de contribuinte'&&de!=='cartão de contribuinte') return;
+  const re={mei:/\bmei\b|microempreendedor/i,simples:/simples/i,presumido:/presumido/i,real:/\breal\b/i}[qual];
+  const op=re&&String(c.opcoes||'').split(/[,;\n]/).map(x=>x.trim()).find(x=>re.test(x));
+  REGIME=op?{c,v:op,de}:REGIME;
+}
 // Documentos que o cliente marcou "mando mais tarde": quando o link é aberto de novo, a página mostra só eles (null = formulário completo)
 let PEND=null;
 const PEND_TXT='Pendente: o cliente vai enviar depois';
@@ -292,7 +303,7 @@ function montar(){
   // Campos marcados "Pré TASK" nos Parâmetros não aparecem para o cliente: o vendedor completa na Pré TASK
   // A data desejada para a implantação não é mais pedida ao cliente (a data do Start fica na Pré TASK); o bloco some se ficar vazio
   $('#secoes').innerHTML=(CFG.secoes||[]).map(s=>{
-    const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(c.pretask&&!c.fixo) && !(c.k==='dataImpl'||/data desejada.*implanta/i.test(c.label||'')) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||'')) && (!PEND || (c.tipo==='arquivo' && PEND.includes(c.label)))); if(!cs.length) return '';
+    const cs=(s.campos||[]).filter(c=>(c.show!==false||c.fixo) && !(c.pretask&&!c.fixo) && !ehRegime(c) && !(c.k==='dataImpl'||/data desejada.*implanta/i.test(c.label||'')) && !(CFG.contratoSocial!==false && c.tipo==='arquivo' && /contrato social/i.test(c.label||'')) && (!PEND || (c.tipo==='arquivo' && PEND.includes(c.label)))); if(!cs.length) return '';
     cs.forEach(c=>CAMPOS.push({...c, secao:s.titulo}));
     // Sim/Não que abre os campos seguintes da seção (padrão quando é o primeiro campo)
     // Cada Sim/Não que abre vira uma linha: a pergunta à esquerda e os campos dela ao lado, até o próximo Sim/Não que abre
@@ -436,11 +447,7 @@ async function lerCartaoIe(arquivos, inp, msg){
     if(d.outroCnpj){ aviso('Este documento é de outro CNPJ ('+fmtCnpj(d.cnpjs[0])+'). Confira se anexou o cartão certo.','erro'); return }
     const feito=[];
     if(d.ie||d.isento){ inp.value=d.isento?'ISENTO':d.ie; if(inp.classList.contains('bad')) valida(inp); feito.push('inscrição estadual '+inp.value) }
-    if(d.regime){
-      const sel=[...f.querySelectorAll('label')].find(l=>/regime/i.test(l.querySelector('span')?.textContent||''))?.querySelector('select');
-      const re={mei:/\bmei\b|microempreendedor/i,simples:/simples/i,presumido:/presumido/i,real:/\breal\b/i}[d.regime], o=sel&&[...sel.options].find(o=>re.test(o.text));
-      if(o){ sel.value=o.value; if(sel.classList.contains('bad')) valida(sel); feito.push('regime '+o.text) }
-    }
+    if(d.regime) guardaRegime(d.regime,'cartão de contribuinte');
     if(feito.length) f.dispatchEvent(new Event('input'));
     const alerta=/baixad|suspens|cancelad|inapt|nul|nao habilitad/.test(d.situacao)?' Atenção: a situação no cartão consta como '+d.situacao.toUpperCase()+'.':'';
     if(feito.length) aviso('Preenchido pelo cartão: '+feito.join(' e ')+'. Confira.'+alerta, alerta?'erro':'ok');
@@ -479,6 +486,7 @@ async function buscarCnpj(el,forcar){
       set('logradouro',rua); set('numero',j.numero); set('complemento',j.complemento);
       set('bairro',j.bairro); set('cidade',j.municipio); set('uf',j.uf); set('ie',j.ie);
       if(j.uf){ ufEmpresa=j.uf; linkSintegra() }
+      guardaRegime(j.mei?'mei':j.simples?'simples':/presumido/i.test(j.regime)?'presumido':/real/i.test(j.regime)?'real':'','Receita Federal');
       // Campos criados nos Parâmetros da seção da empresa: telefone e regime tributário pelo nome
       const sec=el.closest('.sec');
       sec && sec.querySelectorAll('label').forEach(l=>{
@@ -1055,6 +1063,7 @@ async function salvarNoSistema(o, texto){
   }
   const campos={}, valores={}; CAMPOS.forEach(c=>{ if(c.tipo!=='arquivo' && o[c.k]){ campos[c.label]=o[c.k]; valores[c.k]=o[c.k] } });
   pend.forEach(l=>{ campos[l]=PEND_TXT });
+  if(REGIME){ valores[REGIME.c.k]=REGIME.v; valores[REGIME.c.k+'__de']=REGIME.de; campos[REGIME.c.label]=REGIME.v }
   if(CARTAO_IE) campos[CAMPO_CARTAO]=CARTAO_IE.name+' (anexado)';
   if(f.elements.contratoSocial&&f.elements.contratoSocial.dataset.manual==='1') campos['Contrato social']='Não enviado: o cliente preencheu os dados do representante legal manualmente';
   const socios=SOCIOS.map(({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas})=>Object.fromEntries(Object.entries({nome,cpf,rg,orgaoRg,estadoCivil,profissao,nacionalidade,endereco,cep,nascimento,administrador,quotas}).filter(([k,v])=>v!=null&&v!=='')));
