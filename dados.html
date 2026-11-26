@@ -992,6 +992,41 @@ function escolher(v,rolar=true){
 }
 f.addEventListener('change',e=>{ if(e.target.name==='contratoSocial') lerContrato(e.target); if(e.target.name==='_rep') escolher(e.target.value) });
 
+// Telefone do responsável legal: se o nome for o mesmo de um contato da proposta/CRM (vem no link), já preenche o telefone dele.
+// Só mexe no campo vazio ou no que foi preenchido assim; o que a pessoa digitar fica.
+const CONTATOS=(Array.isArray(L.ct)?L.ct:[]).map(x=>Array.isArray(x)?{nome:x[0],fone:dig(x[1])}:{nome:x&&x.nome,fone:dig(x&&x.fone)}).filter(x=>x.nome&&x.fone.length>=10);
+const LIGA=new Set(['da','de','do','das','dos','e','di']);
+const tokNome=x=>nz(x).split(' ').filter(w=>w&&!LIGA.has(w));
+function foneDoNome(nome){
+  const R=tokNome(nome); if(!R.length||!CONTATOS.length) return null;
+  const forte=[], fraco=[];
+  CONTATOS.forEach(c=>{ const C=tokNome(c.nome); if(!C.length||C[0]!==R[0]) return;
+    if(C.join(' ')===R.join(' ')||(C.length>=2&&C.every(w=>R.includes(w)))||(R.length>=2&&R.every(w=>C.includes(w)))) forte.push(c);
+    else if(C.length===1) fraco.push(c) });
+  const unico=l=>{ const fs=[...new Set(l.map(c=>c.fone))]; return fs.length===1?l[0]:null };
+  return forte.length?unico(forte):unico(fraco);
+}
+const fmtFone=d=>{ d=dig(d); if(d.length>11&&d.startsWith('55')) d=d.slice(2); return d.replace(/^(\d{2})(\d{4,5})(\d{4})$/,'($1) $2-$3') };
+function camposResp(){
+  if(!CFG) return {}; const sec=secResp(); if(!sec) return {};
+  const cs=sec.campos||[], el=c=>c&&f.elements[c.k]&&!(f.elements[c.k] instanceof RadioNodeList)?f.elements[c.k]:null;
+  return { nome:el(cs.find(c=>c.tipo==='texto'&&/nome/i.test(c.label||''))), fone:el(cs.find(c=>c.tipo==='telefone'))||el(cs.find(c=>/telefone|whats|celular|fone/i.test(c.label||''))) };
+}
+function foneResp(){
+  const {nome,fone}=camposResp(); if(!nome||!fone) return;
+  if(fone.value&&fone.dataset.auto!=='1') return;
+  const c=foneDoNome(nome.value), dica=fone.closest('label')?.querySelector('.foneauto');
+  if(c){ fone.value=fmtFone(c.fone); fone.dataset.auto='1'; if(fone.classList.contains('bad')) valida(fone) }
+  else if(fone.dataset.auto==='1'){ fone.value=''; delete fone.dataset.auto }
+  let d=dica; if(!d&&c){ d=document.createElement('span'); d.className='hint foneauto'; fone.closest('label')?.appendChild(d) }
+  if(d){ d.hidden=!c; d.textContent=c?'Telefone do contato '+c.nome+' cadastrado na proposta. Confira.':'' }
+}
+if(CONTATOS.length){
+  f.addEventListener('input',e=>{ const {nome,fone}=camposResp();
+    if(e.target===fone&&e.isTrusted){ delete fone.dataset.auto; const d=fone.closest('label')?.querySelector('.foneauto'); if(d) d.hidden=true; return }
+    if(!e.isTrusted||e.target===nome) foneResp() });
+}
+
 /* Mensagem */
 const fmtData=iso=>{ if(!iso) return ''; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y };
 function montarTexto(o){
@@ -1020,7 +1055,7 @@ function montarTexto(o){
   preencher(draft);
   preencher({cnpj:L.c, razao:L.r, cidade:L.cid, uf:L.uf});
   ligarAuto(); sincronizarSenhaCert(); ligarBandeira();
-  $('#carregando').hidden=true; f.hidden=false; ajustarRotulos();
+  $('#carregando').hidden=true; f.hidden=false; ajustarRotulos(); if(CONTATOS.length) foneResp();
 })();
 f.addEventListener('input',()=>{ if(PEND) return; try{ localStorage.setItem(DRAFT,JSON.stringify(lerForm())) }catch(e){} });
 
