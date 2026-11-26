@@ -332,6 +332,16 @@ function sociosHtml(socios, contato) {
   if (!socios || !socios.length) return '';
   return `<small>Sócios na Receita (toque para adicionar como contato):</small><div class="crmsocl">${socios.map((x, i) => `<button type="button" class="crmsocb" data-a="socio" data-i="${i}" aria-pressed="${[].concat(contato || []).some(n => norm(n) === norm(nomeProprio(x.nome)))}"><b>${esc(nomeProprio(x.nome))}</b>${x.qual ? `<small>${esc(x.qual)}</small>` : ''}</button>`).join('')}</div>`;
 }
+// Atalhos do Próximo contato: cada botão marca a data de hoje + N dias (a data continua editável à mão)
+const PRAZOS = [7, 15, 30, 60];
+const isoDaqui = n => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+function prazosHtml(prox) {
+  return `<div class="crmprazos" role="group" aria-label="Atalhos de prazo">${PRAZOS.map(n => `<button type="button" class="uchip" data-a="prazo" data-n="${n}" aria-pressed="${prox === isoDaqui(n)}" title="${fmtD(isoDaqui(n))}">${n} dias</button>`).join('')}</div>`;
+}
+function marcarPrazos() {
+  const v = ($('crmForm')?.querySelector('[data-f=prox]') || {}).value || '';
+  dlg().querySelectorAll('[data-a=prazo]').forEach(b => { const n = +b.dataset.n; b.setAttribute('aria-pressed', String(v === isoDaqui(n))); b.title = fmtD(isoDaqui(n)); });
+}
 function formLead(l) {
   l = l || { etapa: 'lead', origem: '' };
   const p = l.id ? propDoLead(l) : null;
@@ -357,7 +367,7 @@ function formLead(l) {
         <div class="tkform">
           <label>Etapa<select data-f="etapa">${ETAPAS.filter(e => ['lead', 'qualificado', 'perdido'].includes(e.id)).map(e => `<option value="${e.id}"${e.id === l.etapa ? ' selected' : ''}>${e.nome}</option>`).join('')}</select></label>
           <label>Origem<select data-f="origem"><option value="">Escolha…</option>${ORIGENS.map(o => `<option${o === l.origem ? ' selected' : ''}>${o}</option>`).join('')}</select></label>
-          <label>Próximo contato<input data-f="prox" type="date" value="${esc(l.prox || '')}"></label>
+          <div class="crmproxc"><label>Próximo contato<input data-f="prox" type="date" value="${esc(l.prox || '')}"></label>${prazosHtml(l.prox)}</div>
           <label class="crmmot" ${l.etapa === 'perdido' ? '' : 'hidden'}>Motivo da perda<select data-f="motivo"><option value="">Escolha…</option>${MOTIVOS.map(m => `<option${m === l.motivo ? ' selected' : ''}>${m}</option>`).join('')}</select></label>
           <label class="full">Observações<span class="ditado"><textarea data-f="obs" rows="2" placeholder="Digite ou toque no microfone e fale">${esc(l.obs || '')}</textarea>${micBtn()}</span><small class="ditst" hidden></small></label>
         </div>
@@ -620,12 +630,14 @@ function ligar() {
   dlg().addEventListener('input', e => { if (e.target.dataset.f === 'cnpj' && dig(e.target.value).length === 14) anpLead(e.target.value, true); });
   dlg().addEventListener('change', e => { if (e.target.dataset.f === 'etapa') { const m = dlg().querySelector('.crmmot'); if (m) m.hidden = e.target.value !== 'perdido'; } });
   dlg().addEventListener('input', e => { if (e.target.closest('#crmCts')) atualizarNCont(); });
+  dlg().addEventListener('input', e => { if (e.target.dataset.f === 'prox') marcarPrazos(); });
   dlg().addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'crmNTexto') { e.preventDefault(); pararDitado(); anotar(); } });
   dlg().addEventListener('click', async e => {
     if (e.target.id === 'crmNAdd') { pararDitado(); anotar(); return; }
     const b = e.target.closest('[data-a]'); if (!b) return;
     const a = b.dataset.a;
     if (a === 'ditar') { ditar(b); return; }
+    if (a === 'prazo') { const inp = $('crmForm').querySelector('[data-f=prox]'); inp.value = isoDaqui(+b.dataset.n); marcarPrazos(); return; }
     pararDitado();
     if (a === 'salvar') { if (await salvarLead()) desenhar(); }
     else if (a === 'agendar' || a === 'demo') { const id = await salvarLead(true); if (id && window.agendaNova) { if (a === 'agendar') window.agendaNova(id); else window.agendaAbrir(id, b.dataset.did); } }

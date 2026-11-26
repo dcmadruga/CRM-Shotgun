@@ -14,6 +14,14 @@ window.SHOTGUN_NOVIDADES = [
     'Telemetria → Postos em construção, Estado RS: o Radar passa a ler também a consulta pública de licenças ambientais da Prefeitura de Porto Alegre e mostra as licenças de posto de combustível emitidas lá (LP e LI entram como novo posto).',
     'A fonte aparece na lista de fontes do RS. Porto Alegre emite poucas licenças de posto, então os achados devem ser raros.'
   ] },
+  { v: 240, data: '2026-11-26', titulo: 'Atalhos de prazo no Próximo contato', itens: [
+    'CRM → ficha do lead, em Negociação: embaixo de Próximo contato agora tem os botões 7 dias, 15 dias, 30 dias e 60 dias. Um toque marca a data de hoje mais esse prazo, e o botão fica destacado.',
+    'A data continua editável à mão. Passando o dedo ou o mouse sobre o botão aparece a data que ele vai marcar.'
+  ] },
+  { v: 239, data: '2026-11-26', titulo: 'Postos novos da ANP no sino', itens: [
+    'O sino de notificações agora avisa quando entram postos novos na base da ANP, todo dia, só nos seus Estados de atuação (os mesmos dos filtros do CRM). Vem um aviso por Estado e por dia, com os nomes dos postos e a cidade.',
+    'Tocar no aviso abre Telemetria → Telemetria ANP já filtrada no Estado. Se mais postos entram no mesmo dia, o aviso volta como não lido. Quem não tem Estado de atuação marcado não recebe esses avisos.'
+  ] },
   { v: 238, data: '2026-11-25', titulo: 'Agenda de demonstrações', itens: [
     'Novo item Agenda no menu, logo depois de Hoje. Nele você marca as demonstrações do sistema, sempre ligadas a um lead do CRM.',
     'Toque em + Agendar demonstração, escolha o lead (ou cadastre um novo ali mesmo), a data, a hora, a duração, se é online (com o link da reunião) ou presencial (o endereço vem do lead) e quem do cliente vai participar.',
