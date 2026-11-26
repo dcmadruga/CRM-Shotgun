@@ -390,7 +390,7 @@ button.lnk{background:none;border:0;padding:0;min-height:0;color:var(--purple);t
 .tkimp li{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
 .tkimp small{display:block;color:var(--muted);font-size:12px}
 /* Perfil TASK: só o módulo TASK */
-body.is-task .tabs [role=tab]:not(#tabTask),body.is-task .subtabs,body.is-task #viewProp,body.is-task #viewCfg,body.is-task #viewList,body.is-task #viewCrm,body.is-task #viewTele,body.is-task .bar{display:none!important}
+body.is-task .tabs [role=tab]:not(#tabTask),body.is-task .subtabs,body.is-task #viewProp,body.is-task #viewCfg,body.is-task #viewList,body.is-task #viewCrm,body.is-task #viewAgenda,body.is-task #viewTele,body.is-task .bar{display:none!important}
 header.top .wrap>div{flex:1;min-width:0}
 #btnInstall{background:var(--accent);color:var(--accent-fg);border:0;border-radius:4px;padding:8px 12px;font-weight:600;white-space:nowrap}
 .team{border-left:4px solid var(--purple)}
@@ -789,6 +789,114 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .marcs .mg{width:100%;font-size:11.5px;font-weight:600;color:var(--muted);margin-top:4px}
 .pcard .ctinfo{font-size:12.5px;color:var(--ok-text);font-weight:600}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* Agenda (agenda.js): demonstrações ligadas ao lead e próximos contatos */
+.agic{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.agtools #agNova{margin-left:auto}
+.agchk{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--fg);margin:0;cursor:pointer}
+.agchk input{width:auto!important;margin:0!important;accent-color:var(--accent)}
+.agnav{display:flex;align-items:center;gap:6px;margin:12px 0 10px;flex-wrap:wrap}.agnav[hidden]{display:none}
+.agnav button{min-height:36px;padding:6px 12px;display:inline-flex;align-items:center;justify-content:center}
+.agnav #agAnt,.agnav #agProx{padding:6px 8px}
+.agnav b{font-family:var(--display);font-size:15px;font-weight:600;margin-left:6px}
+.agsemana{display:grid;grid-template-columns:repeat(7,minmax(128px,1fr));gap:8px;overflow-x:auto;padding-bottom:6px}
+.agcol{min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:6px;display:flex;flex-direction:column;gap:6px;min-height:180px}
+.agcol.fds{background:color-mix(in srgb,var(--bg) 70%,var(--surface))}
+.agcol.hoje{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.agcolh{display:flex;align-items:baseline;gap:6px;border:0;background:none;padding:4px 6px;color:var(--muted);font-weight:600;border-radius:8px;min-height:0}
+.agcolh span{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
+.agcolh b{font-family:var(--display);font-size:18px;font-weight:700;color:var(--fg);font-variant-numeric:tabular-nums}
+.agcol.passado .agcolh b{color:var(--muted)}
+.agcol.hoje .agcolh span{color:var(--accent-text)}
+.agcol.hoje .agcolh b{background:var(--accent);color:var(--accent-fg);border-radius:999px;min-width:28px;text-align:center;padding:0 6px}
+.agcolh:hover{background:var(--surface)}
+.agvazio{flex:1}
+.agit{font:inherit;text-align:left;display:grid;grid-template-columns:minmax(0,1fr);min-width:0;gap:2px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:7px 8px;background:var(--surface);color:var(--fg);cursor:pointer;font-weight:400;transition:border-color var(--mov) var(--ease)}
+.agit:hover{border-color:var(--accent)}
+.agit b{font-size:13px;overflow-wrap:anywhere}
+.agit small{font-size:11.5px;color:var(--muted)}
+.agit .aghora{font-size:11.5px;font-weight:700;color:var(--accent-text);font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.agit .agfmt{display:inline-flex;align-items:center;gap:4px}.agit .agfmt .agic{width:14px;height:14px}
+.agit .agdono{font-style:italic}
+.agit.prox{border-style:dashed;border-left:3px solid var(--muted);background:transparent}
+.agit.prox .aghora{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:.06em}
+.agit.prox.atras{border-left-color:var(--danger)}.agit.prox.atras .aghora{color:var(--danger)}
+.agit.passou{opacity:.7}
+.agadd{border:1px dashed var(--line);background:none;color:var(--muted);font-size:16px;padding:2px;min-height:30px;border-radius:8px;opacity:.55;transition:opacity var(--mov) var(--ease),border-color var(--mov) var(--ease)}
+.agcol:hover .agadd,.agadd:focus-visible{opacity:1}.agadd:hover{border-color:var(--accent);color:var(--accent-text)}
+.agadd.largo{font-size:13.5px;opacity:1;padding:10px;min-height:44px}
+.agdia{display:flex;flex-direction:column;gap:8px}
+.agdia .agit{padding:10px 12px;grid-template-columns:76px minmax(0,1fr);column-gap:12px}
+.agdia .agit>*{grid-column:2}.agdia .agit .aghora{grid-column:1;grid-row:1/span 5;font-size:14px;align-self:start;padding-top:1px}
+.agdia .agit.prox .aghora{font-size:10.5px}
+.agdia .agit b{font-size:14.5px}.agdia .agit small{font-size:12.5px}
+.aggrupo{margin-bottom:16px}
+.aggrupo h4{margin:0 0 8px;font-family:var(--display);font-size:13px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px}
+.aggrupo h4::before{content:"";width:3px;height:14px;border-radius:2px;background:var(--accent)}
+.aggrupo h4 b{color:var(--fg)}
+.aggrupo.atras h4::before{background:var(--danger)}
+.agnada{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:28px 12px;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+.agnada .agic{width:28px;height:28px;color:var(--accent-text);margin-bottom:4px}.agnada b{color:var(--fg);font-size:14px}.agnada span{font-size:12.5px}
+@media (max-width:760px){.agsemana{grid-template-columns:repeat(7,minmax(140px,1fr))}.agtools #agNova{margin-left:0;flex:1 1 100%}}
+#agDlgBody{padding:16px}
+#agDlgMsg{padding:0 16px 14px;margin:0}
+.agform{display:grid;gap:14px}
+.agreq{font-style:normal;font-weight:600;font-size:10.5px;letter-spacing:.06em;color:var(--accent-text);border:1px solid var(--accent);border-radius:999px;padding:1px 8px;margin-left:auto;text-transform:uppercase}
+.agquando{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.agconf{margin:0;padding:8px 12px;border-radius:8px;background:var(--warn-soft);color:var(--fg);font-size:13px}.agconf b{color:var(--warn-text)}
+.agfmtsel{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.agopt{display:flex!important;flex-direction:row!important;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;margin:0;background:var(--field);color:var(--fg)}
+.agopt input{position:absolute;opacity:0;width:1px;height:1px}
+.agopt span{display:flex;flex-direction:column;gap:1px}.agopt b{font-size:13.5px}.agopt small{font-size:11.5px;color:var(--muted);font-weight:400}
+.agopt .agic{color:var(--muted)}
+.agopt:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:var(--accent-soft)}.agopt:has(input:checked) .agic{color:var(--accent-text)}
+.agopt:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.aglead{display:flex;align-items:center;gap:10px;justify-content:space-between;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.aglead>span:first-child{display:flex;flex-direction:column;gap:2px;min-width:0}.aglead b{font-size:14px;overflow-wrap:anywhere}.aglead small{font-size:12px;color:var(--muted)}
+.aglacts{display:flex;gap:12px;flex:none}
+.agres{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto}
+.agrestit{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.agresit{font:inherit;text-align:left;display:flex;flex-direction:column;gap:1px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--field);color:var(--fg);font-weight:400}
+.agresit:hover{border-color:var(--accent)}.agresit b{font-size:13.5px}.agresit small{font-size:12px;color:var(--muted)}
+.agparts{display:flex;flex-wrap:wrap;gap:6px}
+.agparts .uchip:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.agquem{font-size:12.5px}
+@media (max-width:480px){.agfmtsel{grid-template-columns:1fr}.aglead{flex-direction:column;align-items:flex-start}}
+/* Andamento da demonstração (fase 2) */
+.agst{display:inline-flex;align-items:center;justify-self:start;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;background:var(--chip-bg);color:var(--chip-fg);white-space:nowrap;font-family:var(--font)}
+.agst.st-confirmada,.agst.st-realizada{background:var(--ok-soft);color:var(--ok-text)}
+.agst.st-naocompareceu,.agst.st-cancelada{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.agst.st-pend{background:var(--warn-soft);color:var(--warn-text)}
+.crmbloco>h4 .agst{margin-left:auto;letter-spacing:.04em}
+.agit .agst{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.agit.st-confirmada{border-left-color:var(--ok-text)}.agit.st-realizada{border-left-color:var(--ok-text)}
+.agit.st-naocompareceu{border-left-color:var(--danger);opacity:.75}
+.agit.st-pend{border-left-color:var(--warn-text)}
+.agacoes{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.agacoes .danger{color:var(--danger);border-color:var(--danger)}
+.agcanc{flex:1 1 100%;margin:0}
+.agstinfo{margin:0;font-size:13px}.agstinfo.pend{color:var(--warn-text);font-weight:600}
+.agstobs{margin:0;font-size:13px;color:var(--muted);white-space:pre-wrap}
+.agsub{margin:0 0 12px;font-size:13.5px;color:var(--muted)}.agsub b{color:var(--fg)}
+.agfmtsel.ag3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:560px){.agfmtsel.ag3{grid-template-columns:1fr}}
+.crmdemol>span{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* WhatsApp e Google Agenda (fase 4) */
+.agcli{margin-top:4px}
+.agwa,.agg{display:inline-flex;align-items:center;gap:8px;min-height:40px}
+.agwa{border-color:var(--ok-text);color:var(--ok-text)}.agwa:hover{background:var(--ok-soft)}
+.agg{font-size:13.5px;font-weight:600;border:1px solid var(--line);border-radius:10px;padding:8px 14px;color:var(--fg);text-decoration:none;background:var(--surface)}
+.agg:hover{border-color:var(--accent)}.agg .agic{color:var(--accent-text)}
+/* Tela Hoje: demonstrações do dia (agenda.js) */
+.hitem .n.agn{width:auto;min-width:52px;padding:0 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent-text);font-variant-numeric:tabular-nums}
+.hitem.agpend .n.agn{background:var(--warn-soft);color:var(--warn-text)}
+.hitem.agok .n.agn{background:var(--ok-soft);color:var(--ok-text)}
+/* Demonstrações dentro do lead e no funil */
+.crmc .crmdemo,.crmrow .crmdemo{color:var(--accent-text)!important;font-weight:600}
+.crmdemos{display:flex;flex-direction:column;gap:6px}
+.crmdemol{font:inherit;text-align:left;display:flex;flex-direction:column;gap:1px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;padding:8px 10px;background:var(--bg);color:var(--fg);font-weight:400}
+.crmdemol b{font-size:13px;font-variant-numeric:tabular-nums}.crmdemol small{font-size:12px;color:var(--muted)}
+.crmdemol.passou{border-left-color:var(--muted);opacity:.75}
+.crmdemot{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
 /* Central de notificações (notificacoes.js) */
 /* O cabeçalho do tema (tema.css) usa overflow:hidden para os traços; aqui ele fica visível para o painel do sino não ser cortado */
 body header.top{overflow:visible}
@@ -855,6 +963,7 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
 <nav class="tabs" aria-label="Seções"><div class="sbtopo"><img class="sbfull" src="icons/shotgun-logo-negativo.png" alt="Shotgun" width="136" height="30"><img class="sbsimb" src="icons/shotgun-simbolo-negativo.png" alt="Shotgun" width="48" height="28"><button type="button" class="sbrecolher" id="btnMenu" aria-label="Recolher o menu" aria-expanded="true" title="Recolher o menu"><svg class="sgic ic-fechar" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18m7-6-3-3 3-3"/></svg><svg class="sgic ic-abrir" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18m5-12 3 3-3 3"/></svg></button></div><div class="wrap" role="tablist">
   <button type="button" role="tab" id="tabProp" aria-selected="true">+ Nova proposta</button>
   <button type="button" role="tab" id="tabHoje" aria-selected="false" class="fbonly">Hoje</button>
+  <button type="button" role="tab" id="tabAgenda" aria-selected="false" class="fbonly">Agenda</button>
   <button type="button" role="tab" id="tabCrm" aria-selected="false" class="fbonly">CRM</button>
   <button type="button" role="tab" id="tabList" aria-selected="false" class="fbonly" hidden style="display:none">Propostas</button>
   <button type="button" role="tab" id="tabTask" aria-selected="false" class="fbonly tasktab">TASK</button>
@@ -1053,6 +1162,9 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
 </main>
 
 <main id="viewHoje" hidden>
+  <section class="sec" id="hAgSec" hidden><h2>Demonstrações de hoje <span id="hAgCount"></span></h2><div class="body">
+    <div id="hAgList" class="hlist"></div>
+  </div></section>
   <section class="sec"><h2>Hoje <span id="hCount"></span></h2><div class="body">
     <div class="tools hojetools"><p class="hint" style="margin:0">O próximo passo de cada proposta. Clique para abrir direto no passo.</p><label class="chk admin fbonly"><input type="checkbox" id="hMinhas"> Só as minhas</label></div>
     <div id="hList" class="hlist"></div>
@@ -1101,11 +1213,36 @@ header.top .wrap>.sgnotif{position:relative;align-self:center;flex:none;min-widt
     <div id="pList" class="plist"></div>
     <p class="hint" id="pMsg"></p>
   </div></section>
+</main>
+<!-- Diálogos do CRM e da Agenda ficam fora das telas: abrem de qualquer aba (a Agenda abre o lead sem sair dela) -->
   <dialog id="crmDlg" class="tkdlg" aria-labelledby="crmDlgTit">
     <div class="tkdlghead"><h3 id="crmDlgTit"></h3><button type="button" id="crmDlgFechar" aria-label="Fechar">✕</button></div>
     <div id="crmDlgBody"></div>
     <p id="crmDlgMsg" class="hint" role="status"></p>
   </dialog>
+<dialog id="agDlg" class="tkdlg" aria-labelledby="agDlgTit">
+  <div class="tkdlghead"><h3 id="agDlgTit"></h3><button type="button" id="agDlgFechar" aria-label="Fechar">✕</button></div>
+  <div id="agDlgBody"></div>
+  <p id="agDlgMsg" class="hint" role="status"></p>
+</dialog>
+
+<main id="viewAgenda" hidden>
+  <section class="sec"><h2>Agenda <span id="agCount"></span></h2><div class="body">
+    <div class="tools agtools">
+      <span class="pmodo" role="group" aria-label="Modo da agenda" id="agModo"><button type="button" data-modo="semana" aria-pressed="false">Semana</button><button type="button" data-modo="dia" aria-pressed="false">Dia</button><button type="button" data-modo="prox" aria-pressed="false">Próximas</button></span>
+      <select id="agUsuario" class="crmfil" aria-label="Filtrar por usuário" title="Filtrar por usuário" hidden><option value="">Todos os usuários</option></select>
+      <label class="agchk"><input type="checkbox" id="agProxChk" checked> Próximos contatos</label>
+      <button type="button" class="primary" id="agNova">+ Agendar demonstração</button>
+    </div>
+    <div class="agnav" id="agNavBox">
+      <button type="button" id="agAnt" aria-label="Anterior" title="Anterior"><svg class="agic" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
+      <button type="button" id="agHoje">Hoje</button>
+      <button type="button" id="agProx" aria-label="Próximo" title="Próximo"><svg class="agic" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+      <b id="agPeriodo" aria-live="polite"></b>
+    </div>
+    <p id="agMsg" class="crmmsg" role="status" hidden></p>
+    <div id="agArea"></div>
+  </div></section>
 </main>
 
   <dialog id="tplRevDlg" class="tkdlg largo novdlg" aria-labelledby="tplRevTit">
@@ -1364,6 +1501,7 @@ if(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey) document.body.classLis
 <script type="module" src="task.js"></script>
 <script src="anp.js"></script>
 <script type="module" src="crm.js"></script>
+<script src="agenda.js"></script>
 <script src="telemetria.js"></script>
 <script type="module" src="radar.js"></script>
 <script src="telemetria-anp.js"></script>
@@ -2334,6 +2472,7 @@ $('btnNova').addEventListener('click',()=>{ $('waCli').value=''; formMsg('O clie
     tabProp:'<path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/>',
     tabHoje:'<path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="m9 16 2 2 4-4"/>',
     tabList:'<path d="M20 7h-3a2 2 0 0 1-2-2V2"/><path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"/><path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"/>',
+    tabAgenda:'<path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/>',
     tabCrm:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
     tabTele:'<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>',
     tabTask:'<path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/><path d="M13 6h8"/><path d="M13 12h8"/><path d="M13 18h8"/>',
