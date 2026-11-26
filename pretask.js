@@ -492,18 +492,20 @@
   }
 
   /* ---------- Tela ---------- */
-  const secs2 = () => (C.cfg2.secoes || []).map(s => ({ ...s, campos: (s.campos || []).filter(c => (c.show !== false || c.fixo) && c.tipo !== 'arquivo') })).filter(s => s.campos.length);
+  const secs2 = () => (C.cfg2.secoes || []).map(s => ({ ...s, campos: (s.campos || []).filter(c => (c.show !== false || c.fixo) && c.tipo !== 'arquivo').map(c => ehRegime(c) ? { ...c, req: true } : c) })).filter(s => s.campos.length);
   // Campos do Pré-Contrato marcados "Pré TASK": o cliente não vê, o vendedor completa aqui (gravados junto com o Pré-Contrato)
-  const ehComp = c => !!c.pretask && !c.fixo;
+  // O Regime Tributário também conta como campo do Pré TASK, mas aparece na Implantação (não nos blocos complementares)
+  const ehComp = c => (!!c.pretask && !c.fixo) || ehRegime(c);
   const secs2Cli = () => secs2().map(s => ({ ...s, campos: s.campos.filter(c => !ehComp(c)) })).filter(s => s.campos.length);
-  const secs2Comp = () => secs2().map(s => ({ ...s, campos: s.campos.filter(ehComp) })).filter(s => s.campos.length);
+  const secs2Comp = () => secs2().map(s => ({ ...s, campos: s.campos.filter(c => ehComp(c) && !ehRegime(c)) })).filter(s => s.campos.length);
   const porFilial = s => C.pre.tipoBase === 'Central' && s.porFilial !== false && C.pre.filiais.length > 0;
   function marca(ok, tot) { return !tot ? '<span class="dgm ok" title="Sem obrigatórios">✓</span>' : ok >= tot ? '<span class="dgm ok" title="Completo">✓</span>' : ok ? '<span class="dgm parcial" title="Incompleto"></span>' : '<span class="dgm falta" title="Falta preencher"></span>'; }
   function marcadores() {
     const P = C.pre, sts = { status: [P.status, P.modalidade].filter(Boolean).length + '/2' };
     const nStatus = [P.status, P.modalidade, P.dataBase, P.start].filter(Boolean).length;
     const base = [P.tipoBase, P.inclusao, P.potencial, P.nome].filter(Boolean).length + (P.filiais.length && P.filiais.every(f => dig(f.cnpj).length === 14 && f.tipo) ? 1 : 0) + (P.tipoBase !== 'Central' || P.f100 ? 1 : 0);
-    const m = { status: marca(nStatus, 4), base: marca(base, 6), proposta: marca(1, 1), contrato: marca(C.p.ctAceitoEm || C.direto ? 1 : 0, 1) };
+    const rg = (C.e2 || C.direto) && campoRegime();
+    const m = { status: marca(nStatus, 4), base: rg ? marca(base + (C.v2[rg.k] ? 1 : 0), 7) : marca(base, 6), proposta: marca(1, 1), contrato: marca(C.p.ctAceitoEm || C.direto ? 1 : 0, 1) };
     const conta2 = ss => { let ok = 0, tot = 0; ss.forEach(s => { const r = contar(s.campos, '', C.v2); ok += r.ok; tot += r.tot; }); return marca(ok, tot); };
     // cadastro direto também exige os obrigatórios do Pré-Contrato e complementares (só proposta e contrato ficam de fora)
     m.e2 = C.direto || C.e2 ? conta2(secs2Cli()) : marca(0, 1); secs2Comp().forEach((sc, i) => { m['e2c' + i] = C.e2 ? conta2([sc]) : marca(0, 1); });
@@ -585,42 +587,33 @@
       <td><input data-ff="cidade" placeholder="Cidade - UF" value="${esc([f.cidade, f.uf].filter(Boolean).join(' - '))}" aria-label="Cidade"></td>
       ${central ? `<td class="f1"><input type="radio" name="ptf100" data-ff="f100" ${on ? 'checked' : ''} aria-label="Esta é a F100">${on ? '<span class="tag100">F100</span>' : ''}</td>` : ''}</tr>`;
   }
-  // Regime Tributário: é o mesmo campo do Pré-Contrato (seção da empresa), espelhado na Implantação.
-  // Mudar aqui muda lá (e vice-versa) e é gravado no Pré-Contrato, com o registro de quem alterou.
-  function campoRegime() {
-    const cs = [].concat(...secs2().map(s => s.campos));
-    return cs.find(c => /regime\s+tribut/i.test(c.label || '')) || cs.find(c => /regime/i.test(c.label || '') && !/bens|casamento|uni[aã]o/i.test(c.label || ''));
-  }
+  // Regime Tributário: não é pedido ao cliente (sai do link do Pré-Contrato). É exigido aqui, na Implantação.
+  // Fica gravado junto com o Pré-Contrato (como os campos "Pré TASK"); vem pronto quando o cliente anexou o
+  // cartão de contribuinte ou a busca do CNPJ trouxe o regime, e senão é sugerido pela Receita.
+  const ehRegime = c => /regime\s+tribut/i.test(c.label || '') || (/regime/i.test(c.label || '') && !/bens|casamento|uni[aã]o/i.test(c.label || ''));
+  function campoRegime() { return [].concat(...secs2().map(s => s.campos)).find(ehRegime); }
   function regimeHtml() {
     const c = campoRegime(); if (!c) return '';
-    if (!C.e2 && !C.direto) return `<div class="ptf"><span>${esc(c.label)}</span><div class="ptro"><small>Vem do Pré-Contrato quando o cliente enviar</small></div></div>`;
-    const h = campoHtml({ ...c, detalhe: '', full: false }, 'e2:' + c.k, prefixar(C.v2, 'e2:'), {});
-    return h.replace(/data-pk=/g, 'data-espelho=').replace(/data-outro=/g, 'data-espelho-outro=').replace('</label>', '<small class="ptauto">Mesmo campo do Pré-Contrato</small></label>');
+    if (!C.e2 && !C.direto) return `<div class="ptf"><span>${esc(c.label)}</span><div class="ptro"><small>Libera quando o cliente enviar o Pré-Contrato</small></div></div>`;
+    const de = C.v2[c.k] && C.v2[c.k + '__de'];
+    return campoHtml({ ...c, req: true, detalhe: '', full: false }, 'e2:' + c.k, prefixar(C.v2, 'e2:'), {}).replace('</label>', `<small class="ptauto" data-regnota>${de ? '✓ Preenchido pelo ' + esc(de) + '. Confira.' : ''}</small></label>`);
   }
   function ligarRegime(corpo) {
-    const el = corpo.querySelector('[data-espelho]'); if (!el) return;
-    const k = el.dataset.espelho, src = corpo.querySelector(`[data-pk="${CSS.escape(k)}"]`); if (!src) { el.closest('.ptf').remove(); return; }
-    const ou = corpo.querySelector(`[data-espelho-outro="${CSS.escape(k)}"]`), srcOu = corpo.querySelector(`[data-outro="${CSS.escape(k)}"]`);
-    const mostraOu = () => { if (ou) ou.hidden = !ehOutro(el.value); };
-    const deSrc = () => { el.value = src.value; if (ou && srcOu) ou.value = srcOu.value; el.classList.toggle('erro', src.classList.contains('erro')); mostraOu(); };
-    const paraSrc = () => { src.value = el.value; if (ou && srcOu) srcOu.value = ou.value; src.classList.remove('erro', 'falta'); el.classList.remove('erro', 'falta'); mostraOu(); src.dispatchEvent(new Event('change', { bubbles: true })); };
-    const nota = () => { const n = el.parentElement.querySelector('.ptauto'); if (n) n.textContent = 'Mesmo campo do Pré-Contrato'; };
-    el.addEventListener('change', ev => { if (ev.isTrusted) nota(); paraSrc(); }); el.addEventListener('input', paraSrc); if (ou) ou.addEventListener('input', paraSrc);
-    src.addEventListener('change', ev => { if (ev.isTrusted) { deSrc(); nota(); } }); src.addEventListener('input', deSrc); if (srcOu) srcOu.addEventListener('input', deSrc);
-    new MutationObserver(() => el.classList.toggle('erro', src.classList.contains('erro'))).observe(src, { attributes: true, attributeFilter: ['class'] });
-    deSrc();
-    if (!src.value) regimeDaReceita(el, src);
+    const c = campoRegime(), el = c && corpo.querySelector(`[data-pk="${CSS.escape('e2:' + c.k)}"]`); if (!el) return;
+    const n = el.parentElement.querySelector('[data-regnota]');
+    el.addEventListener('change', () => { if (el._auto) { el._auto = false; return; } if (n) n.textContent = ''; });
+    if (!el.value) regimeDaReceita(el, n);
   }
-  // Pré-Contrato sem o regime (contratos antigos, antes do campo existir): sugere pela Receita, pelo CNPJ da empresa
-  async function regimeDaReceita(el, src) {
-    if (src.tagName !== 'SELECT' || !window.cnpjInfo) return;
+  // Sem o regime (o cliente não anexou o cartão, ou contratos antigos): sugere pela Receita, pelo CNPJ da empresa
+  async function regimeDaReceita(el, n) {
+    if (el.tagName !== 'SELECT' || !window.cnpjInfo) return;
     const cnpj = [C.v2.cnpj, (C.pre.filiais[0] || {}).cnpj, C.leadCnpj, C.p.cnpj].find(x => dig(x).length === 14); if (!cnpj) return;
     let j = null; try { j = await window.cnpjInfo(dig(cnpj)); } catch (e) {}
-    if (!j || !document.body.contains(el) || src.value) return;
+    if (!j || !document.body.contains(el) || el.value) return;
     const re = j.mei ? /\bmei\b|microempreendedor/i : j.simples ? /simples/i : /presumido/i.test(j.regime) ? /presumido/i : /real/i.test(j.regime) ? /\breal\b/i : null;
-    const o = re && [...src.options].find(o => re.test(o.text)); if (!o) return;
-    el.value = o.value; el.dispatchEvent(new Event('change'));
-    const n = el.parentElement.querySelector('.ptauto'); if (n) n.textContent = '✓ Sugerido pela Receita Federal · CNPJ ' + fmtCnpj(cnpj) + '. Confira.';
+    const o = re && [...el.options].find(o => re.test(o.text)); if (!o) return;
+    el.value = o.value; el.classList.remove('erro', 'falta'); el._auto = true; el.dispatchEvent(new Event('change', { bubbles: true }));
+    if (n) n.textContent = '✓ Sugerido pela Receita Federal · CNPJ ' + fmtCnpj(cnpj) + '. Confira.';
   }
   function painelBase(anexos) {
     const P = C.pre, central = P.tipoBase === 'Central', simples = P.tipoBase === 'Simples';
@@ -891,7 +884,7 @@
       // Pré-Contrato alterado: corrige o original e registra quem alterou
       if (C.e2) {
         const antes = C.e2.valores || {}, mud = []; const novosV = { ...antes };
-        secs2().forEach(s => s.campos.forEach(c => { const k = 'e2:' + c.k, nv = e2Lido.valores[k] || ''; if (String(antes[c.k] || '') !== String(nv)) { mud.push(c.label); if (nv) novosV[c.k] = nv; else delete novosV[c.k]; } const dk = c.k + '__det'; if (e2Lido.valores['e2:' + dk] !== undefined && antes[dk] !== e2Lido.valores['e2:' + dk]) novosV[dk] = e2Lido.valores['e2:' + dk]; }));
+        secs2().forEach(s => s.campos.forEach(c => { const k = 'e2:' + c.k, nv = e2Lido.valores[k] || ''; if (String(antes[c.k] || '') !== String(nv)) { mud.push(c.label); delete novosV[c.k + '__de']; if (nv) novosV[c.k] = nv; else delete novosV[c.k]; } const dk = c.k + '__det'; if (e2Lido.valores['e2:' + dk] !== undefined && antes[dk] !== e2Lido.valores['e2:' + dk]) novosV[dk] = e2Lido.valores['e2:' + dk]; }));
         if (mud.length) {
           const camposE2 = { ...(C.e2.campos || {}) }; secs2().forEach(s => s.campos.forEach(c => { if (!mud.includes(c.label)) return; const nv = e2Lido.legiveis[c.label]; if (nv) camposE2[c.label] = nv; else delete camposE2[c.label]; }));
           const alteracoes = (C.e2.alteracoes || []).concat([{ por, em: new Date().toISOString(), campos: mud }]).slice(-50);

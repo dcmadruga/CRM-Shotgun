@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 251, data: '2026-11-26', titulo: 'Regime Tributário só no Pré TASK', itens: [
+    'Dados para o contrato: o cliente não precisa mais escolher o Regime Tributário. Se ele anexar o cartão de contribuinte ou pesquisar o CNPJ, o regime encontrado segue junto com os dados, sem aparecer na tela.',
+    'Pré TASK, aba Implantação: o Regime Tributário passou a ser exigido aqui. Ele abre preenchido pelo cartão de contribuinte ou pela Receita Federal, com a origem indicada embaixo, para conferir.'
+  ] },
   { v: 250, data: '2026-11-26', titulo: 'Cartão de contribuinte preenche a Inscrição Estadual', itens: [
     'Página de dados para o contrato: embaixo da Inscrição estadual tem o botão "Anexar cartão de contribuinte". O cliente anexa o PDF ou o print da consulta do SINTEGRA/SEFAZ e a página lê o documento no próprio aparelho.',
     'A Inscrição estadual (ou ISENTO) já vem preenchida, e o Regime Tributário também quando o cartão diz Simples Nacional, MEI, Lucro Presumido ou Real. Se o cartão for de outro CNPJ, a página avisa e não preenche.',
