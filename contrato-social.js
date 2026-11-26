@@ -261,5 +261,27 @@
     }
     pdf.destroy && pdf.destroy(); return pdf.numPages;
   }
-  window.ContratoSocial = { ler, extrair, cpfOk, miniatura, paginas };
+  // texto(arquivos, aviso) -> { texto, ocr }: só o texto de PDFs e fotos de documentos curtos (ex.: cartão de contribuinte).
+  // PDF com texto usa o texto; página quase sem letras (escaneada ou print) e fotos passam pelo OCR.
+  async function texto(arquivos, aviso) {
+    aviso = aviso || (() => {});
+    let partes = [], usouOcr = false;
+    for (const f of [...arquivos]) {
+      if (/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name)) {
+        aviso('Abrindo o PDF…');
+        const pdf = await pdfDoc(f), pags = await textoPdf(pdf);
+        for (let i = 0; i < Math.min(pags.length, 4); i++) {
+          if (pags[i].replace(/[^A-Za-zÀ-ú]/g, '').length >= 60) { partes.push(pags[i]); continue; }
+          usouOcr = true; aviso('Lendo o documento (pode levar alguns segundos)…');
+          partes.push((await (await ocr()).recognize(await canvasDaPagina(pdf, i + 1))).data.text);
+        }
+      } else if (/^image\//.test(f.type)) {
+        usouOcr = true; aviso('Lendo a imagem (pode levar alguns segundos)…');
+        partes.push((await (await ocr()).recognize(await imagemReduzida(f))).data.text);
+      }
+    }
+    return { texto: partes.join('\n'), ocr: usouOcr };
+  }
+
+  window.ContratoSocial = { ler, extrair, cpfOk, miniatura, paginas, texto };
 })();
