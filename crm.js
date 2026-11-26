@@ -95,6 +95,8 @@ async function leadsAutomaticos() {
 const UF_NOMES = { AC: 'Acre', AL: 'Alagoas', AP: 'Amapá', AM: 'Amazonas', BA: 'Bahia', CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás', MA: 'Maranhão', MT: 'Mato Grosso', MS: 'Mato Grosso do Sul', MG: 'Minas Gerais', PA: 'Pará', PB: 'Paraíba', PR: 'Paraná', PE: 'Pernambuco', PI: 'Piauí', RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RS: 'Rio Grande do Sul', RO: 'Rondônia', RR: 'Roraima', SC: 'Santa Catarina', SP: 'São Paulo', SE: 'Sergipe', TO: 'Tocantins' };
 // UF do lead/proposta: fim da cidade ("Nova Mutum - MT") ou a UF da ANP
 const ufDe = x => { const m = String(x.cidade || '').trim().match(/[-\/,]\s*([A-Za-z]{2})$/); const uf = (m ? m[1] : x.anp?.uf || x.uf || '').toUpperCase(); return UF_NOMES[uf] ? uf : ''; };
+// "Cidade / UF" para os cards: separa a UF do fim da cidade ("Nova Mutum - MT"), ou usa o município e a UF da ANP. Sem nada, volta vazio.
+const cidadeUf = x => { const s = String(x.cidade || '').trim(), m = s.match(/^(.*?)\s*[-\/,]\s*([A-Za-z]{2})$/); const cid = (m && UF_NOMES[m[2].toUpperCase()] ? m[1] : s).trim() || String(x.anp?.municipio || '').trim(); return [cid, ufDe(x)].filter(Boolean).join(' / '); };
 const estadosDe = uid => (uid === perfil.uid && Array.isArray(perfil.estados) ? perfil.estados : usuarios[uid]?.estados) || [];
 const meu = x => (!fUser || x.owner === fUser) && (!fUf || ufDe(x) === fUf);
 const leads = () => docs.filter(d => d.tipo === 'lead' && meu(d));
@@ -189,7 +191,7 @@ function desenharFunil() {
     return `<div class="crmcol" data-etapa="${e.id}"><h4><span>${e.nome}</span><b>${lista.length}</b></h4>
       <small class="crmtot">${men ? brl(men) + '/mês' : '&nbsp;'}</small>
       ${lista.map(c => `<button type="button" class="crmc ${c.tipo}${c.prox && c.prox < h && c.etapa !== 'perdido' ? ' atras' : ''}" draggable="true" data-tipo="${c.tipo}" data-id="${esc(c.id)}">
-        <b>${esc(c.titulo)}</b><small>${esc(c.sub)}</small>
+        <b>${esc(c.titulo)}</b>${cidadeUf(c.ref) ? `<small class="crmcid">${esc(cidadeUf(c.ref))}</small>` : ''}<small>${esc(c.sub)}</small>
         ${c.tipo === 'lead' && c.prox ? `<small class="crmprox">Próximo contato: ${fmtD(c.prox)}</small>` : ''}
         ${c.tipo === 'lead' && window.agendaProxima && window.agendaProxima(c.ref) ? `<small class="crmdemo">Demonstração: ${esc(window.agendaFmt(window.agendaProxima(c.ref)))}</small>` : ''}
         ${c.tipo === 'prop' && c.ref.crmMotivo ? `<small class="crmprox">${esc(c.ref.crmMotivo)}</small>` : ''}
@@ -205,7 +207,7 @@ function desenharLeads() {
   $('crm-leads').innerHTML = ls.length ? `<div class="crmlist">${ls.map(l => {
     const p = propDoLead(l), et = p ? ETAPAS.find(e => e.id === etapaProp(p)).nome : (ETAPAS.find(e => e.id === l.etapa) || ETAPAS[0]).nome;
     return `<button type="button" class="crmrow${l.prox && l.prox < h && !p && l.etapa !== 'perdido' ? ' atras' : ''}" data-tipo="lead" data-id="${esc(l.id)}">
-      <span><b>${l.anp?.bandeira && window.anpSeloBandeira ? window.anpSeloBandeira(l.anp.bandeira, false, true) : ''}${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.contato, l.fone, l.cidade, l.anp?.bandeira, l.anp?.porte && 'Porte ' + l.anp.porte].filter(Boolean).join(' · '))}</small></span>
+      <span><b>${l.anp?.bandeira && window.anpSeloBandeira ? window.anpSeloBandeira(l.anp.bandeira, false, true) : ''}${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.contato, l.fone, cidadeUf(l), l.anp?.bandeira, l.anp?.porte && 'Porte ' + l.anp.porte].filter(Boolean).join(' · '))}</small></span>
       <span><small>${esc(l.origem || '')}</small>${admin && l.vendedor ? `<small>${esc(l.vendedor)}</small>` : ''}</span>
       <span><small>${l.prox ? 'Próx.: ' + fmtD(l.prox) : 'Sem próximo contato'}</small>${window.agendaProxima && window.agendaProxima(l) ? `<small class="crmdemo">Demonstração: ${esc(window.agendaFmt(window.agendaProxima(l)))}</small>` : ''}<span class="pill">${esc(et)}</span></span>
     </button>`; }).join('')}</div>` : `<p class="hint">${q ? 'Nenhum lead encontrado.' : fUser || fUf ? 'Nenhum lead com esses filtros.' : 'Nenhum lead ainda. Clique em "+ Novo lead" para cadastrar o primeiro contato.'}</p>`;
@@ -217,7 +219,7 @@ function desenharClientes() {
   $('crm-clientes').innerHTML = cs.length ? `<div class="crmlist">${cs.map(c => {
     const ult = (c.doc?.notas || []).slice(-1)[0];
     return `<button type="button" class="crmrow" data-tipo="cli" data-id="${esc(c.k)}">
-      <span><b>${esc(c.nome)}</b><small>${esc([fmtCnpj(c.cnpj), c.cidade].filter(Boolean).join(' · '))}</small></span>
+      <span><b>${esc(c.nome)}</b><small>${esc([fmtCnpj(c.cnpj), cidadeUf(c)].filter(Boolean).join(' · '))}</small></span>
       <span><small>${brl(c.men)}/mês</small>${admin && c.vendedor ? `<small>${esc(c.vendedor)}</small>` : ''}</span>
       <span><small>${ult ? esc(ult.tipo) + ' em ' + fmtTs(ult.em) : c.desde ? 'Cliente desde ' + c.desde.toLocaleDateString('pt-BR') : ''}</small><span class="pill">${c.props.length} proposta${c.props.length === 1 ? '' : 's'}</span></span>
     </button>`; }).join('')}</div>` : `<p class="hint">${q ? 'Nenhum cliente encontrado.' : fUser || fUf ? 'Nenhum cliente com esses filtros.' : 'Os clientes aparecem aqui quando o contrato de uma proposta é aceito.'}</p>`;

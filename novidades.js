@@ -10,9 +10,22 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 244, data: '2026-11-26', titulo: 'Link para achar a Inscrição Estadual', itens: [
+  { v: 245, data: '2026-11-26', titulo: 'Link para achar a Inscrição Estadual', itens: [
     'Página de dados para o contrato: abaixo do campo Inscrição estadual aparece o link "Consultar no SINTEGRA". Depois de pesquisar o CNPJ, ele abre direto a consulta da SEFAZ do Estado da empresa.',
     'Serve para quando a busca do CNPJ não traz a IE, o que é comum em empresa aberta há pouco tempo: as bases públicas gratuitas demoram a receber esse dado.'
+  ] },
+  { v: 244, data: '2026-11-26', titulo: 'Contrato social ao lado do formulário', itens: [
+    'Dados para o contrato: ao tocar na miniatura do contrato social, o documento agora abre ao lado do formulário (no computador) ou na parte de cima da tela (no celular). Dá para ler o documento e preencher os campos ao mesmo tempo, sem fechar a visualização.',
+    'No painel do documento tem zoom (− e +, tocar na porcentagem volta a ajustar à largura) e todas as páginas e fotos enviadas em sequência. Arraste a borda colorida para aumentar ou diminuir o painel. No celular, Recolher deixa só a barra de cima.',
+    'Quem prefere o jeito antigo toca em Tela cheia, e o aparelho lembra a escolha.'
+  ] },
+  { v: 243, data: '2026-11-26', titulo: 'Cidade / UF nos cards do funil', itens: [
+    'CRM → Funil de vendas: cada card de lead e de proposta mostra agora a Cidade / UF do cliente logo abaixo do nome da empresa, em todas as colunas.',
+    'Nas listas de Leads e de Clientes a cidade aparece no mesmo formato. Se o cadastro não tiver cidade, o card fica como antes.'
+  ] },
+  { v: 242, data: '2026-11-26', titulo: 'Postos em construção em Goiás', itens: [
+    'Telemetria → Postos em construção: o Estado agora tem também Goiás (GO), com os mesmos filtros de Cidade, mapa, lista, alertas e fontes.',
+    'Em Goiás o Radar lê o Boletim Ambiental da SEMAD (pedidos e licenças de posto do Estado), os avisos de licença das prefeituras no Diário Oficial do Estado, os diários dos municípios (AGM e FGM) e os diários próprios das cidades (Querido Diário). No Boletim da SEMAD o município e o CNPJ não aparecem: ficam como pendente de confirmação.'
   ] },
   { v: 241, data: '2026-11-26', titulo: 'Postos em construção: licenças de Porto Alegre no RS', itens: [
     'Telemetria → Postos em construção, Estado RS: o Radar passa a ler também a consulta pública de licenças ambientais da Prefeitura de Porto Alegre e mostra as licenças de posto de combustível emitidas lá (LP e LI entram como novo posto).',

@@ -34,17 +34,40 @@ main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
 .full{grid-column:1/-1}
 .prev{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}.prev figure{margin:0;display:grid;gap:3px;justify-items:start}.prev figcaption{font-size:11.5px;color:var(--muted)}.prev img{max-height:140px;max-width:220px;object-fit:contain;border:1px solid var(--line);border-radius:6px;background:#fff;padding:4px;cursor:zoom-in}.prev figure{cursor:zoom-in}
 #visor{position:fixed;inset:0;z-index:1000;background:rgba(10,10,14,.92);display:flex;flex-direction:column}
-#visor .vtopo{background:#111;display:flex;align-items:center;gap:10px;padding:10px 16px;color:#fff;font-size:14px}#visor .vtopo span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#visor .vtopo button{border:0;background:rgba(255,255,255,.15);color:#fff;font-size:22px;line-height:1;width:40px;height:40px;border-radius:50%;cursor:pointer}
-#visor .vcorpo{flex:1;overflow:auto;padding:0 16px 24px;display:flex;flex-direction:column;align-items:center;gap:12px}
-#visor .vcorpo img{max-width:min(100%,1000px);background:#fff;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
-#visor .vpag{position:relative;width:min(100%,1000px);flex:none;background:#fff;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4);overflow:hidden}#visor .vpag img{display:block;width:100%;max-width:none;box-shadow:none;border-radius:0;user-select:none;-webkit-user-select:none}
+#visor .vtopo{background:#111;display:flex;align-items:center;gap:6px;padding:8px 10px 8px 16px;color:#fff;font-size:14px;flex:none}#visor .vtopo span.vnome{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#visor .vtopo button{border:0;background:rgba(255,255,255,.15);color:#fff;font-size:22px;line-height:1;width:40px;height:40px;border-radius:50%;cursor:pointer;padding:0;flex:none}#visor .vtopo button:hover{background:rgba(255,255,255,.25)}
+#visor .vtopo button.vtxt{width:auto;border-radius:99px;font-size:13px;font-weight:600;padding:0 14px;height:34px;white-space:nowrap}
+#visor .vtopo .vzoom{display:flex;align-items:center;gap:2px;flex:none}#visor .vtopo .vzoom button{width:34px;height:34px;font-size:18px}#visor .vtopo .vzoom output{min-width:44px;text-align:center;font-size:12.5px;font-variant-numeric:tabular-nums;cursor:pointer}
+#visor .vcorpo{flex:1;overflow:auto;padding:0 16px 24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;--zoom:1}
+#visor .vcorpo>img,#visor .vpag{margin-inline:auto;flex:none;width:calc(var(--zoom) * min(100%,1000px));max-width:none;background:#fff;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.4)}
+#visor .vpag{position:relative;overflow:hidden}#visor .vpag img{display:block;width:100%;max-width:none;box-shadow:none;border-radius:0;user-select:none;-webkit-user-select:none}
+#visor .varq{margin:6px auto 0;color:#ddd;font-size:12.5px;font-weight:600;letter-spacing:.02em}
+#visor .valca{display:none}
+/* Lado a lado: documento num painel fixo e o formulário continua utilizável ao lado (ou embaixo, no celular) */
+body.visorLado #visor{inset:0 auto 0 0;width:var(--visorW,50vw);background:#24212a;box-shadow:2px 0 12px rgba(0,0,0,.25)}
+body.visorLado{padding-left:var(--visorW,50vw)}
+body.visorLado #visor .vcorpo{padding-top:12px}
+body.visorLado #visor .valca{display:block;position:absolute;top:0;bottom:0;right:-5px;width:10px;cursor:col-resize;z-index:2;touch-action:none}
+body.visorLado #visor .valca::after{content:"";position:absolute;top:50%;left:3px;width:4px;height:44px;margin-top:-22px;border-radius:2px;background:var(--accent)}
+#visor .vrecolher{display:none}
+@media (max-width:799px){
+  #visor .vtopo{padding-left:12px}#visor .vtopo .vzoom output{display:none}
+  body.visorLado #visor{inset:0 0 auto 0;width:auto;height:var(--visorH,45dvh);box-shadow:0 2px 12px rgba(0,0,0,.3)}
+  body.visorLado{padding-left:0;padding-top:var(--visorH,45dvh)}
+  html:has(body.visorLado){scroll-padding-top:calc(var(--visorH,45dvh) + 12px)}html:has(body.visorRecolhido){scroll-padding-top:68px}
+  body.visorLado #visor .valca{top:auto;left:0;right:0;bottom:-8px;width:auto;height:16px;cursor:row-resize}
+  body.visorLado #visor .valca::after{top:6px;left:50%;width:44px;height:4px;margin:0 0 0 -22px}
+  body.visorLado #visor .vrecolher{display:block}
+  body.visorLado.visorRecolhido #visor{height:auto}body.visorLado.visorRecolhido{padding-top:56px}
+  @media (max-width:479px){body.visorLado:not(.visorRecolhido) #visor .vnome{display:none}body.visorLado #visor .vtopo{justify-content:flex-end}}
+  body.visorLado.visorRecolhido #visor .vcorpo,body.visorLado.visorRecolhido #visor .valca,body.visorLado.visorRecolhido #visor .vzoom{display:none}
+}
 #visor .textLayer{position:absolute;inset:0;overflow:hidden;line-height:1;text-align:initial;-webkit-text-size-adjust:none;text-size-adjust:none;forced-color-adjust:none;transform-origin:0 0}
 #visor .textLayer span,#visor .textLayer br{color:transparent;position:absolute;white-space:pre;cursor:text;transform-origin:0 0}
 #visor .textLayer ::selection{background:rgba(0,90,255,.3);color:transparent}
 #visor .textLayer .endOfContent{display:block;position:absolute;inset:100% 0 0;z-index:-1;cursor:default;user-select:none}#visor .textLayer.selecting .endOfContent{top:0}
-body.visorAberto>*:not(#visor){user-select:none;-webkit-user-select:none}#visor .vtopo,#visor .vmsg{user-select:none;-webkit-user-select:none}
-#visor .vmsg{color:#ddd;font-size:13px;padding:8px}
+body.visorAberto:not(.visorLado)>*:not(#visor){user-select:none;-webkit-user-select:none}#visor .vtopo,#visor .vmsg{user-select:none;-webkit-user-select:none}
+#visor .vmsg{color:#ddd;font-size:13px;padding:8px;margin-inline:auto}
 .cfclink{font-size:12.5px;color:var(--purple,#7030a0);font-weight:600;margin-top:4px;text-decoration:none}.cfclink:hover{text-decoration:underline}.cfchint{font-size:11.5px;color:var(--muted)}
 .nsug{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.nsug small{color:var(--muted);font-size:12px}.nsug button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}
 @media (min-width:700px){.body>label:has(.busca){grid-column:span 2}}
@@ -496,8 +519,8 @@ function desenharArquivos(el){
     imgs.slice(0,12).forEach(x=>{
       const fig=document.createElement('figure'), i=document.createElement('img'); i.alt=x.name; i.title='Toque para ver o documento'; fig.appendChild(i); pv.appendChild(fig);
       fig.tabIndex=0; fig.setAttribute('role','button'); fig.setAttribute('aria-label','Ver '+x.name);
-      fig.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); verDocumento(x) });
-      fig.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); verDocumento(x) } });
+      fig.addEventListener('click',e=>{ e.preventDefault(); e.stopPropagation(); verDocumento(x,imgs) });
+      fig.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); e.stopPropagation(); verDocumento(x,imgs) } });
       if(/^image\//.test(x.type)){ i.src=URL.createObjectURL(x); return }
       // PDF: miniatura da 1ª página
       const cap=document.createElement('figcaption'); cap.textContent='PDF · carregando…'; fig.appendChild(cap);
@@ -507,34 +530,78 @@ function desenharArquivos(el){
   }
   sincronizarSenhaCert(); valida(el);
 }
-// Abre o documento (imagem ou todas as páginas do PDF) em tela cheia
-function verDocumento(x){
-  document.getElementById('visor')?.remove();
-  const v=document.createElement('div'); v.id='visor'; v.setAttribute('role','dialog'); v.setAttribute('aria-modal','true');
-  v.innerHTML=`<div class="vtopo"><span>${esc(x.name)}</span><button type="button" aria-label="Fechar">×</button></div><div class="vcorpo"></div>`;
-  const corpo=v.querySelector('.vcorpo'), urls=[]; let aberto=true;
-  let fimExtra=()=>{};
-  const fechar=()=>{ aberto=false; fimExtra(); urls.forEach(u=>URL.revokeObjectURL(u)); v.remove(); document.removeEventListener('keydown',tecla); document.body.style.overflow='';document.body.classList.remove('visorAberto') };
-  const tecla=e=>{ if(e.key==='Escape') fechar() };
-  v.querySelector('button').addEventListener('click',fechar);
-  v.addEventListener('click',e=>{ if((e.target===v||e.target===corpo)&&!String(getSelection())) fechar() });
-  document.addEventListener('keydown',tecla); document.body.style.overflow='hidden';document.body.classList.add('visorAberto');
-  document.body.appendChild(v); v.querySelector('button').focus();
-  if(/^image\//.test(x.type)){ const u=URL.createObjectURL(x); urls.push(u); const i=document.createElement('img'); i.src=u; i.alt=x.name; corpo.appendChild(i); return }
+// Abre o documento (imagens e todas as páginas dos PDFs). Dois modos: lado a lado com o formulário (padrão) ou tela cheia.
+const VISOR_MODO='dadosVisorModo';
+function lerPref(k){ try{ return localStorage.getItem(k) }catch(_){ return null } }
+function gravarPref(k,v){ try{ localStorage.setItem(k,v) }catch(_){} }
+function verDocumento(x,lista){
+  document.getElementById('visor')?._fechar?.();
+  lista=(lista&&lista.length?lista:[x]);
+  const B=document.body, R=document.documentElement;
+  const v=document.createElement('div'); v.id='visor'; v.setAttribute('role','dialog'); v.setAttribute('aria-label','Documento: '+x.name);
+  v.innerHTML=`<div class="vtopo"><span class="vnome">${esc(lista.length>1?lista.length+' arquivos · '+x.name:x.name)}</span>`
+    +`<div class="vzoom"><button type="button" data-z="-1" aria-label="Diminuir zoom" title="Diminuir zoom">−</button><output title="Ajustar à largura">100%</output><button type="button" data-z="1" aria-label="Aumentar zoom" title="Aumentar zoom">+</button></div>`
+    +`<button type="button" class="vtxt vmodo"></button><button type="button" class="vtxt vrecolher" aria-expanded="true">Recolher</button>`
+    +`<button type="button" class="vfechar" aria-label="Fechar" title="Fechar">×</button></div><div class="vcorpo"></div><div class="valca" role="separator" aria-label="Arraste para redimensionar"></div>`;
+  const corpo=v.querySelector('.vcorpo'), bModo=v.querySelector('.vmodo'), bRec=v.querySelector('.vrecolher'), out=v.querySelector('output'); let aberto=true;
+  const pags=[], escala=()=>pags.forEach(([d,w])=>d.style.setProperty('--scale-factor',d.clientWidth/w));
+  const ro=window.ResizeObserver?new ResizeObserver(escala):null; ro&&ro.observe(corpo);
+  // Modo
+  const aplicarModo=m=>{ const lado=m!=='cheia'; B.classList.toggle('visorLado',lado); B.classList.remove('visorRecolhido'); bRec.textContent='Recolher'; bRec.setAttribute('aria-expanded','true');
+    B.style.overflow=lado?'':'hidden'; v.setAttribute('aria-modal',lado?'false':'true');
+    bModo.textContent=lado?'Tela cheia':'Lado a lado'; bModo.title=lado?'Ver o documento em tela cheia':'Ver o documento ao lado do formulário'; requestAnimationFrame(escala) };
+  let modo=lerPref(VISOR_MODO)==='cheia'?'cheia':'lado'; aplicarModo(modo);
+  bModo.addEventListener('click',()=>{ modo=modo==='cheia'?'lado':'cheia'; gravarPref(VISOR_MODO,modo); aplicarModo(modo) });
+  bRec.addEventListener('click',()=>{ const r=B.classList.toggle('visorRecolhido'); bRec.textContent=r?'Mostrar':'Recolher'; bRec.setAttribute('aria-expanded',String(!r)); if(!r) requestAnimationFrame(escala) });
+  // Zoom (ajustar à largura = 100%)
+  let zoom=1; const passos=[.5,.67,.8,1,1.25,1.5,2,2.5,3];
+  const aplicarZoom=z=>{ const el=corpo, cx=(el.scrollLeft+el.clientWidth/2)/Math.max(1,el.scrollWidth), cy=(el.scrollTop+el.clientHeight/2)/Math.max(1,el.scrollHeight);
+    zoom=z; corpo.style.setProperty('--zoom',z); out.textContent=Math.round(z*100)+'%'; escala();
+    el.scrollLeft=cx*el.scrollWidth-el.clientWidth/2; el.scrollTop=cy*el.scrollHeight-el.clientHeight/2 };
+  v.querySelectorAll('[data-z]').forEach(b=>b.addEventListener('click',()=>{ const d=+b.dataset.z, i=passos.findIndex(p=>p>=zoom-1e-6);
+    aplicarZoom(passos[Math.max(0,Math.min(passos.length-1,d>0?(passos[i]>zoom+1e-6?i:i+1):i-1))]) }));
+  out.addEventListener('click',()=>aplicarZoom(1));
+  corpo.addEventListener('wheel',e=>{ if(!e.ctrlKey) return; e.preventDefault(); aplicarZoom(Math.max(.5,Math.min(3,Math.round(zoom*(e.deltaY<0?1.1:1/1.1)*100)/100))) },{passive:false});
+  // Redimensionar o painel arrastando a borda
+  const alca=v.querySelector('.valca');
+  alca.addEventListener('pointerdown',e=>{ e.preventDefault(); alca.setPointerCapture(e.pointerId); const vert=innerWidth<800;
+    const mover=ev=>{ if(vert) R.style.setProperty('--visorH',Math.round(Math.max(.2,Math.min(.8,ev.clientY/innerHeight))*100)+'dvh');
+      else R.style.setProperty('--visorW',Math.round(Math.max(.25,Math.min(.75,ev.clientX/innerWidth))*100)+'vw') };
+    const fim=()=>{ alca.removeEventListener('pointermove',mover); alca.removeEventListener('pointerup',fim); alca.removeEventListener('pointercancel',fim); escala() };
+    alca.addEventListener('pointermove',mover); alca.addEventListener('pointerup',fim); alca.addEventListener('pointercancel',fim) });
+  // Fechar
+  const urls=[];
+  const fechar=()=>{ if(!aberto) return; aberto=false; ro&&ro.disconnect(); urls.forEach(u=>URL.revokeObjectURL(u)); v.remove(); document.removeEventListener('keydown',tecla);
+    B.style.overflow=''; B.classList.remove('visorAberto','visorLado','visorRecolhido') };
+  v._fechar=fechar;
+  const tecla=e=>{ if(e.key==='Escape'&&(modo==='cheia'||v.contains(document.activeElement))) fechar() };
+  v.querySelector('.vfechar').addEventListener('click',fechar);
+  v.addEventListener('click',e=>{ if(modo==='cheia'&&(e.target===v||e.target===corpo)&&!String(getSelection())) fechar() });
+  document.addEventListener('keydown',tecla); B.classList.add('visorAberto');
+  B.appendChild(v); v.querySelector('.vfechar').focus({preventScroll:true});
+  // Conteúdo: todos os arquivos, em ordem; rola até o arquivo tocado
   const msg=document.createElement('div'); msg.className='vmsg'; msg.textContent='Carregando o documento…'; corpo.appendChild(msg);
-  const larg=Math.min(1600,Math.round(Math.min(window.innerWidth,1000)*(window.devicePixelRatio||1)));
-  let comTexto=0; const pags=[];
-  const escala=()=>pags.forEach(([d,w])=>d.style.setProperty('--scale-factor',d.clientWidth/w));
-  window.addEventListener('resize',escala); fimExtra=()=>window.removeEventListener('resize',escala);
-  window.ContratoSocial.paginas(x,larg,(url,n,tot,o)=>{ if(!aberto) return false;
-    const d=document.createElement('div'); d.className='vpag'; const i=document.createElement('img'); i.src=url; i.alt='Página '+n+' de '+tot; d.appendChild(i); corpo.insertBefore(d,msg);
-    // Camada de texto transparente sobre a imagem, para selecionar e copiar
-    if(o&&o.texto&&o.texto.items.some(t=>(t.str||'').trim())&&o.lib&&o.lib.renderTextLayer){ comTexto++;
-      const tl=document.createElement('div'); tl.className='textLayer'; d.appendChild(tl); pags.push([d,o.vp1.width]);
-      d.style.setProperty('--scale-factor',d.clientWidth/o.vp1.width);
-      try{ o.lib.renderTextLayer({textContentSource:o.texto,container:tl,viewport:o.vp1}); }catch(_){ tl.remove() } }
-    msg.textContent=n<tot?'Carregando página '+(n+1)+' de '+tot+'…':tot+(tot>1?' páginas':' página')+(comTexto?' · selecione o texto para copiar':' · documento escaneado, sem texto para copiar') })
-    .catch(()=>{ msg.textContent='Não foi possível abrir este PDF aqui.' });
+  const larg=Math.min(2000,Math.round(Math.min(window.innerWidth,1000)*1.5*(window.devicePixelRatio||1)));
+  let comTexto=0, totPag=0;
+  (async()=>{
+    for(const arq of lista){ if(!aberto) return;
+      let marco=null;
+      if(lista.length>1){ marco=document.createElement('div'); marco.className='varq'; marco.textContent=arq.name; corpo.insertBefore(marco,msg) }
+      if(/^image\//.test(arq.type)){ const u=URL.createObjectURL(arq); urls.push(u); const i=document.createElement('img'); i.src=u; i.alt=arq.name; corpo.insertBefore(i,msg); marco=marco||i; totPag++ }
+      else{ try{ await window.ContratoSocial.paginas(arq,larg,(url,n,tot,o)=>{ if(!aberto) return false;
+          const d=document.createElement('div'); d.className='vpag'; const i=document.createElement('img'); i.src=url; i.alt='Página '+n+' de '+tot; d.appendChild(i); corpo.insertBefore(d,msg); marco=marco||d; totPag++;
+          // Camada de texto transparente sobre a imagem, para selecionar e copiar
+          if(o&&o.texto&&o.texto.items.some(t=>(t.str||'').trim())&&o.lib&&o.lib.renderTextLayer){ comTexto++;
+            const tl=document.createElement('div'); tl.className='textLayer'; d.appendChild(tl); pags.push([d,o.vp1.width]);
+            d.style.setProperty('--scale-factor',d.clientWidth/o.vp1.width);
+            try{ o.lib.renderTextLayer({textContentSource:o.texto,container:tl,viewport:o.vp1}); }catch(_){ tl.remove() } }
+          msg.textContent=n<tot?'Carregando página '+(n+1)+' de '+tot+'…':'Carregando…' });
+        }catch(_){ const e=document.createElement('div'); e.className='vmsg'; e.textContent='Não foi possível abrir '+arq.name+' aqui.'; corpo.insertBefore(e,msg) } }
+      if(arq===x&&marco&&lista.length>1) corpo.scrollTop=marco.offsetTop-corpo.offsetTop-8;
+    }
+    if(!aberto) return;
+    msg.textContent=totPag?(totPag+(totPag>1?' páginas':' página')+(comTexto?' · selecione o texto para copiar':' · documento escaneado, sem texto para copiar')):'';
+  })();
 }
 // Campo "Senha do certificado" dos Parâmetros: a senha agora é pedida em cada certificado; o campo fica oculto e recebe as senhas
 function camposSenhaCert(){ return [...f.querySelectorAll('#secoes label')].filter(l=>{ const t=(l.querySelector('span')?.textContent||''); return /senha/i.test(t)&&/certificado|pfx|p12/i.test(t) }).map(l=>({l,inp:l.querySelector('input,textarea')})).filter(x=>x.inp) }

@@ -55,3 +55,41 @@ export async function coletar(de, ate, log = console.log) {
   }
   return { paginas: [...paginas.values()], consultas };
 }
+
+// Diário Oficial de GO: mesmo sistema de busca do IOMAT (Imprensa Oficial), na ABC (Agência Brasil Central).
+// As prefeituras publicam ali os avisos de licença (requerimento e licença recebida) de posto.
+export function paraImprensa({ id, nome, url, base, sigla, termos = TERMOS }) {
+  const pagUrl = (diario, pagina) => `${base}portal/visualizacoes/pdf/${diario}/#/e:${diario}/p:${pagina}`;
+  const pdfUrl = (diario, pagina) => `${base}portal/edicoes/download/${diario}/${pagina}`;
+  async function buscaB(termo, pagina, de, ate) {
+    const u = `${base}busca/busca/buscar/query/${pagina}/di:${de}/df:${ate}/?1=1&q=${encodeURIComponent(termo)}`;
+    let erro;
+    for (let t = 1; t <= 4; t++) {
+      try { const r = await fetch(u, { headers: UA, signal: AbortSignal.timeout(60000) }); if (!r.ok) throw new Error('HTTP ' + r.status); const j = await r.json(); if (!j.hits) throw new Error('resposta sem resultados'); return j.hits; }
+      catch (e) { erro = e; await espera(t * 5000); }
+    }
+    throw new Error(`${sigla} (${termo}, pág. ${pagina}): ${erro.message}`);
+  }
+  return {
+    info: { id, nome, url, tipo: 'diario_oficial' },
+    async coletar(de, ate, log = console.log) {
+      const paginas = new Map(); let consultas = 0;
+      for (const termo of termos) {
+        let total = 0;
+        for (let p = 0; p < 80; p++) {
+          const hits = await buscaB(termo, p, de, ate); consultas++;
+          total = hits.total;
+          for (const h of hits.hits || []) {
+            const s = h._source || {}; const pid = `${s.diario_id}-${s.pagina}`;
+            if (!paginas.has(pid)) paginas.set(pid, { id: pid, diario: s.diario_id, pagina: s.pagina, data: s.data, texto: s.conteudo || '', url: pagUrl(s.diario_id, s.pagina), pdf: pdfUrl(s.diario_id, s.pagina) });
+          }
+          if ((hits.hits || []).length < 10) break;
+          await espera(1200);
+        }
+        log(`${sigla} ${termo}: ${total} página(s) no período`);
+        await espera(1200);
+      }
+      return { paginas: [...paginas.values()], consultas };
+    }
+  };
+}
