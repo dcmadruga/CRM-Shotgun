@@ -102,6 +102,47 @@
     $('agNavBox').hidden = modo === 'prox';
     if (!pronto) { $('agArea').innerHTML = '<p class="hint">Carregando a agenda…</p>'; return; }
     if (modo === 'semana') semana(todos); else if (modo === 'dia') dia(todos); else proximas(todos);
+    avisos(); telaHoje();
+  }
+
+  /* ---------- Sino e tela Hoje (fase 3) ---------- */
+  // Avisos do sino, montados a partir das demos (sem gravar nada). Só as demos que a própria pessoa apresenta (dona do lead):
+  //   agendada por outra pessoa (ex.: ADM marcou no lead dela), lembrete no dia e "registrar resultado" depois do horário.
+  const tsDe = (data, hora) => { const [y, m, d] = data.split('-').map(Number), [hh, mm] = String(hora || '0:0').split(':').map(Number); return new Date(y, m - 1, d, hh || 0, mm || 0).getTime(); };
+  const msDe = v => v && v.toMillis ? v.toMillis() : v && v.seconds ? v.seconds * 1000 : v ? Date.parse(v) || 0 : 0;
+  function avisos() {
+    if (!window.shotgunAvisos || !perfil) return;
+    const h = hoje(), out = [], lim = soma(h, -7);
+    leads.filter(l => l.owner === perfil.uid).forEach(l => (Array.isArray(l.demos) ? l.demos : []).forEach(d => {
+      if (!d || !d.data) return;
+      const nome = l.empresa || '(sem nome)', fmt = (d.formato === 'presencial' ? 'Presencial' : 'Online') + ' · ' + durTxt(Number(d.dur) || 60), abrirDemo = () => { const t = $('tabAgenda'); if (t) t.click(); form(l.id, d.id, {}); };
+      if (aberta(d) && d.data >= h && d.porUid && d.porUid !== perfil.uid)
+        out.push({ id: 'dag:' + d.id, titulo: `Demonstração agendada para você: ${nome}`, texto: `${quando(d)} · ${fmt}${d.por ? '\nAgendada por ' + d.por : ''}`, setor: 'agenda', t: msDe(d.criado), abrir: abrirDemo });
+      if (aberta(d) && d.data === h && !semResultado(d))
+        out.push({ id: 'dhj:' + d.id, titulo: `Demonstração hoje às ${d.hora}: ${nome}`, texto: [fmt, (d.participantes || []).length ? 'Com ' + d.participantes.join(', ') : '', d.formato === 'presencial' ? d.local : d.link].filter(Boolean).join('\n'), setor: 'agenda', t: tsDe(h, '00:00'), abrir: abrirDemo });
+      if (semResultado(d) && d.data >= lim)
+        out.push({ id: 'dres:' + d.id, titulo: `Como foi a demonstração? ${nome}`, texto: `${quando(d)} · Toque para registrar o resultado.`, setor: 'agenda', t: tsDe(d.data, d.hora) + (Number(d.dur) || 60) * 6e4, abrir: abrirDemo });
+    }));
+    window.shotgunAvisos('agenda', out);
+  }
+  // Tela Hoje: as demos de hoje (e as que ficaram sem resultado) no topo. O ADM vê as de todos, ou só as dele em "Só as minhas".
+  function telaHoje() {
+    const sec = $('hAgSec'); if (!sec || !perfil) return;
+    const h = hoje(), minhas = !admin || ($('hMinhas') && $('hMinhas').checked);
+    const its = [];
+    leads.filter(l => !minhas || l.owner === perfil.uid).forEach(l => (Array.isArray(l.demos) ? l.demos : []).forEach(d => {
+      if (d && d.data && ((d.data === h && naAgenda(d) && stDe(d) !== 'naocompareceu') || (semResultado(d) && d.data >= soma(h, -7)))) its.push({ l, d });
+    }));
+    its.sort((a, b) => (semResultado(b.d) - semResultado(a.d)) || (a.d.data + a.d.hora).localeCompare(b.d.data + b.d.hora));
+    sec.hidden = !its.length;
+    const pend = its.filter(x => semResultado(x.d)).length;
+    $('hAgCount').textContent = its.length ? `${its.length - pend} hoje${pend ? ` · ${pend} sem resultado` : ''}` : '';
+    $('hAgList').innerHTML = its.map(({ l, d }) => {
+      const p = semResultado(d), ok = stDe(d) === 'realizada';
+      return `<div class="hitem${p ? ' agpend' : ok ? ' agok' : ''}"><span class="n agn">${d.data === h ? esc(d.hora) : fmtDC(d.data)}</span>
+        <div><b>Demonstração · ${esc(l.empresa || '(sem nome)')}</b><small>${esc([(d.formato === 'presencial' ? 'Presencial' : 'Online') + ' · ' + durTxt(Number(d.dur) || 60), (d.participantes || []).length ? 'com ' + d.participantes.join(', ') : '', ok ? 'Realizada · ' + (RES[d.resultado] || '') : stDe(d) === 'confirmada' ? 'Confirmada' : '', admin && l.owner !== perfil.uid ? l.vendedor : ''].filter(Boolean).join(' · '))}</small></div>
+        <button type="button"${p ? ' class="primary"' : ''} data-hdemo="${esc(d.id)}" data-hlead="${esc(l.id)}">${p ? 'Registrar resultado' : 'Abrir'}</button></div>`;
+    }).join('');
   }
 
   function semana(todos) {
@@ -433,6 +474,10 @@
       else if (window.crmAbrirLead) window.crmAbrirLead(it.dataset.lead);
     });
     $('agDlgFechar').addEventListener('click', fechar);
+    if ($('hAgList')) $('hAgList').addEventListener('click', e => { const b = e.target.closest('[data-hdemo]'); if (!b) return; const l = leads.find(x => x.id === b.dataset.hlead), d = l && (l.demos || []).find(x => x.id === b.dataset.hdemo); if (!d) return; form(l.id, d.id, {}); if (semResultado(d)) { lerDlgSeguro(); telaResultado(); } });
+    if ($('hMinhas')) $('hMinhas').addEventListener('change', telaHoje);
+    // Vira o dia ou passa o horário de uma demo com o app aberto: atualiza avisos, Hoje e a agenda
+    setInterval(() => { if (pronto) desenhar(); }, 5 * 60000);
     dlg().addEventListener('close', () => { if (window.crmPararDitado) window.crmPararDitado(); });
     dlg().addEventListener('input', e => { if (e.target.id === 'agLeadQ') buscar(); if (['agData', 'agHora'].includes(e.target.id)) atualizarConflito(); });
     dlg().addEventListener('change', e => { if (e.target.name === 'agRes') resOpcoes(); if (e.target.name === 'agFmt') formato(); if (['agData', 'agHora', 'agDur'].includes(e.target.id)) atualizarConflito(); });

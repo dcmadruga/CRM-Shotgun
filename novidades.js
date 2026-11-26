@@ -18,7 +18,9 @@ window.SHOTGUN_NOVIDADES = [
     'No CRM, a ficha do lead ganhou o bloco Demonstrações, com o botão para agendar, e o card do lead no funil mostra a data da próxima demonstração.',
     'Andamento: abra a demonstração e marque Cliente confirmou, Realizada, Não compareceu, Remarcar ou Cancelar. Tudo fica anotado no histórico do lead.',
     'Ao marcar Realizada, escolha o resultado: Quer proposta (o app oferece Gerar proposta), Vai pensar (marca o próximo contato) ou Sem interesse (o lead vai para Perdido). O lead em aberto passa para Qualificado no funil.',
-    'Demonstração que já passou sem resultado aparece com o aviso Registrar resultado, na Agenda e no lead.'
+    'Demonstração que já passou sem resultado aparece com o aviso Registrar resultado, na Agenda e no lead.',
+    'Sino: quem apresenta recebe um aviso quando outra pessoa agenda uma demonstração no lead dele, um lembrete no dia ("Demonstração hoje às 14:00") e, depois do horário, o pedido para registrar como foi. Tocar no aviso abre a demonstração.',
+    'Tela Hoje: as demonstrações do dia e as que ficaram sem resultado aparecem no topo, com o botão Abrir ou Registrar resultado.'
   ] },
   { v: 235, data: '2026-11-24', titulo: 'Postos em construção em Sergipe, Pará, Tocantins e Rondônia', itens: [
     'Telemetria → Postos em construção: o Estado agora tem também Sergipe (SE), Pará (PA), Tocantins (TO) e Rondônia (RO), com os mesmos filtros de Cidade, mapa, lista, alertas e fontes.',
