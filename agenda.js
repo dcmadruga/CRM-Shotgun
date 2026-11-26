@@ -2,7 +2,10 @@
 // Dados: as demonstrações ficam no próprio lead (crm/{id}.demos), então valem as mesmas regras do CRM:
 //   o vendedor dono do lead agenda e apresenta; o ADM vê e mexe em todas.
 //   demos: [{ id, data: 'AAAA-MM-DD', hora: 'HH:MM', dur: minutos, formato: 'online' | 'presencial', link, local,
-//             participantes: [nomes], obs, status: 'agendada', criado, por, porUid, alterado }]
+//             participantes: [nomes], obs, status, criado, por, porUid, alterado,
+//             resultado: 'proposta' | 'pensar' | 'sem', resultadoObs, feitaEm, motivoCanc, remarcadaPara, statusPor }]
+//   status: agendada → confirmada → realizada | naocompareceu | remarcada (vira uma demo nova) | cancelada
+//   Realizada grava "Demonstração realizada" no histórico do lead e move o lead no funil (Qualificado ou Perdido).
 // Os leads chegam do crm.js pelo evento 'crm-dados' (o CRM já está ouvindo a coleção, a Agenda não lê de novo).
 // Para abrir o lead e cadastrar lead novo, usa window.crmAbrirLead / window.crmNovoLead (crm.js).
 (() => {
@@ -30,6 +33,15 @@
   const celular = () => window.matchMedia('(max-width:760px)').matches;
   const contatosDe = l => Array.isArray(l.contatos) && l.contatos.length ? l.contatos : (l.contato || l.fone ? [{ nome: l.contato || '', fone: l.fone || '' }] : []);
   const DURS = [30, 45, 60, 90, 120];
+  const ST = { agendada: 'Agendada', confirmada: 'Confirmada', realizada: 'Realizada', naocompareceu: 'Não compareceu', remarcada: 'Remarcada', cancelada: 'Cancelada' };
+  const RES = { proposta: 'Quer proposta', pensar: 'Vai pensar', sem: 'Sem interesse' };
+  const MOTIVOS = ['Preço', 'Escolheu concorrente', 'Sem interesse no momento', 'Sem retorno', 'Fora do perfil', 'Outro'];
+  const stDe = d => ST[d.status] ? d.status : 'agendada';
+  const aberta = d => ['agendada', 'confirmada'].includes(stDe(d));
+  const naAgenda = d => !['remarcada', 'cancelada'].includes(stDe(d));
+  // Já passou do fim e ninguém marcou o que aconteceu
+  const semResultado = d => { if (!aberta(d)) return false; const h = hoje(); if (d.data !== h) return d.data < h; const a = new Date(); return a.getHours() * 60 + a.getMinutes() >= min(d.hora) + (Number(d.dur) || 60); };
+  const pillSt = d => semResultado(d) ? '<span class="agst st-pend">Registrar resultado</span>' : stDe(d) === 'agendada' ? '' : `<span class="agst st-${stDe(d)}">${esc(ST[stDe(d)])}${stDe(d) === 'realizada' && d.resultado ? ' · ' + esc(RES[d.resultado] || '') : ''}</span>`;
   const durTxt = m => m < 60 ? m + ' min' : m % 60 ? Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0') : (m / 60) + 'h';
   const IC = {
     video: '<svg class="agic" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
@@ -48,7 +60,7 @@
   const doUser = l => !fUser || l.owner === fUser;
   function demos() {
     const out = [];
-    leads.filter(doUser).forEach(l => (Array.isArray(l.demos) ? l.demos : []).forEach(d => { if (d && d.data && d.status !== 'cancelada') out.push({ k: 'demo', l, d, data: d.data, ord: min(d.hora) }); }));
+    leads.filter(doUser).forEach(l => (Array.isArray(l.demos) ? l.demos : []).forEach(d => { if (d && d.data && naAgenda(d)) out.push({ k: 'demo', l, d, data: d.data, ord: min(d.hora) }); }));
     return out;
   }
   // Próximo contato: só dos leads em aberto (sem proposta e não perdidos), como no funil do CRM
@@ -71,8 +83,8 @@
         ${largo && (c0.nome || c0.fone) ? `<small>${esc([c0.nome, c0.fone].filter(Boolean).join(' · '))}</small>` : ''}${dono}</button>`;
     }
     const d = x.d, on = d.formato !== 'presencial', parts = (d.participantes || []).filter(Boolean);
-    return `<button type="button" class="agit demo${x.data < hoje() ? ' passou' : ''}" data-lead="${esc(l.id)}" data-demo="${esc(d.id)}">
-      <span class="aghora">${esc(d.hora)} – ${esc(fimDe(d))}</span><b>${esc(l.empresa || '(sem nome)')}</b>
+    return `<button type="button" class="agit demo st-${semResultado(d) ? 'pend' : stDe(d)}${x.data < hoje() && !semResultado(d) ? ' passou' : ''}" data-lead="${esc(l.id)}" data-demo="${esc(d.id)}">
+      <span class="aghora">${esc(d.hora)} – ${esc(fimDe(d))}</span><b>${esc(l.empresa || '(sem nome)')}</b>${pillSt(d)}
       <small class="agfmt">${on ? IC.video + 'Online' : IC.pin + 'Presencial'} · ${durTxt(Number(d.dur) || 60)}</small>
       ${largo && parts.length ? `<small>Com ${esc(parts.join(', '))}</small>` : ''}
       ${largo && !on && d.local ? `<small>${esc(d.local)}</small>` : ''}${dono}</button>`;
@@ -85,8 +97,8 @@
     document.querySelectorAll('#agModo button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.modo === modo)));
     $('agProxChk').checked = verProx;
     const todos = [...demos(), ...lembretes()], h = hoje();
-    const futuras = todos.filter(x => x.k === 'demo' && x.data >= h).length;
-    $('agCount').textContent = pronto ? `${futuras} demonstraç${futuras === 1 ? 'ão agendada' : 'ões agendadas'}` : '';
+    const futuras = todos.filter(x => x.k === 'demo' && x.data >= h && aberta(x.d)).length, pend = todos.filter(x => x.k === 'demo' && semResultado(x.d)).length;
+    $('agCount').textContent = pronto ? `${futuras} demonstraç${futuras === 1 ? 'ão agendada' : 'ões agendadas'}${pend ? ` · ${pend} sem resultado` : ''}` : '';
     $('agNavBox').hidden = modo === 'prox';
     if (!pronto) { $('agArea').innerHTML = '<p class="hint">Carregando a agenda…</p>'; return; }
     if (modo === 'semana') semana(todos); else if (modo === 'dia') dia(todos); else proximas(todos);
@@ -149,11 +161,12 @@
     if (demoId && !d0) { msgTela('Essa demonstração não existe mais.'); return; }
     const h = hoje(), agora = new Date(), proxHora = hhmm(Math.min(18 * 60, Math.ceil((agora.getHours() * 60 + agora.getMinutes() + 30) / 30) * 30));
     const data = d0 ? d0.data : opts.data && opts.data >= h ? opts.data : modo === 'dia' && ref >= h ? ref : h;
-    const d = d0 ? { ...d0 } : opts.rascunho ? { ...opts.rascunho, data: opts.rascunho.data >= h ? opts.rascunho.data : data, participantes: [] } : { data, hora: data === h ? proxHora : '09:00', dur: 60, formato: 'online', link: '', local: '', participantes: [], obs: '' };
-    atual = { leadId: l ? l.id : '', demo: d, editando: !!d0, volta: opts.volta || '' };
-    abrirDlg(d0 ? 'Demonstração' : 'Agendar demonstração', `
+    const d = d0 ? { ...d0 } : opts.rascunho ? { ...opts.rascunho, data: opts.rascunho.data >= h ? opts.rascunho.data : data, participantes: opts.remarca ? opts.rascunho.participantes || [] : [] } : { data, hora: data === h ? proxHora : '09:00', dur: 60, formato: 'online', link: '', local: '', participantes: [], obs: '' };
+    atual = { leadId: l ? l.id : '', demo: d, editando: !!d0, volta: opts.volta || '', remarca: opts.remarca || '' };
+    abrirDlg(d0 ? 'Demonstração' : opts.remarca ? 'Remarcar demonstração' : 'Agendar demonstração', `
       <div class="agform" id="agForm">
         <section class="crmbloco"><h4>Lead <em class="agreq">obrigatório</em></h4><div id="agLeadBox"></div></section>
+        ${d0 ? andamentoHtml(d0) : ''}
         <section class="crmbloco"><h4>Quando</h4>
           <div class="tkform agquando">
             <label>Data<input type="date" id="agData" min="${d0 && d0.data < h ? d0.data : h}" value="${esc(d.data)}" required></label>
@@ -177,7 +190,7 @@
         <p class="hint agquem" id="agQuem"></p>
       </div>
       <div class="tools crmacts">
-        <button type="button" class="primary" data-a="salvar">${d0 ? 'Salvar' : 'Agendar'}</button>
+        <button type="button" class="primary" data-a="salvar">${d0 ? 'Salvar' : opts.remarca ? 'Remarcar' : 'Agendar'}</button>
         <button type="button" data-a="cancelar">Fechar</button>
         ${d0 ? '<button type="button" class="danger" data-a="excluir">Excluir</button>' : ''}
       </div>`, 'form');
@@ -192,7 +205,7 @@
     if (l) {
       const c0 = contatosDe(l)[0] || {};
       box.innerHTML = `<div class="aglead"><span><b>${esc(l.empresa || '(sem nome)')}</b><small>${esc([l.cidade, c0.nome, l.origem].filter(Boolean).join(' · '))}</small></span>
-        <span class="aglacts"><button type="button" class="linkbtn" data-a="verlead">Abrir lead</button>${atual.editando ? '' : '<button type="button" class="linkbtn" data-a="trocar">Trocar</button>'}</span></div>`;
+        <span class="aglacts"><button type="button" class="linkbtn" data-a="verlead">Abrir lead</button>${atual.editando || atual.remarca ? '' : '<button type="button" class="linkbtn" data-a="trocar">Trocar</button>'}</span></div>`;
     } else {
       box.innerHTML = `<input id="agLeadQ" type="search" autocomplete="off" placeholder="Busque pelo nome do posto, contato ou CNPJ" aria-label="Buscar lead">
         <div class="agres" id="agRes"></div>
@@ -240,7 +253,7 @@
     if (!data || !$('agHora').value) return [];
     const out = [];
     leads.filter(x => x.owner === l.owner).forEach(x => (x.demos || []).forEach(d => {
-      if (d.status === 'cancelada' || d.data !== data || (x.id === l.id && d.id === atual.demo.id)) return;
+      if (!naAgenda(d) || stDe(d) === 'naocompareceu' || d.data !== data || (x.id === l.id && (d.id === atual.demo.id || d.id === atual.remarca))) return;
       const a = min(d.hora), b = a + (Number(d.dur) || 60);
       if (ini < b && a < fim) out.push(`${d.hora}–${fimDe(d)} com ${x.empresa || '(sem nome)'}`);
     }));
@@ -265,14 +278,23 @@
     const agoraIso = new Date().toISOString();
     if (!d.id) Object.assign(d, { id: 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), status: 'agendada', criado: agoraIso, por: quem(), porUid: perfil.uid });
     else Object.assign(d, { alterado: agoraIso, alteradoPor: quem() });
-    const lista = (l.demos || []).filter(x => x.id !== d.id).concat([d]).sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
+    let lista = (l.demos || []).filter(x => x.id !== d.id).concat([d]);
+    const extra = {};
+    if (atual.remarca) {
+      const velha = lista.find(x => x.id === atual.remarca);
+      if (velha) {
+        lista = lista.map(x => x.id === velha.id ? { ...x, status: 'remarcada', remarcadaPara: d.id, statusEm: agoraIso, statusPor: quem() } : x);
+        extra.notas = F.arrayUnion(nota(`Demonstração remarcada de ${fmtD(velha.data)} às ${velha.hora} para ${fmtD(d.data)} às ${d.hora}.`, d));
+      }
+    }
+    lista.sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
     btn.disabled = true; dmsg('Salvando…');
     try {
-      await F.updateDoc(F.doc(db, 'crm', l.id), { demos: lista, alterado: F.serverTimestamp(), alteradoPor: quem() });
+      await F.updateDoc(F.doc(db, 'crm', l.id), { demos: lista, ...extra, alterado: F.serverTimestamp(), alteradoPor: quem() });
       l.demos = lista;
       const volta = atual.volta, novo = !atual.editando;
       fechar();
-      msgTela(`${novo ? 'Demonstração agendada' : 'Demonstração salva'}: ${l.empresa || ''}, ${fmtD(d.data)} às ${d.hora}.`);
+      msgTela(`${atual && atual.remarca ? 'Demonstração remarcada' : novo ? 'Demonstração agendada' : 'Demonstração salva'}: ${l.empresa || ''}, ${fmtD(d.data)} às ${d.hora}.`);
       if (volta === 'lead' && window.crmAbrirLead) window.crmAbrirLead(l.id, true);
       else { ref = d.data; desenhar(); }
     } catch (e) { dmsg('Não foi possível salvar (' + (e.code || e.message) + ').'); }
@@ -289,6 +311,100 @@
     } catch (e) { dmsg('Não foi possível excluir (' + (e.code || e.message) + ').'); }
   }
 
+  /* ---------- Andamento (fase 2) ---------- */
+  function andamentoHtml(d) {
+    const st = stDe(d), passou = d.data <= hoje(), l = leadAtual();
+    let corpo = '';
+    if (st === 'realizada') corpo = `<p class="agstinfo">Realizada${d.feitaEm ? ' em ' + fmtD(d.feitaEm.slice(0, 10)) : ''}${d.statusPor ? ' · ' + esc(d.statusPor) : ''}. Resultado: <b>${esc(RES[d.resultado] || 'não informado')}</b>.</p>${d.resultadoObs ? `<p class="agstobs">${esc(d.resultadoObs)}</p>` : ''}${d.resultado !== 'sem' && l && !l._temProp && window.crmGerarProposta ? '<div class="agacoes"><button type="button" class="primary" data-a="gerarprop">Gerar proposta</button></div>' : ''}`;
+    else if (st === 'naocompareceu') corpo = `<p class="agstinfo">O cliente não compareceu.</p><div class="agacoes"><button type="button" class="primary" data-a="remarcar">Remarcar</button></div>`;
+    else if (st === 'cancelada') corpo = `<p class="agstinfo">Cancelada${d.motivoCanc ? ': ' + esc(d.motivoCanc) : ''}.</p>`;
+    else if (st === 'remarcada') corpo = `<p class="agstinfo">Remarcada para outra data.${d.remarcadaPara ? ' <button type="button" class="linkbtn" data-a="vernova">Ver a nova</button>' : ''}</p>`;
+    else corpo = `${semResultado(d) ? '<p class="agstinfo pend">O horário já passou. Como foi a demonstração?</p>' : ''}<div class="agacoes">
+        ${passou ? '<button type="button" class="primary" data-a="realizada">Realizada</button><button type="button" data-a="naocomp">Não compareceu</button>' : ''}
+        ${st === 'agendada' && !semResultado(d) ? '<button type="button"' + (passou ? '' : ' class="primary"') + ' data-a="confirmar">Cliente confirmou</button>' : ''}
+        <button type="button" data-a="remarcar">Remarcar</button><button type="button" data-a="cancelar">Cancelar demonstração</button></div>`;
+    return `<section class="crmbloco"><h4>Andamento ${st === 'agendada' && !semResultado(d) ? '<span class="agst st-agendada">Agendada</span>' : pillSt(d)}</h4>${corpo}</section>`;
+  }
+  // Nota para o histórico do lead (mesmo formato das anotações do CRM)
+  const nota = (texto, d) => ({ tipo: 'Reunião', texto, ...((d && (d.participantes || [])[0]) ? { contato: d.participantes[0] } : {}), em: new Date().toISOString(), por: quem() });
+  const quando = d => `${fmtD(d.data)} às ${d.hora}`;
+  // Grava a mudança de status na demo (e o que mais vier junto no lead)
+  async function gravarStatus(l, id, campos, extra) {
+    const agora = new Date().toISOString();
+    const lista = (l.demos || []).map(x => x.id === id ? { ...x, ...campos, statusEm: agora, statusPor: quem() } : x);
+    await F.updateDoc(F.doc(db, 'crm', l.id), { demos: lista, ...(extra || {}), alterado: F.serverTimestamp(), alteradoPor: quem() });
+    l.demos = lista;
+    return lista.find(x => x.id === id);
+  }
+  function telaResultado() {
+    const d = atual.demo, l = leadAtual();
+    abrirDlg('Como foi a demonstração?', `
+      <p class="agsub"><b>${esc(l.empresa || '')}</b> · ${esc(quando(d))}</p>
+      <div class="agform">
+        <section class="crmbloco"><h4>Resultado</h4>
+          <div class="agfmtsel ag3" role="radiogroup" aria-label="Resultado">
+            ${Object.entries(RES).map(([k, t], i) => `<label class="agopt"><input type="radio" name="agRes" value="${k}"${i === 0 ? ' checked' : ''}><span><b>${t}</b><small>${k === 'proposta' ? 'Gerar a proposta agora' : k === 'pensar' ? 'Marcar o próximo contato' : 'Lead vai para Perdido'}</small></span></label>`).join('')}
+          </div>
+          <label id="agResProxL" hidden>Próximo contato<input type="date" id="agResProx" min="${hoje()}" value="${soma(hoje(), 3)}"></label>
+          <label id="agResMotL" hidden>Motivo<select id="agResMot">${MOTIVOS.map(m => `<option${m === 'Sem interesse no momento' ? ' selected' : ''}>${m}</option>`).join('')}</select></label>
+        </section>
+        <section class="crmbloco"><h4>Como foi</h4>
+          <label class="full">Anotação <small>opcional, vai para o histórico do lead</small><span class="ditado"><textarea id="agResObs" rows="3" maxlength="1500" placeholder="Ex.: gostou do PDV e da conciliação, quer ver preço do TEF">${esc(d.resultadoObs || '')}</textarea>${window.crmMicBtn ? window.crmMicBtn() : ''}</span><small class="ditst" hidden></small></label>
+        </section>
+        ${l._temProp ? '<p class="hint">Este lead já tem proposta: a etapa no funil segue a proposta.</p>' : ''}
+      </div>
+      <div class="tools crmacts"><button type="button" class="primary" data-a="registrar">Registrar</button><button type="button" data-a="voltar">Voltar</button></div>`, 'resultado');
+    resOpcoes();
+  }
+  function resOpcoes() {
+    const v = (document.querySelector('input[name=agRes]:checked') || {}).value;
+    $('agResProxL').hidden = v !== 'pensar'; $('agResMotL').hidden = v !== 'sem';
+  }
+  async function registrar(btn) {
+    const l = leadAtual(), d = atual.demo, res = (document.querySelector('input[name=agRes]:checked') || {}).value || 'proposta';
+    const obs = $('agResObs').value.trim(), prox = $('agResProx').value, mot = $('agResMot').value;
+    if (res === 'pensar' && !prox) { dmsg('Escolha a data do próximo contato.'); $('agResProx').focus(); return; }
+    const extra = { notas: F.arrayUnion(nota(`Demonstração de ${quando(d)} realizada. Resultado: ${RES[res].toLowerCase()}.${obs ? ' ' + obs : ''}`, d)) };
+    // Funil: só mexe no lead que ainda não virou proposta
+    if (!l._temProp) {
+      if (res === 'sem') Object.assign(extra, { etapa: 'perdido', motivo: mot || 'Sem interesse no momento' });
+      else if (l.etapa !== 'qualificado') Object.assign(extra, { etapa: 'qualificado', motivo: '' });
+    }
+    if (res === 'pensar') extra.prox = prox;
+    btn.disabled = true; dmsg('Registrando…');
+    try {
+      const nd = await gravarStatus(l, d.id, { status: 'realizada', resultado: res, resultadoObs: obs, feitaEm: new Date().toISOString() }, extra);
+      atual.demo = { ...nd };
+      if (res === 'proposta' && !l._temProp && window.crmGerarProposta) {
+        abrirDlg('Demonstração registrada', `<p class="agsub">Anotada no histórico de <b>${esc(l.empresa || '')}</b>${extra.etapa ? ', que foi para Qualificado no funil' : ''}.</p>
+          <div class="tools crmacts"><button type="button" class="primary" data-a="gerarprop">Gerar proposta agora</button><button type="button" data-a="cancelar">Depois</button></div>`, 'feito');
+      } else {
+        const v = atual.volta; fechar();
+        msgTela(`Demonstração registrada: ${l.empresa || ''}. ${res === 'sem' ? (l._temProp ? '' : 'O lead foi para Perdido.') : res === 'pensar' ? 'Próximo contato em ' + fmtD(prox) + '.' : ''}`.trim());
+        if (v === 'lead' && window.crmAbrirLead) window.crmAbrirLead(l.id); else desenhar();
+      }
+    } catch (e) { dmsg('Não foi possível registrar (' + (e.code || e.message) + ').'); }
+    finally { btn.disabled = false; }
+  }
+  async function mudarStatus(btn, a) {
+    const l = leadAtual(), d = atual.demo; if (!l) return;
+    if (a === 'cancelar' && !$('agCancMot')) {
+      btn.insertAdjacentHTML('afterend', '<label class="agcanc">Motivo do cancelamento <small>opcional</small><input id="agCancMot" maxlength="200" placeholder="Ex.: cliente pediu para adiar"></label>');
+      btn.textContent = 'Confirmar cancelamento'; btn.classList.add('danger'); $('agCancMot').focus(); return;
+    }
+    if (a === 'naocomp' && btn.dataset.confirma !== '1') { btn.dataset.confirma = '1'; btn.textContent = 'Confirmar: não compareceu'; dmsg('Toque de novo para confirmar.'); return; }
+    const campos = a === 'confirmar' ? { status: 'confirmada' } : a === 'naocomp' ? { status: 'naocompareceu' } : { status: 'cancelada', motivoCanc: ($('agCancMot') || {}).value?.trim() || '' };
+    const texto = a === 'confirmar' ? `Cliente confirmou a demonstração de ${quando(d)}.` : a === 'naocomp' ? `Cliente não compareceu à demonstração de ${quando(d)}.` : `Demonstração de ${quando(d)} cancelada${campos.motivoCanc ? ': ' + campos.motivoCanc : ''}.`;
+    btn.disabled = true; dmsg('Salvando…');
+    try {
+      await gravarStatus(l, d.id, campos, { notas: F.arrayUnion(nota(texto, d)) });
+      if (a === 'naocomp') { form(l.id, d.id, { volta: atual.volta }); dmsg('Anotado no histórico do lead. Se quiser, remarque.'); return; }
+      const v = atual.volta; fechar();
+      msgTela(a === 'confirmar' ? `Confirmada: ${l.empresa || ''}, ${quando(d)}.` : `Demonstração cancelada: ${l.empresa || ''}.`);
+      if (v === 'lead' && window.crmAbrirLead) window.crmAbrirLead(l.id); else desenhar();
+    } catch (e) { dmsg('Não foi possível salvar (' + (e.code || e.message) + ').'); btn.disabled = false; }
+  }
+
   function msgTela(t) { const el = $('agMsg'); if (!el) return; el.textContent = t || ''; el.hidden = !t; clearTimeout(msgTela.t); if (t) msgTela.t = setTimeout(() => { el.hidden = true; }, 6000); }
 
   /* ---------- Para o CRM ---------- */
@@ -296,7 +412,7 @@
   window.agendaNova = (leadId) => form(leadId, '', { volta: 'lead' });
   window.agendaAbrir = (leadId, demoId) => form(leadId, demoId, { volta: 'lead' });
   // Próxima demonstração do lead (para o card do funil e a ficha)
-  window.agendaProxima = l => (Array.isArray(l?.demos) ? l.demos : []).filter(d => d.status !== 'cancelada' && d.data >= hoje()).sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora))[0] || null;
+  window.agendaProxima = l => (Array.isArray(l?.demos) ? l.demos : []).filter(d => aberta(d) && d.data >= hoje()).sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora))[0] || null;
   window.agendaFmt = d => d ? `${fmtDC(d.data)} às ${d.hora}` : '';
 
   /* ---------- Eventos ---------- */
@@ -319,7 +435,7 @@
     $('agDlgFechar').addEventListener('click', fechar);
     dlg().addEventListener('close', () => { if (window.crmPararDitado) window.crmPararDitado(); });
     dlg().addEventListener('input', e => { if (e.target.id === 'agLeadQ') buscar(); if (['agData', 'agHora'].includes(e.target.id)) atualizarConflito(); });
-    dlg().addEventListener('change', e => { if (e.target.name === 'agFmt') formato(); if (['agData', 'agHora', 'agDur'].includes(e.target.id)) atualizarConflito(); });
+    dlg().addEventListener('change', e => { if (e.target.name === 'agRes') resOpcoes(); if (e.target.name === 'agFmt') formato(); if (['agData', 'agHora', 'agDur'].includes(e.target.id)) atualizarConflito(); });
     dlg().addEventListener('click', e => {
       const pk = e.target.closest('[data-pick]');
       if (pk) { lerDlgSeguro(); atual.leadId = pk.dataset.pick; atual.demo.participantes = []; desenharLead(); atualizarConflito(); return; }
@@ -328,6 +444,13 @@
       if (a === 'ditar') { if (window.crmDitar) window.crmDitar(b); return; }
       if (window.crmPararDitado) window.crmPararDitado();
       if (a === 'salvar') salvar(b);
+      else if (a === 'realizada') { lerDlgSeguro(); telaResultado(); }
+      else if (a === 'registrar') registrar(b);
+      else if (a === 'voltar') form(atual.leadId, atual.demo.id, { volta: atual.volta });
+      else if (['confirmar', 'naocomp'].includes(a) || (a === 'cancelar' && dlg().dataset.modo === 'form' && b.closest('.agacoes'))) mudarStatus(b, a);
+      else if (a === 'remarcar') { const d = atual.demo; form(atual.leadId, '', { volta: atual.volta, remarca: d.id, rascunho: { data: soma(d.data > hoje() ? d.data : hoje(), 1), hora: d.hora, dur: d.dur, formato: d.formato, link: d.link || '', local: d.local || '', participantes: d.participantes || [], obs: d.obs || '' } }); }
+      else if (a === 'vernova') form(atual.leadId, atual.demo.remarcadaPara, { volta: atual.volta });
+      else if (a === 'gerarprop') { const id = atual.leadId; fechar(); window.crmGerarProposta(id); }
       else if (a === 'cancelar') { const v = atual.volta, id = atual.leadId; fechar(); if (v === 'lead' && id && window.crmAbrirLead) window.crmAbrirLead(id, true); }
       else if (a === 'excluir') excluir(b);
       else if (a === 'trocar') { lerDlgSeguro(); atual.leadId = ''; atual.demo.participantes = []; desenharLead(); atualizarConflito(); }

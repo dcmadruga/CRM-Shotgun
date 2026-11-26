@@ -15,7 +15,10 @@ window.SHOTGUN_NOVIDADES = [
     'Toque em + Agendar demonstração, escolha o lead (ou cadastre um novo ali mesmo), a data, a hora, a duração, se é online (com o link da reunião) ou presencial (o endereço vem do lead) e quem do cliente vai participar.',
     'Três jeitos de ver: Semana, Dia e Próximas. Os Próximos contatos dos leads também aparecem como lembrete, e os atrasados ficam em vermelho. Para esconder, desmarque Próximos contatos.',
     'Se você já tiver outra demonstração no mesmo horário, o app avisa antes de salvar.',
-    'No CRM, a ficha do lead ganhou o bloco Demonstrações, com o botão para agendar, e o card do lead no funil mostra a data da próxima demonstração.'
+    'No CRM, a ficha do lead ganhou o bloco Demonstrações, com o botão para agendar, e o card do lead no funil mostra a data da próxima demonstração.',
+    'Andamento: abra a demonstração e marque Cliente confirmou, Realizada, Não compareceu, Remarcar ou Cancelar. Tudo fica anotado no histórico do lead.',
+    'Ao marcar Realizada, escolha o resultado: Quer proposta (o app oferece Gerar proposta), Vai pensar (marca o próximo contato) ou Sem interesse (o lead vai para Perdido). O lead em aberto passa para Qualificado no funil.',
+    'Demonstração que já passou sem resultado aparece com o aviso Registrar resultado, na Agenda e no lead.'
   ] },
   { v: 235, data: '2026-11-24', titulo: 'Postos em construção em Sergipe, Pará, Tocantins e Rondônia', itens: [
     'Telemetria → Postos em construção: o Estado agora tem também Sergipe (SE), Pará (PA), Tocantins (TO) e Rondônia (RO), com os mesmos filtros de Cidade, mapa, lista, alertas e fontes.',

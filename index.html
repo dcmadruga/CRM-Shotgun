@@ -861,6 +861,24 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .agparts .uchip:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .agquem{font-size:12.5px}
 @media (max-width:480px){.agfmtsel{grid-template-columns:1fr}.aglead{flex-direction:column;align-items:flex-start}}
+/* Andamento da demonstração (fase 2) */
+.agst{display:inline-flex;align-items:center;justify-self:start;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;background:var(--chip-bg);color:var(--chip-fg);white-space:nowrap;font-family:var(--font)}
+.agst.st-confirmada,.agst.st-realizada{background:var(--ok-soft);color:var(--ok-text)}
+.agst.st-naocompareceu,.agst.st-cancelada{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.agst.st-pend{background:var(--warn-soft);color:var(--warn-text)}
+.crmbloco>h4 .agst{margin-left:auto;letter-spacing:.04em}
+.agit.st-confirmada{border-left-color:var(--ok-text)}.agit.st-realizada{border-left-color:var(--ok-text)}
+.agit.st-naocompareceu{border-left-color:var(--danger);opacity:.75}
+.agit.st-pend{border-left-color:var(--warn-text)}
+.agacoes{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end}
+.agacoes .danger{color:var(--danger);border-color:var(--danger)}
+.agcanc{flex:1 1 100%;margin:0}
+.agstinfo{margin:0;font-size:13px}.agstinfo.pend{color:var(--warn-text);font-weight:600}
+.agstobs{margin:0;font-size:13px;color:var(--muted);white-space:pre-wrap}
+.agsub{margin:0 0 12px;font-size:13.5px;color:var(--muted)}.agsub b{color:var(--fg)}
+.agfmtsel.ag3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:560px){.agfmtsel.ag3{grid-template-columns:1fr}}
+.crmdemol>span{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 /* Demonstrações dentro do lead e no funil */
 .crmc .crmdemo,.crmrow .crmdemo{color:var(--accent-text)!important;font-weight:600}
 .crmdemos{display:flex;flex-direction:column;gap:6px}

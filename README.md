@@ -49,6 +49,7 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 
 - Menu Agenda (`agenda.js`): demonstrações do sistema, sempre ligadas a um lead do CRM. Quem apresenta é o vendedor dono do lead. Modos Semana, Dia e Próximas; os "Próximo contato" dos leads em aberto aparecem como lembrete (atrasados em vermelho).
 - As demonstrações ficam no próprio lead, em `crm/{id}.demos` (lista com `id`, `data`, `hora`, `dur`, `formato`, `link`, `local`, `participantes`, `obs`, `status`). Por isso valem as mesmas regras do CRM, sem regra nova no Firestore: o vendedor vê as dele e o ADM vê todas (com filtro por usuário).
+- Andamento (`status`): agendada, confirmada, realizada (com `resultado`: proposta, pensar ou sem), naocompareceu, remarcada (`remarcadaPara` aponta a demo nova) e cancelada (`motivoCanc`). Cada mudança grava uma anotação "Reunião" no histórico do lead. Realizada move o lead em aberto para Qualificado, ou para Perdido quando não há interesse; "Vai pensar" grava o Próximo contato.
 - A Agenda não lê o banco: recebe os leads do `crm.js` pelo evento `crm-dados`. O formulário avisa quando a pessoa já tem outra demonstração no mesmo horário.
 
 ## Fluxo até o TASK pronto

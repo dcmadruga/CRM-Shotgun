@@ -284,6 +284,7 @@ let aposNovo = null; // Agenda: o que fazer depois de cadastrar um lead novo (vo
 // Para a Agenda (agenda.js): abrir um lead, cadastrar lead novo, fechar o diálogo e usar o ditado
 window.crmAbrirLead = id => { const l = docs.find(d => d.id === id && d.tipo === 'lead'); if (l) formLead(l); };
 window.crmNovoLead = fn => { formLead(); aposNovo = fn || null; dmsg('Cadastre o lead e toque em Salvar: a demonstração continua de onde parou.'); };
+window.crmGerarProposta = id => { const l = docs.find(d => d.id === id && d.tipo === 'lead'); if (l) gerarProposta(l); };
 window.crmFecharDlg = () => { if (dlg() && dlg().open) dlg().close(); };
 window.crmMicBtn = () => micBtn();
 window.crmDitar = btn => ditar(btn);
@@ -376,12 +377,16 @@ function formLead(l) {
 /* ---------- Demonstrações do lead (módulo Agenda, agenda.js) ---------- */
 function demosHtml(l) {
   if (!window.agendaNova) return '';
-  const h = hoje(), ds = (Array.isArray(l.demos) ? l.demos : []).filter(d => d && d.data && d.status !== 'cancelada');
-  const vem = ds.filter(d => d.data >= h).sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
-  const foi = ds.filter(d => d.data < h).sort((a, b) => (b.data + b.hora).localeCompare(a.data + a.hora));
-  const linha = d => `<button type="button" class="crmdemol${d.data < h ? ' passou' : ''}" data-a="demo" data-did="${esc(d.id)}"><b>${fmtD(d.data)} · ${esc(d.hora)}</b><small>${d.formato === 'presencial' ? 'Presencial' : 'Online'}${(d.participantes || []).length ? ' · com ' + esc(d.participantes.join(', ')) : ''}</small></button>`;
+  const h = hoje(), ds = (Array.isArray(l.demos) ? l.demos : []).filter(d => d && d.data);
+  const ST = { confirmada: 'Confirmada', realizada: 'Realizada', naocompareceu: 'Não compareceu', remarcada: 'Remarcada', cancelada: 'Cancelada' };
+  const RES = { proposta: 'quer proposta', pensar: 'vai pensar', sem: 'sem interesse' };
+  const aberta = d => !d.status || d.status === 'agendada' || d.status === 'confirmada';
+  const vem = ds.filter(d => aberta(d) && d.data >= h).sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
+  const foi = ds.filter(d => !vem.includes(d)).sort((a, b) => (b.data + b.hora).localeCompare(a.data + a.hora));
+  const st = d => aberta(d) && d.data < h ? '<span class="agst st-pend">Registrar resultado</span>' : ST[d.status] ? `<span class="agst st-${d.status}">${ST[d.status]}${d.status === 'realizada' && RES[d.resultado] ? ' · ' + RES[d.resultado] : ''}</span>` : '';
+  const linha = d => `<button type="button" class="crmdemol${aberta(d) ? '' : ' passou'}" data-a="demo" data-did="${esc(d.id)}"><span><b>${fmtD(d.data)} · ${esc(d.hora)}</b>${st(d)}</span><small>${d.formato === 'presencial' ? 'Presencial' : 'Online'}${(d.participantes || []).length ? ' · com ' + esc(d.participantes.join(', ')) : ''}</small></button>`;
   return `<section class="crmbloco"><h4>Demonstrações</h4>
-    ${vem.length || foi.length ? `<div class="crmdemos">${vem.map(linha).join('')}${foi.length ? `<small class="crmdemot">Já passaram</small>${foi.map(linha).join('')}` : ''}</div>` : `<p class="hint">${l.id ? 'Nenhuma demonstração agendada.' : 'Salve o lead para agendar uma demonstração.'}</p>`}
+    ${vem.length || foi.length ? `<div class="crmdemos">${vem.map(linha).join('')}${foi.length ? `<small class="crmdemot">Anteriores</small>${foi.map(linha).join('')}` : ''}</div>` : `<p class="hint">${l.id ? 'Nenhuma demonstração agendada.' : 'Salve o lead para agendar uma demonstração.'}</p>`}
     ${l.id ? '<button type="button" class="crmctadd" data-a="agendar">+ Agendar demonstração</button>' : ''}
   </section>`;
 }
