@@ -1203,7 +1203,16 @@ f.addEventListener('submit',async e=>{
   if(VEND){
     const btn=$('#btnEnviar'); btn.disabled=true; $('#msg').textContent='Salvando…';
     try{ await salvarNoSistema(o, texto) } catch(err){ btn.disabled=false; $('#msg').textContent='Não foi possível salvar. Verifique a internet e tente de novo.'; return }
-    btn.disabled=false; $('#msg').textContent=''; $('#done').innerHTML=(PEND?'Documentos salvos na proposta.':'Dados complementares salvos no sistema.')+(pendentes().length?' Ainda falta: '+esc(pendentes().join(', '))+'. Envie depois por este mesmo link.':'')+' Pode fechar esta aba e voltar para a proposta.'; $('#done').hidden=false; $('#done').scrollIntoView({block:'center'}); return;
+    btn.disabled=false; $('#msg').textContent='';
+    const salvo=(PEND?'Documentos salvos na proposta.':'Dados complementares salvos no sistema.')+(pendentes().length?' Ainda falta: '+esc(pendentes().join(', '))+'. Envie depois por este mesmo link.':'');
+    $('#done').innerHTML=salvo+' Fechando esta aba e voltando para a proposta…'; $('#done').hidden=false; $('#done').scrollIntoView({block:'center'});
+    // Preenchido pelo vendedor: a aba foi aberta pelo app (Pré-Contrato), então fecha sozinha e devolve o foco para a proposta
+    setTimeout(()=>{
+      try{ if(window.opener&&!window.opener.closed) window.opener.focus() }catch(e){}
+      try{ window.close() }catch(e){}
+      setTimeout(()=>{ if(!window.closed) $('#done').innerHTML=salvo+' O navegador não deixou fechar esta aba sozinha: feche-a ou <a href="./">volte para o app</a>.' },500);
+    }, pendentes().length?3500:1200);
+    return;
   }
   const num = destino ? (destino.length<=11 ? '55'+destino : destino) : '';
   const url='https://wa.me/'+num+'?text='+encodeURIComponent(texto);

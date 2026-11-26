@@ -10,9 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 258, data: '2026-11-26', titulo: 'Anexar cartão de contribuinte mais confiável', itens: [
+  { v: 258, data: '2026-11-26', titulo: 'Cartão de contribuinte mais confiável e aba do vendedor fecha ao salvar', itens: [
     'Dados para o contrato: o botão "Anexar cartão de contribuinte" foi refeito para abrir a escolha de arquivo em qualquer navegador. Também dá para arrastar o arquivo e soltar em cima do botão.',
-    'Ao escolher o arquivo, ele aparece logo abaixo do botão e a Inscrição estadual é preenchida pela leitura.'
+    'Ao escolher o arquivo, ele aparece logo abaixo do botão e a Inscrição estadual é preenchida pela leitura.',
+    'Quando o vendedor preenche os dados em nome do cliente (Pré-Contrato), a aba fecha sozinha depois de Salvar dados e volta para a proposta. Se o navegador não deixar fechar, aparece o link para voltar ao app.'
   ] },
   { v: 257, data: '2026-11-26', titulo: 'Status da demonstração direto na Agenda', itens: [
     'Cada demonstração na Agenda agora mostra o status (Agendada, Realizada, Reagendada, Cancelada…) e tem os botões Realizada, Reagendada e Cancelada logo abaixo do card. Realizada aparece a partir do dia da demonstração.',
