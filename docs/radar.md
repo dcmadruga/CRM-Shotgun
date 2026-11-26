@@ -1,6 +1,6 @@
-# Radar de Novos Postos – MT, RS, SC, PR, SP, SE, PA, TO e RO
+# Radar de Novos Postos – MT, RS, SC, PR, SP, SE, PA, TO, RO e GO
 
-Módulo da aba **Telemetria → Postos em construção** (Estados MT, RS, SC, PR, SP, SE, PA, TO e RO) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso, no Rio Grande do Sul, em Santa Catarina, no Paraná, em São Paulo, em Sergipe, no Pará, no Tocantins e em Rondônia. Acima da tela, além do Estado, há um filtro de Cidade que vale para todas as partes do Radar. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
+Módulo da aba **Telemetria → Postos em construção** (Estados MT, RS, SC, PR, SP, SE, PA, TO, RO e GO) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso, no Rio Grande do Sul, em Santa Catarina, no Paraná, em São Paulo, em Sergipe, no Pará, no Tocantins, em Rondônia e em Goiás. Acima da tela, além do Estado, há um filtro de Cidade que vale para todas as partes do Radar. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
 
 Nada é inventado: cada registro vem de um documento público, com link para o original e o trecho de texto que o sustenta. Campo que não aparece no documento fica como "pendente de confirmação".
 
@@ -104,6 +104,22 @@ No Pará a SEMAS licencia os postos maiores e os municípios habilitados licenci
 
 Nos três Estados a base da ANP também entra no cruzamento (TO 482, RO 543 e SE 339 postos).
 
+### Goiás
+
+Em GO os postos são licenciados pela SEMAD (Estado) ou pelas secretarias municipais de meio ambiente dos municípios habilitados. As prefeituras e as empresas publicam os avisos de pedido e de licença recebida no Diário Oficial do Estado.
+
+| Fonte | Situação | Observação |
+| --- | --- | --- |
+| SEMAD-GO: Boletim Ambiental (Transparência Ambiental) | Integrada | Mesma API pública do portal (`portal.meioambiente.go.gov.br/boletim-ambiental-server`, sem login nem CAPTCHA). Traz os pedidos e as licenças emitidas pelo sistema Ipê, com empresa, número, atividade e tipo. O robô fica com a atividade E3.4 (posto revendedor ou ponto de abastecimento). Com outras atividades junto (usina, frigorífico, mineração), entra como abastecimento próprio. LP e LI entram como novo posto; LAU, LAC, LC (corretiva) e REG ficam como outro evento de posto. O boletim não informa município, CNPJ nem endereço: ficam como pendente de confirmação. |
+| Diário Oficial do Estado de GO (ABC) | Integrada | Mesmo sistema de busca do IOMAT (`diariooficial.abc.go.gov.br`). O robô lê as páginas com os termos de posto e separa os avisos ("Protocolo NNNNNN"). É a fonte que mais traz: avisos de pedido de LP, LI e LO de posto das prefeituras (Aparecida de Goiânia, Valparaíso, Rio Verde, Senador Canedo e outras). |
+| Diário Oficial dos Municípios de Goiás (AGM, SIGPub) | Integrada | Mesmo coletor da FAMURS. Na maior parte, compras de combustível e leis. |
+| Diário Oficial dos Municípios Goianos (FGM, SIGPub) | Integrada | Mesmo coletor. Traz algumas licenças municipais (ex.: licença corretiva de posto em Mineiros). |
+| Querido Diário (16 cidades, inclusive Goiânia e Aparecida de Goiânia) | Integrada | Mesma fonte dos outros Estados, filtrada pelos códigos IBGE de GO. |
+| Base de postos da ANP | Integrada (cruzamento) | Mesma base, filtrada por GO (2.073 postos). |
+| SEMAD-GO: sistema Ipê | Não integrada | Exige login. O que o Ipê publica entra pelo Boletim Ambiental. |
+
+**Teste de 12 meses (nov/2026, modo de teste):** a SEMAD trouxe 124 publicações de posto, o DOE-GO 710 avisos, a FGM 4, a AGM 1 e o Querido Diário 26. Ao todo foram 688 empreendimentos, 75 deles como novo posto, ampliação ou instalação de tanques.
+
 Uma fonte só aparece como "Monitorada" no app depois de uma execução real com sucesso.
 
 ## Como funciona
@@ -116,6 +132,7 @@ GitHub Actions (a cada 15 min)
        ├─ fontes/famurs.mjs  → RS: matérias do Diário dos Municípios (o mesmo coletor SIGPub serve FAMEP-PA, AROM-RO e Sergipe)
        ├─ fontes/doers.mjs   → RS: matérias do Diário Oficial do Estado
        ├─ fontes/querido.mjs → RS, SC, PR, SP, SE, PA, TO e RO: trechos dos diários próprios das cidades (Querido Diário)
+       ├─ fontes/semadgo.mjs → GO: Boletim Ambiental da SEMAD (pedidos e licenças do Ipê, já estruturados)
        ├─ fontes/poa.mjs     → RS: licenças emitidas pela prefeitura de Porto Alegre (consulta pública da SMAMUS, já estruturadas)
        ├─ fontes/sinfat.mjs  → SC: requerimentos de licença das prefeituras (CIGA SINFAT, já estruturados)
        ├─ fontes/domsc.mjs   → SC: publicações de licenciamento do Diário dos Municípios
@@ -139,7 +156,7 @@ O agendamento confere a cada 15 minutos, mas só pesquisa quando passou o tempo 
 - **Confiança**: *processo confirmado* (atividade de posto explícita + CNPJ ou nº de processo), *possível novo empreendimento* (posto sem CNPJ nem processo), *documento aguardando análise* (ponto de abastecimento de fazenda, texto truncado), *informação não confirmada* (campo deduzido, como CNPJ achado pelo nome na ANP).
 - Pedido de LP/LI de um CNPJ que já é posto autorizado na ANP é tratado como ampliação/reforma.
 
-Cada registro tem o campo `uf` (MT, RS, SC, PR, SP, SE, PA, TO ou RO). Registros antigos sem `uf` são de MT.
+Cada registro tem o campo `uf` (MT, RS, SC, PR, SP, SE, PA, TO, RO ou GO). Registros antigos sem `uf` são de MT.
 
 ## Coleções no Firestore
 

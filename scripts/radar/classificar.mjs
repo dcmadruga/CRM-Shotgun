@@ -125,6 +125,9 @@ function empresa(t) {
   const hdr = [...nome.matchAll(/\b(EDITAL\s+DE\s+[A-ZÇÃ]+|ASSEMBLEIA\s+GERAL(\s+(EXTRA)?ORDIN[AÁ]RIA)?|AVISO\s+DE\s+[A-ZÇÃ]+(\s+DE\s+LICEN[CÇ]A(\s+AMBIENTAL)?(\s+DE\s+(OPERA[CÇ][AÃ]O|INSTALA[CÇ][AÃ]O)|\s+PR[EÉ]VIA)?)?|CONVOCA[CÇ][AÃ]O|LICEN[CÇ]A\s+(DE\s+)?(OPERA[CÇ][AÃ]O|INSTALA[CÇ][AÃ]O|PR[EÉ]VIA)(\s*[–-]\s*L[PIO]C?)?(\s+N[º°]\s*[\d./]+)?)(?=\s|$)/g)].pop();
   if (hdr) { nome = nome.slice(hdr.index + hdr[0].length).replace(/^[\s\-–:]+/, ''); for (let k = 0; k < 3 && cab.test(nome); k++) nome = nome.replace(cab, ''); }
   nome = limpa(nome.replace(/^[\s\-–:]+/, '').replace(/,\s*pessoa\s+jur[ií]dica.*$/i, '').replace(/[.,;:\-–\s]+$/, ''));
+  // aviso publicado pela consultoria em nome do cliente ("X ENGENHARIA torna público que a empresa Y"): fica Y
+  nome = nome.replace(/^.*?\b(?:torna\s+p[uú]blico\s+que\s+(?:a\s+empresa|o\s+empreendimento)|informa\s+que\s+(?:a\s+empresa|o\s+empreendimento|o|a))\s+(?=[A-ZÀ-Ú0-9])/i, '')
+    .replace(/,\s*(?:estabelecid|registrad|sediad|situad|localizad)[oa]s?\b.*$/i, '');
   // lixo de outra matéria antes do nome (valores, datas, cargos): fica o último pedaço
   const pedacos = nome.split(/\s*(?:R\$[-\s\d.,]+|\b\d{2}\/\d{2}\/\d{4}\b|Portaria\s+n[º°]?\s*\d+|Comiss[aã]o\s+Eleitoral|\bVALOR\b)\s*/i).filter(x => x.trim().split(/\s+/).length >= 2);
   if (pedacos.length > 1) nome = limpa(pedacos.pop());

@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 242, data: '2026-11-26', titulo: 'Postos em construção em Goiás', itens: [
+    'Telemetria → Postos em construção: o Estado agora tem também Goiás (GO), com os mesmos filtros de Cidade, mapa, lista, alertas e fontes.',
+    'Em Goiás o Radar lê o Boletim Ambiental da SEMAD (pedidos e licenças de posto do Estado), os avisos de licença das prefeituras no Diário Oficial do Estado, os diários dos municípios (AGM e FGM) e os diários próprios das cidades (Querido Diário). No Boletim da SEMAD o município e o CNPJ não aparecem: ficam como pendente de confirmação.'
+  ] },
   { v: 241, data: '2026-11-26', titulo: 'Postos em construção: licenças de Porto Alegre no RS', itens: [
     'Telemetria → Postos em construção, Estado RS: o Radar passa a ler também a consulta pública de licenças ambientais da Prefeitura de Porto Alegre e mostra as licenças de posto de combustível emitidas lá (LP e LI entram como novo posto).',
     'A fonte aparece na lista de fontes do RS. Porto Alegre emite poucas licenças de posto, então os achados devem ser raros.'
