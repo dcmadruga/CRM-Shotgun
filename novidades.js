@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 248, data: '2026-11-26', titulo: 'Sócios lidos também em contrato escaneado junto com o requerimento', itens: [
+    'Dados para o contrato: quando o PDF do contrato social mistura páginas digitais (como o requerimento da Junta) com páginas escaneadas, o app agora lê as páginas escaneadas uma a uma e encontra os sócios. Antes ele achava que o PDF inteiro tinha texto e pulava a leitura das imagens.',
+    'Se o texto do PDF não trouxer nenhum sócio, o app lê todas as páginas como imagem antes de desistir. Pode levar alguns minutos, e a tela mostra a página que está sendo lida.'
+  ] },
   { v: 247, data: '2026-11-26', titulo: 'Regime Tributário no Pré TASK', itens: [
     'Pré TASK, aba Implantação: o Regime Tributário informado pelo cliente nos dados para o contrato agora aparece no bloco Base, já preenchido.',
     'É o mesmo campo do Pré-Contrato: corrigir aqui corrige lá também, com o registro de quem alterou. Se o cliente não informou (contratos antigos), o Pré TASK sugere o regime pela Receita Federal, para conferir.'

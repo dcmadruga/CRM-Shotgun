@@ -7,6 +7,7 @@
   const TESS_CORE = 'https://cdn.jsdelivr.net/npm/tesseract.js-core@5.1.1';
   const TESS_LANG = 'https://cdn.jsdelivr.net/npm/@tesseract.js-data/por/4.0.0_best_int';
   const MAX_PAG = 12;
+  const MIN_LETRAS = 500;   // menos letras que isso na camada de texto = página escaneada (só carimbo da Junta)
 
   const scripts = {};
   function carregar(src) {
@@ -66,17 +67,27 @@
       aviso('Abrindo o PDF…');
       const pdf = await pdfDoc(f);
       const pags = await textoPdf(pdf);
-      const letras = pags.join('').replace(/[^A-Za-zÀ-ú]/g, '').length;
-      if (letras > 120 * pags.length) { textos.push(...pags); continue; }
-      // PDF escaneado: OCR página por página, mostrando os sócios assim que aparecem
+      // Decide página por página: muito PDF da Junta junta o requerimento digital (com texto)
+      // com o contrato escaneado (só imagem). Olhar o total escondia as páginas escaneadas.
+      const letras = pags.map(p => p.replace(/[^A-Za-zÀ-ú]/g, '').length);
+      const escaneadas = [];
+      letras.forEach((n, i) => { if (n < MIN_LETRAS) escaneadas.push(i); });
+      // Se o texto das páginas não trouxe nenhum sócio, lê todas por OCR (a camada de texto pode estar incompleta)
+      const semSocios = !extrair(pags.join('\n')).length;
+      const ocrPags = (semSocios ? pags.map((_, i) => i) : escaneadas).slice(0, MAX_PAG);
+      if (!ocrPags.length) { textos.push(...pags); continue; }
       usouOcr = true;
-      const n = Math.min(pdf.numPages, MAX_PAG);
-      aviso('O PDF é uma imagem escaneada. Preparando a leitura (pode levar alguns minutos)…');
+      aviso(escaneadas.length === pags.length ? 'O PDF é uma imagem escaneada. Preparando a leitura (pode levar alguns minutos)…'
+        : 'Parte do PDF é imagem escaneada. Preparando a leitura (pode levar alguns minutos)…');
       const w = await ocr();
-      for (let i = 1; i <= n; i++) {
-        aviso(`Lendo página ${i} de ${n}…`, parcial());
-        const { data } = await w.recognize(await canvasDaPagina(pdf, i));
-        textos.push(data.text);
+      const base = textos.length;
+      textos.push(...pags);
+      for (let k = 0; k < ocrPags.length; k++) {
+        const i = ocrPags[k];
+        aviso(`Lendo página ${i + 1} de ${pdf.numPages}…`, parcial());
+        const { data } = await w.recognize(await canvasDaPagina(pdf, i + 1));
+        // página só com imagem: troca pelo OCR; página com texto: mantém o texto e soma o OCR
+        textos[base + i] = letras[i] < MIN_LETRAS ? data.text : pags[i] + '\n' + data.text;
       }
     }
     if (imgs.length) {
