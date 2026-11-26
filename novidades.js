@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 248, data: '2026-11-26', titulo: 'Sócios lidos também em contrato escaneado junto com o requerimento', itens: [
+    'Dados para o contrato: quando o PDF do contrato social mistura páginas digitais (como o requerimento da Junta) com páginas escaneadas, o app agora lê as páginas escaneadas uma a uma e encontra os sócios. Antes ele achava que o PDF inteiro tinha texto e pulava a leitura das imagens.',
+    'Se o texto do PDF não trouxer nenhum sócio, o app lê todas as páginas como imagem antes de desistir. Pode levar alguns minutos, e a tela mostra a página que está sendo lida.'
+  ] },
   { v: 245, data: '2026-11-26', titulo: 'Link para achar a Inscrição Estadual', itens: [
     'Página de dados para o contrato: abaixo do campo Inscrição estadual aparece o link "Consultar no SINTEGRA". Depois de pesquisar o CNPJ, ele abre direto a consulta da SEFAZ do Estado da empresa.',
     'Serve para quando a busca do CNPJ não traz a IE, o que é comum em empresa aberta há pouco tempo: as bases públicas gratuitas demoram a receber esse dado.'
