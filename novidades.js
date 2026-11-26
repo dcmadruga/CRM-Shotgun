@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 247, data: '2026-11-26', titulo: 'Regime Tributário no Pré TASK', itens: [
+    'Pré TASK, aba Implantação: o Regime Tributário informado pelo cliente nos dados para o contrato agora aparece no bloco Base, já preenchido.',
+    'É o mesmo campo do Pré-Contrato: corrigir aqui corrige lá também, com o registro de quem alterou. Se o cliente não informou (contratos antigos), o Pré TASK sugere o regime pela Receita Federal, para conferir.'
+  ] },
   { v: 245, data: '2026-11-26', titulo: 'Link para achar a Inscrição Estadual', itens: [
     'Página de dados para o contrato: abaixo do campo Inscrição estadual aparece o link "Consultar no SINTEGRA". Depois de pesquisar o CNPJ, ele abre direto a consulta da SEFAZ do Estado da empresa.',
     'Serve para quando a busca do CNPJ não traz a IE, o que é comum em empresa aberta há pouco tempo: as bases públicas gratuitas demoram a receber esse dado.'
