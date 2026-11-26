@@ -10,7 +10,7 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 236, data: '2026-11-26', titulo: 'Postos em construção: licenças de Porto Alegre no RS', itens: [
+  { v: 239, data: '2026-11-26', titulo: 'Postos em construção: licenças de Porto Alegre no RS', itens: [
     'Telemetria → Postos em construção, Estado RS: o Radar passa a ler também a consulta pública de licenças ambientais da Prefeitura de Porto Alegre e mostra as licenças de posto de combustível emitidas lá (LP e LI entram como novo posto).',
     'A fonte aparece na lista de fontes do RS. Porto Alegre emite poucas licenças de posto, então os achados devem ser raros.'
   ] },
