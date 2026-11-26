@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 249, data: '2026-11-26', titulo: 'Cidade / UF na Agenda', itens: [
+    'Agenda: nas visões Semana, Dia e Próximas, cada demonstração e cada lembrete de Próximo contato mostra a Cidade / UF do cliente logo abaixo do nome da empresa.',
+    'Se o cadastro do lead não tiver cidade, o item fica como antes.'
+  ] },
   { v: 248, data: '2026-11-26', titulo: 'Sócios lidos também em contrato escaneado junto com o requerimento', itens: [
     'Dados para o contrato: quando o PDF do contrato social mistura páginas digitais (como o requerimento da Junta) com páginas escaneadas, o app agora lê as páginas escaneadas uma a uma e encontra os sócios. Antes ele achava que o PDF inteiro tinha texto e pulava a leitura das imagens.',
     'Se o texto do PDF não trouxer nenhum sócio, o app lê todas as páginas como imagem antes de desistir. Pode levar alguns minutos, e a tela mostra a página que está sendo lida.'
