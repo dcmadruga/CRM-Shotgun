@@ -4,7 +4,8 @@
 //   demos: [{ id, data: 'AAAA-MM-DD', hora: 'HH:MM', dur: minutos, formato: 'online' | 'presencial', link, local,
 //             participantes: [nomes], obs, status, criado, por, porUid, alterado,
 //             resultado: 'proposta' | 'pensar' | 'sem', resultadoObs, feitaEm, motivoCanc, remarcadaPara, statusPor }]
-//   status: agendada → confirmada → realizada | naocompareceu | remarcada (vira uma demo nova) | cancelada
+//   status: agendada → confirmada → realizada | naocompareceu | remarcada ("Reagendada": vira uma demo nova, com a nova data obrigatória) | cancelada
+//   O status 'remarcada' continua com esse nome no banco (demos antigas); na tela aparece como Reagendada.
 //   Realizada grava "Demonstração realizada" no histórico do lead e move o lead no funil (Qualificado ou Perdido).
 // Os leads chegam do crm.js pelo evento 'crm-dados' (o CRM já está ouvindo a coleção, a Agenda não lê de novo).
 // Para abrir o lead e cadastrar lead novo, usa window.crmAbrirLead / window.crmNovoLead (crm.js).
@@ -33,7 +34,7 @@
   const celular = () => window.matchMedia('(max-width:760px)').matches;
   const contatosDe = l => Array.isArray(l.contatos) && l.contatos.length ? l.contatos : (l.contato || l.fone ? [{ nome: l.contato || '', fone: l.fone || '' }] : []);
   const DURS = [30, 45, 60, 90, 120];
-  const ST = { agendada: 'Agendada', confirmada: 'Confirmada', realizada: 'Realizada', naocompareceu: 'Não compareceu', remarcada: 'Remarcada', cancelada: 'Cancelada' };
+  const ST = { agendada: 'Agendada', confirmada: 'Confirmada', realizada: 'Realizada', naocompareceu: 'Não compareceu', remarcada: 'Reagendada', cancelada: 'Cancelada' };
   const RES = { proposta: 'Quer proposta', pensar: 'Vai pensar', sem: 'Sem interesse' };
   const MOTIVOS = ['Preço', 'Escolheu concorrente', 'Sem interesse no momento', 'Sem retorno', 'Fora do perfil', 'Outro'];
   const stDe = d => ST[d.status] ? d.status : 'agendada';
@@ -41,7 +42,7 @@
   const naAgenda = d => !['remarcada', 'cancelada'].includes(stDe(d));
   // Já passou do fim e ninguém marcou o que aconteceu
   const semResultado = d => { if (!aberta(d)) return false; const h = hoje(); if (d.data !== h) return d.data < h; const a = new Date(); return a.getHours() * 60 + a.getMinutes() >= min(d.hora) + (Number(d.dur) || 60); };
-  const pillSt = d => semResultado(d) ? '<span class="agst st-pend">Registrar resultado</span>' : stDe(d) === 'agendada' ? '' : `<span class="agst st-${stDe(d)}">${esc(ST[stDe(d)])}${stDe(d) === 'realizada' && d.resultado ? ' · ' + esc(RES[d.resultado] || '') : ''}</span>`;
+  const pillSt = d => semResultado(d) ? '<span class="agst st-pend">Registrar resultado</span>' : `<span class="agst st-${stDe(d)}">${esc(ST[stDe(d)])}${stDe(d) === 'realizada' && d.resultado ? ' · ' + esc(RES[d.resultado] || '') : ''}</span>`;
   const durTxt = m => m < 60 ? m + ' min' : m % 60 ? Math.floor(m / 60) + 'h' + String(m % 60).padStart(2, '0') : (m / 60) + 'h';
   const IC = {
     video: '<svg class="agic" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
@@ -61,7 +62,7 @@
   const doUser = l => !fUser || l.owner === fUser;
   function demos() {
     const out = [];
-    leads.filter(doUser).forEach(l => (Array.isArray(l.demos) ? l.demos : []).forEach(d => { if (d && d.data && naAgenda(d)) out.push({ k: 'demo', l, d, data: d.data, ord: min(d.hora) }); }));
+    leads.filter(doUser).forEach(l => (Array.isArray(l.demos) ? l.demos : []).forEach(d => { if (d && d.data) out.push({ k: 'demo', l, d, data: d.data, ord: min(d.hora) }); }));
     return out;
   }
   // Próximo contato: só dos leads em aberto (sem proposta e não perdidos), como no funil do CRM
@@ -77,6 +78,12 @@
 
   // Cidade / UF embaixo do nome no quadro da agenda (some quando o cadastro não tem cidade)
   const cidAg = l => { const c = window.sgCidadeUf ? window.sgCidadeUf(l) : ''; return c ? `<small class="agcid">${esc(c)}</small>` : ''; };
+  // Atalhos de status no próprio card: Realizada (só do dia em diante que já chegou), Reagendada e Cancelada
+  function barraSt(l, d) {
+    if (!aberta(d)) return '';
+    const b = (a, t) => `<button type="button" class="agq agq-${a}" data-qst="${a}" data-lead="${esc(l.id)}" data-demo="${esc(d.id)}">${t}</button>`;
+    return `<div class="agqbar" role="group" aria-label="Status da demonstração">${d.data <= hoje() ? b('realizada', 'Realizada') : ''}${b('reagendar', 'Reagendada')}${b('cancelar', 'Cancelada')}</div>`;
+  }
   function itemHtml(x, largo) {
     const l = x.l, dono = admin && l.vendedor ? `<small class="agdono">${esc(l.vendedor)}</small>` : '';
     if (x.k === 'prox') {
@@ -85,12 +92,14 @@
         <span class="aghora">${atras ? 'Atrasado · ' + fmtDC(x.data) : 'Próximo contato'}</span><b>${esc(l.empresa || '(sem nome)')}</b>${cidAg(l)}
         ${largo && (c0.nome || c0.fone) ? `<small>${esc([c0.nome, c0.fone].filter(Boolean).join(' · '))}</small>` : ''}${dono}</button>`;
     }
-    const d = x.d, on = d.formato !== 'presencial', parts = (d.participantes || []).filter(Boolean);
-    return `<button type="button" class="agit demo st-${semResultado(d) ? 'pend' : stDe(d)}${x.data < hoje() && !semResultado(d) ? ' passou' : ''}" data-lead="${esc(l.id)}" data-demo="${esc(d.id)}">
+    const d = x.d, on = d.formato !== 'presencial', parts = (d.participantes || []).filter(Boolean), st = semResultado(d) ? 'pend' : stDe(d);
+    const nova = st === 'remarcada' && d.remarcadaPara ? (l.demos || []).find(y => y.id === d.remarcadaPara) : null;
+    return `<div class="agwrap st-${st}"><button type="button" class="agit demo st-${st}${x.data < hoje() && !semResultado(d) ? ' passou' : ''}" data-lead="${esc(l.id)}" data-demo="${esc(d.id)}">
       <span class="aghora">${esc(d.hora)} – ${esc(fimDe(d))}</span><b>${esc(l.empresa || '(sem nome)')}</b>${cidAg(l)}${pillSt(d)}
+      ${nova ? `<small class="agnova">Nova data: ${esc(fmtDC(nova.data))} às ${esc(nova.hora)}</small>` : ''}
       <small class="agfmt">${on ? IC.video + 'Online' : IC.pin + 'Presencial'} · ${durTxt(Number(d.dur) || 60)}</small>
       ${largo && parts.length ? `<small>Com ${esc(parts.join(', '))}</small>` : ''}
-      ${largo && !on && d.local ? `<small>${esc(d.local)}</small>` : ''}${dono}</button>`;
+      ${largo && !on && d.local ? `<small>${esc(d.local)}</small>` : ''}${dono}</button>${barraSt(l, d)}</div>`;
   }
 
   /* ---------- Telas ---------- */
@@ -207,13 +216,14 @@
     if (demoId && !d0) { msgTela('Essa demonstração não existe mais.'); return; }
     const h = hoje(), agora = new Date(), proxHora = hhmm(Math.min(18 * 60, Math.ceil((agora.getHours() * 60 + agora.getMinutes() + 30) / 30) * 30));
     const data = d0 ? d0.data : opts.data && opts.data >= h ? opts.data : modo === 'dia' && ref >= h ? ref : h;
-    const d = d0 ? { ...d0 } : opts.rascunho ? { ...opts.rascunho, data: opts.rascunho.data >= h ? opts.rascunho.data : data, participantes: opts.remarca ? opts.rascunho.participantes || [] : [] } : { data, hora: data === h ? proxHora : '09:00', dur: 60, formato: 'online', link: '', local: '', participantes: [], obs: '' };
+    const d = d0 ? { ...d0 } : opts.rascunho ? { ...opts.rascunho, data: opts.remarca ? (opts.rascunho.data || '') : opts.rascunho.data >= h ? opts.rascunho.data : data, participantes: opts.remarca ? opts.rascunho.participantes || [] : [] } : { data, hora: data === h ? proxHora : '09:00', dur: 60, formato: 'online', link: '', local: '', participantes: [], obs: '' };
     atual = { leadId: l ? l.id : '', demo: d, editando: !!d0, volta: opts.volta || '', remarca: opts.remarca || '' };
-    abrirDlg(d0 ? 'Demonstração' : opts.remarca ? 'Remarcar demonstração' : 'Agendar demonstração', `
+    abrirDlg(d0 ? 'Demonstração' : opts.remarca ? 'Reagendar demonstração' : 'Agendar demonstração', `
       <div class="agform" id="agForm">
         <section class="crmbloco"><h4>Lead <em class="agreq">obrigatório</em></h4><div id="agLeadBox"></div></section>
         ${d0 ? andamentoHtml(d0) : ''}
-        <section class="crmbloco"><h4>Quando</h4>
+        <section class="crmbloco"><h4>${opts.remarca ? 'Nova data <em class="agreq">obrigatório</em>' : 'Quando'}</h4>
+          ${opts.remarca ? (() => { const v = l && (l.demos || []).find(x => x.id === opts.remarca); return v ? `<p class="agstinfo">Estava marcada para ${esc(diaSemana(v.data))}, ${esc(quando(v))}. Informe a nova data e hora: o resto é repetido da demonstração original.</p>` : ''; })() : ''}
           <div class="tkform agquando">
             <label>Data<input type="date" id="agData" min="${d0 && d0.data < h ? d0.data : h}" value="${esc(d.data)}" required></label>
             <label>Hora<input type="time" id="agHora" step="900" value="${esc(d.hora)}" required></label>
@@ -236,7 +246,7 @@
         <p class="hint agquem" id="agQuem"></p>
       </div>
       <div class="tools crmacts">
-        <button type="button" class="primary" data-a="salvar">${d0 ? 'Salvar' : opts.remarca ? 'Remarcar' : 'Agendar'}</button>
+        <button type="button" class="primary" data-a="salvar">${d0 ? 'Salvar' : opts.remarca ? 'Reagendar' : 'Agendar'}</button>
         <button type="button" data-a="cancelar">Fechar</button>
         ${d0 ? '<button type="button" class="danger" data-a="excluir">Excluir</button>' : ''}
       </div>`, 'form');
@@ -316,7 +326,8 @@
     const l = leadAtual();
     if (!l) { dmsg('Escolha o lead da demonstração.'); const q = $('agLeadQ'); if (q) q.focus(); return; }
     const d = lerDlg();
-    if (!d.data || !d.hora) { dmsg('Preencha a data e a hora.'); (d.data ? $('agHora') : $('agData')).focus(); return; }
+    if (!d.data || !d.hora) { dmsg(atual.remarca ? 'Informe a nova data e a nova hora da demonstração.' : 'Preencha a data e a hora.'); (d.data ? $('agHora') : $('agData')).focus(); return; }
+    if (atual.remarca) { const v = (l.demos || []).find(x => x.id === atual.remarca); if (v && v.data === d.data && v.hora === d.hora) { dmsg('A nova data e hora são iguais às da demonstração original. Escolha outro horário.'); $('agData').focus(); return; } }
     if (!atual.editando && d.data < hoje()) { dmsg('Escolha uma data de hoje em diante.'); $('agData').focus(); return; }
     if (d.link && !/^https?:\/\//i.test(d.link)) d.link = 'https://' + d.link;
     const conf = $('agConf');
@@ -330,7 +341,7 @@
       const velha = lista.find(x => x.id === atual.remarca);
       if (velha) {
         lista = lista.map(x => x.id === velha.id ? { ...x, status: 'remarcada', remarcadaPara: d.id, statusEm: agoraIso, statusPor: quem() } : x);
-        extra.notas = F.arrayUnion(nota(`Demonstração remarcada de ${fmtD(velha.data)} às ${velha.hora} para ${fmtD(d.data)} às ${d.hora}.`, d));
+        extra.notas = F.arrayUnion(nota(`Demonstração reagendada de ${fmtD(velha.data)} às ${velha.hora} para ${fmtD(d.data)} às ${d.hora}.`, d));
       }
     }
     lista.sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
@@ -339,9 +350,9 @@
       await F.updateDoc(F.doc(db, 'crm', l.id), { demos: lista, ...extra, alterado: F.serverTimestamp(), alteradoPor: quem() });
       l.demos = lista;
       const volta = atual.volta, novo = !atual.editando, remarcou = !!atual.remarca;
-      if (novo || remarcou) { ref = d.data; desenhar(); msgTela(`${remarcou ? 'Demonstração remarcada' : 'Demonstração agendada'}: ${l.empresa || ''}, ${fmtD(d.data)} às ${d.hora}.`); telaAgendada(l, d, remarcou ? 'Demonstração remarcada' : 'Demonstração agendada'); return; }
+      if (novo || remarcou) { ref = d.data; desenhar(); msgTela(`${remarcou ? 'Demonstração reagendada' : 'Demonstração agendada'}: ${l.empresa || ''}, ${fmtD(d.data)} às ${d.hora}.`); telaAgendada(l, d, remarcou ? 'Demonstração reagendada' : 'Demonstração agendada'); return; }
       fechar();
-      msgTela(`${atual && atual.remarca ? 'Demonstração remarcada' : novo ? 'Demonstração agendada' : 'Demonstração salva'}: ${l.empresa || ''}, ${fmtD(d.data)} às ${d.hora}.`);
+      msgTela(`${atual && atual.remarca ? 'Demonstração reagendada' : novo ? 'Demonstração agendada' : 'Demonstração salva'}: ${l.empresa || ''}, ${fmtD(d.data)} às ${d.hora}.`);
       if (volta === 'lead' && window.crmAbrirLead) window.crmAbrirLead(l.id, true);
       else { ref = d.data; desenhar(); }
     } catch (e) { dmsg('Não foi possível salvar (' + (e.code || e.message) + ').'); }
@@ -358,18 +369,33 @@
     } catch (e) { dmsg('Não foi possível excluir (' + (e.code || e.message) + ').'); }
   }
 
+  /* ---------- Reagendar e atalhos de status ---------- */
+  // Reagendar: abre uma demo nova com tudo igual à original (lead, formato, link ou endereço, duração, participantes e observações),
+  // mas com a data e a hora em branco: a pessoa é obrigada a informar o novo horário. A original fica como Reagendada.
+  function reagendar(leadId, d, volta) {
+    form(leadId, '', { volta: volta || '', remarca: d.id, rascunho: { data: '', hora: '', dur: d.dur, formato: d.formato, link: d.link || '', local: d.local || '', participantes: d.participantes || [], obs: d.obs || '' } });
+    setTimeout(() => { const i = $('agData'); if (i) i.focus(); }, 60);
+  }
+  function statusRapido(a, leadId, demoId) {
+    const l = leads.find(x => x.id === leadId), d = l && (l.demos || []).find(x => x.id === demoId); if (!d) return;
+    if (a === 'reagendar') { reagendar(l.id, d, ''); return; }
+    form(l.id, d.id, {});
+    if (a === 'realizada') { lerDlgSeguro(); telaResultado(); }
+    else if (a === 'cancelar') { const b = document.querySelector('#agDlg .agacoes [data-a=cancelar]'); if (b) { mudarStatus(b, 'cancelar'); b.scrollIntoView({ block: 'center' }); } }
+  }
+
   /* ---------- Andamento (fase 2) ---------- */
   function andamentoHtml(d) {
     const st = stDe(d), passou = d.data <= hoje(), l = leadAtual();
     let corpo = '';
     if (st === 'realizada') corpo = `<p class="agstinfo">Realizada${d.feitaEm ? ' em ' + fmtD(d.feitaEm.slice(0, 10)) : ''}${d.statusPor ? ' · ' + esc(d.statusPor) : ''}. Resultado: <b>${esc(RES[d.resultado] || 'não informado')}</b>.</p>${d.resultadoObs ? `<p class="agstobs">${esc(d.resultadoObs)}</p>` : ''}${d.resultado !== 'sem' && l && !l._temProp && window.crmGerarProposta ? '<div class="agacoes"><button type="button" class="primary" data-a="gerarprop">Gerar proposta</button></div>' : ''}`;
-    else if (st === 'naocompareceu') corpo = `<p class="agstinfo">O cliente não compareceu.</p><div class="agacoes"><button type="button" class="primary" data-a="remarcar">Remarcar</button></div>`;
+    else if (st === 'naocompareceu') corpo = `<p class="agstinfo">O cliente não compareceu.</p><div class="agacoes"><button type="button" class="primary" data-a="remarcar">Reagendar</button></div>`;
     else if (st === 'cancelada') corpo = `<p class="agstinfo">Cancelada${d.motivoCanc ? ': ' + esc(d.motivoCanc) : ''}.</p>`;
-    else if (st === 'remarcada') corpo = `<p class="agstinfo">Remarcada para outra data.${d.remarcadaPara ? ' <button type="button" class="linkbtn" data-a="vernova">Ver a nova</button>' : ''}</p>`;
+    else if (st === 'remarcada') corpo = (() => { const n = d.remarcadaPara && l ? (l.demos || []).find(x => x.id === d.remarcadaPara) : null; return `<p class="agstinfo">Reagendada${n ? ' para ' + esc(quando(n)) : ' para outra data'}.${n ? ' <button type="button" class="linkbtn" data-a="vernova">Ver a nova</button>' : ''}</p>`; })();
     else corpo = `${semResultado(d) ? '<p class="agstinfo pend">O horário já passou. Como foi a demonstração?</p>' : ''}<div class="agacoes">
         ${passou ? '<button type="button" class="primary" data-a="realizada">Realizada</button><button type="button" data-a="naocomp">Não compareceu</button>' : ''}
         ${st === 'agendada' && !semResultado(d) ? '<button type="button"' + (passou ? '' : ' class="primary"') + ' data-a="confirmar">Cliente confirmou</button>' : ''}
-        <button type="button" data-a="remarcar">Remarcar</button><button type="button" data-a="cancelar">Cancelar demonstração</button></div>
+        <button type="button" data-a="remarcar">Reagendar</button><button type="button" data-a="cancelar">Cancelar demonstração</button></div>
         ${l && !semResultado(d) ? botoesCliente(l, d) : ''}`;
     return `<section class="crmbloco"><h4>Andamento ${st === 'agendada' && !semResultado(d) ? '<span class="agst st-agendada">Agendada</span>' : pillSt(d)}</h4>${corpo}</section>`;
   }
@@ -524,6 +550,8 @@
     $('agArea').addEventListener('click', e => {
       const ir = e.target.closest('[data-irdia]'); if (ir) { ref = ir.dataset.irdia; modo = 'dia'; desenhar(); return; }
       const nv = e.target.closest('[data-novo]'); if (nv) { form('', '', { data: nv.dataset.novo }); return; }
+      const q = e.target.closest('[data-qst]');
+      if (q) { statusRapido(q.dataset.qst, q.dataset.lead, q.dataset.demo); return; }
       const it = e.target.closest('[data-lead]'); if (!it) return;
       if (it.dataset.demo) form(it.dataset.lead, it.dataset.demo, {});
       else if (window.crmAbrirLead) window.crmAbrirLead(it.dataset.lead);
@@ -548,7 +576,7 @@
       else if (a === 'registrar') registrar(b);
       else if (a === 'voltar') form(atual.leadId, atual.demo.id, { volta: atual.volta });
       else if (['confirmar', 'naocomp'].includes(a) || (a === 'cancelar' && dlg().dataset.modo === 'form' && b.closest('.agacoes'))) mudarStatus(b, a);
-      else if (a === 'remarcar') { const d = atual.demo; form(atual.leadId, '', { volta: atual.volta, remarca: d.id, rascunho: { data: soma(d.data > hoje() ? d.data : hoje(), 1), hora: d.hora, dur: d.dur, formato: d.formato, link: d.link || '', local: d.local || '', participantes: d.participantes || [], obs: d.obs || '' } }); }
+      else if (a === 'remarcar') reagendar(atual.leadId, atual.demo, atual.volta);
       else if (a === 'vernova') form(atual.leadId, atual.demo.remarcadaPara, { volta: atual.volta });
       else if (a === 'whats') { const l = leadAtual(); if (l) abrirWhats(l, atual.demo); }
       else if (a === 'pronto') { const v = atual.volta, id = atual.leadId; fechar(); if (v === 'lead' && id && window.crmAbrirLead) window.crmAbrirLead(id); }

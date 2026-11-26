@@ -887,6 +887,20 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .agfmtsel.ag3{grid-template-columns:repeat(3,1fr)}
 @media (max-width:560px){.agfmtsel.ag3{grid-template-columns:1fr}}
 .crmdemol>span{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* Status direto no card da agenda: Realizada, Reagendada, Cancelada */
+.agwrap{display:grid;grid-template-columns:minmax(0,1fr);min-width:0}
+.agqbar{display:flex;flex-wrap:wrap;gap:4px;padding:4px 2px 2px}
+.agq{font-size:11px;font-weight:600;min-height:28px;padding:3px 8px;border-radius:999px;background:transparent;color:var(--muted);border:1px solid var(--line)}
+.agq:hover,.agq:focus-visible{color:var(--fg);border-color:var(--accent)}
+.agq-realizada:hover{border-color:var(--ok-text);color:var(--ok-text)}
+.agq-cancelar:hover{border-color:var(--danger);color:var(--danger)}
+.agdia .agqbar{padding-left:88px}
+@media (max-width:560px){.agdia .agqbar{padding-left:2px}.agq{min-height:32px;font-size:12px}}
+.agst.st-agendada{background:var(--accent-soft);color:var(--accent-text)}
+.agst.st-remarcada{background:var(--chip-bg);color:var(--chip-fg)}
+.agit.st-cancelada,.agit.st-remarcada{opacity:.6;border-left-color:var(--muted)}
+.agit.st-cancelada b{text-decoration:line-through}
+.agit .agnova{color:var(--accent-text)!important;font-weight:600}
 /* WhatsApp e Google Agenda (fase 4) */
 .agcli{margin-top:4px}
 .agwa,.agg{display:inline-flex;align-items:center;gap:8px;min-height:40px}

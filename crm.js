@@ -397,7 +397,7 @@ function formLead(l) {
 function demosHtml(l) {
   if (!window.agendaNova) return '';
   const h = hoje(), ds = (Array.isArray(l.demos) ? l.demos : []).filter(d => d && d.data);
-  const ST = { confirmada: 'Confirmada', realizada: 'Realizada', naocompareceu: 'Não compareceu', remarcada: 'Remarcada', cancelada: 'Cancelada' };
+  const ST = { confirmada: 'Confirmada', realizada: 'Realizada', naocompareceu: 'Não compareceu', remarcada: 'Reagendada', cancelada: 'Cancelada' };
   const RES = { proposta: 'quer proposta', pensar: 'vai pensar', sem: 'sem interesse' };
   const aberta = d => !d.status || d.status === 'agendada' || d.status === 'confirmada';
   const vem = ds.filter(d => aberta(d) && d.data >= h).sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));

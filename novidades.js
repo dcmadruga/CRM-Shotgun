@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 257, data: '2026-11-26', titulo: 'Status da demonstração direto na Agenda', itens: [
+    'Cada demonstração na Agenda agora mostra o status (Agendada, Realizada, Reagendada, Cancelada…) e tem os botões Realizada, Reagendada e Cancelada logo abaixo do card. Realizada aparece a partir do dia da demonstração.',
+    'Reagendada: o app abre uma demonstração nova com tudo igual à original (lead, online ou presencial, link ou endereço, duração, participantes e observações) e obriga a informar a nova data e hora. A original fica marcada como Reagendada, com a nova data no card.',
+    'Cancelada: pede o motivo (opcional) e fica anotado no histórico do lead. As demonstrações canceladas e reagendadas continuam aparecendo na Agenda, mais apagadas, para você ver o que aconteceu.'
+  ] },
   { v: 255, data: '2026-11-26', titulo: 'CNPJ copiado ao consultar o SINTEGRA', itens: [
     'Dados para o contrato: ao tocar em "Consultar no SINTEGRA", o CNPJ da empresa vai copiado (só os números) antes de o site da SEFAZ abrir. No site, é só tocar no campo do CNPJ e colar.',
     'A mensagem mostra o CNPJ copiado. Se o navegador não deixar copiar, ela mostra o número para colar à mão. Sem CNPJ digitado, pede para preencher primeiro.'
