@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 243, data: '2026-11-26', titulo: 'Cidade / UF nos cards do funil', itens: [
+    'CRM → Funil de vendas: cada card de lead e de proposta mostra agora a Cidade / UF do cliente logo abaixo do nome da empresa, em todas as colunas.',
+    'Nas listas de Leads e de Clientes a cidade aparece no mesmo formato. Se o cadastro não tiver cidade, o card fica como antes.'
+  ] },
   { v: 242, data: '2026-11-26', titulo: 'Postos em construção em Goiás', itens: [
     'Telemetria → Postos em construção: o Estado agora tem também Goiás (GO), com os mesmos filtros de Cidade, mapa, lista, alertas e fontes.',
     'Em Goiás o Radar lê o Boletim Ambiental da SEMAD (pedidos e licenças de posto do Estado), os avisos de licença das prefeituras no Diário Oficial do Estado, os diários dos municípios (AGM e FGM) e os diários próprios das cidades (Querido Diário). No Boletim da SEMAD o município e o CNPJ não aparecem: ficam como pendente de confirmação.'
