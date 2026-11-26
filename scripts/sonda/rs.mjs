@@ -2,14 +2,17 @@ import fs from 'fs';
 fs.mkdirSync('rs-sondas',{recursive:true});
 const out=[]; const log=(...a)=>{const s=a.join(' ');console.log(s);out.push(s);};
 const B='https://apigateway.procempa.com.br/apiman-gateway/ambiental-urbanismo/lam-api-public/1.0/public/';
-async function j(p){const t0=Date.now();try{const r=await fetch(B+p,{signal:AbortSignal.timeout(120000)});const d=await r.json();return [r.status,d,Date.now()-t0];}catch(e){return ['ERR '+e.message,null,Date.now()-t0];}}
+async function j(p){const t0=Date.now();try{const r=await fetch(B+p,{signal:AbortSignal.timeout(400000)});const d=await r.json();return [r.status,d,Date.now()-t0];}catch(e){return ['ERR '+e.message,null,Date.now()-t0];}}
 const all=[];let pag;
-for(let page=1;page<=40;page++){const [s,d,ms]=await j(`consultaLicencas?page=${page}&limit=100`);
- if(!d){log('page',page,s,ms);break;}
+const [s0,d0,ms0]=await j('consultaLicencas?page=1&limit=10');log('limit10',s0,ms0+'ms');
+const pages=[];for(let page=1;page<=14;page+=1)pages.push(page);
+const res={};await Promise.all([0,1,2,3].map(async w=>{for(let k=w;k<pages.length;k+=4){res[pages[k]]=await j(`consultaLicencas?page=${pages[k]}&limit=100`);}}));
+for(const page of pages){const [s,d,ms]=res[page];
+ if(!d){log('page',page,s,ms);continue;}
  pag=d.paginacao; const L=d.consultaLicencas||[];
  for(const x of L){delete x.doc; all.push(x);}
  log('page',page,s,ms+'ms',L.length,'anos',[...new Set(L.map(x=>x.ano))].join(','),'nums',L[0]?.numero,L.at(-1)?.numero);
- if(!pag?.next_page) break;}
+ }
 log('paginacao',JSON.stringify(pag));
 log('keys',Object.keys(all[0]||{}).join(','));
 const re=/posto|combust|abastec|revenda de/i;
