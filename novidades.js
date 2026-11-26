@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 245, data: '2026-11-26', titulo: 'Link para achar a Inscrição Estadual', itens: [
+    'Página de dados para o contrato: abaixo do campo Inscrição estadual aparece o link "Consultar no SINTEGRA". Depois de pesquisar o CNPJ, ele abre direto a consulta da SEFAZ do Estado da empresa.',
+    'Serve para quando a busca do CNPJ não traz a IE, o que é comum em empresa aberta há pouco tempo: as bases públicas gratuitas demoram a receber esse dado.'
+  ] },
   { v: 244, data: '2026-11-26', titulo: 'Contrato social ao lado do formulário', itens: [
     'Dados para o contrato: ao tocar na miniatura do contrato social, o documento agora abre ao lado do formulário (no computador) ou na parte de cima da tela (no celular). Dá para ler o documento e preencher os campos ao mesmo tempo, sem fechar a visualização.',
     'No painel do documento tem zoom (− e +, tocar na porcentagem volta a ajustar à largura) e todas as páginas e fotos enviadas em sequência. Arraste a borda colorida para aumentar ou diminuir o painel. No celular, Recolher deixa só a barra de cima.',
