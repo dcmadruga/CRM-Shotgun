@@ -119,7 +119,7 @@ button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1
 .hint{color:var(--muted);font-size:13px;margin:0}
 .ielink{display:block;margin-top:4px}.ielink a{color:var(--purple);font-weight:600}.ielink small{display:block;font-size:12px;margin-top:4px}.ielink small:empty{display:none}
 .ielink small.ok{color:#2f9e5b}.ielink small.erro{color:var(--danger)}.ielink small.lendo{color:var(--purple)}
-.iecartao{display:block;margin-top:6px}.iearq{display:block;margin-top:4px;font-size:12.5px;color:var(--fg)}.iearq b{font-weight:600;color:var(--fg);word-break:break-all}.iearq span{color:var(--muted)}.iearq button{font:inherit;font-size:12px;border:0;background:none;color:var(--danger);text-decoration:underline;cursor:pointer;padding:0 2px;width:auto}.iearq[hidden]{display:none}.iecartao button{font:inherit;font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:99px;border:1px solid var(--purple);background:var(--surface);color:var(--purple);cursor:pointer;width:auto}
+.iecartao{display:block;margin-top:6px;padding:2px;border-radius:99px}.iecartao.sobre{outline:2px dashed var(--purple);outline-offset:2px}.iedica{display:inline!important;margin:0 0 0 6px!important;font-size:11.5px;color:var(--muted)}.iearqinp{position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0}.iearq{display:block;margin-top:4px;font-size:12.5px;color:var(--fg)}.iearq b{font-weight:600;color:var(--fg);word-break:break-all}.iearq span{color:var(--muted)}.iearq button{font:inherit;font-size:12px;border:0;background:none;color:var(--danger);text-decoration:underline;cursor:pointer;padding:0 2px;width:auto}.iearq[hidden]{display:none}.iecartao button{font:inherit;font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:99px;border:1px solid var(--purple);background:var(--surface);color:var(--purple);cursor:pointer;width:auto}
 #msg{font-weight:500}
 .done{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:6px;padding:14px}
 #csStatus{display:flex;align-items:center;gap:8px}
@@ -401,10 +401,12 @@ function linkSintegra(){
   let box=lab.querySelector('.ielink');
   if(!box){
     box=document.createElement('span'); box.className='hint ielink'; lab.appendChild(box);
-    box.innerHTML=`<span class="ielinkA"></span><span class="iecartao"><button type="button">Anexar cartão de contribuinte</button><input type="file" hidden></span><span class="iearq" hidden></span><small></small>`;
-    const msg=box.querySelector('small'), arq=box.querySelector('input[type=file]');
+    box.innerHTML=`<span class="ielinkA"></span><span class="iecartao"><button type="button">Anexar cartão de contribuinte</button><small class="iedica">ou arraste o arquivo para cá</small></span><span class="iearq" hidden></span><small></small>`;
+    // O seletor de arquivo fica fora do rótulo do campo IE (dentro dele o clique podia ir para o campo de texto em alguns navegadores)
+    const msg=box.querySelector('small:not(.iedica)'), arq=document.createElement('input'); arq.type='file'; arq.className='iearqinp'; arq.tabIndex=-1; arq.setAttribute('aria-hidden','true'); document.body.appendChild(arq);
     box.addEventListener('click',e=>{
-      if(e.target.closest('.iecartao button')){ e.preventDefault(); arq.click(); return }
+      if(e.target.closest('.iecartao button')){ e.preventDefault(); e.stopPropagation(); arq.value=''; arq.click(); return }
+      if(e.target.closest('.iecartao')){ e.preventDefault(); return }
       if(e.target.closest('.iearq button')){ e.preventDefault(); CARTAO_IE=null; mostrarCartaoIe(box); msg.textContent=''; msg.className=''; return }
       const a=e.target.closest('a'); if(!a) return; const c=f.elements.cnpj&&dig(f.elements.cnpj.value);
       // Copia ainda dentro do toque, antes da aba nova abrir (depois disso o navegador bloqueia a área de transferência)
@@ -413,7 +415,13 @@ function linkSintegra(){
       const certo=()=>{ msg.textContent='CNPJ '+fmtCnpj(c)+' copiado.'+fim; msg.className='ok' };
       if(ok) certo(); else { msg.textContent='Não deu para copiar sozinho. CNPJ para colar: '+c+'.'; msg.className='erro' }
       if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(c).then(certo,()=>{}) });
-    arq.addEventListener('change',()=>{ const fs=[...arq.files]; arq.value=''; if(fs.length) lerCartaoIe(fs, inp, msg) });
+    const pegou=()=>{ const fs=[...arq.files]; if(!fs.length) return; arq.value=''; lerCartaoIe(fs, inp, msg) };
+    arq.addEventListener('change',pegou); arq.addEventListener('input',pegou);
+    // Arrastar e soltar o arquivo em cima do botão
+    const alvo=box.querySelector('.iecartao');
+    ['dragenter','dragover'].forEach(ev=>alvo.addEventListener(ev,e=>{ e.preventDefault(); alvo.classList.add('sobre') }));
+    ['dragleave','drop'].forEach(ev=>alvo.addEventListener(ev,e=>{ e.preventDefault(); alvo.classList.remove('sobre') }));
+    alvo.addEventListener('drop',e=>{ const fs=[...(e.dataTransfer&&e.dataTransfer.files||[])]; if(fs.length) lerCartaoIe(fs, inp, msg) });
   }
   box.querySelector('.ielinkA').innerHTML=`Não sabe? <a href="${esc(url)}" target="_blank" rel="noopener">Consultar no SINTEGRA${SINTEGRA[uf]?' ('+uf+')':''}</a>`;
 }

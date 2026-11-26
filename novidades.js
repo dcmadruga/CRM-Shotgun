@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 258, data: '2026-11-26', titulo: 'Anexar cartão de contribuinte mais confiável', itens: [
+    'Dados para o contrato: o botão "Anexar cartão de contribuinte" foi refeito para abrir a escolha de arquivo em qualquer navegador. Também dá para arrastar o arquivo e soltar em cima do botão.',
+    'Ao escolher o arquivo, ele aparece logo abaixo do botão e a Inscrição estadual é preenchida pela leitura.'
+  ] },
   { v: 257, data: '2026-11-26', titulo: 'Status da demonstração direto na Agenda', itens: [
     'Cada demonstração na Agenda agora mostra o status (Agendada, Realizada, Reagendada, Cancelada…) e tem os botões Realizada, Reagendada e Cancelada logo abaixo do card. Realizada aparece a partir do dia da demonstração.',
     'Reagendada: o app abre uma demonstração nova com tudo igual à original (lead, online ou presencial, link ou endereço, duração, participantes e observações) e obriga a informar a nova data e hora. A original fica marcada como Reagendada, com a nova data no card.',
