@@ -1,4 +1,4 @@
-// Robô do Radar de Novos Postos (MT, RS, SC, PR, SP, SE, PA, TO, RO e GO). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
+// Robô do Radar de Novos Postos (MT, RS, SC, PR, SP, SE, PA, TO, RO, GO e MS). Roda no GitHub Actions (.github/workflows/radar-postos.yml).
 // 1) decide se é hora de pesquisar (frequência e "Pesquisar agora" ficam em radar_config/geral);
 // 2) coleta as fontes integradas; 3) separa e classifica os avisos; 4) cruza com a ANP;
 // 5) deduplica e grava empreendimentos, processos, documentos, histórico, alertas e a execução.
@@ -12,6 +12,7 @@ import * as iomat from './fontes/iomat.mjs';
 import { paraImprensa } from './fontes/iomat.mjs';
 import * as famurs from './fontes/famurs.mjs';
 import { paraSigpub } from './fontes/famurs.mjs';
+import * as doems from './fontes/doems.mjs';
 import * as doers from './fontes/doers.mjs';
 import * as querido from './fontes/querido.mjs';
 import * as sinfat from './fontes/sinfat.mjs';
@@ -39,8 +40,9 @@ const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doer
   { mod: querido.paraUF('TO', 'TO'), uf: 'TO' },
   { mod: paraSigpub('arom', 'RO', 'Diário Oficial dos Municípios de Rondônia (AROM)'), uf: 'RO' }, { mod: querido.paraUF('RO', 'RO'), uf: 'RO' },
   { mod: semadgo, uf: 'GO' }, { mod: paraImprensa({ id: 'doe-go', nome: 'Diário Oficial do Estado de GO (avisos de licença)', url: 'https://diariooficial.abc.go.gov.br/', base: 'https://diariooficial.abc.go.gov.br/', sigla: 'DOE-GO' }), uf: 'GO' },
-  { mod: paraSigpub('agm', 'GO', 'Diário Oficial dos Municípios de Goiás (AGM)'), uf: 'GO' }, { mod: paraSigpub('fgm', 'GO', 'Diário Oficial dos Municípios Goianos (FGM)'), uf: 'GO' }, { mod: querido.paraUF('GO', 'GO'), uf: 'GO' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
-const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ', SP: 'SÃO PAULO', SE: 'SERGIPE', PA: 'PARÁ', TO: 'TOCANTINS', RO: 'RONDÔNIA', GO: 'GOIÁS' };
+  { mod: paraSigpub('agm', 'GO', 'Diário Oficial dos Municípios de Goiás (AGM)'), uf: 'GO' }, { mod: paraSigpub('fgm', 'GO', 'Diário Oficial dos Municípios Goianos (FGM)'), uf: 'GO' }, { mod: querido.paraUF('GO', 'GO'), uf: 'GO' },
+  { mod: doems, uf: 'MS' }, { mod: querido.paraUF('MS', 'MS'), uf: 'MS' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
+const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ', SP: 'SÃO PAULO', SE: 'SERGIPE', PA: 'PARÁ', TO: 'TOCANTINS', RO: 'RONDÔNIA', GO: 'GOIÁS', MS: 'MATO GROSSO DO SUL' };
 
 const PRIOR_CAT = ['novo', 'tanques', 'ampliacao', 'reforma', 'renovacao', 'titularidade', 'ponto_proprio', 'outro'];
 const PRIOR_CONF = ['confirmado', 'possivel', 'analise', 'nao_confirmado'];

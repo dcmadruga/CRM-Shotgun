@@ -1,4 +1,4 @@
-name: Radar de novos postos (MT, RS, SC, PR, SP, SE, PA, TO, RO e GO)
+name: Radar de novos postos (MT, RS, SC, PR, SP, SE, PA, TO, RO, GO e MS)
 
 # Robô do Radar de Novos Postos – MT (aba Telemetria). Confere a cada 15 minutos; só pesquisa quando passou o
 # tempo configurado no app (padrão: 24 h) ou quando um administrador usa "Pesquisar agora".
@@ -42,6 +42,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+      # pdftotext lê as páginas do Diário Oficial de MS (instala só se a máquina não tiver)
+      - name: Leitor de PDF
+        run: command -v pdftotext || (sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils)
       - name: Rodar o Radar
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}

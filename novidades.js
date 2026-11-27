@@ -10,6 +10,7 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 283, data: '2026-11-27', titulo: 'Postos em construção: Mato Grosso do Sul e Estados de atuação', itens: ['Na Telemetria, em Postos em construção, já dá para escolher Mato Grosso do Sul (MS).', 'O Radar lê os avisos de licença de posto publicados no Diário Oficial do Estado de MS e nos diários das cidades (Querido Diário), e cruza com a base da ANP.', 'Postos em construção agora respeita os seus Estados de atuação: quem não é administrador vê só os Estados do próprio cadastro no seletor (com um só Estado monitorado, a tela já abre nele).'] },
   { v: 282, data: '2026-11-27', titulo: 'Sessão volta sozinha quando o navegador a apaga', itens: [
     'Quando o navegador apagava a sua sessão com o app aberto, você caía na tela de login mesmo com o acesso valendo. Agora o app confere com o servidor e, se o acesso ainda vale, devolve a sessão na hora, sem pedir a senha.',
     'Se a sessão cair por outro motivo (senha trocada, conta bloqueada, Sair tocado em outra aba), a tela de login continua explicando o que aconteceu.'

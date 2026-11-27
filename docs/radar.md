@@ -1,6 +1,6 @@
-# Radar de Novos Postos – MT, RS, SC, PR, SP, SE, PA, TO, RO e GO
+# Radar de Novos Postos – MT, RS, SC, PR, SP, SE, PA, TO, RO, GO e MS
 
-Módulo da aba **Telemetria → Postos em construção** (Estados MT, RS, SC, PR, SP, SE, PA, TO, RO e GO) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso, no Rio Grande do Sul, em Santa Catarina, no Paraná, em São Paulo, em Sergipe, no Pará, no Tocantins, em Rondônia e em Goiás. Acima da tela, além do Estado, há um filtro de Cidade que vale para todas as partes do Radar. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
+Módulo da aba **Telemetria → Postos em construção** (Estados MT, RS, SC, PR, SP, SE, PA, TO, RO, GO e MS) que procura, todo dia, publicações oficiais sobre abertura, ampliação e licenciamento de postos de combustíveis em Mato Grosso, no Rio Grande do Sul, em Santa Catarina, no Paraná, em São Paulo, em Sergipe, no Pará, no Tocantins, em Rondônia, em Goiás e em Mato Grosso do Sul. Acima da tela, além do Estado, há um filtro de Cidade que vale para todas as partes do Radar. O objetivo é achar o posto na fase de protocolo (pedido de Licença Prévia ou de Instalação), antes de ele abrir.
 
 Nada é inventado: cada registro vem de um documento público, com link para o original e o trecho de texto que o sustenta. Campo que não aparece no documento fica como "pendente de confirmação".
 
@@ -120,6 +120,22 @@ Em GO os postos são licenciados pela SEMAD (Estado) ou pelas secretarias munici
 
 **Teste de 12 meses (nov/2026, modo de teste):** a SEMAD trouxe 124 publicações de posto, o DOE-GO 710 avisos, a FGM 4, a AGM 1 e o Querido Diário 26. Ao todo foram 688 empreendimentos, 75 deles como novo posto, ampliação ou instalação de tanques.
 
+### Mato Grosso do Sul
+
+Em MS os postos são licenciados pelo IMASUL (Estado) ou pelas secretarias municipais de meio ambiente dos municípios habilitados (Campo Grande, Três Lagoas, Nova Andradina, Coxim, Paranaíba e outros). As empresas publicam os avisos de pedido e de licença recebida em "Publicações a pedido" do Diário Oficial do Estado.
+
+| Fonte | Situação | Observação |
+| --- | --- | --- |
+| Diário Oficial do Estado de MS (Imprensa Oficial) | Integrada | Mesma busca pública do site (`www.diariooficial.ms.gov.br/api/diarios/busca-diarios`, sem login nem CAPTCHA). A busca devolve as páginas com os termos de posto; o robô baixa o PDF de cada página ("Abrir página" do site), lê o texto com o `pdftotext` (pacote poppler-utils, instalado pelo workflow) e separa os avisos por parágrafo. Fica só o parágrafo que é publicação de licença ("torna público") e fala de posto ou combustível. Teto de 12 minutos para baixar as páginas, das mais novas para as mais antigas. |
+| Querido Diário (13 cidades, inclusive Campo Grande, Corumbá e Dourados) | Integrada | Mesma fonte dos outros Estados, filtrada pelos códigos IBGE de MS. Em Campo Grande traz os avisos da PLANURB/SEMADUR publicados no DIOGRANDE. |
+| Base de postos da ANP | Integrada (cruzamento) | Mesma base, filtrada por MS (634 postos). |
+| IMASUL: sistema SIRIEMA | Não integrada | Exige login. O que o IMASUL licencia aparece nos avisos do Diário Oficial do Estado. |
+| Diário Oficial da ASSOMASUL (`diariooficialms.com.br`) | Não integrada | A busca é protegida por CAPTCHA (reCAPTCHA). |
+| Diário Oficial dos Municípios de MS (SIGPub, `diariomunicipal.com.br/ms`) | Não integrada | Sem nenhuma edição publicada no último ano. |
+| DIOGRANDE (Campo Grande) | Não integrada direto | A busca do e-Diário exige login; o conteúdo chega pelo Querido Diário. |
+
+**Teste de 12 meses (nov/2026, modo de teste):** o DOE-MS trouxe 165 páginas com os termos, 41 avisos de posto e 32 empreendimentos, 7 deles como novo posto ou ampliação (Coxim, Paranaíba, Corumbá, Ribas do Rio Pardo, Nova Andradina). O Querido Diário respondeu erro 503 nas duas rodadas de teste (instabilidade da API, que afeta todos os Estados); na rotina diária a consulta é bem menor.
+
 Uma fonte só aparece como "Monitorada" no app depois de uma execução real com sucesso.
 
 ## Como funciona
@@ -131,8 +147,9 @@ GitHub Actions (a cada 15 min)
        ├─ fontes/iomat.mjs   → MT: páginas do diário com as expressões pesquisadas
        ├─ fontes/famurs.mjs  → RS: matérias do Diário dos Municípios (o mesmo coletor SIGPub serve FAMEP-PA, AROM-RO e Sergipe)
        ├─ fontes/doers.mjs   → RS: matérias do Diário Oficial do Estado
-       ├─ fontes/querido.mjs → RS, SC, PR, SP, SE, PA, TO e RO: trechos dos diários próprios das cidades (Querido Diário)
+       ├─ fontes/querido.mjs → RS, SC, PR, SP, SE, PA, TO, RO, GO e MS: trechos dos diários próprios das cidades (Querido Diário)
        ├─ fontes/semadgo.mjs → GO: Boletim Ambiental da SEMAD (pedidos e licenças do Ipê, já estruturados)
+       ├─ fontes/doems.mjs   → MS: páginas do Diário Oficial do Estado (PDF de cada página lido com o pdftotext)
        ├─ fontes/poa.mjs     → RS: licenças emitidas pela prefeitura de Porto Alegre (consulta pública da SMAMUS, já estruturadas)
        ├─ fontes/sinfat.mjs  → SC: requerimentos de licença das prefeituras (CIGA SINFAT, já estruturados)
        ├─ fontes/domsc.mjs   → SC: publicações de licenciamento do Diário dos Municípios
