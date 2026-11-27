@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 281, data: '2026-11-27', titulo: 'Quando a sessão cai, o app diz o motivo', itens: [
+    'Se você for levado de volta para a tela de login sem ter tocado em Sair, a tela agora explica o que aconteceu: saída feita em outra aba do Shotgun, senha trocada, conta desativada, ou sessão apagada pelo navegador.',
+    'Se isso acontecer, mande um print dessa tela para o administrador: o motivo ajuda a resolver de vez.'
+  ] },
   { v: 280, data: '2026-11-27', titulo: 'Homologação de Boleto: E-mail do Gerente', itens: [
     'Ao lado do Nome e do Telefone do Gerente entrou o campo E-mail do Gerente, com as mesmas condições do telefone.',
     'Tocando num nome em "Contatos já informados", o e-mail dessa pessoa também é preenchido.'

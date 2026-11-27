@@ -96,7 +96,48 @@ async function iniciar() {
     try { await A.sendPasswordResetEmail(auth, email); lmsg('Se o e-mail estiver cadastrado, chega um link para criar nova senha. Veja também o spam.'); }
     catch (err) { lmsg('Não foi possível enviar (' + (err.code || 'erro') + ').', true); }
   });
-  $('btnSair').addEventListener('click', () => A.signOut(auth));
+  $('btnSair').addEventListener('click', () => sair('botao'));
+
+  /* ---------- Sessão: descobre e mostra por que a pessoa foi deslogada ---------- */
+  // Toda saída feita pelo app passa por sair(motivo), que anota o motivo no aparelho (as outras abas também leem).
+  // Se a sessão cair sem essa anotação, o app testa o login guardado no servidor para saber se foi o servidor
+  // (senha trocada, conta desativada ou apagada) ou o navegador (sessão apagada do aparelho, outra aba).
+  const SAIDA_KEY = 'sg-saida', LOG_KEY = 'sg-sessao-log', ABA = Math.random().toString(36).slice(2, 10);
+  function sair(motivo) { try { localStorage.setItem(SAIDA_KEY, JSON.stringify({ motivo, t: Date.now(), aba: ABA })); } catch (e) { /* sem storage */ } return A.signOut(auth); }
+  let userAtual = null, entrouEm = 0, erroToken = null;
+  const MOTIVO_TXT = { botao: 'alguém tocou em Sair', senha: 'saída na troca de senha', foto: 'saída na tela da selfie', cadastro: 'cadastro enviado para liberação', inativo: 'acesso bloqueado ou aguardando liberação' };
+  const ERRO_TXT = c => /user-token-expired|token-expired|credential/.test(c) ? 'a senha da conta foi trocada (ou o acesso foi renovado pelo administrador). Entre com a senha atual.'
+    : /user-disabled/.test(c) ? 'a conta foi desativada no Firebase.' : /user-not-found/.test(c) ? 'a conta não existe mais no Firebase.'
+    : /invalid-refresh-token|invalid-user-token/.test(c) ? 'o login guardado no aparelho deixou de valer.' : 'o servidor recusou o login guardado (' + c + ').';
+  const hora = t => new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  // Confere o login de tempos em tempos e quando a tela volta a aparecer: guarda o erro, se o servidor recusar
+  async function conferirToken() { const u = auth.currentUser; if (!u) return; try { await u.getIdToken(); } catch (e) { erroToken = { code: e.code || String(e.message || e), t: Date.now() }; } }
+  setInterval(conferirToken, 5 * 60000);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') conferirToken(); });
+  async function motivoQueda(u) {
+    let saida = null; try { saida = JSON.parse(localStorage.getItem(SAIDA_KEY) || 'null'); } catch (e) { /* sem storage */ }
+    if (saida && Date.now() - saida.t < 30000) {
+      if (saida.aba === ABA) return { tipo: 'app', motivo: saida.motivo, msg: saida.motivo === 'botao' ? '' : null };
+      return { tipo: 'outra-aba', motivo: saida.motivo, msg: 'Sua sessão foi encerrada em outra aba ou janela do Shotgun aberta neste navegador (' + (MOTIVO_TXT[saida.motivo] || saida.motivo) + '). Entre de novo.' };
+    }
+    if (erroToken && Date.now() - erroToken.t < 10 * 60000) return { tipo: 'servidor', motivo: erroToken.code, msg: 'Sua sessão foi encerrada porque ' + ERRO_TXT(erroToken.code) };
+    // Sem anotação: pergunta ao servidor se o login que estava na tela ainda vale
+    let code = '';
+    try { await Promise.race([u.getIdToken(true), new Promise((_, r) => setTimeout(() => r({ code: 'tempo' }), 8000))]); code = 'valido'; }
+    catch (e) { code = e.code || 'erro'; }
+    if (code === 'valido') return { tipo: 'navegador', motivo: 'sessao-apagada', msg: 'Sua sessão foi apagada deste navegador às ' + hora(Date.now()) + ', mas o login continuava valendo no servidor. Isso acontece quando outra aba do Shotgun entra com outra conta, ou quando o navegador ou uma extensão limpa os dados do site. Entre de novo.' };
+    if (/network|tempo/.test(code) || !navigator.onLine) return { tipo: 'desconhecido', motivo: code, msg: 'Sua sessão foi encerrada às ' + hora(Date.now()) + ' e não deu para confirmar o motivo (sem internet). Entre de novo.' };
+    return { tipo: 'servidor', motivo: code, msg: 'Sua sessão foi encerrada porque ' + ERRO_TXT(code) };
+  }
+  function anotarQueda(q) {
+    try {
+      const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
+      log.unshift({ quando: new Date().toISOString(), tipo: q.tipo, motivo: q.motivo, minutosLogado: Math.round((Date.now() - entrouEm) / 60000), visivel: document.visibilityState, online: navigator.onLine, versao: (document.getElementById('versaoApp') || {}).textContent || '' });
+      localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(0, 20)));
+    } catch (e) { /* sem storage */ }
+    console.warn('[Shotgun] sessão encerrada', q);
+  }
+  window.shotgunSessaoLog = () => { try { return JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch (e) { return []; } };
 
   /* ---------- Troca de senha obrigatória no primeiro acesso ---------- */
   let senhaDigitada = '', trocaOk = null;
@@ -107,7 +148,7 @@ async function iniciar() {
     setTimeout(() => $('s-nova').focus(), 50);
     return new Promise(res => { trocaOk = res; });
   }
-  $('btnSenhaSair').addEventListener('click', () => { sbox.hidden = true; trocaOk = null; A.signOut(auth); });
+  $('btnSenhaSair').addEventListener('click', () => { sbox.hidden = true; trocaOk = null; sair('senha'); });
   $('senhaForm').addEventListener('submit', async e => {
     e.preventDefault();
     const nova = $('s-nova').value, conf = $('s-conf').value;
@@ -206,7 +247,7 @@ async function iniciar() {
     };
     img.onerror = () => fmsg('Esse arquivo não é uma imagem válida.'); img.src = URL.createObjectURL(f);
   });
-  $('btnFotoSair').addEventListener('click', () => { pararCam(); fbox.hidden = true; fotoOk = null; cadCtx = null; A.signOut(auth); });
+  $('btnFotoSair').addEventListener('click', () => { pararCam(); fbox.hidden = true; fotoOk = null; cadCtx = null; sair('foto'); });
   $('btnFotoSalvar').addEventListener('click', async () => {
     const ctx = cadCtx, u = auth.currentUser; if (!ctx || !u) return;
     const nome = limpaNome($('cadNome').value), estados = cadUfsMarcadas();
@@ -249,7 +290,14 @@ async function iniciar() {
   A.onAuthStateChanged(auth, async user => {
     perfil = null; fb.admin = false; fb.task = false; fb.temTask = false; fb.gerente = false; fb.revenda = null; body.classList.remove('is-admin', 'is-task', 'tem-task', 'is-gerente'); window.dispatchEvent(new Event('argo-sair'));
     if (!user) { sbox.hidden = true; trocaOk = null; fbox.hidden = true; fotoOk = null; cadCtx = null; pararCam(); }
-    if (!user) { mostrarLogin('Entre com o seu e-mail e a sua senha.'); return; }
+    if (!user) {
+      const caiu = userAtual; userAtual = null;
+      mostrarLogin('Entre com o seu e-mail e a sua senha.');
+      if (caiu) { const q = await motivoQueda(caiu); anotarQueda(q); if (q.msg && !auth.currentUser) lmsg(q.msg, true); }
+      return;
+    }
+    if (userAtual?.uid !== user.uid) entrouEm = Date.now();
+    userAtual = user; erroToken = null;
     try {
       const ref = F.doc(db, 'usuarios', user.uid);
       let snap = await F.getDoc(ref);
@@ -262,9 +310,9 @@ async function iniciar() {
         // Primeiro login de quem ainda não tem cadastro: pede os dados e deixa aguardando a liberação
         await exigirCadastro({ user, perfil: null, foto: (await fotoSalva(user.uid)) || '' });
         if (auth.currentUser?.uid !== user.uid) return;
-        await A.signOut(auth); mostrarLogin('Cadastro enviado. O administrador vai conferir seus dados e liberar o seu acesso. Depois é só entrar de novo.'); return;
+        await sair('cadastro'); mostrarLogin('Cadastro enviado. O administrador vai conferir seus dados e liberar o seu acesso. Depois é só entrar de novo.'); return;
       }
-      if (snap.data().ativo !== true) { await A.signOut(auth); mostrarLogin(snap.data().pendente ? 'Seu cadastro está aguardando a liberação do administrador.' : 'Seu acesso não está liberado. Fale com o administrador.'); return; }
+      if (snap.data().ativo !== true) { await sair('inativo'); mostrarLogin(snap.data().pendente ? 'Seu cadastro está aguardando a liberação do administrador.' : 'Seu acesso não está liberado. Fale com o administrador.'); return; }
       perfil = { uid: user.uid, ...snap.data() };
       // Tema claro/escuro da pessoa: aplica o do cadastro e grava lá quando ela trocar
       try { window.sgTemaEntrou?.(user.uid, perfil.tema, t => F.updateDoc(ref, { tema: t })); } catch (e) { /* só aparência */ }
