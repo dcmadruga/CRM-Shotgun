@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 263, data: '2026-11-27', titulo: 'Pré TASK do cadastro direto: Pesquisar Cliente ANP', itens: [
+    'No cadastro direto da TASK, o Pré TASK (aba Implantação) ganhou o botão Pesquisar Cliente ANP nos blocos Posto simples e Central. Serve para quando você não sabe o CNPJ.',
+    'Posto simples: o posto escolhido preenche CNPJ, razão social e cidade da Unidade, e o Nome do Posto vem como "Posto - Razão social".',
+    'Central: o posto escolhido entra na primeira filial ainda sem CNPJ. Se todas já estiverem preenchidas, uma nova filial é acrescentada com os dados.'
+  ] },
   { v: 262, data: '2026-11-27', titulo: 'Pré TASK: Nome do Posto sugerido pelo CNPJ', itens: [
     'No Pré TASK, aba Implantação, bloco Posto simples: a Unidade (Filial, Tipo, CNPJ, Razão social e Cidade) agora vem antes do Nome do Posto.',
     'Ao digitar o CNPJ, o Nome do Posto já aparece preenchido como "Posto - Razão social" (por exemplo, "Posto - SALAMONI PETROLEO LTDA"). Dá para trocar à vontade.',
