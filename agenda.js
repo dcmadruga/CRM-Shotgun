@@ -263,8 +263,10 @@
           </div>
           <div id="agLinkL"><label for="agLink"><span class="aglab">Link da reunião <em>opcional</em></span></label>
             <div class="aglink"><input id="agLink" type="url" inputmode="url" placeholder="https://meet.google.com/…" value="${esc(d.link || '')}">
-              <button type="button" data-a="meetnovo" title="Abre o Google Meet numa aba nova já com uma sala criada">${IC.video}Criar sala no Meet</button>
+              ${gcalId() ? `<button type="button" data-a="meetauto" title="Cria o evento no seu Google Agenda com link do Meet">${IC.video}Gerar link do Meet</button>` : ''}
+              <button type="button" data-a="meetnovo" title="Abre o Google Meet numa aba nova já com uma sala criada"${gcalId() ? ' hidden' : ''}>${IC.video}Criar sala no Meet</button>
               ${navigator.clipboard && navigator.clipboard.readText ? '<button type="button" data-a="meetcolar" title="Cola o link copiado">Colar</button>' : ''}</div>
+            ${gcalId() ? '<label class="agconv"><input type="checkbox" id="agConvite" checked> Convidar por e-mail os participantes do cliente (quem tem e-mail no lead)</label>' : ''}
             <small class="aglinkdica" id="agLinkDica" hidden>Na aba do Meet, copie o link da sala (ícone de copiar ou a barra de endereço) e volte aqui para colar.</small></div>
           <label id="agLocalL">Endereço<input id="agLocal" placeholder="Rua, número, bairro, cidade" value="${esc(d.local || '')}"></label>
         </section>
@@ -350,6 +352,72 @@
     if (cs.length) p.innerHTML = `<b>Choque de horário.</b> ${l && l.owner === perfil.uid ? 'Você já tem' : esc((l?.vendedor || 'O vendedor').split(' ')[0]) + ' já tem'} ${cs.length === 1 ? 'uma demonstração' : 'demonstrações'} nesse horário: ${esc(cs.join('; '))}.`;
   }
 
+  /* ---------- Google Agenda + Meet automático ----------
+     Precisa de window.GOOGLE_CLIENT_ID (firebase-config.js). O vendedor entra com a conta Google dele
+     (Google Identity Services, escopo calendar.events) e o app cria o evento com link do Meet na agenda dele. */
+  const gcalId = () => window.GOOGLE_CLIENT_ID || '';
+  let gTok = null, gTokAte = 0, gisProm = null;
+  function carregarGis() {
+    if (window.google && google.accounts && google.accounts.oauth2) return Promise.resolve();
+    return gisProm || (gisProm = new Promise((ok, erro) => { const sc = document.createElement('script'); sc.src = 'https://accounts.google.com/gsi/client'; sc.async = true; sc.onload = ok; sc.onerror = () => { gisProm = null; erro(new Error('não carregou o login do Google')); }; document.head.appendChild(sc); }));
+  }
+  if (gcalId()) setTimeout(() => carregarGis().catch(() => {}), 3000); // deixa pronto para o clique abrir a janela do Google
+  function tokenGoogle() {
+    if (gTok && Date.now() < gTokAte) return Promise.resolve(gTok);
+    return new Promise((ok, erro) => {
+      const cli = google.accounts.oauth2.initTokenClient({
+        client_id: gcalId(), scope: 'https://www.googleapis.com/auth/calendar.events',
+        callback: r => { if (r && r.access_token) { gTok = r.access_token; gTokAte = Date.now() + ((Number(r.expires_in) || 3600) - 120) * 1000; ok(gTok); } else erro(new Error(r && (r.error_description || r.error) || 'sem permissão')); },
+        error_callback: e => erro(new Error(e && e.type === 'popup_closed' ? 'janela do Google fechada' : e && e.type === 'popup_failed_to_open' ? 'o navegador bloqueou a janela do Google' : 'login do Google não concluído'))
+      });
+      cli.requestAccessToken({ prompt: '' });
+    });
+  }
+  function eventoGoogle(l, d) {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Sao_Paulo';
+    const ini = d.data + 'T' + d.hora + ':00', fimM = min(d.hora) + (Number(d.dur) || 60);
+    const fimD = new Date(d.data + 'T00:00:00'); fimD.setMinutes(fimM);
+    const p2 = n => String(n).padStart(2, '0');
+    const fim = `${fimD.getFullYear()}-${p2(fimD.getMonth() + 1)}-${p2(fimD.getDate())}T${p2(fimD.getHours())}:${p2(fimD.getMinutes())}:00`;
+    return { summary: `Demonstração Shotgun: ${l.empresa || 'cliente'}`, description: [d.obs ? 'O que mostrar: ' + d.obs : '', 'Agendada pelo Shotgun.'].filter(Boolean).join('\n\n'),
+      start: { dateTime: ini, timeZone: tz }, end: { dateTime: fim, timeZone: tz } };
+  }
+  function emailsConvidados(l, d) {
+    const marc = d.participantes || [];
+    return [...new Set(contatosDe(l).filter(c => marc.includes(String(c.nome || '').trim()) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(c.email || '').trim())).map(c => String(c.email).trim().toLowerCase()))];
+  }
+  async function gerarMeet(btn) {
+    const l = leadAtual(), t = $('agLinkDica');
+    const aviso = (m, manual) => { if (t) { t.textContent = m; t.hidden = false; } if (manual) { const mb = document.querySelector('[data-a=meetnovo]'); if (mb) mb.hidden = false; } };
+    if (!l) { aviso('Escolha o lead antes de gerar o link.'); return; }
+    const d = lerDlg();
+    if (!d.data || !d.hora) { aviso('Preencha a data e a hora antes de gerar o link.'); return; }
+    const txt = btn.innerHTML; btn.disabled = true; btn.textContent = 'Gerando…';
+    try {
+      await carregarGis();
+      const tok = await tokenGoogle();
+      const conv = $('agConvite') && $('agConvite').checked ? emailsConvidados(l, d) : [];
+      const corpo = { ...eventoGoogle(l, d), attendees: conv.map(email => ({ email })), conferenceData: { createRequest: { requestId: 'sg' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8), conferenceSolutionKey: { type: 'hangoutsMeet' } } } };
+      const url = 'https://www.googleapis.com/calendar/v3/calendars/primary/events' + (d.gcalId ? '/' + encodeURIComponent(d.gcalId) : '') + '?conferenceDataVersion=1&sendUpdates=' + (conv.length ? 'all' : 'none');
+      const r = await fetch(url, { method: d.gcalId ? 'PATCH' : 'POST', headers: { Authorization: 'Bearer ' + tok, 'Content-Type': 'application/json' }, body: JSON.stringify(corpo) });
+      const j = await r.json().catch(() => ({}));
+      if (r.status === 401) { gTok = null; throw new Error('o acesso ao Google expirou, toque de novo'); }
+      if (!r.ok) throw new Error(j.error && j.error.message || 'erro ' + r.status);
+      const link = j.hangoutLink || (j.conferenceData && (j.conferenceData.entryPoints || []).find(e => e.entryPointType === 'video') || {}).uri;
+      atual.demo.gcalId = j.id; atual.demo.gcalHora = d.data + ' ' + d.hora + ' ' + d.dur;
+      if (link) $('agLink').value = link;
+      aviso(link ? `Evento criado no seu Google Agenda${conv.length ? ' e convite enviado para ' + conv.join(', ') : ''}. Agora é só ${atual.editando ? 'salvar' : 'agendar'}.` : 'O evento foi criado, mas o Google não devolveu o link do Meet. Use "Criar sala no Meet".', !link);
+    } catch (e) { aviso('Não deu para gerar automático (' + e.message + '). Use "Criar sala no Meet" e cole o link.', true); }
+    finally { btn.disabled = false; btn.innerHTML = txt; }
+  }
+  // Ao salvar com data/hora diferente do evento já criado: atualiza o evento no Google Agenda (só se o acesso ainda vale)
+  function sincronizarGoogle(l, d) {
+    if (!d.gcalId || !gTok || Date.now() >= gTokAte || d.gcalHora === d.data + ' ' + d.hora + ' ' + d.dur) return;
+    const ev = eventoGoogle(l, d);
+    fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events/' + encodeURIComponent(d.gcalId) + '?sendUpdates=all', { method: 'PATCH', headers: { Authorization: 'Bearer ' + gTok, 'Content-Type': 'application/json' }, body: JSON.stringify({ start: ev.start, end: ev.end }) }).catch(() => {});
+    d.gcalHora = d.data + ' ' + d.hora + ' ' + d.dur;
+  }
+
   async function salvar(btn) {
     const l = leadAtual();
     if (!l) { dmsg('Escolha o lead da demonstração.'); const q = $('agLeadQ'); if (q) q.focus(); return; }
@@ -381,6 +449,7 @@
         extra.notas = F.arrayUnion(nota(`Demonstração reagendada de ${fmtD(velha.data)} às ${velha.hora} para ${fmtD(d.data)} às ${d.hora}.`, d));
       }
     }
+    sincronizarGoogle(l, d);
     lista.sort((a, b) => (a.data + a.hora).localeCompare(b.data + b.hora));
     btn.disabled = true; dmsg('Salvando…');
     try {
@@ -665,6 +734,7 @@
       else if (a === 'cancelar') { const v = atual.volta, id = atual.leadId; fechar(); if (v === 'lead' && id && window.crmAbrirLead) window.crmAbrirLead(id, true); }
       else if (a === 'excluir') excluir(b);
       else if (a === 'trocar') { lerDlgSeguro(); atual.leadId = ''; atual.demo.participantes = []; desenharLead(); atualizarConflito(); }
+      else if (a === 'meetauto') gerarMeet(b);
       else if (a === 'meetnovo') { window.open('https://meet.google.com/new', '_blank', 'noopener'); const t = $('agLinkDica'); if (t) t.hidden = false; }
       else if (a === 'meetcolar') {
         navigator.clipboard.readText().then(txt => {
