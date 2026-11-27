@@ -118,7 +118,7 @@ function empresa(t) {
   // aviso publicado pelo próprio município ("O MUNICÍPIO DE X, com CNPJ ..., torna público que ... o empreendimento Y,
   // inscrito no CNPJ"): o nome é o do empreendimento, não o do município
   if (/^\s*(?:O\s+|A\s+)?(?:MUNIC[IÍ]PIO|PREFEITURA|SECRETARIA)\b/i.test(t)) { const m = t.match(/(?:o\s+empreendimento|a\s+empresa)\s+(?=[A-ZÀ-Ú][^,;]{3,120}?\s*,?\s*(?:inscrit|CNPJ))/i); if (m) t = t.slice(m.index + m[0].length); }
-  const i = t.search(/[,(\-–]?\s*(inscrit[oa]\s+no\s+|portador[a]?\s+do\s+|devidamente\s+inscrit[oa]\s+no\s+)?(CNPJ|CPF)\b/i);
+  const i = t.search(/[,(\-–]?\s*(inscrit[oa]\s+(?:no|sob\s+o)\s+|portador[a]?\s+do\s+|devidamente\s+inscrit[oa]\s+(?:no|sob\s+o)\s+)?(CNPJ|CPF)\b/i);
   let nome = i > 0 ? t.slice(0, i) : (t.match(/^(.{5,120}?)(?:,|\s+torna|\s+-\s+)/) || [])[1] || '';
   const cab = /^(EDITAL DE COMUNICA[CÇ][AÃ]O|C\.\d|A\s+empresa|O\s+empreendimento|(?:A|O)\s+(?=[A-ZÀ-Ú])|A\s+Pessoa\s+Jur[ií]dica\s+de\s+Direito\s+Privado|[“"])\s*/i;
   for (let k = 0; k < 6 && cab.test(nome); k++) nome = nome.replace(cab, '');
