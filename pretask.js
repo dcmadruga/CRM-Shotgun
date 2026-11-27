@@ -73,6 +73,10 @@
 .dgm.ok,.dgm.parcial,.dgm.vazio{flex:none}
 .dgm.falta{border:2px solid #d69e2e}
 .ptauto{font-size:11.5px;font-weight:500;color:var(--muted)}
+.ptauto.ok{color:var(--ok-text)}.ptauto.erro{color:var(--danger)}.ptcnpjmsg:empty,.ptiemsg:empty{display:none}
+.ptsefaz{margin-top:6px}.ptsefaz.sobre button[data-cartao]{outline:2px dashed var(--accent-text);outline-offset:2px}
+.ptsoc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;font-size:12px}.ptsoc small{color:var(--muted);font-weight:400}.ptsoc button{font:inherit;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--chip-bg);color:var(--chip-fg);cursor:pointer}
+.ptcfc{font-size:12px;font-weight:600;color:var(--accent-text);margin-top:4px;align-self:flex-start}
 `;
   function estilos() { if (document.getElementById('ptCss')) return; const s = document.createElement('style'); s.id = 'ptCss'; s.textContent = css; document.head.appendChild(s); }
 
@@ -103,7 +107,7 @@
       return h;
     }
     if (c.tipo === 'link') return `<label class="ptf${full}">${lab}<input data-pk="${esc(key)}" type="url" value="${esc(val)}" placeholder="https://"></label>`;
-    return `<label class="ptf${full}">${lab}<input data-pk="${esc(key)}" ${TIPOIN[c.tipo] || ''} value="${esc(val)}"${c.ph ? ` placeholder="${esc(c.ph)}"` : ''}></label>`;
+    return `<label class="ptf${full}">${lab}<input data-pk="${esc(key)}" data-tipo="${esc(c.tipo || 'texto')}" ${TIPOIN[c.tipo] || ''} value="${esc(val)}"${c.ph ? ` placeholder="${esc(c.ph)}"` : ''}></label>`;
   }
   // Seção: Sim/Não que "abre" mostra os campos seguintes só com Sim
   function camposHtml(campos, pref, v, anx) {
@@ -544,7 +548,7 @@
     // Salvar parcial também no fim de cada tela de Validação
     corpo.querySelectorAll(':scope > [data-ptp]').forEach(pn => { const id = pn.dataset.ptp; if (id !== 'status' && id !== 'base' && !(/^e2c\d+$/.test(id) && C.e2) && !(id === 'e2' && C.direto) && !/^p\d+$/.test(id)) return; pn.insertAdjacentHTML('beforeend', '<div class="ptpfoot"><span class="hint" role="status"></span><button type="button" data-ptparc="1">Salvar parcial</button></div>'); });
     corpo.addEventListener('click', ev => { if (ev.target.closest('[data-ptparc]')) salvar(true); });
-    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo); marcarAuto(corpo); ligarRegime(corpo);
+    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo); marcarAuto(corpo); ligarRegime(corpo); ligarSefaz(corpo);
     corpo.addEventListener('pt-mudou', ev => { cabecalhoMudou(ev); conferirFinal(); });
     corpo.addEventListener('input', () => conferirFinal()); corpo.addEventListener('change', () => conferirFinal());
     conferirFinal(true);
@@ -616,6 +620,152 @@
     const o = re && [...el.options].find(o => re.test(o.text)); if (!o) return;
     el.value = o.value; el.classList.remove('erro', 'falta'); el._auto = true; el.dispatchEvent(new Event('change', { bubbles: true }));
     if (n) n.textContent = '✓ Sugerido pela Receita Federal · CNPJ ' + fmtCnpj(cnpj) + '. Confira.';
+  }
+  /* ---------- Pré-Contrato no Pré TASK: pesquisa do CNPJ (Receita) e da Inscrição estadual (SEFAZ) ---------- */
+  // Como na página de dados do cliente: o CNPJ da empresa preenche os campos vazios da empresa e busca a IE; outro CNPJ
+  // (contabilidade etc.) preenche os campos da mesma seção e sugere os sócios no nome do contador. Embaixo da IE ficam
+  // "Consultar na SEFAZ" (copia o CNPJ e abre a consulta do Estado) e "Anexar cartão de contribuinte" (lê a IE no aparelho).
+  const rotuloDe = el => ((el.closest('.ptf') || el.parentElement).querySelector('span')?.textContent || '').replace(/\*/g, '').trim().toLowerCase();
+  const foneFmt = v => { const d = dig(v); return d.length >= 10 ? d.replace(/^(\d{2})(\d{4,5})(\d{4})$/, '($1) $2-$3') : ''; };
+  const cepFmt = v => { const d = dig(v); return d ? d.padStart(8, '0').replace(/^(\d{5})(\d{3})$/, '$1-$2') : ''; };
+  const nomeBonito = n => String(n || '').toLowerCase().replace(/(^|\s)(\S)/g, (m, a, b) => a + b.toUpperCase()).replace(/\s(D[aeo]s?|E)\s/g, m => m.toLowerCase());
+  const CNPJ_E2 = {}, IE_E2 = {};
+  const consultaE2 = d => CNPJ_E2[d] || (CNPJ_E2[d] = Promise.resolve(window.cnpjInfo ? window.cnpjInfo(d) : null).then(j => { if (!j) delete CNPJ_E2[d]; return j; }, () => { delete CNPJ_E2[d]; return null; }));
+  const corpoAtual = () => document.getElementById('ptCorpo');
+  const campoE2 = (root, k) => root && root.querySelector(`[data-pk="${CSS.escape('e2:' + k)}"]`);
+  function campoIe(root) { return campoE2(root, 'ie') || [...((root && root.querySelectorAll('[data-e2] input[data-pk]')) || [])].find(i => /inscri[cç][aã]o estadual|^ie\b/.test(rotuloDe(i))); }
+  const cnpjEmpresa = root => [(campoE2(root, 'cnpj') || {}).value, C.v2.cnpj, (C.pre.filiais[0] || {}).cnpj, C.leadCnpj, C.p.cnpj].find(x => dig(x).length === 14) || '';
+  const ufEmpresa = root => String((campoE2(root, 'uf') || {}).value || C.v2.uf || (C.pre.filiais[0] || {}).uf || '').trim().toUpperCase().slice(0, 2);
+  // Preenche um campo vazio (ou qualquer um, se forcar) e avisa o resto do Pré TASK
+  function poe(inp, v, forcar) {
+    if (!inp || !v || (String(inp.value || '').trim() && !forcar)) return false;
+    if (inp.tagName === 'SELECT') { const o = [...inp.options].find(o => o.value && (o.value.toUpperCase() === String(v).toUpperCase() || o.text.toUpperCase() === String(v).toUpperCase())); if (!o) return false; inp.value = o.value; }
+    else inp.value = v;
+    inp.classList.remove('erro', 'falta'); inp.dispatchEvent(new Event(inp.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true }));
+    return true;
+  }
+  function sugerirSocios(inp, socios) {
+    const lab = inp.closest('.ptf'); if (!lab) return; lab.querySelector('.ptsoc')?.remove();
+    const nomes = (socios || []).map(s => s.nome || s).filter(Boolean).slice(0, 6); if (!nomes.length) return;
+    const box = document.createElement('div'); box.className = 'ptsoc'; box.innerHTML = '<small>Sócios na Receita:</small>' + nomes.map(n => `<button type="button">${esc(nomeBonito(n))}</button>`).join('');
+    box.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; e.preventDefault(); poe(inp, b.textContent, true); inp.focus(); });
+    lab.appendChild(box);
+  }
+  async function pesquisarCnpjE2(el, msg, forcar) {
+    const d = dig(el.value), aviso = (t, cls) => { if (msg) { msg.textContent = t || ''; msg.className = 'ptauto ptcnpjmsg' + (cls ? ' ' + cls : ''); } };
+    if (d.length !== 14) { aviso(''); el._busca = ''; return; }
+    if (!window.SefazIE.cnpjOk(d)) { aviso('CNPJ inválido. Confira os números.', 'erro'); el._busca = ''; return; }
+    if (el._busca === d && !forcar) return; el._busca = d;
+    aviso('Pesquisando na Receita…');
+    const j = await consultaE2(d);
+    if (!document.body.contains(el) || dig(el.value) !== d) return;
+    if (!j) { aviso('Não foi possível pesquisar agora. Preencha à mão.', 'erro'); el._busca = ''; return; }
+    const corpo = corpoAtual(), grid = el.closest('[data-e2]') || corpo, fone = foneFmt(j.telefone), cep = cepFmt(j.cep);
+    let n = 0; const put = (inp, v) => { if (poe(inp, v, forcar)) n++; };
+    if (el.dataset.pk === 'e2:cnpj') {
+      [['razao', j.razao], ['fantasia', j.fantasia], ['cep', cep], ['logradouro', j.rua], ['numero', j.numero], ['complemento', j.complemento], ['bairro', j.bairro], ['cidade', j.municipio], ['uf', j.uf]].forEach(([k, v]) => put(campoE2(corpo, k), v));
+      // Campos criados nos Parâmetros na seção da empresa: telefone e e-mail pelo nome
+      grid.querySelectorAll('input[data-pk]').forEach(inp => { if (inp === el || /^e2:(razao|fantasia|cep|logradouro|numero|complemento|bairro|cidade|uf|ie)$/.test(inp.dataset.pk)) return; const t = rotuloDe(inp); if (/telefone|fone|whats/.test(t)) put(inp, fone); else if (/e-?mail/.test(t)) put(inp, j.email); });
+      atualizarSefaz(corpo);
+      ieE2(d, j.uf, forcar);
+      const reg = campoRegime(), rel = reg && campoE2(corpo, reg.k); if (rel && !rel.value) regimeDaReceita(rel, rel.parentElement.querySelector('[data-regnota]'));
+    } else {
+      grid.querySelectorAll('input[data-pk],select[data-pk],textarea[data-pk]').forEach(inp => {
+        if (inp === el) return; const t = rotuloDe(inp);
+        if (/nome/.test(t) && /contador|respons/.test(t) && !/cpf|crc/.test(t)) { sugerirSocios(inp, j.socios); return; }
+        if (/contador|cpf|crc|respons|cnpj/.test(t)) return;
+        let v = '';
+        if (/fantasia/.test(t)) v = j.fantasia; else if (/raz[aã]o|nome|empresa/.test(t)) v = j.razao;
+        else if (inp.type === 'email' || /e-?mail/.test(t)) v = j.email; else if (/telefone|whats|fone/.test(t)) v = fone;
+        else if (/\bcep\b/.test(t)) v = cep; else if (/bairro/.test(t)) v = j.bairro; else if (/cidade|munic/.test(t)) v = j.municipio;
+        else if (/^(estado|uf)\b/.test(t)) v = j.uf; else if (/endere|logradouro|rua/.test(t)) v = [j.rua, j.numero].filter(Boolean).join(', ');
+        put(inp, v);
+      });
+    }
+    const sit = j.situacao && !/ativa/i.test(j.situacao) ? ' Atenção: situação ' + j.situacao.toUpperCase() + ' na Receita.' : '';
+    aviso((n ? '✓ Preenchido pela Receita Federal: ' + j.razao + '. Confira.' : 'Encontrado na Receita: ' + j.razao + '.') + sit, sit ? 'erro' : 'ok');
+  }
+  // Inscrição estadual pela base pública (CNPJ.ws). Pode demorar: tenta de novo em segundo plano; preenche se o campo ainda estiver vazio.
+  function notaIe(t, cls) { const m = corpoAtual()?.querySelector('.ptiemsg'); if (m) { m.textContent = t || ''; m.className = 'ptauto ptiemsg' + (cls ? ' ' + cls : ''); } }
+  async function ieE2(d, uf, forcar) {
+    const inp = campoIe(corpoAtual()); if (!inp || (inp.value.trim() && !forcar)) return;
+    notaIe('Buscando a inscrição estadual na Receita…');
+    const vivo = () => !!C && dig(cnpjEmpresa(corpoAtual())) === d;
+    const ie = await (IE_E2[d] || (IE_E2[d] = window.SefazIE.ieDaReceita(d, uf, vivo).then(r => { if (r == null) delete IE_E2[d]; return r; })));
+    if (!vivo()) return;
+    const atual = campoIe(corpoAtual()); if (!atual) return;
+    if (ie && poe(atual, ie, forcar)) { notaIe('✓ Inscrição estadual ' + ie + ' preenchida pela Receita. Confira.', 'ok'); return; }
+    if (ie) { notaIe(''); return; }
+    if (!atual.value.trim()) notaIe(ie === '' ? 'A Receita não traz a inscrição estadual deste CNPJ. Consulte na SEFAZ.' : 'Não deu para buscar a inscrição estadual agora. Consulte na SEFAZ.');
+  }
+  function atualizarSefaz(corpo) {
+    const bt = corpo && corpo.querySelector('[data-sefaz]'); if (!bt) return;
+    const uf = ufEmpresa(corpo); bt.querySelector('span').textContent = 'Consultar na SEFAZ' + (window.SefazIE.SINTEGRA[uf] ? ' (' + uf + ')' : '');
+  }
+  const REGIME_RE = { mei: /\bmei\b|microempreendedor/i, simples: /simples/i, presumido: /presumido/i, real: /\breal\b/i };
+  async function lerCartaoE2(file, inp) {
+    const corpo = corpoAtual(), c = dig(cnpjEmpresa(corpo));
+    notaIe('Lendo o cartão…');
+    const r = await window.SefazIE.lerCartao(file, c, t => notaIe(t));
+    if (!document.body.contains(inp)) return;
+    if (r.outroCnpj) { notaIe('Este documento é de outro CNPJ (' + fmtCnpj(r.cnpjs[0]) + '). Confira se anexou o cartão certo.', 'erro'); return; }
+    const alerta = /baixad|suspens|cancelad|inapt|nul|nao habilitad/.test(r.situacao) ? ' Atenção: a situação no cartão consta como ' + r.situacao.toUpperCase() + '.' : '';
+    if (r.ie || r.isento) {
+      poe(inp, r.isento ? 'ISENTO' : r.ie, true);
+      const reg = r.regime && campoRegime(), rel = reg && campoE2(corpo, reg.k);
+      if (rel && rel.tagName === 'SELECT' && !rel.value) { const o = [...rel.options].find(o => REGIME_RE[r.regime].test(o.text)); if (o) { rel._auto = true; poe(rel, o.value); const n = rel.parentElement.querySelector('[data-regnota]'); if (n) n.textContent = '✓ Preenchido pelo cartão de contribuinte. Confira.'; } }
+      notaIe((r.doNome ? 'Preenchido pelo número que está no nome do arquivo: inscrição estadual ' : '✓ Preenchido pelo cartão: inscrição estadual ') + inp.value + '. Confira.' + alerta, alerta ? 'erro' : 'ok'); return;
+    }
+    if (r.falhou) notaIe('Não conseguimos ler o arquivo. Digite a inscrição estadual.', 'erro');
+    else if (!r.tipo) notaIe('Não deu para ler este tipo de arquivo. Digite a inscrição estadual.' + alerta, 'erro');
+    else notaIe('Não encontramos a inscrição estadual neste arquivo' + (r.ocr ? ' (a imagem pode estar pouco nítida)' : '') + '. Digite à mão.' + alerta, 'erro');
+  }
+  function ligarSefaz(corpo) {
+    if (!window.SefazIE) return;
+    corpo.querySelectorAll('[data-e2] input[data-tipo="cnpj"]').forEach(el => {
+      const msg = document.createElement('small'); msg.className = 'ptauto ptcnpjmsg'; msg.setAttribute('role', 'status'); el.after(msg);
+      const vai = forcar => { const d = dig(el.value).slice(0, 14); if (d.length === 14 && el.value !== fmtCnpj(d)) el.value = fmtCnpj(d); pesquisarCnpjE2(el, msg, forcar); };
+      el.addEventListener('input', () => vai(false));
+      el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); vai(true); } });
+    });
+    const ie = campoIe(corpo), lab = ie && ie.closest('.ptf');
+    if (lab) {
+      const box = document.createElement('div'); box.className = 'anpacao ptsefaz';
+      box.innerHTML = `<button type="button" data-sefaz><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/></svg><span>Consultar na SEFAZ</span></button><button type="button" data-cartao><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M16.5 6.5v10a4.5 4.5 0 0 1-9 0V5a3 3 0 0 1 6 0v10.5a1.5 1.5 0 0 1-3 0V6.5H9v9a3 3 0 0 0 6 0V5a4.5 4.5 0 0 0-9 0v11.5a6 6 0 0 0 12 0v-10Z"/></svg><span>Anexar cartão de contribuinte</span></button>`;
+      const nota = document.createElement('small'); nota.className = 'ptauto ptiemsg'; nota.setAttribute('role', 'status');
+      const arq = document.createElement('input'); arq.type = 'file'; arq.hidden = true; arq.accept = '.pdf,image/*,.html,.htm,.mht,.mhtml,.txt';
+      lab.append(box, nota); lab.after(arq);
+      box.addEventListener('click', e => {
+        const b = e.target.closest('button'); if (!b) return; e.preventDefault(); e.stopPropagation();
+        if (b.dataset.cartao !== undefined) { arq.value = ''; arq.click(); return; }
+        // Copia o CNPJ ainda dentro do toque, antes da aba da SEFAZ abrir (depois disso o navegador bloqueia a área de transferência)
+        const c = dig(cnpjEmpresa(corpo)), url = window.SefazIE.urlUf(ufEmpresa(corpo));
+        if (c.length === 14) {
+          const ok = window.SefazIE.copiar(c), certo = () => notaIe('CNPJ ' + fmtCnpj(c) + ' copiado. No site, cole no campo do CNPJ (Ctrl+V ou segure e Colar). Depois anexe aqui o cartão (PDF ou print) para preencher a IE.', 'ok');
+          if (ok) certo(); else notaIe('Não deu para copiar sozinho. CNPJ para colar: ' + c + '.');
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(c).then(certo, () => {});
+        } else notaIe('Informe o CNPJ da empresa para ele ir copiado para o site da SEFAZ.', 'erro');
+        window.open(url, '_blank', 'noopener');
+      });
+      const pegou = () => { const f = arq.files && arq.files[0]; if (f) { arq.value = ''; lerCartaoE2(f, ie); } };
+      arq.addEventListener('change', pegou);
+      ['dragenter', 'dragover'].forEach(ev => box.addEventListener(ev, e => { e.preventDefault(); box.classList.add('sobre'); }));
+      ['dragleave', 'drop'].forEach(ev => box.addEventListener(ev, e => { e.preventDefault(); box.classList.remove('sobre'); }));
+      box.addEventListener('drop', e => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) lerCartaoE2(f, ie); });
+      atualizarSefaz(corpo);
+      const ufIn = campoE2(corpo, 'uf'); if (ufIn) ufIn.addEventListener('input', () => atualizarSefaz(corpo));
+    }
+    // CRC: não há busca automática; link para a consulta oficial do CFC, com o nome do contador já copiado
+    corpo.querySelectorAll('[data-e2] input[data-pk]').forEach(inp => {
+      if (!/^crc\b/.test(rotuloDe(inp))) return;
+      const a = document.createElement('a'); a.className = 'ptcfc'; a.href = 'https://www3.cfc.org.br/spw/ConsultaNacionalCFC/'; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Consultar no CFC ↗';
+      a.addEventListener('click', () => { const nome = [...(inp.closest('[data-e2]') || corpo).querySelectorAll('input[data-pk]')].find(x => /nome/.test(rotuloDe(x)) && /contador|respons/.test(rotuloDe(x)))?.value; if (nome) window.SefazIE.copiar(nome); });
+      const h = document.createElement('small'); h.className = 'ptauto'; h.textContent = 'Busque pelo nome do contador (já copiado) e cole o número aqui.';
+      inp.after(a, h);
+    });
+    // Cadastro direto: o CNPJ da empresa já vem da Implantação. Ao abrir, completa o que faltar (uma vez por CNPJ)
+    const el = campoE2(corpo, 'cnpj');
+    if (C.direto && el && window.SefazIE.cnpjOk(el.value) && C.e2Pesq !== dig(el.value)) { C.e2Pesq = dig(el.value); pesquisarCnpjE2(el, el.parentElement.querySelector('.ptcnpjmsg'), false); }
   }
   function painelBase(anexos) {
     const P = C.pre, central = P.tipoBase === 'Central', simples = P.tipoBase === 'Simples';

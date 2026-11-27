@@ -190,6 +190,7 @@ input[type=file]:hover::file-selector-button{background:color-mix(in srgb,var(--
 <script src="firebase-config.js"></script>
 <script src="etapa2-padrao.js"></script>
 <script src="contrato-social.js"></script>
+<script src="sefaz.js"></script>
 <script src="lib/municipios.js" defer></script>
 <script>
 const $=s=>document.querySelector(s);
@@ -386,7 +387,7 @@ function sugerirNomes(lab, inp, nomes){
 const tempo=(p,ms)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);
 const pegaJson=u=>tempo(fetch(u),9000).then(r=>{ if(r.status===404||r.status===400) return {naoAchou:true}; if(!r.ok) throw new Error('HTTP '+r.status); return r.json() });
 // Inscrição estadual (só o CNPJ.ws traz). A base pública limita a 3 consultas por minuto e às vezes dá erro 500: tenta de novo em segundo plano.
-function ieDe(W,uf){ const ies=(W&&W.estabelecimento&&W.estabelecimento.inscricoes_estaduais)||[]; const ie=ies.find(x=>x.ativo&&x.estado&&x.estado.sigla===uf)||ies.find(x=>x.ativo)||ies.find(x=>x.estado&&x.estado.sigla===uf); return ie?ie.inscricao_estadual:'' }
+const ieDe=SefazIE.ieDe;
 async function pegaIe(d,uf,vivo){
   for(const espera of [4000,15000,30000,60000]){
     await new Promise(r=>setTimeout(r,espera)); if(!vivo()) return null;
@@ -396,17 +397,11 @@ async function pegaIe(d,uf,vivo){
 }
 // Inscrição estadual: as bases gratuitas nem sempre trazem (empresa nova, por exemplo). Link para a consulta da SEFAZ do Estado
 // da empresa (endereços da lista oficial do sintegra.gov.br); sem Estado conhecido, abre o portal nacional. Ao tocar, copia o CNPJ.
-const SINTEGRA={AC:'http://sefaznet.ac.gov.br/sefazonline/servlet/hpfsincon',AL:'http://www.sefaz.al.gov.br/asp/sintegra/sintegra.asp?estado=AL',AP:'http://www.sefaz.ap.gov.br/sate/seg/SEGf_AcessarFuncao.jsp?cdFuncao=CAD_011',AM:'http://www.sefaz.am.gov.br/sintegra/sintegra0.asp',BA:'https://portal.sefaz.ba.gov.br/scripts/cadastro/cadastroBa/consultaBa.asp',CE:'https://servicos.sefaz.ce.gov.br/internet/Sintegra/Sintegra.Asp?estado=CE',DF:'https://ww1.receita.fazenda.df.gov.br/icms/sintegra-consulta',ES:'http://www.sintegra.es.gov.br/',GO:'http://appasp.sefaz.go.gov.br/Sintegra/Consulta/default.asp?',MA:'http://aplicacoes.ma.gov.br/sintegra/jsp/consultaSintegra/consultaSintegraFiltro.jsf',MT:'https://www.sefaz.mt.gov.br/cadastro/emissaocartao/emissaocartaocontribuinteacessodireto',MS:'https://servicos.efazenda.ms.gov.br/consultapublica/Home/Index',MG:'http://consultasintegra.fazenda.mg.gov.br/',PA:'http://app.sefa.pa.gov.br/Sintegra/',PB:'https://www4.sefaz.pb.gov.br/sintegra',PR:'https://sintegra.paas.pr.gov.br/',PE:'http://www.sintegra.sefaz.pe.gov.br/',PI:'http://web.sintegra.sefaz.pi.gov.br/',RJ:'https://sucief-sincad-web.fazenda.rj.gov.br/sincad-web/index.jsf',RN:'http://www.set.rn.gov.br/uvt/consultacontribuinte.aspx',RS:'https://www.sefaz.rs.gov.br/consultas/contribuinte',RO:'http://www.sefin.ro.gov.br/sint_consul.asp',RR:'https://portalapp.sefaz.rr.gov.br/siate/servlet/wp_siate_consultasintegra',SC:'https://sat.sef.sc.gov.br/tax.NET/Sat.Cadastro.Web/ComprovanteIE/Consulta.aspx',SP:'https://www.cadesp.fazenda.sp.gov.br/Pages/Cadastro/Consultas/ConsultaPublica/ConsultaPublica.aspx',SE:'https://security.sefaz.se.gov.br/SIC/sintegra/index.jsp',TO:'http://sintegra.sefaz.to.gov.br/'};
+const SINTEGRA=SefazIE.SINTEGRA;
 let ufEmpresa='';
 function ieInputDe(sec){ return (tem('ie')&&f.elements.ie)||[...(sec||f).querySelectorAll('label')].find(l=>/inscri[cç][aã]o estadual|^ie\b/i.test((l.querySelector('span')?.textContent||'').trim()))?.querySelector('input') }
 // Copia texto de forma síncrona (funciona dentro do toque em todos os navegadores, inclusive iPhone e app instalado)
-function copiarTexto(t){
-  const ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly',''); ta.style.cssText='position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px';
-  document.body.appendChild(ta); const ativo=document.activeElement; ta.focus(); ta.select(); ta.setSelectionRange(0,t.length);
-  let ok=false; try{ ok=document.execCommand('copy') }catch(e){}
-  ta.remove(); if(ativo&&ativo.focus) try{ ativo.focus({preventScroll:true}) }catch(e){}
-  return ok;
-}
+const copiarTexto=SefazIE.copiar;
 function linkSintegra(){
   const inp=ieInputDe(), lab=inp&&inp.closest('label'); if(!lab) return;
   const uf=String(ufEmpresa||(tem('uf')&&f.elements.uf.value)||'').trim().toUpperCase().slice(0,2), url=SINTEGRA[uf]||'http://www.sintegra.gov.br/';
@@ -438,37 +433,7 @@ function linkSintegra(){
   box.querySelector('.ielinkA').innerHTML=`Não sabe? <a href="${esc(url)}" target="_blank" rel="noopener">Consultar no SINTEGRA${SINTEGRA[uf]?' ('+uf+')':''}</a>`;
 }
 // Lê o cartão de contribuinte / consulta do SINTEGRA (PDF ou print) no aparelho e tira a IE, o regime e a situação.
-function dadosCartaoIe(txt, cnpjForm){
-  const t=String(txt||'').replace(/\r/g,''), r={ie:'',isento:false,regime:'',cnpjs:[],outroCnpj:false,situacao:''};
-  // CNPJs no documento (para conferir se o cartão é da mesma empresa)
-  (t.match(/\d{2}[.\s]?\d{3}[.\s]?\d{3}\s?\/\s?\d{4}\s?[-–]?\s?\d{2}/g)||[]).forEach(x=>{ const d=dig(x); if(d.length===14&&!r.cnpjs.includes(d)) r.cnpjs.push(d) });
-  const quase=(a,b)=>a.length===b.length&&[...a].filter((c,i)=>c!==b[i]).length<=2;
-  if(cnpjForm&&r.cnpjs.length&&!r.cnpjs.some(c=>quase(c,cnpjForm))) r.outroCnpj=true;
-  // IE: o número logo depois do rótulo "Inscrição Estadual" (mesma linha ou linhas seguintes)
-  const rot=/inscri[cç][aã]o\s*estadual|\bI\.\s?E\.|\bIE\s*[:nN°º]/gi; let m;
-  while(!r.ie && !r.isento && (m=rot.exec(t))){
-    const jan=t.slice(m.index+m[0].length, m.index+m[0].length+220);
-    const tokens=jan.match(/ISENT[OA]|\d[\d.\-\/]{4,20}\d/gi)||[];
-    for(const tk of tokens){
-      if(/^isent/i.test(tk)){ r.isento=true; break }
-      const s0=tk.trim(), d=dig(s0);
-      if(d.length<8||d.length>14) continue;
-      if(/^\d{2}\/\d{2}\/\d{2,4}/.test(s0)||/^\d{5}-\d{3}$/.test(s0)) continue;      // data, CEP
-      if(d.length===14&&(r.cnpjs.includes(d)||cnpjOk(d))) continue;                     // é o CNPJ
-      if(cnpjForm&&d===cnpjForm.slice(0,d.length)) continue;
-      r.ie=s0.replace(/\s+/g,''); break;
-    }
-  }
-  // Regime: valor perto do rótulo; depois, frases claras no texto todo
-  const nt=t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
-  const qual=v=>/simei|\bmei\b|microempreendedor/.test(v)?'mei':/simples/.test(v)?'simples':/presumido/.test(v)?'presumido':/lucro real|\breal\b/.test(v)?'real':'';
-  const rr=/regime|enquadramento|forma de tributacao|tipo de contribuinte/g;
-  while(!r.regime && (m=rr.exec(nt))){ const v=nt.slice(m.index, m.index+90); if(!/nao optante|optante\s*:\s*nao/.test(v)) r.regime=qual(v.slice(m[0].length)) }
-  if(!r.regime && /optante pelo simples|simples nacional\s*:?\s*sim\b/.test(nt) && !/nao optante/.test(nt)) r.regime='simples';
-  const sit=nt.match(/situacao[^\n]{0,50}?(baixad[ao]|suspens[ao]|cancelad[ao]|inapt[ao]|nul[ao]|ativ[ao]|habilitad[ao]|nao habilitad[ao])/);
-  if(sit) r.situacao=sit[1];
-  return r;
-}
+const dadosCartaoIe=SefazIE.dadosCartao;
 let leituraIe=0, CARTAO_IE=null;
 const CAMPO_CARTAO='Cartão de contribuinte (IE)';
 function mostrarCartaoIe(box){ const el=box.querySelector('.iearq'); el.hidden=!CARTAO_IE; el.innerHTML=CARTAO_IE?`📎 <b>${esc(CARTAO_IE.name)}</b> <span>${L.p?'fica salvo junto com os dados':'(este link não guarda anexos)'}</span> <button type="button" aria-label="Remover">remover</button>`:'' }
@@ -506,33 +471,9 @@ async function lerCartaoIe(arquivos, inp, msg){
   else aviso('Não encontramos a inscrição estadual neste arquivo'+(ocr?' (a imagem pode estar pouco nítida)':'')+'. Digite à mão.'+alerta,'erro');
 }
 // Descobre o tipo pelos primeiros bytes; sem assinatura conhecida, usa o tipo/extensão; texto legível (HTML salvo) vira 'texto'
-async function tipoPeloConteudo(file){
-  const b=new Uint8Array(await file.slice(0,2048).arrayBuffer()), ini=String.fromCharCode(...b.slice(0,12));
-  if(String.fromCharCode(...b.slice(0,1024)).includes('%PDF-')) return 'application/pdf';
-  if(b[0]===0x89&&ini.slice(1,4)==='PNG') return 'image/png';
-  if(b[0]===0xFF&&b[1]===0xD8&&b[2]===0xFF) return 'image/jpeg';
-  if(ini.startsWith('GIF8')) return 'image/gif';
-  if(ini.startsWith('RIFF')&&ini.slice(8,12)==='WEBP') return 'image/webp';
-  if(ini.startsWith('BM')) return 'image/bmp';
-  if(/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name)) return 'application/pdf';
-  if(/^image\/(png|jpe?g|webp|gif|bmp)$/i.test(file.type)) return file.type;
-  if(!b.length) return '';
-  const ruins=[...b].filter(x=>x===0||(x<9)||(x>13&&x<32)).length;
-  return ruins/b.length<0.02?'texto':'';
-}
+const tipoPeloConteudo=SefazIE.tipoPeloConteudo;
 // Texto de uma página salva (HTML, MHTML) ou .txt, com quebras de linha nos blocos para os rótulos ficarem separados
-async function textoDeArquivo(file){
-  let bytes=new Uint8Array(await file.arrayBuffer()), bruto=new TextDecoder('latin1').decode(bytes);
-  if(/quoted-printable/i.test(bruto)){
-    const qp=bruto.replace(/=\r?\n/g,''), out=[]; for(let i=0;i<qp.length;i++){ const m=qp[i]==='='&&/^[0-9A-F]{2}$/i.test(qp.substr(i+1,2)); out.push(m?parseInt(qp.substr(i+1,2),16):qp.charCodeAt(i)&255); if(m) i+=2 } bytes=new Uint8Array(out);
-  }
-  let t; try{ t=new TextDecoder('utf-8',{fatal:true}).decode(bytes) }catch(e){ t=new TextDecoder('windows-1252').decode(bytes) }
-  if(/<(html|body|table|div|td|p)\b/i.test(t)){
-    t=t.replace(/<(script|style)[\s\S]*?<\/\1>/gi,' ').replace(/<(br|\/p|\/div|\/tr|\/td|\/th|\/li|\/h\d|\/label|\/span)\b[^>]*>/gi,'$&\n');
-    const doc=new DOMParser().parseFromString(t,'text/html'); t=(doc.body||doc.documentElement).textContent;
-  }
-  return t.replace(/[ \t ]+/g,' ');
-}
+const textoDeArquivo=SefazIE.textoDeArquivo;
 // Guarda a consulta de cada CNPJ: o botão "Usar endereço do estabelecimento" reaproveita sem consultar de novo
 const CNPJ_CACHE={};
 function consultarCnpj(d){ if(!CNPJ_CACHE[d]) CNPJ_CACHE[d]=consultarCnpjBase(d).then(j=>{ if(!j) delete CNPJ_CACHE[d]; return j },e=>{ delete CNPJ_CACHE[d]; throw e }); return CNPJ_CACHE[d] }
