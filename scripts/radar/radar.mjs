@@ -41,7 +41,7 @@ const FONTES = [{ mod: iomat, uf: 'MT' }, { mod: famurs, uf: 'RS' }, { mod: doer
   { mod: paraSigpub('arom', 'RO', 'Diário Oficial dos Municípios de Rondônia (AROM)'), uf: 'RO' }, { mod: querido.paraUF('RO', 'RO'), uf: 'RO' },
   { mod: semadgo, uf: 'GO' }, { mod: paraImprensa({ id: 'doe-go', nome: 'Diário Oficial do Estado de GO (avisos de licença)', url: 'https://diariooficial.abc.go.gov.br/', base: 'https://diariooficial.abc.go.gov.br/', sigla: 'DOE-GO' }), uf: 'GO' },
   { mod: paraSigpub('agm', 'GO', 'Diário Oficial dos Municípios de Goiás (AGM)'), uf: 'GO' }, { mod: paraSigpub('fgm', 'GO', 'Diário Oficial dos Municípios Goianos (FGM)'), uf: 'GO' }, { mod: querido.paraUF('GO', 'GO'), uf: 'GO' },
-  { mod: doems, uf: 'MS' }, { mod: paraSigpub('ms', 'MS', 'Diário Oficial dos Municípios de MS (SIGPub)', 'dom-ms', 'DOM-MS'), uf: 'MS' }, { mod: querido.paraUF('MS', 'MS'), uf: 'MS' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
+  { mod: doems, uf: 'MS' }, { mod: querido.paraUF('MS', 'MS'), uf: 'MS' }].filter(f => !process.env.RADAR_FONTES || process.env.RADAR_FONTES.split(',').includes(f.mod.info.id));
 const NOME_UF = { MT: 'MATO GROSSO', RS: 'RIO GRANDE DO SUL', SC: 'SANTA CATARINA', PR: 'PARANÁ', SP: 'SÃO PAULO', SE: 'SERGIPE', PA: 'PARÁ', TO: 'TOCANTINS', RO: 'RONDÔNIA', GO: 'GOIÁS', MS: 'MATO GROSSO DO SUL' };
 
 const PRIOR_CAT = ['novo', 'tanques', 'ampliacao', 'reforma', 'renovacao', 'titularidade', 'ponto_proprio', 'outro'];

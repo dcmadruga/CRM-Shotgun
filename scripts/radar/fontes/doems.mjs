@@ -45,6 +45,17 @@ function textoDoPdf(buf) {
   catch { return ''; } finally { rmSync(dir, { recursive: true, force: true }); }
 }
 
+// parágrafos da página (o pdftotext -layout separa os avisos por linha em branco), sem o cabeçalho da página
+const POSTO = /posto|combust[ií]ve|abastecimento|tanques?\b/i;
+const AVISO = /torna(?:-se)?\s+p[uú]blic/i;
+const LICENCA = /[Ll]icen[cç]a|[Ll]icenciamento|LICEN[CÇ]A|LICENCIAMENTO|\b(LP|LI|LO|RLO|LIO|LAS|LAU)\b/;
+export function avisosDoTexto(bruto) {
+  return bruto.split(/\n[ \t]*\n/).map(p => p.replace(/\s+/g, ' ').trim())
+    .map(p => p.replace(/^Di[aá]rio Oficial Eletr[oô]nico n\. [\d.]+(?: - Suplemento)? \d{1,2} de [a-zç]+ de \d{4} P[aá]gina \d+\s*/i, '')
+      .replace(/^(PUBLICA[CÇ][OÕ]ES A PEDIDO\s+)?((EDITAL|AVISO)( DE (RECEBIMENTO|REQUERIMENTO|CONCESS[AÃ]O)( DE LICEN[CÇ]A( AMBIENTAL)?)?)?|REQUERIMENTO|CONCESS[AÃ]O|RECEBIMENTO)\s*[–-]?\s+/, ''))
+    .filter(p => p.length > 60 && AVISO.test(p) && POSTO.test(p) && LICENCA.test(p));
+}
+
 export const linkPagina = (arquivo, pagina) => `${API}diarios/baixar-pagina/?${new URLSearchParams({ nomeArquivo: arquivo, pagina: String(pagina) })}`;
 
 async function paginaPdf(arquivo, pagina) {
@@ -81,12 +92,14 @@ export async function coletar(de, ate, log = console.log) {
   // mais novas primeiro: se o teto estourar, ficam de fora só as páginas antigas (com o trecho da busca)
   for (const pg of [...paginas.values()].sort((a, b) => b.data.localeCompare(a.data))) {
     const buf = Date.now() < prazo ? await paginaPdf(pg.arquivo, pg.pagina) : null;
-    let texto = buf ? textoDoPdf(buf) : '';
-    if (texto) lidas++; else { semTexto++; texto = [...pg.destaques].join(' … '); }
-    texto = texto.replace(/[ \t]+/g, ' ').replace(/\n{2,}/g, '\n').trim();
+    const bruto = buf ? textoDoPdf(buf) : '';
+    if (bruto) lidas++; else semTexto++;
     const data = pg.data;
-    docs.push({ id: pg.id, titulo: '', entidade: '', data, texto, trecho: [...pg.destaques][0] || '', url: linkPagina(pg.arquivo, pg.pagina), pdf: pg.pdfDiario || linkPagina(pg.arquivo, pg.pagina),
-      local: `${pg.descricao || 'Diário Oficial de MS'} de ${data.split('-').reverse().join('/')}, página ${pg.pagina}` });
+    const base = { entidade: '', data, url: linkPagina(pg.arquivo, pg.pagina), pdf: pg.pdfDiario || linkPagina(pg.arquivo, pg.pagina),
+      local: `${pg.descricao || 'Diário Oficial de MS'} de ${data.split('-').reverse().join('/')}, página ${pg.pagina}` };
+    // cada aviso é um parágrafo da página: só vão os que são publicação de licença com posto/combustível
+    const avisos = bruto ? avisosDoTexto(bruto) : [...pg.destaques].filter(t => AVISO.test(t) || LICENCA.test(t));
+    avisos.forEach((texto, i) => docs.push({ ...base, id: `${pg.id}-${i}`, titulo: '', texto, trecho: texto.slice(0, 300) }));
     await espera(400);
   }
   log(`DOE-MS: ${paginas.size} página(s); texto completo de ${lidas}${semTexto ? `, ${semTexto} só com o trecho da busca` : ''}${temPdftotext === false ? ' (pdftotext ausente)' : ''}`);

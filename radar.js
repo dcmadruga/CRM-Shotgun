@@ -91,7 +91,7 @@ const FONTES_GO = [
 ];
 const FONTES_MS = [
   { id: 'doe-ms', nome: 'Diário Oficial do Estado de MS (avisos de licença)', url: 'https://www.diariooficial.ms.gov.br/' },
-  { id: 'dom-ms', nome: 'Diário Oficial dos Municípios de MS (SIGPub)', url: 'https://www.diariomunicipal.com.br/ms/' },
+  { id: 'dom-ms', nome: 'Diário Oficial dos Municípios de MS (SIGPub)', url: 'https://www.diariomunicipal.com.br/ms/', obs: 'Sem edições no último ano: não monitorado (os municípios de MS publicam no DOE-MS e na ASSOMASUL)' },
   { id: 'querido-ms', nome: 'Querido Diário (diários próprios das cidades de MS)', url: 'https://queridodiario.ok.org.br/' },
   { id: 'anp', nome: 'Base de postos da ANP (cruzamento)', url: 'https://revendedoresapi.anp.gov.br/' },
   { id: 'siriema', nome: 'IMASUL: sistema SIRIEMA (processos)', url: 'https://siriema.imasul.ms.gov.br/', obs: 'Exige login: não monitorado (as publicações do IMASUL entram pelo Diário Oficial)' },

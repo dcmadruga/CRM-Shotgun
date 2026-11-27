@@ -18,7 +18,7 @@ jobs:
         env:
           RADAR_TESTE: 'true'
           RADAR_DIAS: '365'
-          RADAR_FONTES: 'doe-ms,dom-ms,querido-ms'
+          RADAR_FONTES: 'doe-ms,querido-ms'
           RADAR_AMOSTRA_LOG: '1'
       - if: always()
         run: mkdir -p rs-sondas/saida && cp radar-saida/*.json rs-sondas/saida/ || true
