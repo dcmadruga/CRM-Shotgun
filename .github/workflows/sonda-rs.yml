@@ -2,7 +2,7 @@ name: Sonda RS (temporária)
 on:
   push:
     branches: [claude/project-thread-wpu830]
-    paths: ['scripts/sonda/**', '.github/workflows/sonda-rs.yml']
+    paths: ['scripts/radar/**', 'scripts/sonda/**', '.github/workflows/sonda-rs.yml']
 permissions:
   contents: write
 jobs:
@@ -14,7 +14,12 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
       - run: command -v pdftotext || (sudo apt-get update -qq && sudo apt-get install -y -qq poppler-utils)
-      - run: node scripts/sonda/rs.mjs
+      - run: mkdir -p rs-sondas && node scripts/radar/radar.mjs > rs-sondas/ms-radar.txt 2>&1; tail -c 60000 rs-sondas/ms-radar.txt
+        env:
+          RADAR_TESTE: 'true'
+          RADAR_DIAS: '365'
+          RADAR_FONTES: 'doe-ms,dom-ms,querido-ms'
+          RADAR_AMOSTRA_LOG: '1'
       - if: always()
         run: mkdir -p rs-sondas/saida && cp radar-saida/*.json rs-sondas/saida/ || true
       - if: always()
