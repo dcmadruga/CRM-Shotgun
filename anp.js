@@ -76,22 +76,27 @@
   // Pesquisar na ANP (sem o CNPJ): painel com filtros Nome, Estado, Cidade e Bandeira.
   // Usado no Novo lead (CRM) e na Nova proposta. escolher(cnpj) recebe o posto clicado.
   const UFS = ['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'];
+  // quem não é administrador pesquisa só nos Estados de atuação do cadastro (usuarios/{uid}.estados, a mesma regra do CRM)
+  let meus = null; // null = todos (administrador ou antes do login)
+  window.addEventListener('shotgun-crm', e => { const { perfil, admin } = e.detail || {}; meus = admin ? null : (Array.isArray(perfil?.estados) ? perfil.estados : []).map(u => String(u).toUpperCase()); });
+  window.addEventListener('argo-sair', () => { meus = null; });
   const fmtC = d => String(d).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
   window.anpPesquisa = (box, ufIni, escolher) => {
     if (!box) return;
     if (!box.hidden && box.dataset.on) { box.hidden = true; return; }
-    ufIni = UFS.includes(String(ufIni || '').toUpperCase()) ? String(ufIni).toUpperCase() : '';
+    const vis = meus ? UFS.filter(u => meus.includes(u)) : UFS;
+    ufIni = vis.includes(String(ufIni || '').toUpperCase()) ? String(ufIni).toUpperCase() : vis.length === 1 ? vis[0] : '';
     let lista = [], cidades = [], cidSel = '', cidAlvo = -1;
     const q = sel => box.querySelector(sel);
     box.classList.add('anpbusca');
     box.innerHTML = `<div class="anpbhead"><h4>Pesquisar na base de postos da ANP</h4><button type="button" class="linkbtn" data-anp="fechar">Fechar</button></div>
       <div class="anpbfil">
         <label>Nome<input data-anp="nome" placeholder="Razão social ou parte dela" autocomplete="off"></label>
-        <label>Estado<select data-anp="uf"><option value="">Escolha…</option>${UFS.map(u => `<option${u === ufIni ? ' selected' : ''}>${u}</option>`).join('')}</select></label>
+        <label>Estado<select data-anp="uf"${vis.length ? '' : ' disabled'}><option value="">Escolha…</option>${vis.map(u => `<option${u === ufIni ? ' selected' : ''}>${u}</option>`).join('')}</select></label>
         <label class="anpcid">Cidade<input data-anp="cid" type="search" placeholder="Todas · digite o nome" autocomplete="off" disabled role="combobox" aria-autocomplete="list" aria-expanded="false"><ul class="anpcidl" role="listbox" hidden></ul></label>
         <label>Bandeira<select data-anp="band" disabled><option value="">Todas</option></select></label>
       </div>
-      <div class="anpbres"><p class="hint">Escolha o estado para pesquisar.</p></div>`;
+      <div class="anpbres"><p class="hint">${vis.length ? 'Escolha o estado para pesquisar.' : 'Nenhum Estado de atuação no seu cadastro. Peça ao administrador para marcar os seus Estados em Administração → Usuários.'}</p></div>`;
     const res = q('.anpbres');
     const filtrar = () => {
       if (!lista.length) return;
@@ -130,7 +135,7 @@
       lista = []; cidades = []; cidSel = ''; cont = {};
       cidInp().value = ''; cidInp().disabled = true; fecharCid();
       const bd = q('[data-anp=band]'); bd.disabled = true; bd.innerHTML = '<option value="">Todas</option>';
-      if (!uf) { res.innerHTML = '<p class="hint">Escolha o estado para pesquisar.</p>'; return; }
+      if (!uf || !vis.includes(uf)) { res.innerHTML = '<p class="hint">Escolha o estado para pesquisar.</p>'; return; }
       res.innerHTML = `<p class="hint">Carregando os postos de ${esc(uf)}…</p>`;
       let l; try { l = await window.anpUf(uf); } catch (e) { res.innerHTML = '<p class="hint">Não consegui carregar a base da ANP agora. Tente de novo.</p>'; return; }
       if (q('[data-anp=uf]').value !== uf) return;
@@ -187,7 +192,7 @@
     };
     box.hidden = false;
     box.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-    if (ufIni) carregar(ufIni); else q('[data-anp=uf]').focus();
+    if (ufIni) carregar(ufIni); else if (vis.length) q('[data-anp=uf]').focus();
   };
   window.anpPorte = porte;
   window.anpFaixas = faixas;
