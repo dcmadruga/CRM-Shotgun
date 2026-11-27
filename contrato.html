@@ -8,15 +8,15 @@
 <style>
 :root{
   --bg:#f4f2f6; --surface:#ffffff; --fg:#1d1a22; --muted:#6b6475; --line:#e3dfe8;
-  --ink:#17180f; --ink-fg:#f6f4f8; --accent:#cb2da0; --purple:#7030a0; --field:#fbfafc; --danger:#b42335;
+  --ink:#17180f; --ink-fg:#f6f4f8; --accent:#cb2da0; --purple:#7030a0; --field:#fbfafc; --danger:#b42335; --on-accent:#fff; --on-purple:#fff;
   --display:"Poppins",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif; color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#141218; --surface:#1d1a23; --fg:#ece8f1; --muted:#a39bb0; --line:#322d3a;
-  --ink:#0b0b08; --accent:#e04bb5; --purple:#a874d6; --field:#17151c; --danger:#f0697a; color-scheme:dark}}
+  --ink:#0b0b08; --accent:#e04bb5; --purple:#a874d6; --field:#17151c; --danger:#f0697a; --on-accent:#1a0f17; --on-purple:#140f1a; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#141218; --surface:#1d1a23; --fg:#ece8f1; --muted:#a39bb0; --line:#322d3a;
-  --ink:#0b0b08; --accent:#e04bb5; --purple:#a874d6; --field:#17151c; --danger:#f0697a; color-scheme:dark}
+  --ink:#0b0b08; --accent:#e04bb5; --purple:#a874d6; --field:#17151c; --danger:#f0697a; --on-accent:#1a0f17; --on-purple:#140f1a; color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
 [hidden]{display:none!important}
@@ -37,7 +37,7 @@ header p{margin:0;font-size:13px;opacity:.75}
 main{display:flex;flex-direction:column;gap:18px;padding-block:20px 40px}
 .intro{margin:0}
 .sec{background:var(--surface);border:1px solid var(--line);border-radius:6px;overflow:hidden}
-.sec>h2{margin:0;background:var(--accent);color:#fff;font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
+.sec>h2{margin:0;background:var(--accent);color:var(--on-accent);font-family:var(--display);font-weight:500;font-size:13.5px;letter-spacing:.03em;padding:8px 14px}
 .body{padding:14px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
 .full{grid-column:1/-1}
 label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;min-width:0}
@@ -51,11 +51,11 @@ input[readonly]{opacity:.8}
 .radios{display:flex;gap:16px;padding-top:6px;font-size:15px;font-weight:500;color:var(--fg)}
 .radios label{flex-direction:row;align-items:center;gap:6px;font-size:15px;color:var(--fg)}
 .radios input{width:auto}
-button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1px solid var(--purple);background:var(--purple);color:#fff;font-size:16px;cursor:pointer}
+button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1px solid var(--purple);background:var(--purple);color:var(--on-purple);font-size:16px;cursor:pointer}
 .send{display:flex;flex-direction:column;gap:8px}
 .hint{color:var(--muted);font-size:13px;margin:0}
 #msg{font-weight:500}
-.done{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:6px;padding:14px}
+.done{background:color-mix(in srgb,var(--purple) 7%,var(--surface));border:1px solid color-mix(in srgb,var(--purple) 45%,var(--line));border-radius:6px;padding:14px}
 .resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:14px}
 .resumo div{background:var(--field);border:1px solid var(--line);border-radius:4px;padding:10px}
 .resumo small{display:block;font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
@@ -64,12 +64,24 @@ button{font:inherit;font-weight:600;border-radius:4px;padding:12px 18px;border:1
 button.sec2{background:var(--surface);color:var(--purple)}
 .check{flex-direction:row;align-items:flex-start;gap:8px;font-size:14px;color:var(--fg);font-weight:500}
 .check input{width:auto;margin-top:3px}
-.ok{background:var(--surface);border:1px solid #1f7a46;border-left:4px solid #1f7a46;border-radius:6px;padding:14px}
-.warn{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--danger);border-radius:6px;padding:14px}
+.ok{background:color-mix(in srgb,#1f7a46 8%,var(--surface));border:1px solid color-mix(in srgb,#1f7a46 55%,var(--line));border-radius:6px;padding:14px}
+.warn{background:color-mix(in srgb,var(--danger) 7%,var(--surface));border:1px solid color-mix(in srgb,var(--danger) 45%,var(--line));border-radius:6px;padding:14px}
 .contrato{padding:14px 16px;max-height:60vh;overflow:auto;background:var(--field);border-top:1px solid var(--line);font-size:14px;line-height:1.55}
 .contrato p{margin:0 0 8px;white-space:pre-wrap}
 .contrato h3{font-family:var(--display);font-size:14px;font-weight:600;margin:14px 0 6px}
 .contrato h3:first-child{margin-top:0}
+::selection{background:color-mix(in srgb,var(--purple) 30%,transparent)}
+input[type=checkbox],input[type=radio]{accent-color:var(--purple)}
+a:focus-visible{outline:2px solid var(--purple);outline-offset:2px;border-radius:2px}
+button{transition:background-color .15s,border-color .15s,filter .15s,transform .1s}
+button:not(:disabled):hover{filter:brightness(1.08)}
+button.sec2:not(:disabled):hover,button.busca:not(:disabled):hover{filter:none;background:color-mix(in srgb,var(--purple) 6%,var(--surface))}
+button:not(:disabled):active{transform:translateY(1px)}
+button:disabled{opacity:.6;cursor:not-allowed}
+input[type=file]{padding:6px;font-size:14px;color:var(--muted);cursor:pointer}
+input[type=file]::file-selector-button{font:inherit;font-weight:600;margin-right:10px;padding:7px 14px;border:1px solid var(--purple);border-radius:4px;background:var(--surface);color:var(--purple);cursor:pointer;transition:background-color .15s}
+input[type=file]:hover::file-selector-button{background:color-mix(in srgb,var(--purple) 6%,var(--surface))}
+@media (prefers-reduced-motion:reduce){button,input[type=file]::file-selector-button{transition:none}}
 </style>
 </head><body>
 <header><div class="wrap">
@@ -126,7 +138,7 @@ const $=id=>document.getElementById(id);
 const id=decodeURIComponent(location.hash.slice(1)).trim();
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const dig=v=>String(v||'').replace(/\D/g,'');
-const erro=t=>{ $('carregando').hidden=true; $('erro').hidden=false; $('erro').textContent=t };
+const erro=t=>{ $('carregando').hidden=true; if(/^Carregando/.test($('sub').textContent)) $('sub').hidden=true; $('erro').hidden=false; $('erro').textContent=t };
 function cpfOk(v){ const d=dig(v); if(d.length!==11||/^(\d)\1+$/.test(d)) return false;
   const c=n=>{ let s=0; for(let i=0;i<n;i++) s+=+d[i]*(n+1-i); const r=(s*10)%11; return r===10?0:r }; return c(9)===+d[9]&&c(10)===+d[10] }
 const fmtCpf=v=>dig(v).replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,'$1.$2.$3-$4');

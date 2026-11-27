@@ -14,7 +14,7 @@ window.cnpjInfo = async d => {
 const C = window.FIREBASE_CONFIG || {};
 if (C.apiKey) iniciar().catch(e => { console.error(e); erroLogin('Não foi possível carregar o login. Verifique a internet e recarregue.'); });
 
-function erroLogin(t) { const b = document.getElementById('loginBox'); if (b) { b.hidden = false; document.getElementById('loginMsg').textContent = t; } }
+function erroLogin(t) { const b = document.getElementById('loginBox'); if (b) { b.hidden = false; const m = document.getElementById('loginMsg'); m.textContent = t; m.classList.add('erro'); } }
 
 async function iniciar() {
   const V = '10.12.2', base = `https://www.gstatic.com/firebasejs/${V}/`;
@@ -40,17 +40,17 @@ async function iniciar() {
   const comBaseRev = c => { fb.geral = BASE_REV.reduce((o, k) => (o[k] = c[k], o), {}); const b = (fb.revenda && fb.revenda.base) || {}; LOGO_REV.forEach(k => { if (b.logoRev && !b.semLogo && b[k] !== undefined) c[k] = b[k]; else delete c[k]; }); fb.tplSemRev = c.templates; fb.refsSemRev = c.refs; if (!fb.revenda) return c; if (Array.isArray(b.templates)) c.templates = JSON.parse(JSON.stringify(b.templates)); if (Array.isArray(b.refs)) c.refs = JSON.parse(JSON.stringify(b.refs)); BASE_REV.forEach(k => { if (b[k] !== undefined && b[k] !== null && String(b[k]).trim() !== '') c[k] = b[k]; }); return c; };
 
   /* ---------- Login ---------- */
-  const box = $('loginBox'), lmsg = t => { $('loginMsg').textContent = t };
+  const box = $('loginBox'), lmsg = (t, erro) => { const m = $('loginMsg'); m.textContent = t; m.classList.toggle('erro', !!erro); };
   function mostrarLogin(t) { body.classList.add('locked'); box.hidden = false; if (t) lmsg(t); setTimeout(() => $('l-email').focus(), 50); }
   $('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
     const email = $('l-email').value.trim(), senha = $('l-senha').value;
-    if (!email || !senha) { lmsg('Informe e-mail e senha.'); return; }
+    if (!email || !senha) { lmsg('Informe e-mail e senha.', true); return; }
     if (modoCad) {
       // Me cadastrar: cria a conta e segue para a tela de cadastro (nome, estado e selfie), que fica aguardando liberação
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { lmsg('Digite um e-mail válido.'); return; }
-      if (senha.length < 6) { lmsg('A senha precisa ter pelo menos 6 caracteres.'); return; }
-      if (senha !== $('l-conf').value) { lmsg('As duas senhas não são iguais. Digite de novo.'); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { lmsg('Digite um e-mail válido.', true); return; }
+      if (senha.length < 6) { lmsg('A senha precisa ter pelo menos 6 caracteres.', true); return; }
+      if (senha !== $('l-conf').value) { lmsg('As duas senhas não são iguais. Digite de novo.', true); return; }
       $('btnLogin').disabled = true; lmsg('Criando sua conta…');
       try { await A.createUserWithEmailAndPassword(auth, email.toLowerCase(), senha); $('l-senha').value = ''; $('l-conf').value = ''; modoCadastro(false); }
       catch (err) {
@@ -60,13 +60,13 @@ async function iniciar() {
           try { senhaDigitada = senha; await A.signInWithEmailAndPassword(auth, email, senha); $('l-senha').value = ''; $('l-conf').value = ''; modoCadastro(false); return; }
           catch (e2) {
             c = e2.code || '';
-            if (/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)) { modoCadastro(false); lmsg('Esse e-mail já tem conta, mas a senha não confere. Digite a senha certa e toque em "Entrar", ou use "Esqueci minha senha" para criar uma nova.'); return; }
+            if (/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)) { modoCadastro(false); lmsg('Esse e-mail já tem conta, mas a senha não confere. Digite a senha certa e toque em "Entrar", ou use "Esqueci minha senha" para criar uma nova.', true); return; }
           }
         }
         lmsg(/too-many-requests/.test(c) ? 'Muitas tentativas. Espere alguns minutos ou use "Esqueci minha senha".' :
           /invalid-email/.test(c) ? 'Digite um e-mail válido.' : /weak-password/.test(c) ? 'Senha fraca: use pelo menos 6 caracteres.' :
           /operation-not-allowed|admin-restricted/.test(c) ? 'O cadastro pelo app não está ativado. Fale com o administrador.' :
-          /network/.test(c) ? 'Sem internet. Conecte-se para se cadastrar.' : 'Não foi possível criar a conta (' + c + ').');
+          /network/.test(c) ? 'Sem internet. Conecte-se para se cadastrar.' : 'Não foi possível criar a conta (' + c + ').', true);
       } finally { $('btnLogin').disabled = false; }
       return;
     }
@@ -76,7 +76,7 @@ async function iniciar() {
       const c = err.code || '';
       lmsg(/invalid-credential|wrong-password|user-not-found|invalid-email/.test(c) ? 'E-mail ou senha incorretos.' :
         /too-many-requests/.test(c) ? 'Muitas tentativas. Espere alguns minutos ou use "Esqueci minha senha".' :
-        /network/.test(c) ? 'Sem internet. Conecte-se para entrar.' : 'Não foi possível entrar (' + c + ').');
+        /network/.test(c) ? 'Sem internet. Conecte-se para entrar.' : 'Não foi possível entrar (' + c + ').', true);
     } finally { $('btnLogin').disabled = false; }
   });
   let modoCad = false;
@@ -92,9 +92,9 @@ async function iniciar() {
   $('btnCadastrar').addEventListener('click', () => modoCadastro(!modoCad));
   $('btnEsqueci').addEventListener('click', async () => {
     const email = $('l-email').value.trim();
-    if (!email) { lmsg('Digite seu e-mail acima e toque de novo em "Esqueci minha senha".'); $('l-email').focus(); return; }
+    if (!email) { lmsg('Digite seu e-mail acima e toque de novo em "Esqueci minha senha".', true); $('l-email').focus(); return; }
     try { await A.sendPasswordResetEmail(auth, email); lmsg('Se o e-mail estiver cadastrado, chega um link para criar nova senha. Veja também o spam.'); }
-    catch (err) { lmsg('Não foi possível enviar (' + (err.code || 'erro') + ').'); }
+    catch (err) { lmsg('Não foi possível enviar (' + (err.code || 'erro') + ').', true); }
   });
   $('btnSair').addEventListener('click', () => A.signOut(auth));
 

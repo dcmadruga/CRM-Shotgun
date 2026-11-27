@@ -24,6 +24,7 @@ input{font:400 15px var(--font);color:var(--fg);background:var(--field);border:1
 input:focus{outline:2px solid var(--btn);outline-offset:-1px;border-color:var(--btn)}
 .ver{position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--accent-text);font:600 13px var(--font);padding:8px 10px;min-height:36px;cursor:pointer}
 .btn{display:flex;align-items:center;justify-content:center;min-height:44px;border-radius:12px;border:0;background:var(--btn);color:var(--accent-fg);font:600 14px var(--font);cursor:pointer;text-decoration:none;padding:0 16px}
+.btn:not(:disabled):hover{background:var(--accent-hover)}
 .btn:disabled{opacity:.6;cursor:default}
 .msg{font-size:13.5px;line-height:20px;color:var(--danger)}.msg:empty{display:none}.msg.ok{color:var(--muted)}
 .selo{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
