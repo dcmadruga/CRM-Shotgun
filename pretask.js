@@ -965,8 +965,10 @@
   function painelParam(s, i, emb) {
     const fils = C.pre.filiais, tit = String(s.bloco || s.titulo || '').replace(/:\s*$/, ''); // bloco: título do bloco quando difere do item do menu (TEF dentro de TEF / PIX)
     // dentro da aba Base e posto: sem painel próprio, só o bloco
-    const psX = secoesParam(C.cfg4), extra = emb ? compDentro(i).map(blocoComp).join('') : psX.map((x, k) => k !== i && setorSec(psX, k) === i ? painelParam(x, k, true) : '').join('') + compDentro(i).map(blocoComp).join('');
-    const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}${extra}</div>` : (id, t, sub, html) => painel(id, t, sub, html + extra);
+    // Blocos de outras seções que entram neste item: os marcados "topo" (ex.: Contato Cliente: TEF / PIX) vêm antes dos campos do item
+    const psX = secoesParam(C.cfg4), dentro = topo => emb ? '' : psX.map((x, k) => k !== i && !!x.topo === topo && setorSec(psX, k) === i ? painelParam(x, k, true) : '').join('');
+    const antes = dentro(true), extra = dentro(false) + compDentro(i).map(blocoComp).join('');
+    const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}${extra}</div>` : (id, t, sub, html) => painel(id, t, sub, antes + html + extra);
     if (!porFilial(s)) return pn('p' + i, s.titulo, 'Parâmetros Pré TASK', `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid">${camposHtml(s.campos, '', C.v, C.anx)}</div></div>`);
     const at = Math.min(C.filAtiva, fils.length - 1);
     return pn('p' + i, s.titulo, 'preenchido filial por filial', `<div class="pttabs" role="tablist">${fils.map((f, j) => `<button type="button" role="tab" data-ptfi="${j}" aria-selected="${j === at}">${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}</button>`).join('')}</div>` +

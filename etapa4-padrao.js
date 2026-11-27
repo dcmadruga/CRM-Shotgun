@@ -32,7 +32,7 @@ window.ETAPA4_PADRAO = {
     { k: 'pixChave', label: 'Chave PIX', tipo: 'texto', req: true, show: true }
   ] });
   // Contato do cliente para TEF / PIX: terceiro bloco do mesmo item (v274). Marca tefPixContato, uma vez só
-  const CONTATO = () => ({ id: 'contatoTefPix', titulo: 'Contato Cliente: TEF / PIX', campos: [
+  const CONTATO = () => ({ id: 'contatoTefPix', titulo: 'Contato Cliente: TEF / PIX', topo: true, campos: [
     { k: 'tefPixContatoNome', label: 'Nome do contato', tipo: 'texto', req: true, show: true },
     { k: 'tefPixContatoFone', label: 'Telefone / WhatsApp', tipo: 'telefone', req: true, show: true },
     { k: 'tefPixContatoEmail', label: 'E-mail', tipo: 'email', req: false, show: true }
@@ -50,6 +50,8 @@ window.ETAPA4_PADRAO = {
       }
       cfg.tefPixContato = true;
     }
+    // v275: o contato vem primeiro dentro do item TEF / PIX (topo). Uma vez só (marca tefPixContatoTopo)
+    if (!cfg.tefPixContatoTopo) { const ct = cfg.secoes.find(x => x.id === 'contatoTefPix'); if (ct && !ct.topo) { ct.topo = true; cfg.tefPixMudou = true; } cfg.tefPixContatoTopo = true; }
     return cfg;
   };
   function juntar(cfg) {
@@ -67,4 +69,5 @@ window.ETAPA4_PADRAO = {
   }
   window.ETAPA4_PADRAO.tefPixJunto = true;
   window.ETAPA4_PADRAO.tefPixContato = true;
+  window.ETAPA4_PADRAO.tefPixContatoTopo = true;
 })();
