@@ -310,7 +310,7 @@
     return b; };
   // Seção de anexos (Certificado Digital, Logo da Filial) aparece dentro da aba Base e posto, por posto ou por filial
   const ehSecAnx = s => /anexo/i.test(s.titulo || '') || (s.campos || []).some(c => c.tipo === 'anexo' && /certificad|pfx|logo/i.test(c.label || ''));
-  // Seções dos Parâmetros que ficam no grupo Validação do menu, logo abaixo de Implantação (hoje todas: TEF, PIX, Integração…)
+  // Seções dos Parâmetros que ficam no grupo Validação do menu, logo abaixo de Implantação (hoje todas: TEF / PIX, Integração…)
   const ehSecVal = s => true;
   // Setor de Validação de uma seção (escolhido nos Parâmetros): 'proprio' (item próprio no menu), 'status', 'base' (Implantação)
   // ou o id/título de outra seção do Pré TASK. Sem escolha: Anexos em Implantação e o resto com item próprio.
@@ -928,7 +928,7 @@
   // Cada seção do Pré-Contrato com campos marcados "Pré TASK" vira um item próprio do menu, com o título da seção
   const tituloComp = t => String(t || 'Dados complementares').replace(/:\s*$/, '').trim();
   // Seção do Pré-Contrato que entra dentro de uma seção do Pré TASK em vez de ter item próprio:
-  // a escolhida no campo pretaskEm (título da seção do Pré TASK) ou, por padrão, Dados bancários / boleto dentro de TEF (antes TEF / PIX)
+  // a escolhida no campo pretaskEm (título da seção do Pré TASK) ou, por padrão, Dados bancários / boleto dentro de TEF / PIX
   function destinoComp(sc) {
     const ps = secoesParam(C.cfg4);
     let v = sc.setor;
@@ -960,14 +960,14 @@
       ${C.verContrato && p.ctEm ? '<div class="ptbtns full"><button type="button" data-pta="contrato">Ver contrato (PDF)</button></div>' : ''}</div></div>`);
   }
   function painelParam(s, i, emb) {
-    const fils = C.pre.filiais, tit = String(s.titulo || '').replace(/:\s*$/, '');
+    const fils = C.pre.filiais, tit = String(s.bloco || s.titulo || '').replace(/:\s*$/, ''); // bloco: título do bloco quando difere do item do menu (TEF dentro de TEF / PIX)
     // dentro da aba Base e posto: sem painel próprio, só o bloco
     const psX = secoesParam(C.cfg4), extra = emb ? compDentro(i).map(blocoComp).join('') : psX.map((x, k) => k !== i && setorSec(psX, k) === i ? painelParam(x, k, true) : '').join('') + compDentro(i).map(blocoComp).join('');
     const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}${extra}</div>` : (id, t, sub, html) => painel(id, t, sub, html + extra);
     if (!porFilial(s)) return pn('p' + i, s.titulo, 'Parâmetros Pré TASK', `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid">${camposHtml(s.campos, '', C.v, C.anx)}</div></div>`);
     const at = Math.min(C.filAtiva, fils.length - 1);
     return pn('p' + i, s.titulo, 'preenchido filial por filial', `<div class="pttabs" role="tablist">${fils.map((f, j) => `<button type="button" role="tab" data-ptfi="${j}" aria-selected="${j === at}">${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}</button>`).join('')}</div>` +
-      fils.map((f, j) => `<div class="ptsec" data-ptfp="${j}"${j === at ? '' : ' hidden'}><h5>${esc(s.titulo)}<small>${esc([f.cod, f.razao].filter(Boolean).join(' · '))}</small></h5><div class="ptgrid">${j ? `<div class="ptbtns full"><button type="button" data-ptcopia="${j}" data-sec="${i}">Copiar dados da ${esc(fils[0].cod)}</button></div>` : ''}${camposHtml(s.campos, 'f' + j + '__', C.v, C.anx)}</div></div>`).join(''));
+      fils.map((f, j) => `<div class="ptsec" data-ptfp="${j}"${j === at ? '' : ' hidden'}><h5>${esc(tit)}<small>${esc([f.cod, f.razao].filter(Boolean).join(' · '))}</small></h5><div class="ptgrid">${j ? `<div class="ptbtns full"><button type="button" data-ptcopia="${j}" data-sec="${i}">Copiar dados da ${esc(fils[0].cod)}</button></div>` : ''}${camposHtml(s.campos, 'f' + j + '__', C.v, C.anx)}</div></div>`).join(''));
   }
   function painelAnexos() {
     const an = C.an, pend = (C.p && C.p.e2Pendentes) || (C.e2 && C.e2.pendentes) || [];
