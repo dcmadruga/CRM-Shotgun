@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 270, data: '2026-11-27', titulo: 'Cadastro direto sem a aba Pré-Contrato', itens: [
+    'No Pré TASK do cadastro direto, a aba Pré-Contrato saiu: os dados do contrato não se aplicam a esse cadastro e deixam de ser exigidos no Salvar final. Os blocos que ficam nas outras abas continuam valendo.',
+    'Em blocos com dois e-mails, como o Financeiro, o segundo ganhou a opção "Usar o mesmo e-mail para nota fiscal": ele copia o e-mail do boleto e acompanha se você mudar.'
+  ] },
   { v: 269, data: '2026-11-27', titulo: 'Contatos já informados como sugestão', itens: [
     'No Pré TASK, embaixo do nome do contato de blocos como Financeiro e Contato técnico, aparecem os contatos já informados antes: o responsável legal, o contador, os outros blocos, o contato da proposta e os contatos do lead no CRM. Um toque preenche o nome, o telefone e o e-mail do bloco.',
     'A página de dados que o cliente preenche faz o mesmo com os contatos que ele já digitou e com o contato da proposta.',

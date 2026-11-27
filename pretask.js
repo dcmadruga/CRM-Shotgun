@@ -77,6 +77,8 @@
 .ptsefaz{margin-top:6px}.ptsefaz.sobre button[data-cartao]{outline:2px dashed var(--accent-text);outline-offset:2px}
 .ptsoc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;font-size:12px}.ptsoc small{color:var(--muted);font-weight:400}.ptsoc button{font:inherit;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--chip-bg);color:var(--chip-fg);cursor:pointer}
 .ptctt button small{font-weight:400;opacity:.75;margin-left:5px}
+.ptf .ptmesmo{display:flex!important;flex-direction:row!important;align-items:center;justify-content:flex-start;align-self:flex-start;gap:6px;font-size:12.5px;font-weight:500;color:var(--fg);cursor:pointer;text-align:left}.ptf .ptmesmo input{accent-color:#FF6A00;width:16px!important;min-width:0;height:16px;margin:0;padding:0;flex:none}
+.ptgrid input[readonly]{opacity:.75}
 .ptcfc{font-size:12px;font-weight:600;color:var(--accent-text);margin-top:4px;align-self:flex-start}
 `;
   function estilos() { if (document.getElementById('ptCss')) return; const s = document.createElement('style'); s.id = 'ptCss'; s.textContent = css; document.head.appendChild(s); }
@@ -539,8 +541,8 @@
     const rg = (C.e2 || C.direto) && campoRegime();
     const m = { status: marca(nStatus, 4), base: rg ? marca(base + (C.v2[rg.k] ? 1 : 0), 7) : marca(base, 6), proposta: marca(1, 1), contrato: marca(C.p.ctAceitoEm || C.direto ? 1 : 0, 1) };
     const conta2 = ss => { let ok = 0, tot = 0; ss.forEach(s => { const r = contar(s.campos, '', C.v2); ok += r.ok; tot += r.tot; }); return marca(ok, tot); };
-    // cadastro direto também exige os obrigatórios do Pré-Contrato e complementares (só proposta e contrato ficam de fora)
-    m.e2 = C.direto || C.e2 ? conta2(secs2Cli()) : marca(0, 1); secs2Comp().forEach((sc, i) => { m['e2c' + i] = C.e2 ? conta2([sc]) : marca(0, 1); });
+    // cadastro direto: sem a aba Pré-Contrato; os complementares (que ficam nas outras abas) continuam valendo
+    m.e2 = C.e2 && !C.direto ? conta2(secs2Cli()) : marca(0, 1); secs2Comp().forEach((sc, i) => { m['e2c' + i] = C.e2 ? conta2([sc]) : marca(0, 1); });
     const vv = { ...C.v }; Object.entries(C.anx || {}).forEach(([k, st]) => { if (st && st.salvos) vv[k] = st.salvos.concat(st.novos || []); }); // anexos escolhidos e ainda não salvos também contam
     secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; compDentro(i).forEach(sc => { if (!C.e2) { tot++; return; } const r = contar(sc.campos, '', C.v2); ok += r.ok; tot += r.tot; }); const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
     m.anexos = marca(1, 1);
@@ -564,7 +566,7 @@
     const nav = (id, t, ic) => `<button type="button" class="dgnav" data-pt="${id}" aria-selected="false">${ICO(ic || t)}<span>${esc(t)}</span>${M[id] || ''}</button>`;
     const g = t => `<span class="ptnote" style="padding:10px 14px 2px;text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;font-weight:600">${t}</span>`;
     body.innerHTML = `<div class="dgwrap" id="ptWrap">
-      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${C.direto ? nav('e2', 'Pré-Contrato', 'pessoas') : ''}${secs2Comp().map((sc, i) => destinoComp(sc) !== 'proprio' ? '' : nav('e2c' + i, tituloComp(sc.titulo), 'contato')).join('')}${ps.map((s, i) => setorSec(ps, i) === 'proprio' && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
+      <nav class="dgmenu" aria-label="Seções do Pré TASK">${g('Validação')}${nav('status', 'Status e datas', 'status')}${nav('base', 'Implantação', 'posto')}${secs2Comp().map((sc, i) => destinoComp(sc) !== 'proprio' ? '' : nav('e2c' + i, tituloComp(sc.titulo), 'contato')).join('')}${ps.map((s, i) => setorSec(ps, i) === 'proprio' && ehSecVal(s) ? nav('p' + i, s.titulo, s.titulo) : '').join('')}
         ${g('Dos passos anteriores')}${nav('proposta', 'Proposta', 'lista')}${C.direto ? '' : nav('e2', 'Pré-Contrato', 'pessoas')}${nav('contrato', 'Contrato', 'lista')}
         ${ps.some((s, i) => setorSec(ps, i) === 'proprio' && !ehSecVal(s)) ? g('Parâmetros Pré TASK') : ''}${ps.map((s, i) => setorSec(ps, i) !== 'proprio' || ehSecVal(s) ? '' : nav('p' + i, s.titulo, s.titulo)).join('')}</nav>
       <div class="dgcorpo" id="ptCorpo">
@@ -574,7 +576,7 @@
     // Salvar parcial também no fim de cada tela de Validação
     corpo.querySelectorAll(':scope > [data-ptp]').forEach(pn => { const id = pn.dataset.ptp; if (id !== 'status' && id !== 'base' && !(/^e2c\d+$/.test(id) && C.e2) && !(id === 'e2' && C.direto) && !/^p\d+$/.test(id)) return; pn.insertAdjacentHTML('beforeend', '<div class="ptpfoot"><span class="hint" role="status"></span><button type="button" data-ptparc="1">Salvar parcial</button></div>'); });
     corpo.addEventListener('click', ev => { if (ev.target.closest('[data-ptparc]')) salvar(true); });
-    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo); marcarAuto(corpo); ligarRegime(corpo); ligarSefaz(corpo); ligarContatos(corpo);
+    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo); marcarAuto(corpo); ligarRegime(corpo); ligarSefaz(corpo); ligarContatos(corpo); ligarMesmoEmail(corpo);
     corpo.addEventListener('pt-mudou', ev => { cabecalhoMudou(ev); conferirFinal(); });
     corpo.addEventListener('input', () => conferirFinal()); corpo.addEventListener('change', () => conferirFinal());
     conferirFinal(true);
@@ -587,7 +589,8 @@
     const emb = document.querySelector(`#ptCorpo .ptemb[data-ptp="${id}"]`);
     if (emb) id = (emb.parentElement.closest('[data-ptp]') || { dataset: { ptp: 'base' } }).dataset.ptp;
     // cadastro direto: ao abrir o Pré-Contrato, traz o CNPJ, a razão social e a cidade do posto já informados na Implantação
-    if (id === 'e2' && C.direto && document.getElementById('ptCorpo')) { colherCabecalho(); colherCampos(); const antes = JSON.stringify(C.v2); e2DoPosto(); if (JSON.stringify(C.v2) !== antes) { C.aba = 'e2'; desenhar(); return; } }
+    // cadastro direto não tem a aba Pré-Contrato (os dados do contrato não se aplicam e não são exigidos)
+    if (id === 'e2' && C.direto) id = 'status';
     C.aba = id;
     if (emb) setTimeout(() => emb.scrollIntoView({ block: 'start', behavior: 'smooth' }), 0);
     document.querySelectorAll('#ptWrap .dgnav').forEach(b => b.setAttribute('aria-selected', String(b.dataset.pt === id)));
@@ -803,6 +806,23 @@
     desenharContatos(corpo);
     let t = 0; corpo.addEventListener('change', ev => { if (ev.target.closest && ev.target.closest('.ptctt')) return; clearTimeout(t); t = setTimeout(() => desenharContatos(corpo), 50); });
   }
+  // Bloco com mais de um e-mail (ex.: boleto e nota fiscal): "Usar o mesmo e-mail para nota fiscal" copia o primeiro e acompanha as mudanças
+  function ligarMesmoEmail(corpo) {
+    const grupos = new Map();
+    corpo.querySelectorAll('[data-e2]').forEach(g => { const t = tituloGrid(g); grupos.set(t, (grupos.get(t) || []).concat([...g.querySelectorAll('input[data-pk]')].filter(ehEmail))); });
+    grupos.forEach(ems => ems.slice(1).forEach(el => {
+      const base = ems[0], lab = el.closest('.ptf'); if (!lab || lab.querySelector('.ptmesmo')) return;
+      const resto = rotuloDe(el).replace(/e-?mail/i, '').replace(/^\s*(para|da|de|do)\s+/i, '').trim();
+      const box = document.createElement('label'); box.className = 'ptmesmo';
+      box.innerHTML = `<input type="checkbox"> <span>Usar o mesmo e-mail ${resto ? 'para ' + esc(resto) : 'de cima'}</span>`;
+      el.after(box);
+      const cb = box.querySelector('input');
+      const sync = () => { if (!cb.checked) { el.readOnly = false; return; } if (el.value !== base.value) { el.value = base.value; el.classList.remove('erro', 'falta'); el.dispatchEvent(new Event('input', { bubbles: true })); } el.readOnly = true; };
+      cb.addEventListener('change', () => { if (!cb.checked) { el.value = ''; el.dispatchEvent(new Event('input', { bubbles: true })); } sync(); if (!cb.checked) el.focus(); });
+      base.addEventListener('input', sync);
+      if (el.value && el.value === base.value) { cb.checked = true; sync(); }
+    }));
+  }
   function ligarSefaz(corpo) {
     if (!window.SefazIE) return;
     corpo.querySelectorAll('[data-e2] input[data-tipo="cnpj"]').forEach(el => {
@@ -899,7 +919,7 @@
   }
   function painelE2() {
     const e2 = C.e2;
-    if (C.direto) return painel('e2', 'Pré-Contrato', 'preenchido aqui no cadastro direto', '<p class="ptnote">Sem link para o cliente: confirme os dados com ele e preencha aqui. Os campos com * são obrigatórios para o salvar final, como no Pré TASK de uma proposta.</p>' + secs2Cli().map(s => `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid" data-e2>${camposHtml(s.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`).join(''));
+    if (C.direto) return ''; // cadastro direto: sem a aba Pré-Contrato (nada dela é exigido no Salvar final)
     if (!e2) return painel('e2', 'Pré-Contrato', '', '<p class="ptnote">O cliente ainda não enviou o Pré-Contrato.</p>');
     const hist = (e2.alteracoes || []).slice(-5).reverse().map(a => `<div>${esc(a.por)} alterou ${esc((a.campos || []).join(', '))} em ${esc(new Date(a.em).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }))}</div>`).join('');
     return painel('e2', 'Pré-Contrato', `preenchido pelo cliente${e2.em ? ' em ' + esc(fmtTs(e2.em)) : ''} · editável`, secs2Cli().map(s => `<div class="ptsec"><h5>${esc(s.titulo)}</h5><div class="ptgrid" data-e2>${camposHtml(s.campos, 'e2:', prefixar(C.v2, 'e2:'), C.anx)}</div></div>`).join('') + (hist ? `<div class="pthist">${hist}</div>` : '<p class="ptnote">Alterar um dado aqui corrige o dado original e registra quem alterou.</p>'));
