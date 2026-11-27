@@ -1,7 +1,7 @@
 // Módulo TASK: checklist de implantação. Roda para usuários TASK e administradores.
 // Dados: tasks/{id} (cadastros com checklists) e taskTemplates/{id} (modelos de checklist).
 let F, db, perfil, admin = false, unsubT = null, unsubM = null, unsubP = null, unsubMod = null, tasksOk = false, aprovadas = null;
-// Módulos do TASK (Implantação, TEF, PIX…): configurados em Parâmetros Módulos TASK
+// Módulos do TASK (Implantação, TEF/PIX…): configurados em Parâmetros Módulos TASK
 let MODS = window.MODULOS_PADRAO ? JSON.parse(JSON.stringify(window.MODULOS_PADRAO)) : { secoes: [] };
 let tasks = [], removidas = new Set(), templates = [], resps = [], aba = 'and', minhas = false, setorVer = null;
 const $ = id => document.getElementById(id);
@@ -31,7 +31,7 @@ function iniciar() {
     // Cards removidos pelo ADM ficam só como marca (removido: true), para o automático não recriar
     removidas = new Set(todos.filter(t => t.removido).flatMap(t => [t.id, t.propostaId]).filter(Boolean));
     tasks = todos.filter(t => !t.removido);
-    if (window.modulosHerdar) tasks.forEach(t => window.modulosHerdar(t, MODS)); // andamento do TEF / PIX antigo que passou para o PIX
+    if (window.modulosHerdar) tasks.forEach(t => window.modulosHerdar(t, MODS)); // andamento lançado no módulo PIX da v271 volta para o TEF / PIX
     tasksOk = true; desenhar(); sincronizar(); completarDatas();
   }, e => msg('Não foi possível carregar os cadastros (' + (e.code || 'erro') + ').'));
   unsubP = F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')), qs => {
@@ -153,7 +153,7 @@ const filhosDe = m => [m, ...(MODS.secoes || []).filter(x => x.pai === m.id)];
 function contaMod(t, lista) { let f = 0, an = 0, tot = 0; const pa = []; lista.forEach(m => (m.processos || []).forEach(p => { tot++; const s = procDe(t, m.id, p.id); if (s && s.st === 'fi') f++; if (s && (s.st === 'in' || s.st === 'an')) an++; if (s && s.st === 'pa') pa.push(m.titulo + ': ' + p.t); })); return { f, an, tot, pa }; }
 // Setores: cada módulo principal é um setor (as etapas dele são do mesmo setor). O ADM marca o setor de cada pessoa em Usuários.
 const topDe = m => (m && m.pai && (MODS.secoes || []).find(x => x.id === m.pai)) || m;
-const meusSetores = () => window.setoresDe ? window.setoresDe(perfil) : (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
+const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
 // Quem não tem setor marcado (e o ADM) altera todos os módulos
 const podeMod = m => admin || !meusSetores().length || meusSetores().includes(topDe(m).id);
 /* ---------- Liberação, pendências e diário dos módulos ----------

@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 272, data: '2026-11-27', titulo: 'TEF / PIX volta a ser um setor só', itens: [
+    'No TASK, TEF / PIX volta a ser um módulo e um setor só, como antes da versão 271, com o processo "Configurar PIX" de novo dentro dele. O que foi lançado no módulo PIX nesse meio-tempo voltou para o TEF / PIX.',
+    'Usuários e avisos do sino seguem o setor TEF / PIX de sempre: não precisa mudar nada no cadastro das pessoas.',
+    'No Pré TASK, TEF e PIX continuam como dois itens separados no menu.'
+  ] },
   { v: 271, data: '2026-11-27', titulo: 'TEF e PIX separados', itens: [
     'No Pré TASK, o item TEF / PIX virou dois: TEF, com os mesmos campos de antes (TEF Fixo, PDV Móvel, Cartões Frota e adquirentes), e PIX, que pergunta se o PIX é integrado ao PDV, o banco ou adquirente, o tipo de chave e a chave PIX. O que já tinha sido preenchido continua no TEF.',
     'No TASK, o módulo TEF / PIX também virou dois setores, TEF e PIX. O processo "Configurar PIX" passou para o PIX, com o andamento que já tinha. Quem era do setor TEF / PIX passa a ver os dois.',
