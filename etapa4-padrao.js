@@ -31,9 +31,29 @@ window.ETAPA4_PADRAO = {
     { k: 'pixTipoChave', label: 'Tipo de chave PIX', tipo: 'opcoes', req: true, show: true, opcoes: 'CNPJ, E-mail, Telefone, Chave aleatória' },
     { k: 'pixChave', label: 'Chave PIX', tipo: 'texto', req: true, show: true }
   ] });
+  // Contato do cliente para TEF / PIX: terceiro bloco do mesmo item (v274). Marca tefPixContato, uma vez só
+  const CONTATO = () => ({ id: 'contatoTefPix', titulo: 'Contato Cliente: TEF / PIX', campos: [
+    { k: 'tefPixContatoNome', label: 'Nome do contato', tipo: 'texto', req: true, show: true },
+    { k: 'tefPixContatoFone', label: 'Telefone / WhatsApp', tipo: 'telefone', req: true, show: true },
+    { k: 'tefPixContatoEmail', label: 'E-mail', tipo: 'email', req: false, show: true }
+  ] });
   const tefPix = x => /\btef\b/i.test(x || '') && /\bpix\b/i.test(x || '');
   window.pretaskCompletar = cfg => {
-    if (!cfg || !Array.isArray(cfg.secoes) || cfg.tefPixJunto) return cfg;
+    if (!cfg || !Array.isArray(cfg.secoes)) return cfg;
+    juntar(cfg);
+    if (!cfg.tefPixContato) {
+      const L = cfg.secoes, t = L.find(s => tefPix(s.titulo));
+      if (t && !L.some(x => x.id === 'contatoTefPix' || (/contato/i.test(x.titulo || '') && tefPix(x.titulo)))) {
+        const ct = CONTATO(), alvo = t.id || String(t.titulo).trim(), ult = L.reduce((u, x, k) => x === t || x.setor === alvo ? k : u, -1);
+        ct.setor = alvo; if (t.porFilial === false) ct.porFilial = false;
+        L.splice(ult + 1, 0, ct); cfg.tefPixMudou = true;
+      }
+      cfg.tefPixContato = true;
+    }
+    return cfg;
+  };
+  function juntar(cfg) {
+    if (cfg.tefPixJunto) return;
     const L = cfg.secoes, t = L.find(s => tefPix(s.titulo)) || L.find(s => tefPix(s.antes));
     if (t) {
       if (tefPix(t.antes)) t.titulo = t.antes; delete t.antes;
@@ -44,7 +64,7 @@ window.ETAPA4_PADRAO = {
       cfg.tefPixMudou = true;
     }
     delete cfg.tefPixSeparado; cfg.tefPixJunto = true;
-    return cfg;
-  };
+  }
   window.ETAPA4_PADRAO.tefPixJunto = true;
+  window.ETAPA4_PADRAO.tefPixContato = true;
 })();

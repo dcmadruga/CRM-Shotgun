@@ -758,7 +758,7 @@
   const ehFone = i => i.dataset.tipo === 'telefone' || /telefone|whats|celular|\bfone\b/.test(rotuloDe(i));
   const ehEmail = i => i.type === 'email' || i.dataset.tipo === 'email' || /e-?mail/.test(rotuloDe(i));
   const tituloGrid = g => { const h = g.closest('.ptsec')?.querySelector('h5'); return h ? String(h.childNodes[0]?.textContent || h.textContent).trim() : ''; };
-  const curtoSec = t => /cont[aá]bil|contador/i.test(t) ? 'Contador' : /respons[aá]vel legal/i.test(t) ? 'Responsável legal' : /t[eé]cnico/i.test(t) ? 'Contato técnico' : /financ/i.test(t) ? 'Financeiro' : t.length > 24 ? t.slice(0, 22) + '…' : t;
+  const curtoSec = t => /cont[aá]bil|contador/i.test(t) ? 'Contador' : /respons[aá]vel legal/i.test(t) ? 'Responsável legal' : /t[eé]cnico/i.test(t) ? 'Contato técnico' : /financ/i.test(t) ? 'Financeiro' : /\btef\b|\bpix\b/i.test(t) && /contato/i.test(t) ? 'TEF / PIX' : t.length > 24 ? t.slice(0, 22) + '…' : t;
   const capNome = n => /[a-zà-ú]/.test(n) ? n : nomeBonito(n);
   function contatosConhecidos(corpo, fora) {
     const lista = [], add = (nome, fone, email, origem) => {
@@ -780,7 +780,8 @@
     return lista;
   }
   function desenharContatos(corpo) {
-    corpo.querySelectorAll('[data-e2]').forEach(g => {
+    // Blocos do Pré-Contrato e dos Parâmetros Pré TASK (ex.: Contato Cliente: TEF / PIX) que têm nome + telefone ou e-mail
+    corpo.querySelectorAll('.ptgrid').forEach(g => {
       const ins = [...g.querySelectorAll('input[data-pk]')], nome = ins.find(i => nomePessoa(rotuloDe(i)) && !/contador/.test(rotuloDe(i)));
       const irmaos = [...corpo.querySelectorAll('.ptgrid')].filter(x => x === g || tituloGrid(x) === tituloGrid(g)).flatMap(x => [...x.querySelectorAll('input[data-pk]')]);
       if (!nome || !irmaos.some(i => i !== nome && (ehFone(i) || ehEmail(i)))) return;

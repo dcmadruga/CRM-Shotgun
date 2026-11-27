@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 274, data: '2026-11-27', titulo: 'Contato do cliente em TEF / PIX', itens: [
+    'No Pré TASK, o item TEF / PIX ganhou o bloco Contato Cliente: TEF / PIX, com nome, telefone / WhatsApp e e-mail de quem cuida do TEF e do PIX no cliente.',
+    'Embaixo do nome aparecem os contatos já informados (responsável legal, financeiro, contato técnico, proposta, CRM): um toque preenche o nome, o telefone e o e-mail.'
+  ] },
   { v: 273, data: '2026-11-27', titulo: 'TEF / PIX volta a ser um item só, com TEF e PIX separados dentro', itens: [
     'No Pré TASK, TEF / PIX volta a ser um item só no menu de Validação. Dentro dele, as informações ficam em dois blocos: TEF (TEF Fixo, PDV Móvel, Cartões Frota e adquirentes) e PIX (PIX integrado ao PDV, banco ou adquirente, tipo de chave e chave PIX).',
     'O que já tinha sido preenchido continua no lugar.'
