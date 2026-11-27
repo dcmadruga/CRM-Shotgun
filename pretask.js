@@ -746,17 +746,7 @@
     else notaIe('Não encontramos a inscrição estadual neste arquivo' + (r.ocr ? ' (a imagem pode estar pouco nítida)' : '') + '. Digite à mão.' + alerta, 'erro');
   }
   // Texto logo abaixo do CNPJ: não há botão de pesquisa, a consulta à Receita é automática ao digitar
-  function dicaCnpj(el) {
-    if (el.dataset.pk === 'e2:cnpj') return 'Ao digitar o CNPJ, a pesquisa na Receita é automática: completa os campos vazios da empresa e busca a Inscrição estadual.';
-    const grid = el.closest('[data-e2]'); if (!grid) return '';
-    const nomeDe = inp => ((inp.closest('.ptf') || inp.parentElement).querySelector('span')?.textContent || '').replace(/\*/g, '').trim();
-    const campos = [...grid.querySelectorAll('input[data-pk],select[data-pk],textarea[data-pk]')].filter(i => i !== el);
-    const enche = campos.filter(i => { const t = rotuloDe(i); return !/contador|cpf|crc|respons|cnpj/.test(t) && /raz[aã]o|nome|empresa|fantasia|e-?mail|telefone|whats|fone|\bcep\b|bairro|cidade|munic|^(estado|uf)\b|endere|logradouro|rua/.test(t); }).map(nomeDe);
-    const cont = campos.find(i => { const t = rotuloDe(i); return /nome/.test(t) && /contador|respons/.test(t) && !/cpf|crc/.test(t); });
-    if (!enche.length && !cont) return '';
-    const lista = enche.length > 1 ? enche.slice(0, -1).join(', ') + ' e ' + enche[enche.length - 1] : enche[0];
-    return 'Não precisa de botão: ao digitar o CNPJ, a pesquisa na Receita é automática' + (enche.length ? ' e preenche ' + lista : '') + '.' + (cont ? ' Os sócios aparecem embaixo de ' + nomeDe(cont) + ' para escolher com um toque.' : '');
-  }
+  const dicaCnpj = el => el.closest('[data-e2]') ? 'Digite CNPJ para pesquisa automática' : '';
   function ligarSefaz(corpo) {
     if (!window.SefazIE) return;
     corpo.querySelectorAll('[data-e2] input[data-tipo="cnpj"]').forEach(el => {
