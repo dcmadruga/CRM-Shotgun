@@ -380,7 +380,7 @@ function formDados(t) {
     if (dlg().open) dlg().close();
     const novo = !t, tk = t || { id: F.doc(F.collection(db, 'tasks')).id, respCadastro: { uid: perfil.uid, nome: perfil.nome || perfil.email } };
     const usadas = new Set(tasks.flatMap(x => [x.propostaId, x.propostaVinc]).filter(Boolean));
-    const propostasLivres = (aprovadas || []).filter(p => !usadas.has(p.id) || p.id === tk.propostaVinc).map(p => ({ id: p.id, numero: p.numero || '', cliente: p.cliente || '' }));
+    const propostasLivres = (window.sgViaUnica ? window.sgViaUnica(aprovadas || []) : aprovadas || []).filter(p => ![p.id, ...(p._viasIds || [])].some(id => usadas.has(id) && id !== tk.propostaVinc) || p.id === tk.propostaVinc).map(p => ({ id: p.id, numero: p.numero || '', cliente: p.cliente || '' }));
     return window.PreTask.abrir({ F, db, perfil, origem: 'task', task: tk, novo, podeTask: true, propostasLivres, propostaVinc: tk.propostaVinc || '' });
   }
   t = t || { respCadastro: { uid: perfil.uid, nome: perfil.nome || perfil.email } };
@@ -557,7 +557,8 @@ async function formImportar() {
   try {
     const qs = await F.getDocs(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')));
     const ja = new Set(tasks.map(t => t.propostaId).filter(Boolean));
-    const ps = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !ja.has(p.id) && (!meusUfs || meusUfs.includes(String(p.uf || '').toUpperCase()) || meusUfs.includes(ufCidade(p.cidade)))).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0));
+    const todas = qs.docs.map(d => ({ id: d.id, ...d.data() }));
+    const ps = (window.sgViaUnica ? window.sgViaUnica(todas) : todas).filter(p => ![p.id, ...(p._viasIds || [])].some(id => ja.has(id)) && (!meusUfs || meusUfs.includes(String(p.uf || '').toUpperCase()) || meusUfs.includes(ufCidade(p.cidade)))).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0));
     $('tkDlgBody').innerHTML = ps.length ? `<p class="hint">Quando o vendedor conclui a Etapa 4 (Dados Referência Implantação), o cadastro é criado sozinho. Use esta lista para trazer antes uma proposta aprovada que ainda não chegou nessa fase, ou para trazer de volta um card removido.</p>
       <ul class="tkimp">${ps.map(p => `<li><div><b>${esc(p.cliente)}</b><small>Nº ${esc(p.numero)} · ${esc(p.cidade || '')} · ${esc(p.vendedor || '')}${p.e2Em ? ' · Pré-Contrato recebido' : ''}</small></div><button type="button" data-imp="${esc(p.id)}">Importar</button></li>`).join('')}</ul>`
       : '<p class="hint">Nenhuma proposta aprovada pendente de importação.</p>';

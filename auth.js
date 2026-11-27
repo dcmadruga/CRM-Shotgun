@@ -582,6 +582,17 @@ async function iniciar() {
     }
     const b64 = buildPdf().output('datauristring').split(',')[1];
     if (b64.length > 950000) throw new Error('o PDF ficou grande demais (troque o logo por uma imagem menor)');
+    // Proposta igual já existe para este cliente (mesmo cliente e mesmos valores): não cria uma segunda via.
+    // Se a outra ainda não foi aprovada, a nova entra no lugar dela (como Atualizar / Refazer) e o link antigo leva à nova.
+    if (!refazer) {
+      const cliK = x => String(x.cnpj || '').replace(/\D/g, '') || String(x.cliente || '').trim().toUpperCase();
+      const k = cliK(S), lic = sumRows(S.lic), men = sumRows(S.men);
+      const iguais = k ? propsTodas.filter(p => p.owner === perfil.uid && !p.crmPerdida && cliK(p) === k && (Number(p.totLic) || 0) === lic && (Number(p.totMen) || 0) === men) : [];
+      const apr = iguais.find(p => p.status === 'aprovada');
+      if (apr) throw new Error(`o cliente já aprovou a proposta nº ${apr.numero} com os mesmos valores. Siga por ela no quadro de Propostas (se for outra proposta, mude os valores)`);
+      const ab = iguais.find(p => p.status === 'enviada');
+      if (ab) { refazer = { id: ab.id, numero: ab.numero, owner: ab.owner, vendedor: ab.vendedor, vendedorFone: ab.vendedorFone, leadId: ab.leadId || '', versao: ab.versao || 1, pend: ehPend(ab) }; mostrarRefazer(); }
+    }
     const ref = F.doc(F.collection(db, 'propostas'));
     const rf = refazer, versao = rf ? rf.versao + 1 : 1;
     const numero = rf ? String(rf.numero || '').replace(/-R\d+$/, '') + '-R' + versao : hojeIso().replace(/-/g, '').slice(2) + '-' + ref.id.slice(0, 4).toUpperCase();
@@ -661,18 +672,19 @@ async function iniciar() {
   $('btnNova').addEventListener('click', () => { $('waAprov').value = ''; $('aprovLinkRow').hidden = true; ultimo = null; });
 
   /* ---------- Aba Propostas ---------- */
-  let unsubP = null, props = [];
+  let unsubP = null, props = [], propsTodas = [];
   function ouvirPropostas() {
     if (unsubP) unsubP();
     const col = F.collection(db, 'propostas');
     const q = fb.admin ? F.query(col, F.orderBy('criado', 'desc'), F.limit(300)) : F.query(col, F.where('owner', '==', perfil.uid));
     unsubP = F.onSnapshot(q, qs => {
-      props = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.status !== 'substituida') // versões antigas ficam guardadas, mas saem do quadro
+      propsTodas = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.status !== 'substituida') // versões antigas ficam guardadas, mas saem do quadro
         .sort((a, b) => (b.criado?.seconds || 9e9) - (a.criado?.seconds || 9e9));
+      props = window.sgViaUnica ? window.sgViaUnica(propsTodas) : propsTodas; // vias iguais aprovadas viram um card só (vias.js)
       desenharPropostas();
     }, e => pMsg('Não foi possível carregar as propostas (' + (e.code || 'erro') + ').'));
   }
-  A.onAuthStateChanged(auth, u => { if (!u && unsubP) { unsubP(); unsubP = null; props = []; } });
+  A.onAuthStateChanged(auth, u => { if (!u && unsubP) { unsubP(); unsubP = null; props = []; propsTodas = []; } });
   // Gerente da revenda: a tela Hoje também traz as propostas dos outros usuários da revenda (só leitura)
   let unsubEq = [], propsEq = [], equipe = {};
   const pararEquipe = () => { unsubEq.forEach(f => { try { f(); } catch (e) {} }); unsubEq = []; propsEq = []; equipe = {}; };
@@ -687,7 +699,7 @@ async function iniciar() {
       const k = i;
       unsubEq.push(F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('owner', 'in', uids.slice(i, i + 30))), qs => {
         partes[k] = qs.docs.map(d => ({ id: d.id, ...d.data(), _equipe: true })).filter(p => p.status !== 'substituida');
-        propsEq = Object.values(partes).flat(); desenharHoje();
+        propsEq = Object.values(partes).flat(); if (window.sgViaUnica) propsEq = window.sgViaUnica(propsEq); desenharHoje();
       }, () => {}));
     }
     desenharHoje();
@@ -738,6 +750,7 @@ async function iniciar() {
   function abrirPropostas() { const noCrm = $('viewCrm') && $('viewCrm').contains($('pBoard')); abrirAba(noCrm ? 'tabCrm' : 'tabList'); return noCrm; }
   window.shotgunAbrirPropostas = () => { if (abrirPropostas()) setTimeout(() => { const s = $('secPropostas'); if (s) s.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 0); };
   function abrirJornada(id, passo) {
+    if (!props.some(p => p.id === id)) { const v = props.find(p => (p._viasIds || []).includes(id)); if (v) id = v.id; } // via repetida: abre a que ficou
     passoSel[id] = passo; foco = id; $('pBusca').value = ''; $('pFiltro').value = '';
     abrirPropostas(); desenharPropostas();
     setTimeout(() => { const c = $('pList').querySelector(`.pcard[data-id="${CSS.escape(id)}"]`); if (c) c.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 0);
@@ -769,30 +782,12 @@ async function iniciar() {
       if (duvNova(p)) await F.updateDoc(F.doc(db, 'propostas', p.id), { duvidaLidaEm: F.serverTimestamp() });
     } catch (err) { box.innerHTML = `<p class="hint">Não foi possível carregar as dúvidas (${esc(err.code || err.message)}).</p>`; }
   }
-  // Vias repetidas: o cliente às vezes aprova duas vias iguais da mesma proposta (dois links, mesmo cliente e valores).
-  // No Hoje fica só uma: a que andou mais nos passos; empatou, a aprovada por último. As outras continuam no quadro.
-  const ms2 = ts => ts && ts.seconds ? ts.seconds * 1000 : 0;
-  const avanco = p => p.e4Em ? 5 : p.ctAceitoEm ? 4 : p.ctEm ? 3 : p.e2Em ? 2 : 1;
-  function viaUnica(lista) {
-    const grupos = new Map(), fora = [];
-    lista.forEach(p => {
-      if (p.status !== 'aprovada') { fora.push(p); return; }
-      const cli = String(p.cnpj || '').replace(/\D/g, '') || String(p.cliente || '').trim().toUpperCase();
-      if (!cli) { fora.push(p); return; }
-      const k = [p.owner || '', cli, Number(p.totLic) || 0, Number(p.totMen) || 0].join('|');
-      if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(p);
-    });
-    return fora.concat([...grupos.values()].map(l => {
-      const p = l.slice().sort((a, b) => avanco(b) - avanco(a) || ms2(b.aprovadoEm) - ms2(a.aprovadoEm))[0];
-      return l.length > 1 ? { ...p, _vias: l.length } : p;
-    }));
-  }
   function desenharHoje() {
     if (!$('hList')) return;
     const minhas = (fb.admin || fb.gerente) && $('hMinhas').checked;
     const base = fb.gerente && !minhas ? props.concat(propsEq.filter(p => !props.some(q => q.id === p.id))) : props;
-    const itens = viaUnica(base.filter(p => !minhas || p.owner === perfil?.uid)).map(p => ({ p, x: pendencia(p) })).filter(o => o.x)
-      .map(o => { if (o.p._vias > 1) o.x = { ...o.x, d: o.x.d + ` O cliente aprovou ${o.p._vias} vias iguais desta proposta; aparece só esta.` }; return o; })
+    const itens = base.filter(p => !minhas || p.owner === perfil?.uid).map(p => ({ p, x: pendencia(p) })).filter(o => o.x)
+      .map(o => { if (o.p._vias > 1) o.x = { ...o.x, d: o.x.d + ` O cliente aprovou ${o.p._vias} vias iguais desta proposta (nº ${o.p._viasNums.join(', ')}); aparece só esta.` }; return o; })
       .sort((a, b) => (a.x.cli === b.x.cli ? 0 : a.x.cli ? 1 : -1));
     const meus = itens.filter(o => !o.x.cli && !o.p._equipe).length, daEq = itens.filter(o => !o.x.cli && o.p._equipe).length;
     $('hCount').textContent = itens.length ? `${meus} com você${daEq ? ` · ${daEq} com a equipe` : ''} · ${itens.length - meus - daEq} aguardando cliente` : '';
@@ -819,7 +814,7 @@ async function iniciar() {
         <div class="top"><div><b>${esc(p.cliente)}</b><div class="meta">Nº ${esc(p.numero)} · ${esc(p.cidade || '')}${fb.admin ? ' · ' + esc(p.vendedor) : ''}</div></div>
           ${fb.admin ? '<button type="button" class="danger" data-a="excluirp">Excluir proposta</button>' : ''}</div>
         <div class="vals">Licenças ${brl(p.totLic)} · Mensalidade ${brl(p.totMen)} · ${p.implantacao === 'Remota' ? 'Implantação remota (sem custo)' : p.implantacao === 'Combustível' ? 'Deslocamento só combustível' + (p.dados && p.dados.km ? ' (' + Number(p.dados.km).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' km)' : '') : 'Deslocamento ' + brl(p.totDes)}</div>
-        <div class="meta">${pend ? 'Salva em' : 'Enviada em'} ${esc(fmtTs(p.enviadaEm) && !pend ? fmtTs(p.enviadaEm) : fmtTs(p.criado) || fmtD(p.data))}${p.validade ? ' · válida até ' + esc(fmtD(p.validade)) : ''}${p.substitui ? `<br>Versão ${p.versao || 2} · atualiza a nº ${esc(p.substituiNumero || '')} <button type="button" class="lnk" data-a="pdfant">ver PDF anterior</button>` : ''}${ok ? `<br><b style="color:#1f7a46">Aprovada por ${esc(p.aprovadoNome)}${p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : ''} em ${esc(fmtTs(p.aprovadoEm))}</b>` : ''}</div>
+        <div class="meta">${pend ? 'Salva em' : 'Enviada em'} ${esc(fmtTs(p.enviadaEm) && !pend ? fmtTs(p.enviadaEm) : fmtTs(p.criado) || fmtD(p.data))}${p.validade ? ' · válida até ' + esc(fmtD(p.validade)) : ''}${p.substitui ? `<br>Versão ${p.versao || 2} · atualiza a nº ${esc(p.substituiNumero || '')} <button type="button" class="lnk" data-a="pdfant">ver PDF anterior</button>` : ''}${ok ? `<br><b style="color:#1f7a46">Aprovada por ${esc(p.aprovadoNome)}${p.aprovadoCargo ? ' (' + esc(p.aprovadoCargo) + ')' : ''} em ${esc(fmtTs(p.aprovadoEm))}</b>` : ''}${p._vias > 1 ? `<br>O cliente também aprovou ${p._vias - 1 === 1 ? 'a via igual' : 'as vias iguais'} nº ${esc(p._viasNums.join(', '))}. Siga por esta; ${p._vias - 1 === 1 ? 'a outra fica guardada' : 'as outras ficam guardadas'}.` : ''}</div>
         ${passosHtml(p, sel)}
         <div class="etapa" data-passo="0"${oc(0)}><div class="etit">Passo 1 · Proposta</div>
           <div class="acts">
