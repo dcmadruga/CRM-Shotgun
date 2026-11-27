@@ -16,12 +16,29 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const statusDe = t => STATUS[t.status] ? t.status : t.finalizado ? 'fin' : 'fut';
 const STATUS = { and: 'Em andamento', fut: 'Futuro', fin: 'Finalizado' };
 const progresso = t => { const it = (t.checklists || []).flatMap(c => c.itens || []); return { feitos: it.filter(i => i.ok).length, total: it.length }; };
+// Estados de atuação (Administração → Usuários): quem é vendedor e não é administrador vê só os cards de clientes
+// dos seus Estados. Administrador e equipe só TASK (sem perfil de vendedor) continuam vendo todos.
+// A UF do cliente vem do card, da cidade ("Cuiabá - MT"), das filiais da Central e da proposta vinculada.
+const UFS_BR = new Set('AC AL AP AM BA CE DF ES GO MA MT MS MG PA PB PR PE PI RJ RN RS RO RR SC SP SE TO'.split(' '));
+let meusUfs = null; // null = vê todos
+const ufCidade = c => { const m = String(c || '').trim().match(/[-\/,]\s*([A-Za-z]{2})$/); return m ? m[1].toUpperCase() : ''; };
+function ufsDe(t) {
+  const out = new Set(), add = u => { u = String(u || '').trim().toUpperCase(); if (UFS_BR.has(u)) out.add(u); };
+  add(t.uf); add(ufCidade(t.cidade));
+  ((t.central && t.central.filiais) || []).forEach(f => { add(f.uf); add(f.info && f.info.uf); add(ufCidade(f.cidade)); });
+  const p = propostaDe(t); if (p) { add(p.uf); add(ufCidade(p.cidade)); }
+  return [...out];
+}
+const visivel = t => !meusUfs || ufsDe(t).some(u => meusUfs.includes(u));
+const vistos = () => tasks.filter(visivel);
 const msg = t => { const el = $('tkMsg'); el.textContent = t || ''; el.hidden = !t; };
 
 window.addEventListener('argo-perfil', e => { ({ F, db, perfil, admin } = e.detail); iniciar(); });
 window.addEventListener('argo-sair', () => { if (unsubT) unsubT(); if (unsubM) unsubM(); if (unsubP) unsubP(); if (unsubMod) unsubMod(); unsubT = unsubM = unsubP = unsubMod = null; aprovadas = null; tasksOk = false; tasks = []; templates = []; });
 
 function iniciar() {
+  const papeis = Array.isArray(perfil.papeis) && perfil.papeis.length ? perfil.papeis : [perfil.papel || 'vendedor'];
+  meusUfs = admin || !papeis.includes('vendedor') ? null : (Array.isArray(perfil.estados) ? perfil.estados : []).map(u => String(u).toUpperCase());
   if (unsubT) unsubT();
   if (unsubM) unsubM();
   if (unsubP) unsubP();
@@ -54,12 +71,12 @@ function iniciar() {
 /* ---------- Lista ---------- */
 function filtrados(ignorarAba) {
   const b = $('tkBusca').value.trim().toLowerCase(), bd = dig(b), rc = $('tkRespCad').value, rs = $('tkRespStart').value;
-  return tasks.filter(t => (ignorarAba || aba === 'todos' || (aba === 'prep' ? statusDe(t) !== 'fin' && !pronto(t) : statusDe(t) === aba))
+  return vistos().filter(t => (ignorarAba || aba === 'todos' || (aba === 'prep' ? statusDe(t) !== 'fin' && !pronto(t) : statusDe(t) === aba))
     && (!rc || t.respCadastro?.uid === rc) && (!rs || t.respStart?.uid === rs)
     && (!b || [t.apelido, t.razao, t.cidade].join(' ').toLowerCase().includes(b) || (bd.length >= 3 && dig(t.cnpj).includes(bd))));
 }
 function opcoesResp(sel, atual) {
-  const lista = [...resps]; tasks.forEach(t => [t.respCadastro, t.respStart].forEach(r => { if (r?.uid && !lista.some(x => x.uid === r.uid)) lista.push(r); }));
+  const lista = [...resps]; vistos().forEach(t => [t.respCadastro, t.respStart].forEach(r => { if (r?.uid && !lista.some(x => x.uid === r.uid)) lista.push(r); }));
   return lista.map(r => `<option value="${esc(r.uid)}"${r.uid === atual ? ' selected' : ''}>${esc(r.nome)}</option>`).join('');
 }
 // Minhas tarefas: processos ainda não finalizados dos módulos do meu setor, em todos os cards que não estão finalizados
@@ -68,7 +85,7 @@ function minhasTarefas() {
   if (setorVer === null) setorVer = meus.length === 1 ? meus[0] : meus.length ? 'meus' : '';
   const alvo = setorVer === 'meus' ? meus : setorVer ? [setorVer] : top.map(m => m.id);
   const mods = (MODS.secoes || []).filter(m => alvo.includes(topDe(m).id)), hj = hoje(), b = $('tkBusca').value.trim().toLowerCase(), bd = dig(b), itens = [];
-  tasks.filter(t => statusDe(t) !== 'fin' && (!b || [t.apelido, t.razao, t.cidade].join(' ').toLowerCase().includes(b) || (bd.length >= 3 && dig(t.cnpj).includes(bd)))).forEach(t => mods.forEach(m => (m.processos || []).forEach(p => {
+  vistos().filter(t => statusDe(t) !== 'fin' && (!b || [t.apelido, t.razao, t.cidade].join(' ').toLowerCase().includes(b) || (bd.length >= 3 && dig(t.cnpj).includes(bd)))).forEach(t => mods.forEach(m => (m.processos || []).forEach(p => {
     const s = procDe(t, m.id, p.id), st = s ? s.st : 'ni'; if (st === 'fi') return;
     itens.push({ t, m, p, st, s, pz: prazoDe(t, p) });
   })));
@@ -90,15 +107,22 @@ function minhasTarefas() {
 function desenhar() {
   if (!$('tkGrid')) return;
   $('tkMinhas').setAttribute('aria-pressed', String(minhas)); $('tkAbas').hidden = minhas; document.querySelector('.tkfiltros').hidden = minhas;
+  avisoUfs();
   if (minhas) { $('tkGrid').innerHTML = minhasTarefas(); return; }
-  const rcV = $('tkRespCad').value, rsV = $('tkRespStart').value, base = tasks.length;
+  const rcV = $('tkRespCad').value, rsV = $('tkRespStart').value, base = vistos().length;
   $('tkRespCad').innerHTML = `<option value="">Todos (${base})</option>` + opcoesResp(null, rcV);
   $('tkRespStart').innerHTML = `<option value="">Todos (${base})</option>` + opcoesResp(null, rsV);
   const sem = filtrados(true);
   const n = { todos: sem.length, prep: 0, and: 0, fut: 0, fin: 0 }; sem.forEach(t => { n[statusDe(t)]++; if (statusDe(t) !== 'fin' && !pronto(t)) n.prep++; });
   document.querySelectorAll('#tkAbas [data-aba]').forEach(b => { b.setAttribute('aria-pressed', String(b.dataset.aba === aba)); b.querySelector('i').textContent = n[b.dataset.aba]; });
   const vis = filtrados().sort((a, b) => statusDe(a) === 'fin' && statusDe(b) === 'fin' ? (b.finalizadoEm?.seconds || 0) - (a.finalizadoEm?.seconds || 0) : String(a.start || '9').localeCompare(String(b.start || '9')));
-  $('tkGrid').innerHTML = vis.length ? vis.map(cartao).join('') : `<p class="hint">${tasks.length ? 'Nenhum cadastro com esse filtro.' : 'Nenhum cadastro ainda. Use "Novo cadastro" ou "Importar das propostas".'}</p>`;
+  $('tkGrid').innerHTML = vis.length ? vis.map(cartao).join('') : `<p class="hint">${base ? 'Nenhum cadastro com esse filtro.' : meusUfs ? (meusUfs.length ? 'Nenhum cadastro de cliente nos seus Estados de atuação.' : 'Nenhum Estado de atuação no seu cadastro.') : 'Nenhum cadastro ainda. Use "Novo cadastro" ou "Importar das propostas".'}</p>`;
+}
+// Linha acima dos cards dizendo que a lista está limitada aos Estados de atuação
+function avisoUfs() {
+  const el = $('tkUfs'); if (!el) return;
+  el.hidden = !meusUfs;
+  if (meusUfs) el.innerHTML = meusUfs.length ? `Mostrando só clientes dos seus Estados de atuação: <b>${esc(meusUfs.slice().sort().join(', '))}</b>.` : 'Nenhum Estado de atuação no seu cadastro. Peça ao administrador para marcar os seus Estados em Administração → Usuários.';
 }
 // Etapas da venda: proposta vinculada pelo id ou, nos cadastros manuais, pelo CNPJ
 function propostaDe(t) {
@@ -533,7 +557,7 @@ async function formImportar() {
   try {
     const qs = await F.getDocs(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')));
     const ja = new Set(tasks.map(t => t.propostaId).filter(Boolean));
-    const ps = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !ja.has(p.id)).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0));
+    const ps = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => !ja.has(p.id) && (!meusUfs || meusUfs.includes(String(p.uf || '').toUpperCase()) || meusUfs.includes(ufCidade(p.cidade)))).sort((a, b) => (b.aprovadoEm?.seconds || 0) - (a.aprovadoEm?.seconds || 0));
     $('tkDlgBody').innerHTML = ps.length ? `<p class="hint">Quando o vendedor conclui a Etapa 4 (Dados Referência Implantação), o cadastro é criado sozinho. Use esta lista para trazer antes uma proposta aprovada que ainda não chegou nessa fase, ou para trazer de volta um card removido.</p>
       <ul class="tkimp">${ps.map(p => `<li><div><b>${esc(p.cliente)}</b><small>Nº ${esc(p.numero)} · ${esc(p.cidade || '')} · ${esc(p.vendedor || '')}${p.e2Em ? ' · Pré-Contrato recebido' : ''}</small></div><button type="button" data-imp="${esc(p.id)}">Importar</button></li>`).join('')}</ul>`
       : '<p class="hint">Nenhuma proposta aprovada pendente de importação.</p>';
