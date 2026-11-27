@@ -10,6 +10,9 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 278, data: '2026-11-27', titulo: 'Nome sugerido para loja', itens: [
+    'No Pré TASK, bloco Posto simples: quando o Tipo da unidade é Loja, o nome sugerido vem como "Loja - Razão social" (antes era sempre "Posto - Razão social"). Trocar o Tipo entre Posto e Loja ajusta a sugestão, desde que o nome ainda seja o sugerido.'
+  ] },
   { v: 277, data: '2026-11-27', titulo: 'Qual Banco: dá para trocar o banco escolhido', itens: [
     'Depois de escolher um banco, clicar no campo (ou na setinha) abre a lista completa de novo, com o banco atual destacado, para trocar por outro.',
     'Digitando, a lista filtra pelo nome ou pelo código, sem ligar para acentos. Também dá para usar as setas e o Enter.'

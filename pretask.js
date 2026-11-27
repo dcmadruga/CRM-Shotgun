@@ -5,7 +5,7 @@
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const dig = v => String(v || '').replace(/\D/g, '');
   const fmtCnpj = v => { const d = dig(v); return d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : (v || ''); };
-  const nomePosto = raz => (raz = String(raz || '').trim()) ? 'Posto - ' + raz : ''; // sugestão do Nome do Posto (Posto simples)
+  const nomePosto = (raz, tipo) => (raz = String(raz || '').trim()) ? (tipo === 'Loja' ? 'Loja - ' : 'Posto - ') + raz : ''; // sugestão do Nome do Posto (Posto simples), conforme o Tipo da unidade
   const fmtD = iso => { const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : (iso || ''); };
   const isoDe = v => { v = String(v || ''); let m = v.match(/(\d{4})-(\d{2})-(\d{2})/); if (m) return `${m[1]}-${m[2]}-${m[3]}`; m = v.match(/^\s*(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})\s*$/); if (!m) return ''; const y = m[3].length === 2 ? '20' + m[3] : m[3]; return `${y}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`; };
   const fmtTs = ts => ts && ts.toDate ? ts.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
@@ -512,7 +512,7 @@
     if (!filiais.length) { const cn = (v2 && v2.cnpj) || p.cnpj; if (dig(cn).length === 14) filiais.push({ cod: 'F1', tipo: 'Posto', cnpj: fmtCnpj(cn), razao: (v2 && v2.razao) || '', cidade: (v2 && v2.cidade) || '', uf: (v2 && v2.uf) || '', info: null, dados: null }); }
     return {
       status: (task && task.status) || 'fut', dataBase: (task && task.dataBase) || achaData(/da[dt]a.*base|base.*da[dt]a/i), start: (task && task.start) || achaData(/start|in[ií]cio da implanta/i), modalidade: (task && task.modalidade) || modal,
-      tipoBase: tipo, inclusao: '', centralExistente: '', potencial: '', nome: (tc && tc.nome) || acha(/nome da central|nome do posto/i) || (tipo === 'Simples' ? (nomePosto(filiais[0] && filiais[0].razao) || (v2 && v2.fantasia) || p.cliente || '') : ''), f100: (tc && tc.f100) || '', filiais
+      tipoBase: tipo, inclusao: '', centralExistente: '', potencial: '', nome: (tc && tc.nome) || acha(/nome da central|nome do posto/i) || (tipo === 'Simples' ? (nomePosto(filiais[0] && filiais[0].razao, filiais[0] && filiais[0].tipo) || (v2 && v2.fantasia) || p.cliente || '') : ''), f100: (tc && tc.f100) || '', filiais
     };
   }
 
@@ -1064,9 +1064,9 @@
     corpo.querySelectorAll('[data-pk]').forEach(el => { const k = el.dataset.pk; const alvo = k.startsWith('e2:') ? C.v2 : C.v, kk = k.startsWith('e2:') ? k.slice(3) : k; let v = el.dataset.seg ? (el.querySelector('[aria-pressed=true]')?.dataset.v || '') : el.value; const o = corpo.querySelector(`[data-outro="${CSS.escape(k)}"]`); if (o && !o.hidden && o.value.trim()) v += ': ' + o.value.trim(); alvo[kk] = v; });
   }
   // Simples: "Posto - <razão social>" da unidade (sem razão, o nome fantasia). Central: "Central " + nome fantasia
-  function nomeSugerido(tipo) { const f = ((C.v2 && C.v2.fantasia) || C.p.cliente || '').trim(); if (tipo === 'Simples') return nomePosto((C.pre.filiais[0] || {}).razao) || f; return !f || !tipo ? '' : /^central\b/i.test(f) ? f : 'Central ' + f; }
+  function nomeSugerido(tipo) { const f = ((C.v2 && C.v2.fantasia) || C.p.cliente || '').trim(); if (tipo === 'Simples') return nomePosto((C.pre.filiais[0] || {}).razao, (C.pre.filiais[0] || {}).tipo) || f; return !f || !tipo ? '' : /^central\b/i.test(f) ? f : 'Central ' + f; }
   // O nome do posto ainda é sugestão (pode ser trocado sozinho)? Vazio, o nome fantasia/cliente antigo ou "Posto - <razão anterior>"
-  function nomeEhSugestao(nome, razaoAntes) { const n = String(nome || '').trim(); return !n || n === nomePosto(razaoAntes) || n === ((C.v2 && C.v2.fantasia) || '').trim() || n === (C.p.cliente || '').trim(); }
+  function nomeEhSugestao(nome, razaoAntes) { const n = String(nome || '').trim(); return !n || n === nomePosto(razaoAntes) || n === nomePosto(razaoAntes, 'Loja') || n === ((C.v2 && C.v2.fantasia) || '').trim() || n === (C.p.cliente || '').trim(); }
   // Posto simples: ao achar (ou corrigir) a razão social da unidade, o Nome do Posto vira "Posto - <razão>", se ainda for sugestão
   // tr.dataset.raz guarda a razão social anterior, para reconhecer "Posto - <razão anterior>" como sugestão
   function sugerirNomePosto(tr, soVazio) {
@@ -1074,7 +1074,7 @@
     const ni = document.querySelector('#ptCorpo [data-hk="nome"]'), raz = tr.querySelector('[data-ff="razao"]').value.trim(), razaoAntes = tr.dataset.raz || '';
     if (!ni || !raz) return; tr.dataset.raz = raz;
     if (soVazio ? ni.value.trim() : !nomeEhSugestao(ni.value, razaoAntes)) return;
-    ni.value = nomePosto(raz); C.pre.nome = ni.value; ni.classList.remove('erro', 'falta');
+    ni.value = nomePosto(raz, tr.querySelector('[data-ff="tipo"]').value); C.pre.nome = ni.value; ni.classList.remove('erro', 'falta');
   }
   function redesenhar() { setTimeout(() => { if (!C) return; colherCabecalho(); colherCampos(); bandeiraDoE2(); desenhar(); }, 0); }
   function cabecalhoMudou(ev) {
@@ -1099,6 +1099,7 @@
       const c = tr.querySelector('[data-ff="cnpj"]');
       c.addEventListener('input', () => { const d = dig(c.value).slice(0, 14); c.value = d.length === 14 ? fmtCnpj(d) : d; c.classList.remove('erro'); if (d.length === 14) buscarFil(tr, d); });
       const rz = tr.querySelector('[data-ff="razao"]'); tr.dataset.raz = rz.value.trim();
+      tr.querySelector('[data-ff="tipo"]').addEventListener('change', () => sugerirNomePosto(tr)); // Posto ⇄ Loja troca o começo da sugestão
       rz.addEventListener('input', e => { delete e.target.dataset.auto; sugerirNomePosto(tr); });
       const r = tr.querySelector('[data-ff="f100"]'); if (r) r.addEventListener('change', () => setTimeout(() => { if (!C) return; colherCabecalho(); colherCampos(); desenhar(); mostrar('base'); }, 0));
       const d = dig(c.value); const f = C.pre.filiais[+tr.dataset.fi]; if (d.length === 14 && f && !f.info) buscarFil(tr, d, true);
