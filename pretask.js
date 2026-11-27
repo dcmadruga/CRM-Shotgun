@@ -76,6 +76,7 @@
 .ptauto.ok{color:var(--ok-text)}.ptauto.erro{color:var(--danger)}.ptcnpjmsg:empty,.ptiemsg:empty{display:none}
 .ptsefaz{margin-top:6px}.ptsefaz.sobre button[data-cartao]{outline:2px dashed var(--accent-text);outline-offset:2px}
 .ptsoc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;font-size:12px}.ptsoc small{color:var(--muted);font-weight:400}.ptsoc button{font:inherit;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--chip-bg);color:var(--chip-fg);cursor:pointer}
+.ptctt button small{font-weight:400;opacity:.75;margin-left:5px}
 .ptcfc{font-size:12px;font-weight:600;color:var(--accent-text);margin-top:4px;align-self:flex-start}
 `;
   function estilos() { if (document.getElementById('ptCss')) return; const s = document.createElement('style'); s.id = 'ptCss'; s.textContent = css; document.head.appendChild(s); }
@@ -573,7 +574,7 @@
     // Salvar parcial também no fim de cada tela de Validação
     corpo.querySelectorAll(':scope > [data-ptp]').forEach(pn => { const id = pn.dataset.ptp; if (id !== 'status' && id !== 'base' && !(/^e2c\d+$/.test(id) && C.e2) && !(id === 'e2' && C.direto) && !/^p\d+$/.test(id)) return; pn.insertAdjacentHTML('beforeend', '<div class="ptpfoot"><span class="hint" role="status"></span><button type="button" data-ptparc="1">Salvar parcial</button></div>'); });
     corpo.addEventListener('click', ev => { if (ev.target.closest('[data-ptparc]')) salvar(true); });
-    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo); marcarAuto(corpo); ligarRegime(corpo); ligarSefaz(corpo);
+    ligarCampos(corpo); sincronizar(corpo); ligarAnexos(corpo, C.anx, msg); ligarSelo(corpo); marcarAuto(corpo); ligarRegime(corpo); ligarSefaz(corpo); ligarContatos(corpo);
     corpo.addEventListener('pt-mudou', ev => { cabecalhoMudou(ev); conferirFinal(); });
     corpo.addEventListener('input', () => conferirFinal()); corpo.addEventListener('change', () => conferirFinal());
     conferirFinal(true);
@@ -747,6 +748,61 @@
   }
   // Texto logo abaixo do CNPJ: não há botão de pesquisa, a consulta à Receita é automática ao digitar
   const dicaCnpj = el => el.closest('[data-e2]') ? 'Digite CNPJ para pesquisa automática' : '';
+  /* ---------- Contatos já informados: sugestão embaixo do nome do contato (Financeiro, Contato técnico etc.) ---------- */
+  // Fontes: os outros blocos do Pré TASK/Pré-Contrato (responsável legal, contador, contato técnico...), o contato da proposta
+  // e os contatos do lead/ficha do cliente no CRM. Tocar num contato preenche o nome, o telefone e os e-mails do bloco.
+  const nomePessoa = t => /\bnome\b/.test(t) && !/empresa|fantasia|raz[aã]o|posto|filial|central|bandeira|banco|fantasia|social|m[aã]e|pai\b/.test(t);
+  const ehFone = i => i.dataset.tipo === 'telefone' || /telefone|whats|celular|\bfone\b/.test(rotuloDe(i));
+  const ehEmail = i => i.type === 'email' || i.dataset.tipo === 'email' || /e-?mail/.test(rotuloDe(i));
+  const tituloGrid = g => { const h = g.closest('.ptsec')?.querySelector('h5'); return h ? String(h.childNodes[0]?.textContent || h.textContent).trim() : ''; };
+  const curtoSec = t => /cont[aá]bil|contador/i.test(t) ? 'Contador' : /respons[aá]vel legal/i.test(t) ? 'Responsável legal' : /t[eé]cnico/i.test(t) ? 'Contato técnico' : /financ/i.test(t) ? 'Financeiro' : t.length > 24 ? t.slice(0, 22) + '…' : t;
+  const capNome = n => /[a-zà-ú]/.test(n) ? n : nomeBonito(n);
+  function contatosConhecidos(corpo, fora) {
+    const lista = [], add = (nome, fone, email, origem) => {
+      nome = String(nome || '').replace(/\s+/g, ' ').trim(); if (!nome) return;
+      const k = nome.toLowerCase(), ja = lista.find(x => x.k === k), fd = dig(fone).replace(/^55(?=\d{10,11}$)/, ''), em = String(email || '').trim().toLowerCase();
+      if (ja) { if (!ja.fone && fd.length >= 10) ja.fone = fd; if (!ja.email && em) ja.email = em; return; }
+      lista.push({ k, nome: capNome(nome), fone: fd.length >= 10 ? fd : '', email: em, origem });
+    };
+    // Um bloco pode estar dividido em duas telas (campos do cliente no Pré-Contrato, campos "Pré TASK" na seção própria): junta pelo título
+    const grupos = new Map(), tf = fora ? tituloGrid(fora) : null;
+    corpo.querySelectorAll('.ptgrid').forEach(g => { const t = tituloGrid(g); if (g === fora || (tf && t === tf)) return; grupos.set(t, (grupos.get(t) || []).concat([...g.querySelectorAll('input[data-pk]')])); });
+    grupos.forEach((ins, t) => {
+      const nomes = ins.filter(i => nomePessoa(rotuloDe(i)) && i.value.trim()); if (!nomes.length) return;
+      const fone = (ins.find(i => ehFone(i) && dig(i.value).length >= 10) || {}).value, email = (ins.find(i => ehEmail(i) && i.value.includes('@')) || {}).value;
+      nomes.forEach((n, j) => add(n.value, j ? '' : fone, j ? '' : email, curtoSec(t)));
+    });
+    if (C.p && C.p.contato) add(C.p.contato, C.p.waCli || C.p.fone, C.p.email, 'Proposta');
+    try { if (window.crmContatosDe) window.crmContatosDe(cnpjEmpresa(corpo), C.p && C.p.cliente).forEach(x => add(x.nome, x.fone, x.email, 'CRM' + (x.cargo ? ' · ' + x.cargo : ''))); } catch (e) {}
+    return lista;
+  }
+  function desenharContatos(corpo) {
+    corpo.querySelectorAll('[data-e2]').forEach(g => {
+      const ins = [...g.querySelectorAll('input[data-pk]')], nome = ins.find(i => nomePessoa(rotuloDe(i)) && !/contador/.test(rotuloDe(i)));
+      const irmaos = [...corpo.querySelectorAll('.ptgrid')].filter(x => x === g || tituloGrid(x) === tituloGrid(g)).flatMap(x => [...x.querySelectorAll('input[data-pk]')]);
+      if (!nome || !irmaos.some(i => i !== nome && (ehFone(i) || ehEmail(i)))) return;
+      const lab = nome.closest('.ptf'); let box = lab.querySelector('.ptctt');
+      const cs = contatosConhecidos(corpo, g).filter(c => c.k !== nome.value.trim().toLowerCase());
+      if (!cs.length) { if (box) box.remove(); return; }
+      if (!box) {
+        box = document.createElement('div'); box.className = 'ptsoc ptctt'; lab.appendChild(box);
+        box.addEventListener('click', e => {
+          const b = e.target.closest('button'); if (!b) return; e.preventDefault();
+          const c = box._cs[+b.dataset.i]; if (!c) return;
+          poe(nome, c.nome, true);
+          const t = tituloGrid(g), todos = [...corpo.querySelectorAll('.ptgrid')].filter(x => x === g || tituloGrid(x) === t).flatMap(x => [...x.querySelectorAll('input[data-pk]')]);
+          todos.forEach(i => { if (i === nome) return; if (c.fone && ehFone(i)) poe(i, foneFmt(c.fone), true); else if (c.email && ehEmail(i)) poe(i, c.email, true); });
+          desenharContatos(corpo);
+        });
+      }
+      box._cs = cs;
+      box.innerHTML = '<small>Contatos já informados:</small>' + cs.slice(0, 8).map((c, i) => `<button type="button" data-i="${i}" title="${esc([c.origem, c.fone && foneFmt(c.fone), c.email].filter(Boolean).join(' · '))}">${esc(c.nome)}<small>${esc(c.origem.split(' · ')[0])}</small></button>`).join('');
+    });
+  }
+  function ligarContatos(corpo) {
+    desenharContatos(corpo);
+    let t = 0; corpo.addEventListener('change', ev => { if (ev.target.closest && ev.target.closest('.ptctt')) return; clearTimeout(t); t = setTimeout(() => desenharContatos(corpo), 50); });
+  }
   function ligarSefaz(corpo) {
     if (!window.SefazIE) return;
     corpo.querySelectorAll('[data-e2] input[data-tipo="cnpj"]').forEach(el => {

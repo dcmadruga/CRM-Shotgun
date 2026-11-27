@@ -10,8 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 269, data: '2026-11-27', titulo: 'Texto mais curto embaixo do CNPJ', itens: [
-    'No Pré TASK do cadastro direto, a explicação embaixo do CNPJ (da empresa e da contabilidade) ficou mais curta: "Digite CNPJ para pesquisa automática".'
+  { v: 269, data: '2026-11-27', titulo: 'Contatos já informados como sugestão', itens: [
+    'No Pré TASK, embaixo do nome do contato de blocos como Financeiro e Contato técnico, aparecem os contatos já informados antes: o responsável legal, o contador, os outros blocos, o contato da proposta e os contatos do lead no CRM. Um toque preenche o nome, o telefone e o e-mail do bloco.',
+    'A página de dados que o cliente preenche faz o mesmo com os contatos que ele já digitou e com o contato da proposta.',
+    'A explicação embaixo do CNPJ ficou mais curta: "Digite CNPJ para pesquisa automática".'
   ] },
   { v: 268, data: '2026-11-27', titulo: 'Cadastro direto: explicação embaixo do CNPJ e CPF copiado para o CFC', itens: [
     'No Pré TASK do cadastro direto, embaixo do CNPJ da empresa contábil aparece uma explicação: não há botão de pesquisar, porque ao digitar o CNPJ a busca na Receita é automática e preenche Nome da Empresa, E-mail e Telefone. Os sócios aparecem embaixo do Nome do contador para escolher com um toque.',
