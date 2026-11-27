@@ -20,9 +20,20 @@
   const SEM = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
   const rotDia = (iso, hoje) => iso === hoje ? 'Hoje' : iso === menos(hoje, 1) ? 'Ontem' : SEM[new Date(iso + 'T12:00:00').getDay()].replace(/^./, c => c.toUpperCase());
 
-  selUf.innerHTML = '<option value="">Todos os Estados</option>' + UFS.map(u => `<option value="${u}">${u}</option>`).join('');
-  let g = null; try { g = localStorage.getItem('tanpUf'); } catch { }
-  selUf.value = g === '' || UFS.includes(g) ? g : 'MT'; // começa pelo MT
+  // quem não é administrador vê só os Estados de atuação do cadastro (usuarios/{uid}.estados, a mesma regra do CRM)
+  let meus = null; // null = todos (administrador ou antes do login)
+  const ufsVisiveis = () => meus ? UFS.filter(u => meus.includes(u)) : UFS;
+  function montarUf() {
+    const vis = ufsVisiveis();
+    let g = null; try { g = localStorage.getItem('tanpUf'); } catch { }
+    const atual = selUf.options.length ? selUf.value : g;
+    selUf.innerHTML = (!meus ? '<option value="">Todos os Estados</option>' : vis.length > 1 ? '<option value="">Todos os meus Estados</option>' : '') + vis.map(u => `<option value="${u}">${u}</option>`).join('');
+    // fica o Estado escolhido se ele continua na lista; senão MT (administrador) ou o primeiro Estado de atuação
+    selUf.value = vis.includes(atual) || (atual === '' && vis.length > 1) ? atual : !meus ? (vis.includes('MT') ? 'MT' : '') : vis.length === 1 ? vis[0] : '';
+  }
+  montarUf();
+  window.addEventListener('shotgun-crm', e => { const { perfil, admin } = e.detail || {}; meus = admin ? null : (Array.isArray(perfil?.estados) ? perfil.estados : []).map(u => String(u).toUpperCase()); montarUf(); selCid.value = ''; aberto = ''; if (!box.hidden && !$('viewTele')?.hidden) desenhar(); });
+  window.addEventListener('argo-sair', () => { meus = null; montarUf(); });
 
   let dados = null, aberto = '';
   async function carregar() {
@@ -58,8 +69,9 @@
     let novos, meta;
     try { const [j, m] = await carregar(); novos = j.postos || []; meta = m; }
     catch (e) { area.innerHTML = '<p class="hint">Não consegui carregar a base da ANP agora. Confira a internet e tente de novo.</p>'; return; }
+    if (meus && !meus.length) { area.innerHTML = '<p class="hint">Nenhum Estado de atuação no seu cadastro. Peça ao administrador para marcar os seus Estados em Administração → Usuários.</p>'; return; }
     const hoje = local(), corte = menos(hoje, DIAS - 1), uf = selUf.value, q = norm(busca.value).split(' ').filter(Boolean);
-    const janela = novos.filter(x => { const d = entrada(x); return d >= corte && d <= hoje; }).filter(x => !uf || x.uf === uf);
+    const janela = novos.filter(x => { const d = entrada(x); return d >= corte && d <= hoje; }).filter(x => uf ? x.uf === uf : !meus || meus.includes(x.uf));
     // Cidade e Bandeira: só as opções que têm posto novo no Estado escolhido (com a quantidade)
     const opcoes = (sel, lista, chave, rot, todos) => {
       const m = new Map(); lista.forEach(x => { const k = chave(x); if (k) m.set(k, (m.get(k) || 0) + 1); });
@@ -82,7 +94,7 @@
       .sort((a, b) => entrada(b).localeCompare(entrada(a)) || (a.m || '').localeCompare(b.m || '') || (a.r || '').localeCompare(b.r || ''));
     const deHoje = lista.filter(x => entrada(x) === hoje);
     const resto = lista.filter(x => entrada(x) !== hoje);
-    const onde = cid ? ` em ${esc(cidRot(cid))}${uf ? ' - ' + uf : ''}` : uf ? ` em ${uf}` : ' no Brasil';
+    const onde = cid ? ` em ${esc(cidRot(cid))}${uf ? ' - ' + uf : ''}` : uf ? ` em ${uf}` : meus ? ' nos seus Estados' : ' no Brasil';
     const dias = new Map();
     resto.forEach(x => { const d = entrada(x); if (!dias.has(d)) dias.set(d, []); dias.get(d).push(x); });
     area.innerHTML = `
@@ -169,7 +181,7 @@
   // Aviso do sino (notificacoes.js): abre a Telemetria ANP filtrada no Estado do aviso
   window.addEventListener('shotgun-abrir-anp', e => {
     const uf = e.detail && e.detail.uf;
-    if (uf && UFS.includes(uf)) { selUf.value = uf; try { localStorage.setItem('tanpUf', uf); } catch { } }
+    if (uf && ufsVisiveis().includes(uf)) { selUf.value = uf; try { localStorage.setItem('tanpUf', uf); } catch { } }
     selCid.value = ''; selBand.value = ''; busca.value = ''; aberto = '';
     try { localStorage.setItem('teleAba', 'anp'); } catch { }
     if (tab) tab.click();
