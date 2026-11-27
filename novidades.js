@@ -10,7 +10,7 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 267, data: '2026-11-27', titulo: 'Cadastro direto: explicação embaixo do CNPJ', itens: [
+  { v: 268, data: '2026-11-27', titulo: 'Cadastro direto: explicação embaixo do CNPJ', itens: [
     'No Pré TASK do cadastro direto, embaixo do CNPJ da empresa contábil aparece uma explicação: não há botão de pesquisar, porque ao digitar o CNPJ a busca na Receita é automática e preenche Nome da Empresa, E-mail e Telefone. Os sócios aparecem embaixo do Nome do contador para escolher com um toque.',
     'O CNPJ da empresa no Pré-Contrato também ganhou a explicação de que a pesquisa é automática e busca a Inscrição estadual.'
   ] },
