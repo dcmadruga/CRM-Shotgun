@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 260, data: '2026-11-27', titulo: 'Tela de entrada e links do cliente mais claros', itens: [
+    'Na tela de entrada, os avisos de erro (senha errada, campo vazio, sem internet) agora aparecem em vermelho, numa caixa própria, e não se confundem com as instruções.',
+    'Nos links que o cliente abre (aprovar a proposta, aceitar o contrato e preencher os dados), os botões reagem ao passar o mouse, o botão de anexar arquivo ficou no padrão das telas e as caixas de aviso (aprovada, erro, pendências) ficaram mais fáceis de ler.',
+    'No tema escuro desses links, os títulos das seções e os botões principais passam a usar texto escuro, que fica mais legível sobre o rosa e o roxo.'
+  ] },
   { v: 259, data: '2026-11-26', titulo: 'Demonstração: horário marcado × horário real', itens: [
     'Na tela Hoje, cada demonstração mostra o status: Agendada, Confirmada, Em andamento, Atrasada ou Realizada.',
     'Atrasada aparece sozinha quando o horário da demonstração já terminou e ninguém registrou o resultado. Em andamento aparece entre o início e o fim marcados.',
