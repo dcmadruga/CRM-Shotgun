@@ -290,8 +290,8 @@ window.crmGerarProposta = id => { const l = docs.find(d => d.id === id && d.tipo
 // Contatos (nome e telefone) cadastrados nos leads e na ficha do cliente com este CNPJ/nome: vão no link dos dados para o contrato
 window.crmContatosDe = (cnpj, nome) => {
   const k = chave(cnpj, nome), out = [];
-  docs.filter(d => d.tipo === 'lead' && chave(d.cnpj, d.empresa) === k).forEach(l => contatosDe(l).forEach(x => out.push({ nome: x.nome || '', fone: dig(x.fone) })));
-  const cd = docs.find(d => d.id === 'c_' + k); (cd?.contatos || []).forEach(x => out.push({ nome: x.nome || '', fone: dig(x.fone) }));
+  docs.filter(d => d.tipo === 'lead' && chave(d.cnpj, d.empresa) === k).forEach(l => contatosDe(l).forEach(x => out.push({ nome: x.nome || '', fone: dig(x.fone), email: x.email || '', cargo: x.cargo || '' })));
+  const cd = docs.find(d => d.id === 'c_' + k); (cd?.contatos || []).forEach(x => out.push({ nome: x.nome || '', fone: dig(x.fone), email: x.email || '', cargo: x.cargo || '' }));
   return out;
 };
 window.crmFecharDlg = () => { if (dlg() && dlg().open) dlg().close(); };

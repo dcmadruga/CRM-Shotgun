@@ -69,6 +69,7 @@ body.visorLado #visor .valca::after{content:"";position:absolute;top:50%;left:3p
 body.visorAberto:not(.visorLado)>*:not(#visor){user-select:none;-webkit-user-select:none}#visor .vtopo,#visor .vmsg{user-select:none;-webkit-user-select:none}
 #visor .vmsg{color:#ddd;font-size:13px;padding:8px;margin-inline:auto}
 .cfclink{font-size:12.5px;color:var(--purple,#7030a0);font-weight:600;margin-top:4px;text-decoration:none}.cfclink:hover{text-decoration:underline}.cfchint{font-size:11.5px;color:var(--muted)}
+.ctt{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.ctt>small{color:var(--muted);font-size:12px}.ctt button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}.ctt button small{color:var(--muted);font-size:11px}
 .nsug{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.nsug small{color:var(--muted);font-size:12px}.nsug button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}
 @media (min-width:700px){.body>label:has(.busca){grid-column:span 2}}
 .linha{grid-column:1/-1;display:grid;grid-template-columns:minmax(160px,1fr) 3fr;gap:12px;align-items:start}
@@ -1045,6 +1046,39 @@ if(CONTATOS.length){
     if(!e.isTrusted||e.target===nome) foneResp() });
 }
 
+// Contatos já informados: embaixo do nome do contato de um bloco (financeiro, contato técnico...), sugere os nomes já preenchidos
+// nos outros blocos e os contatos da proposta/CRM que vêm no link. Tocar preenche o nome, o telefone e os e-mails do bloco.
+const rotLab=l=>(l.querySelector('span')?.textContent||'').replace(/\*/g,'').trim().toLowerCase();
+const nomePessoaD=t=>/\bnome\b/.test(t)&&!/empresa|fantasia|raz[aã]o|posto|filial|central|bandeira|banco|social|m[aã]e|pai\b/.test(t);
+const campoSec=sec=>[...sec.querySelectorAll('.body label')].map(l=>({l,t:rotLab(l),i:l.querySelector(':scope>input:not([type=radio]):not([type=file]):not([type=checkbox])')})).filter(x=>x.i&&!x.i.disabled);
+const foneD=x=>x.i.dataset.v==='telefone'||/telefone|whats|celular|\bfone\b/.test(x.t), emailD=x=>x.i.dataset.v==='email'||/e-?mail/.test(x.t);
+const titSec=sec=>(sec.querySelector('h2')?.textContent||'').trim();
+const curtoSec=t=>/cont[aá]bil|contador/i.test(t)?'Contador':/respons[aá]vel legal/i.test(t)?'Responsável legal':/t[eé]cnico/i.test(t)?'Contato técnico':/financ/i.test(t)?'Financeiro':t.length>24?t.slice(0,22)+'…':t;
+function contatosD(fora){
+  const L2=[], add=(nome,fone,email,origem)=>{ nome=String(nome||'').replace(/\s+/g,' ').trim(); if(!nome) return; const k=nome.toLowerCase(), ja=L2.find(x=>x.k===k), fd=dig(fone).replace(/^55(?=\d{10,11}$)/,''), em=String(email||'').trim().toLowerCase();
+    if(ja){ if(!ja.fone&&fd.length>=10) ja.fone=fd; if(!ja.email&&em) ja.email=em; return } L2.push({k,nome,fone:fd.length>=10?fd:'',email:em,origem}) };
+  document.querySelectorAll('#secoes .sec').forEach(sec=>{ if(sec===fora) return; const cs=campoSec(sec), ns=cs.filter(x=>nomePessoaD(x.t)&&x.i.value.trim()); if(!ns.length) return;
+    const fo=(cs.find(x=>foneD(x)&&dig(x.i.value).length>=10)||{i:{}}).i.value, em=(cs.find(x=>emailD(x)&&String(x.i.value).includes('@'))||{i:{}}).i.value;
+    ns.forEach((n,j)=>add(n.i.value, j?'':fo, j?'':em, curtoSec(titSec(sec)))) });
+  CONTATOS.forEach(c=>add(c.nome,c.fone,'','Proposta'));
+  return L2;
+}
+function sugerirContatos(){
+  document.querySelectorAll('#secoes .sec').forEach(sec=>{
+    const cs=campoSec(sec), alvo=cs.find(x=>nomePessoaD(x.t)&&!/contador/.test(x.t)); if(!alvo||!cs.some(x=>x!==alvo&&(foneD(x)||emailD(x)))) return;
+    let box=alvo.l.querySelector('.ctt'); const lista=contatosD(sec).filter(c=>c.k!==alvo.i.value.trim().toLowerCase());
+    if(!lista.length){ if(box) box.remove(); return }
+    if(!box){ box=document.createElement('span'); box.className='ctt'; alvo.l.appendChild(box);
+      box.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.preventDefault(); const c=box._l[+b.dataset.i]; if(!c) return;
+        const poeD=(i,v)=>{ if(!v||i.readOnly) return; i.value=v; i.dispatchEvent(new Event('input',{bubbles:true})); if(i.classList.contains('bad')) valida(i) };
+        poeD(alvo.i,c.nome); campoSec(sec).forEach(x=>{ if(x===alvo||x.i===alvo.i) return; if(c.fone&&foneD(x)) poeD(x.i,fmtFone(c.fone)); else if(c.email&&emailD(x)) poeD(x.i,c.email) });
+        sugerirContatos() }); }
+    box._l=lista;
+    box.innerHTML='<small>Contatos já informados:</small>'+lista.slice(0,8).map((c,i)=>`<button type="button" data-i="${i}" title="${esc([c.origem,c.fone&&fmtFone(c.fone),c.email].filter(Boolean).join(' · '))}">${esc(c.nome)} <small>${esc(c.origem)}</small></button>`).join('');
+  });
+}
+let cttT=0; f.addEventListener('change',e=>{ if(e.target.closest&&e.target.closest('.ctt')) return; clearTimeout(cttT); cttT=setTimeout(sugerirContatos,50) });
+
 /* Mensagem */
 const fmtData=iso=>{ if(!iso) return ''; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y };
 function montarTexto(o){
@@ -1072,7 +1106,7 @@ function montarTexto(o){
   if(draft.cnpj && L.c && dig(draft.cnpj)!==dig(L.c)) draft={};
   preencher(draft);
   preencher({cnpj:L.c, razao:L.r, cidade:L.cid, uf:L.uf});
-  ligarAuto(); sincronizarSenhaCert(); ligarBandeira();
+  ligarAuto(); sincronizarSenhaCert(); ligarBandeira(); sugerirContatos();
   $('#carregando').hidden=true; f.hidden=false; ajustarRotulos(); if(CONTATOS.length) foneResp();
 })();
 f.addEventListener('input',()=>{ if(PEND) return; try{ localStorage.setItem(DRAFT,JSON.stringify(lerForm())) }catch(e){} });
