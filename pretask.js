@@ -118,8 +118,19 @@
       }
       return h;
     }
+    if ((c.tipo || 'texto') === 'texto' && ehBanco(c)) {
+      // Qual Banco: lista da FEBRABAN (código + nome) com busca; "Outro banco" libera digitar um que não está na lista
+      listaBancos(); const fora = !!String(val).trim() && !(window.BANCOS_FEBRABAN || []).includes(String(val).trim());
+      return `<div class="ptf${full} ptbanco">${lab}<input data-pk="${esc(key)}" data-tipo="texto" value="${esc(val)}"${fora ? '' : ' list="ptBancos"'} placeholder="${fora ? 'Digite o nome do banco' : 'Digite o nome ou o código do banco'}" autocomplete="off"><label class="ptmesmo"><input type="checkbox" data-bancooutro${fora ? ' checked' : ''}> <span>Outro banco (não está na lista)</span></label></div>`;
+    }
     if (c.tipo === 'link') return `<label class="ptf${full}">${lab}<input data-pk="${esc(key)}" type="url" value="${esc(val)}" placeholder="https://"></label>`;
     return `<label class="ptf${full}">${lab}<input data-pk="${esc(key)}" data-tipo="${esc(c.tipo || 'texto')}" ${TIPOIN[c.tipo] || ''} value="${esc(val)}"${c.ph ? ` placeholder="${esc(c.ph)}"` : ''}></label>`;
+  }
+  // Campo de banco: rótulo com "banco" (Qual Banco, Banco ou adquirente do PIX), sem ser agência, conta, carteira ou convênio
+  const ehBanco = c => /\bbanco\b/i.test(c.label || '') && !/ag[eê]ncia|conta|carteira|conv[eê]nio/i.test(c.label || '');
+  function listaBancos() {
+    if (document.getElementById('ptBancos') || !window.BANCOS_FEBRABAN) return;
+    const dl = document.createElement('datalist'); dl.id = 'ptBancos'; dl.innerHTML = window.BANCOS_FEBRABAN.map(b => `<option value="${esc(b)}">`).join(''); document.body.appendChild(dl);
   }
   // Seção: Sim/Não que "abre" mostra os campos seguintes só com Sim
   function camposHtml(campos, pref, v, anx) {
@@ -285,7 +296,11 @@
   function ligarCampos(root) {
     if (root._segLigado) return; root._segLigado = true;
     root.addEventListener('click', ev => { const b = ev.target.closest('[data-seg] > button'); if (!b) return; const g = b.parentElement; const ja = b.getAttribute('aria-pressed') === 'true'; g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b && !(ja && g.dataset.limpa)))); g.classList.remove('erro'); sincronizar(root); g.dispatchEvent(new CustomEvent('pt-mudou', { bubbles: true })); });
-    root.addEventListener('change', () => sincronizar(root));
+    root.addEventListener('change', ev => {
+      const bo = ev.target.closest && ev.target.closest('[data-bancooutro]');
+      if (bo) { const inp = bo.closest('.ptbanco').querySelector('input[data-pk]'); if (bo.checked) { inp.removeAttribute('list'); inp.placeholder = 'Digite o nome do banco'; } else { inp.setAttribute('list', 'ptBancos'); inp.placeholder = 'Digite o nome ou o código do banco'; if (!(window.BANCOS_FEBRABAN || []).includes(inp.value.trim())) inp.value = ''; } inp.focus(); return; }
+      sincronizar(root);
+    });
     root.addEventListener('input', ev => { if (ev.target.classList) ev.target.classList.remove('erro', 'falta'); });
   }
   // Envia os anexos novos (mesmo formato dos anexos do Pré-Contrato), com o nome padrão F1_CNPJ_RAZÃO

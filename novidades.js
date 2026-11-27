@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 276, data: '2026-11-27', titulo: 'Qual Banco com a lista da FEBRABAN', itens: [
+    'No Pré TASK, o campo Qual Banco (e Banco ou adquirente do PIX) mostra a lista de bancos da FEBRABAN, com código e nome. Digite parte do nome ou o código para achar.',
+    'Banco que não está na lista: marque "Outro banco (não está na lista)" e digite o nome.'
+  ] },
   { v: 275, data: '2026-11-27', titulo: 'Menu do Pré TASK: ✓ só quando algo foi respondido; contato no topo do TEF / PIX', itens: [
     'No menu do Pré TASK, um item sem perguntas obrigatórias (como Homologação de Boleto) só mostra o ✓ depois que alguma pergunta é respondida. Antes de responder, aparece o círculo de pendente.',
     'Isso não muda o Salvar final: ele continua exigindo só os campos obrigatórios.',
