@@ -75,6 +75,23 @@ window.ETAPA4_PADRAO = {
     }
     // v275: o contato vem primeiro dentro do item TEF / PIX (topo). Uma vez só (marca tefPixContatoTopo)
     if (!cfg.tefPixContatoTopo) { const ct = cfg.secoes.find(x => x.id === 'contatoTefPix'); if (ct && !ct.topo) { ct.topo = true; cfg.tefPixMudou = true; } cfg.tefPixContatoTopo = true; }
+    // v280: onde tem Nome + Telefone do Gerente (ex.: Homologação de Boleto) entra o E-mail do Gerente logo depois do telefone,
+    // com as mesmas condições de exibição do telefone. A sugestão "Contatos já informados" também preenche o e-mail.
+    // Uma vez só (marca emailGerente): se o ADM apagar o campo e publicar, fica como ele deixou
+    if (!cfg.emailGerente) {
+      const chaves = new Set(cfg.secoes.flatMap(x => (x.campos || []).map(c => c.k)));
+      cfg.secoes.forEach(x => {
+        const cs = x.campos || [], ger = c => /gerente/i.test(c.label || '');
+        const fone = cs.find(c => ger(c) && (c.tipo === 'telefone' || /telefone|whats|celular|\bfone\b/i.test(c.label || '')));
+        if (!fone || cs.some(c => ger(c) && (c.tipo === 'email' || /e-?mail/i.test(c.label || '')))) return;
+        let k = 'emailGerente', n = 2; while (chaves.has(k)) k = 'emailGerente' + n++; chaves.add(k);
+        const em = { ...fone, k, label: String(fone.label).replace(/telefone(\s*\/\s*whats\s*app)?|whats\s*app|celular|\bfone\b/i, 'E-mail'), tipo: 'email', req: false };
+        if (em.label === fone.label) em.label = 'E-mail do Gerente';
+        delete em.ph; delete em.opcoes; delete em.abre;
+        cs.splice(cs.indexOf(fone) + 1, 0, em); cfg.tefPixMudou = true;
+      });
+      cfg.emailGerente = true;
+    }
     return cfg;
   };
   function juntar(cfg) {
@@ -94,4 +111,5 @@ window.ETAPA4_PADRAO = {
   window.ETAPA4_PADRAO.tefPixContato = true;
   window.ETAPA4_PADRAO.tefPixContatoTopo = true;
   window.ETAPA4_PADRAO.appTerceirosBloco = true;
+  window.ETAPA4_PADRAO.emailGerente = true;
 })();

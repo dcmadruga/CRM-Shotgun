@@ -1397,7 +1397,7 @@ async function iniciar() {
       if (fb.admin) e4Status(snap.exists() ? (snap.data().por ? 'Publicado por ' + snap.data().por + (snap.data().em ? ' em ' + fmtQuando(snap.data().em) : '') + '.' : '') : 'Usando o formulário padrão. Ajuste e publique.');
     } catch (e) { E4 = copia(window.ETAPA4_PADRAO); if (fb.admin) e4Status('Não foi possível carregar o formulário publicado; mostrando o padrão.'); }
     e4Sujo = false; desenharE4();
-    if (E4 && E4.tefPixMudou) { delete E4.tefPixMudou; marcarE4(); e4Status('Seções novas no Pré TASK: PIX e Contato Cliente: TEF / PIX (dentro de TEF / PIX) e APP de terceiros (dentro de Integração). Confira e toque em Publicar para gravar.'); }
+    if (E4 && E4.tefPixMudou) { delete E4.tefPixMudou; marcarE4(); e4Status('Seções novas no Pré TASK: PIX e Contato Cliente: TEF / PIX (dentro de TEF / PIX) e APP de terceiros (dentro de Integração), e o campo E-mail do Gerente ao lado do Telefone do Gerente. Confira e toque em Publicar para gravar.'); }
   }
   function marcarE4() { e4Sujo = true; e4Status('Alterações ainda não publicadas.'); }
   function desenharE4() {
