@@ -104,7 +104,17 @@ async function iniciar() {
   // (senha trocada, conta desativada ou apagada) ou o navegador (sessão apagada do aparelho, outra aba).
   const SAIDA_KEY = 'sg-saida', LOG_KEY = 'sg-sessao-log', ABA = Math.random().toString(36).slice(2, 10);
   function sair(motivo) { try { localStorage.setItem(SAIDA_KEY, JSON.stringify({ motivo, t: Date.now(), aba: ABA })); } catch (e) { /* sem storage */ } return A.signOut(auth); }
-  let userAtual = null, entrouEm = 0, erroToken = null;
+  let userAtual = null, entrouEm = 0, erroToken = null, restauradas = [];
+  // Abas do Shotgun abertas neste navegador (só as da versão 282 em diante respondem): entra no registro da queda
+  let canal = null; try { canal = new BroadcastChannel('sg-abas'); } catch (e) { /* navegador antigo */ }
+  const versaoAba = () => ((document.getElementById('versaoApp') || {}).textContent || '').replace(/\D*(\d+).*/, '$1');
+  if (canal) canal.onmessage = ev => { if (ev.data?.q === 'quem' && ev.data.de !== ABA) canal.postMessage({ r: 'eu', de: ABA, para: ev.data.de, versao: versaoAba(), uid: auth.currentUser?.uid || '', visivel: document.visibilityState }); };
+  function contarAbas() {
+    if (!canal) return Promise.resolve([]);
+    const abas = [], ouvir = ev => { if (ev.data?.r === 'eu' && ev.data.para === ABA) abas.push({ versao: ev.data.versao, logada: !!ev.data.uid, visivel: ev.data.visivel }); };
+    canal.addEventListener('message', ouvir); canal.postMessage({ q: 'quem', de: ABA });
+    return new Promise(r => setTimeout(() => { canal.removeEventListener('message', ouvir); r(abas); }, 400));
+  }
   const MOTIVO_TXT = { botao: 'alguém tocou em Sair', senha: 'saída na troca de senha', foto: 'saída na tela da selfie', cadastro: 'cadastro enviado para liberação', inativo: 'acesso bloqueado ou aguardando liberação' };
   const ERRO_TXT = c => /user-token-expired|token-expired|credential/.test(c) ? 'a senha da conta foi trocada (ou o acesso foi renovado pelo administrador). Entre com a senha atual.'
     : /user-disabled/.test(c) ? 'a conta foi desativada no Firebase.' : /user-not-found/.test(c) ? 'a conta não existe mais no Firebase.'
@@ -125,14 +135,23 @@ async function iniciar() {
     let code = '';
     try { await Promise.race([u.getIdToken(true), new Promise((_, r) => setTimeout(() => r({ code: 'tempo' }), 8000))]); code = 'valido'; }
     catch (e) { code = e.code || 'erro'; }
-    if (code === 'valido') return { tipo: 'navegador', motivo: 'sessao-apagada', msg: 'Sua sessão foi apagada deste navegador às ' + hora(Date.now()) + ', mas o login continuava valendo no servidor. Isso acontece quando outra aba do Shotgun entra com outra conta, ou quando o navegador ou uma extensão limpa os dados do site. Entre de novo.' };
+    if (code === 'valido') {
+      // O login ainda vale: devolve a sessão ao navegador sozinho, sem mandar a pessoa para a tela de login.
+      // Limite de 3 vezes em 10 min, para não brigar com algo que esteja apagando a sessão em loop.
+      restauradas = restauradas.filter(t => Date.now() - t < 10 * 60000);
+      if (restauradas.length < 3 && !auth.currentUser) {
+        try { await A.updateCurrentUser(auth, u); restauradas.push(Date.now()); return { tipo: 'restaurada', motivo: 'sessao-apagada', abas: await contarAbas(), msg: null }; }
+        catch (e) { console.warn('[Shotgun] não deu para restaurar a sessão', e); }
+      }
+      return { tipo: 'navegador', motivo: 'sessao-apagada', msg: 'Sua sessão foi apagada deste navegador às ' + hora(Date.now()) + ', mas o login continuava valendo no servidor. Isso acontece quando outra aba do Shotgun entra com outra conta, ou quando o navegador ou uma extensão limpa os dados do site. Entre de novo.' };
+    }
     if (/network|tempo/.test(code) || !navigator.onLine) return { tipo: 'desconhecido', motivo: code, msg: 'Sua sessão foi encerrada às ' + hora(Date.now()) + ' e não deu para confirmar o motivo (sem internet). Entre de novo.' };
     return { tipo: 'servidor', motivo: code, msg: 'Sua sessão foi encerrada porque ' + ERRO_TXT(code) };
   }
   function anotarQueda(q) {
     try {
       const log = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
-      log.unshift({ quando: new Date().toISOString(), tipo: q.tipo, motivo: q.motivo, minutosLogado: Math.round((Date.now() - entrouEm) / 60000), visivel: document.visibilityState, online: navigator.onLine, versao: (document.getElementById('versaoApp') || {}).textContent || '' });
+      log.unshift({ quando: new Date().toISOString(), tipo: q.tipo, motivo: q.motivo, outrasAbas: q.abas || [], minutosLogado: Math.round((Date.now() - entrouEm) / 60000), visivel: document.visibilityState, online: navigator.onLine, versao: (document.getElementById('versaoApp') || {}).textContent || '' });
       localStorage.setItem(LOG_KEY, JSON.stringify(log.slice(0, 20)));
     } catch (e) { /* sem storage */ }
     console.warn('[Shotgun] sessão encerrada', q);
@@ -292,8 +311,13 @@ async function iniciar() {
     if (!user) { sbox.hidden = true; trocaOk = null; fbox.hidden = true; fotoOk = null; cadCtx = null; pararCam(); }
     if (!user) {
       const caiu = userAtual; userAtual = null;
-      mostrarLogin('Entre com o seu e-mail e a sua senha.');
-      if (caiu) { const q = await motivoQueda(caiu); anotarQueda(q); if (q.msg && !auth.currentUser) lmsg(q.msg, true); }
+      if (!caiu) { mostrarLogin('Entre com o seu e-mail e a sua senha.'); return; }
+      // Sessão caiu com o app em uso: primeiro descobre o motivo (e restaura, se o login ainda vale), depois mostra o login
+      const q = await motivoQueda(caiu);
+      if (q.tipo === 'app') { anotarQueda(q); if (box.hidden && !auth.currentUser) mostrarLogin('Entre com o seu e-mail e a sua senha.'); return; } // saída pelo próprio app: a tela já tem a mensagem certa
+      if (!q.abas) q.abas = await contarAbas(); anotarQueda(q);
+      if (q.tipo === 'restaurada' || auth.currentUser) return;
+      mostrarLogin('Entre com o seu e-mail e a sua senha.'); if (q.msg) lmsg(q.msg, true);
       return;
     }
     if (userAtual?.uid !== user.uid) entrouEm = Date.now();
