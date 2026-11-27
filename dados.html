@@ -776,8 +776,13 @@ function ligarAuto(){
   f.querySelectorAll('#secoes label').forEach(l=>{
     const t=(l.querySelector('span')?.textContent||'').trim(); if(!/^crc\b/i.test(t)||l.querySelector('.cfclink')) return;
     const a=document.createElement('a'); a.className='cfclink'; a.href='https://www3.cfc.org.br/spw/ConsultaNacionalCFC/'; a.target='_blank'; a.rel='noopener'; a.textContent='Consultar no CFC ↗';
-    a.addEventListener('click',()=>{ const sec=l.closest('.sec'); const nome=[...sec.querySelectorAll('label')].find(x=>/nome/i.test(x.textContent)&&/contador|respons/i.test(x.textContent))?.querySelector('input')?.value; if(nome&&navigator.clipboard) navigator.clipboard.writeText(nome).catch(()=>{}); });
-    const h=document.createElement('small'); h.className='cfchint'; h.textContent='Busque pelo nome do contador (já copiado) e cole o número aqui.'; l.append(a,h);
+    // Copia o CPF do contador (a consulta do CFC aceita CPF); sem CPF, copia o nome
+    a.addEventListener('click',()=>{ const sec=l.closest('.sec'), labs=[...sec.querySelectorAll('label')];
+      const cpf=dig(labs.find(x=>/cpf/i.test(x.textContent)&&/contador|respons/i.test(x.textContent))?.querySelector('input')?.value||'');
+      const nome=labs.find(x=>/nome/i.test(x.textContent)&&/contador|respons/i.test(x.textContent))?.querySelector('input')?.value;
+      const t=cpf.length===11?cpf:(nome||'').trim(); if(t) copiarTexto(t);
+      h.textContent=cpf.length===11?'CPF do contador copiado. No site do CFC, cole no campo do CPF e traga o número do registro para cá.':t?'Sem o CPF do contador: copiamos o nome. Busque pelo nome no site do CFC.':'Preencha o CPF do contador para ele ir copiado para o site do CFC.' });
+    const h=document.createElement('small'); h.className='cfchint'; h.textContent='Ao tocar, o CPF do contador vai copiado: no site do CFC, cole no campo do CPF e traga o número do registro para cá.'; l.append(a,h);
   });
   ligarEnderecoEstab();
   f.querySelectorAll('[data-v=cnpj]').forEach(el=>{ el.addEventListener('input',()=>buscarCnpj(el)); el.addEventListener('blur',()=>buscarCnpj(el)); el.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); buscarCnpj(el,true) } }); if(el.value && el.name==='cnpj') buscarCnpj(el) });

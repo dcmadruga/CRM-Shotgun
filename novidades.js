@@ -10,9 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 268, data: '2026-11-27', titulo: 'Cadastro direto: explicação embaixo do CNPJ', itens: [
+  { v: 268, data: '2026-11-27', titulo: 'Cadastro direto: explicação embaixo do CNPJ e CPF copiado para o CFC', itens: [
     'No Pré TASK do cadastro direto, embaixo do CNPJ da empresa contábil aparece uma explicação: não há botão de pesquisar, porque ao digitar o CNPJ a busca na Receita é automática e preenche Nome da Empresa, E-mail e Telefone. Os sócios aparecem embaixo do Nome do contador para escolher com um toque.',
-    'O CNPJ da empresa no Pré-Contrato também ganhou a explicação de que a pesquisa é automática e busca a Inscrição estadual.'
+    'O CNPJ da empresa no Pré-Contrato também ganhou a explicação de que a pesquisa é automática e busca a Inscrição estadual.',
+    'Consultar no CFC (embaixo do CRC) agora copia o CPF do contador, e não mais o nome. No site do CFC é só colar no campo do CPF. Sem o CPF preenchido, vai o nome. Vale também para a página de dados que o cliente preenche.'
   ] },
   { v: 266, data: '2026-11-27', titulo: 'Card em preparação sem status', itens: [
     'Na TASK, o card que ainda está "Em preparação" (Pré TASK incompleto) não mostra mais o status (Futuro, Em andamento…). O status aparece quando o card fica "Pronto para as equipes".'

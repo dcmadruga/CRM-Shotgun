@@ -772,8 +772,17 @@
     corpo.querySelectorAll('[data-e2] input[data-pk]').forEach(inp => {
       if (!/^crc\b/.test(rotuloDe(inp))) return;
       const a = document.createElement('a'); a.className = 'ptcfc'; a.href = 'https://www3.cfc.org.br/spw/ConsultaNacionalCFC/'; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Consultar no CFC ↗';
-      a.addEventListener('click', () => { const nome = [...(inp.closest('[data-e2]') || corpo).querySelectorAll('input[data-pk]')].find(x => /nome/.test(rotuloDe(x)) && /contador|respons/.test(rotuloDe(x)))?.value; if (nome) window.SefazIE.copiar(nome); });
-      const h = document.createElement('small'); h.className = 'ptauto'; h.textContent = 'Busque pelo nome do contador (já copiado) e cole o número aqui.';
+      // Copia o CPF do contador (a consulta do CFC aceita CPF); sem CPF, copia o nome
+      const h = document.createElement('small'), DICA = 'Ao tocar, o CPF do contador vai copiado: no site do CFC, cole no campo do CPF e traga o número do registro para cá.';
+      h.className = 'ptauto'; h.textContent = DICA;
+      a.addEventListener('click', () => {
+        const xs = [...(inp.closest('[data-e2]') || corpo).querySelectorAll('input[data-pk]')], t = x => rotuloDe(x);
+        const cpf = dig((xs.find(x => /cpf/.test(t(x)) && /contador|respons/.test(t(x))) || xs.find(x => x.dataset.tipo === 'cpf') || {}).value);
+        const nome = (xs.find(x => /nome/.test(t(x)) && /contador|respons/.test(t(x))) || {}).value;
+        if (cpf.length === 11) { window.SefazIE.copiar(cpf); h.className = 'ptauto ok'; h.textContent = 'CPF ' + cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4') + ' copiado. No site do CFC, cole no campo do CPF e traga o número do registro para cá.'; }
+        else if (nome && nome.trim()) { window.SefazIE.copiar(nome.trim()); h.className = 'ptauto'; h.textContent = 'Sem o CPF do contador: copiamos o nome. No site do CFC, busque pelo nome e traga o número do registro para cá.'; }
+        else { h.className = 'ptauto erro'; h.textContent = 'Preencha o CPF do contador para ele ir copiado para o site do CFC.'; }
+      });
       inp.after(a, h);
     });
     // Cadastro direto: o CNPJ da empresa já vem da Implantação. Ao abrir, completa o que faltar (uma vez por CNPJ)
