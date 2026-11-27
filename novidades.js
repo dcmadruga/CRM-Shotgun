@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 261, data: '2026-11-27', titulo: 'Próximo contato atrasado some quando a demonstração já está marcada', itens: [
+    'Na Agenda, o lembrete "Atrasado" do Próximo contato de um lead deixa de aparecer quando esse lead já tem uma demonstração marcada (ou reagendada) para depois daquela data.',
+    'Embaixo de cada lembrete de Próximo contato há agora os botões Reagendar (escolhe a nova data) e Feito (marca o contato como feito, com nova data se quiser). Os dois deixam uma anotação no histórico do lead.'
+  ] },
   { v: 260, data: '2026-11-27', titulo: 'Tela de entrada e links do cliente mais claros', itens: [
     'Na tela de entrada, os avisos de erro (senha errada, campo vazio, sem internet) agora aparecem em vermelho, numa caixa própria, e não se confundem com as instruções.',
     'Nos links que o cliente abre (aprovar a proposta, aceitar o contrato e preencher os dados), os botões reagem ao passar o mouse, o botão de anexar arquivo ficou no padrão das telas e as caixas de aviso (aprovada, erro, pendências) ficaram mais fáceis de ler.',
