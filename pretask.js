@@ -85,7 +85,16 @@
 
   /* ---------- Campos configuráveis (usados no Pré TASK e nos módulos do TASK) ---------- */
   const ehOutro = v => /^outr[oa]s?(\b|$)/i.test(String(v || '').trim());
-  const opsDe = c => { const o = String(c.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean); if (c.outros && !o.some(ehOutro)) o.push('Outros'); return o; };
+  const opsDe = c => { let o = String(c.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean); if (c.tipo === 'opcoes' && /bandeir/i.test(c.label || '')) o = opsBandeira(o); if (c.outros && !o.some(ehOutro)) o.push('Outros'); return o; };
+  // "Qual bandeira": além das opções dos Parâmetros, entram as bandeiras do cadastro Logos das Bandeiras e as fixas abaixo
+  // (WATT), antes de Potencial/Outra. Assim uma bandeira nova aparece sem editar o campo.
+  const BAND_FIXAS = ['WATT'];
+  function opsBandeira(o) {
+    const n = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bandeira\s+/, '').trim();
+    const novos = ((BAND_LOGOS || LOGOS_PADRAO).map(x => String(x.nome || '').trim())).concat(BAND_FIXAS).filter(x => x && !o.some(y => n(y) === n(x)));
+    const uniq = novos.filter((x, i) => novos.findIndex(y => n(y) === n(x)) === i); if (!uniq.length) return o;
+    const j = o.findIndex(x => /potencial|^outr/i.test(n(x))), r = o.slice(); r.splice(j < 0 ? r.length : j, 0, ...uniq); return r;
+  }
   const TIPOIN = { data: 'type="date"', numero: 'type="number" min="0"', email: 'type="email"', telefone: 'inputmode="tel"', cpf: 'inputmode="numeric"', cnpj: 'inputmode="numeric"', cep: 'inputmode="numeric"' };
   // c: definição do campo; key: chave completa (com prefixo de filial); v: valores atuais; anx: estado dos anexos
   function campoHtml(c, key, v, anx) {
@@ -168,7 +177,7 @@
   }
   // Conta preenchidos e obrigatórios de uma lista de campos, para o marcador do menu
   function contar(campos, pref, v) {
-    let ok = 0, tot = 0;
+    let ok = 0, tot = 0, algum = 0; // algum: campos visíveis respondidos (obrigatórios ou não)
     // Mesma regra da tela: campo que depende de um Sim/Não só conta quando a resposta é Sim (e o de "Outros" só quando escolheu Outros)
     let dep = null;
     campos.forEach((c, i) => {
@@ -176,9 +185,10 @@
       if (c.solto || abre) dep = null;
       const oculto = (dep && v[pref + dep] !== 'Sim') || (c.seOpcao && String(v[pref + c.seOpcao[0]] || '').split(':')[0].trim() !== c.seOpcao[1]);
       if (abre) dep = c.k;
-      if (!c.req || oculto) return; tot++; const x = v[pref + c.k]; if (Array.isArray(x) ? x.length : String(x || '').trim()) ok++;
+      if (oculto) return; const x = v[pref + c.k], tem = Array.isArray(x) ? x.length : String(x || '').trim(); if (tem) algum++;
+      if (!c.req) return; tot++; if (tem) ok++;
     });
-    return { ok, tot };
+    return { ok, tot, algum };
   }
   // Anexos: lista, remover, um certificado por campo e senha conferida no aparelho
   let forgeP = null;
@@ -533,18 +543,19 @@
   const secs2Cli = () => secs2().map(s => ({ ...s, campos: s.campos.filter(c => !ehComp(c)) })).filter(s => s.campos.length);
   const secs2Comp = () => secs2().map(s => ({ ...s, campos: s.campos.filter(c => ehComp(c) && !ehRegime(c)) })).filter(s => s.campos.length);
   const porFilial = s => C.pre.tipoBase === 'Central' && s.porFilial !== false && C.pre.filiais.length > 0;
-  function marca(ok, tot) { return !tot ? '<span class="dgm ok" title="Sem obrigatórios">✓</span>' : ok >= tot ? '<span class="dgm ok" title="Completo">✓</span>' : ok ? '<span class="dgm parcial" title="Incompleto"></span>' : '<span class="dgm falta" title="Falta preencher"></span>'; }
+  // Sem obrigatórios: o ✓ só aparece quando alguma pergunta foi respondida (algum); sem nada respondido fica o círculo de falta
+  function marca(ok, tot, algum) { return !tot ? (algum || algum === undefined ? '<span class="dgm ok" title="Sem obrigatórios">✓</span>' : '<span class="dgm falta" title="Nada respondido ainda"></span>') : ok >= tot ? '<span class="dgm ok" title="Completo">✓</span>' : ok ? '<span class="dgm parcial" title="Incompleto"></span>' : '<span class="dgm falta" title="Falta preencher"></span>'; }
   function marcadores() {
     const P = C.pre, sts = { status: [P.status, P.modalidade].filter(Boolean).length + '/2' };
     const nStatus = [P.status, P.modalidade, P.dataBase, P.start].filter(Boolean).length;
     const base = [P.tipoBase, P.inclusao, P.potencial, P.nome].filter(Boolean).length + (P.filiais.length && P.filiais.every(f => dig(f.cnpj).length === 14 && f.tipo) ? 1 : 0) + (P.tipoBase !== 'Central' || P.f100 ? 1 : 0);
     const rg = (C.e2 || C.direto) && campoRegime();
     const m = { status: marca(nStatus, 4), base: rg ? marca(base + (C.v2[rg.k] ? 1 : 0), 7) : marca(base, 6), proposta: marca(1, 1), contrato: marca(C.p.ctAceitoEm || C.direto ? 1 : 0, 1) };
-    const conta2 = ss => { let ok = 0, tot = 0; ss.forEach(s => { const r = contar(s.campos, '', C.v2); ok += r.ok; tot += r.tot; }); return marca(ok, tot); };
+    const conta2 = ss => { let ok = 0, tot = 0, al = 0; ss.forEach(s => { const r = contar(s.campos, '', C.v2); ok += r.ok; tot += r.tot; al += r.algum; }); return marca(ok, tot, al); };
     // cadastro direto: sem a aba Pré-Contrato; os complementares (que ficam nas outras abas) continuam valendo
     m.e2 = C.e2 && !C.direto ? conta2(secs2Cli()) : marca(0, 1); secs2Comp().forEach((sc, i) => { m['e2c' + i] = C.e2 ? conta2([sc]) : marca(0, 1); });
     const vv = { ...C.v }; Object.entries(C.anx || {}).forEach(([k, st]) => { if (st && st.salvos) vv[k] = st.salvos.concat(st.novos || []); }); // anexos escolhidos e ainda não salvos também contam
-    secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0; compDentro(i).forEach(sc => { if (!C.e2) { tot++; return; } const r = contar(sc.campos, '', C.v2); ok += r.ok; tot += r.tot; }); const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; }); m['p' + i] = marca(ok, tot); });
+    secoesParam(C.cfg4).forEach((s, i) => { let ok = 0, tot = 0, al = 0; compDentro(i).forEach(sc => { if (!C.e2) { tot++; return; } const r = contar(sc.campos, '', C.v2); ok += r.ok; tot += r.tot; al += r.algum; }); const prefs = porFilial(s) ? C.pre.filiais.map((_, j) => 'f' + j + '__') : ['']; prefs.forEach(pf => { const r = contar(s.campos, pf, vv); ok += r.ok; tot += r.tot; al += r.algum; }); m['p' + i] = marca(ok, tot, al); });
     m.anexos = marca(1, 1);
     // a aba Base e posto também mostra pendência das seções de anexos que estão dentro dela
     const psM = secoesParam(C.cfg4), pend = (dest, mk) => { const k = typeof dest === 'number' ? 'p' + dest : dest; if (k !== 'proprio' && !/dgm ok/.test(mk) && /dgm ok/.test(m[k] || '')) m[k] = marca(0, 1).replace('falta', 'parcial'); };
@@ -963,8 +974,10 @@
   function painelParam(s, i, emb) {
     const fils = C.pre.filiais, tit = String(s.bloco || s.titulo || '').replace(/:\s*$/, ''); // bloco: título do bloco quando difere do item do menu (TEF dentro de TEF / PIX)
     // dentro da aba Base e posto: sem painel próprio, só o bloco
-    const psX = secoesParam(C.cfg4), extra = emb ? compDentro(i).map(blocoComp).join('') : psX.map((x, k) => k !== i && setorSec(psX, k) === i ? painelParam(x, k, true) : '').join('') + compDentro(i).map(blocoComp).join('');
-    const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}${extra}</div>` : (id, t, sub, html) => painel(id, t, sub, html + extra);
+    // Blocos de outras seções que entram neste item: os marcados "topo" (ex.: Contato Cliente: TEF / PIX) vêm antes dos campos do item
+    const psX = secoesParam(C.cfg4), dentro = topo => emb ? '' : psX.map((x, k) => k !== i && !!x.topo === topo && setorSec(psX, k) === i ? painelParam(x, k, true) : '').join('');
+    const antes = dentro(true), extra = dentro(false) + compDentro(i).map(blocoComp).join('');
+    const pn = emb ? (id, t, sub, html) => `<div class="ptemb" data-ptp="${id}">${html}${extra}</div>` : (id, t, sub, html) => painel(id, t, sub, antes + html + extra);
     if (!porFilial(s)) return pn('p' + i, s.titulo, 'Parâmetros Pré TASK', `<div class="ptsec"><h5>${esc(tit)}</h5><div class="ptgrid">${camposHtml(s.campos, '', C.v, C.anx)}</div></div>`);
     const at = Math.min(C.filAtiva, fils.length - 1);
     return pn('p' + i, s.titulo, 'preenchido filial por filial', `<div class="pttabs" role="tablist">${fils.map((f, j) => `<button type="button" role="tab" data-ptfi="${j}" aria-selected="${j === at}">${esc([f.cod, f.tipo].filter(Boolean).join(' - '))}</button>`).join('')}</div>` +

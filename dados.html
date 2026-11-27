@@ -261,7 +261,7 @@ function campoHtml(c){
   const req=c.req?' required':'', star=c.req?' <b>*</b>':'', full=(c.full||c.tipo==='textolongo')?' class="full"':'';
   const lab=`<span>${esc(c.label)}${star}</span>`;
   if(c.tipo==='simnao') return `<label${full}>${lab}<span class="radios"><label><input type="radio" name="${esc(c.k)}" value="Sim"${req}> Sim</label><label><input type="radio" name="${esc(c.k)}" value="Não"> Não</label></span></label>`;
-  if(c.tipo==='opcoes'){ const ops=String(c.opcoes||'').split(/[,;\n]/).map(x=>x.trim()).filter(Boolean);
+  if(c.tipo==='opcoes'){ let ops=String(c.opcoes||'').split(/[,;\n]/).map(x=>x.trim()).filter(Boolean); if(/bandeir/i.test(c.label||'')) ops=opsBandeira(ops);
     if(c.outros && !ops.some(ehOutro)) ops.push('Outros');
     return `<label${full}>${lab}<select name="${esc(c.k)}"${req}><option value="">Escolha</option>${ops.map(o=>`<option>${esc(o)}</option>`).join('')}</select><input name="${esc(c.k)}__outro" class="outro" data-v="texto" placeholder="Qual? Informe aqui" aria-label="${esc(c.label)}: qual?" hidden></label>` }
   if(c.tipo==='arquivo') return `<label class="full">${lab}<input type="file" name="${esc(c.k)}" data-v="arquivo" multiple accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt,.csv,.xml,.zip,.rar,.pfx,.p12,.cer,.crt,.p7b,.pem,application/x-pkcs12"${req}><span class="hint">${esc(c.ph||'Fotos, PDF ou documentos. Até 10 MB por arquivo.')}</span><span class="files hint"></span></label>`;
@@ -286,7 +286,12 @@ const BANDEIRAS=[
 // Logos das bandeiras: cadastro publicado pelo administrador (publico/bandeiras); sem ele, a lista padrão
 let LOGOS_BAND=[{nome:'Petrobras',img:'icons/bandeiras/petrobras.svg'},{nome:'Ipiranga',img:'icons/bandeiras/ipiranga.svg'},{nome:'ALE',img:'icons/bandeiras/ale.svg'}];
 const logoDaBandeira=v=>{ const n=x=>nz(x).toLowerCase().replace(/^bandeira\s+/,'').trim(), b=BANDEIRAS.find(x=>x[0].test(nz(v))), canon=b?b[4]:''; return LOGOS_BAND.find(x=>x.img&&(n(x.nome)===n(v)||(canon&&n(x.nome)===n(canon)))) };
-(async()=>{ const C=window.FIREBASE_CONFIG||{}; if(!C.apiKey||!C.projectId) return; try{ const r=await fetch(`https://firestore.googleapis.com/v1/projects/${C.projectId}/databases/(default)/documents/publico/bandeiras?key=${C.apiKey}`); if(!r.ok) return; const j=await r.json(), t=j.fields&&j.fields.json&&j.fields.json.stringValue; if(t){ LOGOS_BAND=JSON.parse(t); document.querySelectorAll('select').forEach(sel=>{ if(sel._desenhaBand) sel._desenhaBand() }) } }catch(e){} })();
+(async()=>{ const C=window.FIREBASE_CONFIG||{}; if(!C.apiKey||!C.projectId) return; try{ const r=await fetch(`https://firestore.googleapis.com/v1/projects/${C.projectId}/databases/(default)/documents/publico/bandeiras?key=${C.apiKey}`); if(!r.ok) return; const j=await r.json(), t=j.fields&&j.fields.json&&j.fields.json.stringValue; if(t){ LOGOS_BAND=JSON.parse(t); completarListasBand(); document.querySelectorAll('select').forEach(sel=>{ if(sel._desenhaBand) sel._desenhaBand() }) } }catch(e){} })();
+// "Qual bandeira": entram também as bandeiras do cadastro Logos das Bandeiras e as fixas (WATT), antes de Potencial/Outra
+const BAND_FIXAS=['WATT'];
+function opsBandeira(o){ const n=x=>nz(x).replace(/^bandeira\s+/,'').trim(), novos=LOGOS_BAND.map(x=>String(x.nome||'').trim()).concat(BAND_FIXAS).filter(x=>x&&!o.some(y=>n(y)===n(x))), uniq=novos.filter((x,i)=>novos.findIndex(y=>n(y)===n(x))===i); if(!uniq.length) return o; const j=o.findIndex(x=>/potencial|^outr/.test(n(x))), r=o.slice(); r.splice(j<0?r.length:j,0,...uniq); return r }
+// O cadastro chega depois de a página montar: acrescenta nas listas de bandeira as que faltarem, mantendo a escolha
+function completarListasBand(){ document.querySelectorAll('select').forEach(sel=>{ const lab=sel.closest('label'); if(!lab||!/bandeir/i.test(lab.querySelector('span')?.textContent||'')) return; const atuais=[...sel.options].map(o=>o.value).filter(Boolean), nova=opsBandeira(atuais); if(nova.length===atuais.length) return; const v=sel.value; sel.innerHTML='<option value="">Escolha</option>'+nova.map(o=>`<option>${esc(o)}</option>`).join(''); sel.value=v }) }
 const slug=t=>nz(t).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 function seloBandeira(nome){
   const b=BANDEIRAS.find(x=>x[0].test(nz(nome)))||[null,'#4b4b57','#8a8a99','#fff',nome];
