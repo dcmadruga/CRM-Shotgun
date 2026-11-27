@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 262, data: '2026-11-27', titulo: 'Pré TASK: Nome do Posto sugerido pelo CNPJ', itens: [
+    'No Pré TASK, aba Implantação, bloco Posto simples: a Unidade (Filial, Tipo, CNPJ, Razão social e Cidade) agora vem antes do Nome do Posto.',
+    'Ao digitar o CNPJ, o Nome do Posto já aparece preenchido como "Posto - Razão social" (por exemplo, "Posto - SALAMONI PETROLEO LTDA"). Dá para trocar à vontade.',
+    'Se você já tinha escrito um nome próprio para o posto, ele não é trocado. Corrigir a razão social atualiza a sugestão, enquanto o nome ainda for o sugerido.'
+  ] },
   { v: 261, data: '2026-11-27', titulo: 'Próximo contato atrasado some quando a demonstração já está marcada', itens: [
     'Na Agenda, o lembrete "Atrasado" do Próximo contato de um lead deixa de aparecer quando esse lead já tem uma demonstração marcada (ou reagendada) para depois daquela data.',
     'Embaixo de cada lembrete de Próximo contato há agora os botões Reagendar (escolhe a nova data) e Feito (marca o contato como feito, com nova data se quiser). Os dois deixam uma anotação no histórico do lead.'
