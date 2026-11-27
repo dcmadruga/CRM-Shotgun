@@ -1063,6 +1063,22 @@
       msg(faltaTxt(faltas) + ' Para guardar assim mesmo, use "Salvar parcial".'); return;
     }
     if (parcial && faltas.some(x => /senha do certificado/.test(x[1]))) { msg('A senha do certificado não confere. Corrija ou remova o certificado para salvar.'); return; }
+    // Cadastro direto: o salvar parcial já cria o card no TASK, então exige o mínimo para identificar o cliente:
+    // Tipo de Base e, conforme o tipo, Nome do Posto + CNPJ da unidade (Simples) ou Nome da Central + CNPJ de cada filial (Central)
+    if (parcial && C.direto) {
+      const ess = faltas.filter(x => x[0] === 'base' && /^(Tipo de Base|Nome do Posto|Nome da Central|CNPJ da )/.test(x[1]));
+      if (ess.length) {
+        mostrar('base'); const corpo = document.getElementById('ptCorpo');
+        ess.forEach(([, t]) => {
+          const el = t === 'Tipo de Base' ? corpo.querySelector('[data-hk="tipoBase"]') : /^Nome/.test(t) ? corpo.querySelector('[data-hk="nome"]')
+            : [...corpo.querySelectorAll('.ptfil tbody tr')].find(tr => 'CNPJ da ' + (C.pre.filiais[+tr.dataset.fi] || {}).cod === t)?.querySelector('[data-ff="cnpj"]');
+          if (el) el.classList.add('erro');
+        });
+        const prim = corpo.querySelector('[data-hk="tipoBase"].erro, .ptfil .erro, [data-hk="nome"].erro'); if (prim) { prim.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (prim.focus && prim.tagName === 'INPUT') prim.focus({ preventScroll: true }); }
+        msg(faltaTxt(ess) + ' No cadastro direto, o salvar parcial precisa do Tipo de Base e ' + (C.pre.tipoBase === 'Central' ? 'do nome da Central e do CNPJ de cada filial.' : C.pre.tipoBase ? 'do CNPJ e do nome do posto.' : 'do CNPJ e do nome do posto ou da Central.'));
+        return;
+      }
+    }
     bt.disabled = true; document.querySelectorAll('#ptCorpo [data-ptparc]').forEach(x => { x.disabled = true; }); msg(parcial ? 'Salvando parcial…' : 'Salvando…');
     try {
       const { F, db, pid, perfil } = C;

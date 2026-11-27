@@ -10,10 +10,14 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 264, data: '2026-11-27', titulo: 'Cadastro direto: pesquisa na Receita e na SEFAZ', itens: [
+  { v: 265, data: '2026-11-27', titulo: 'Cadastro direto: pesquisa na Receita e na SEFAZ', itens: [
     'No Pré TASK do cadastro direto, o CNPJ da empresa já vem da Implantação e completa sozinho os campos vazios do Pré-Contrato: razão social, nome fantasia, endereço, cidade, UF e a Inscrição estadual (quando a Receita traz).',
     'Embaixo da Inscrição estadual há o botão Consultar na SEFAZ: ele copia o CNPJ e abre a consulta da SEFAZ do Estado da empresa. É só colar o CNPJ no site. Ao lado, Anexar cartão de contribuinte lê o PDF ou o print da consulta e preenche a IE.',
     'No bloco da empresa contábil, digitar o CNPJ da contabilidade preenche o Nome da Empresa, o E-mail e o Telefone pela Receita, e mostra os sócios para escolher o Nome do contador com um toque. O CRC ganhou o link Consultar no CFC, com o nome do contador já copiado.'
+  { v: 264, data: '2026-11-27', titulo: 'Cadastro direto só salva com o cliente identificado', itens: [
+    'No Novo cadastro direto da TASK, o Salvar parcial agora pede o Tipo de Base e os dados que identificam o cliente: no Posto simples, o CNPJ e o Nome do Posto; na Central, o Nome da Central e o CNPJ de cada filial. O que falta fica marcado em vermelho na aba Implantação. Assim não aparecem mais cards "Sem nome" na TASK.',
+    'No card da TASK, o botão de link ao lado da Data da base fica desligado até o link da base ser informado e salvo em Módulos › Implantação.',
+    'Os cards da TASK ficaram mais curtos: a lista de módulos (Implantação, Homologação de Boleto, Pré Start…) fica escondida. Toque em "Mostrar módulos" para ver o andamento de cada um, e em "Ocultar módulos" para fechar. Pendências e processos parados continuam aparecendo no card.'
   ] },
   { v: 263, data: '2026-11-27', titulo: 'Pré TASK do cadastro direto: Pesquisar Cliente ANP', itens: [
     'No cadastro direto da TASK, o Pré TASK (aba Implantação) ganhou o botão Pesquisar Cliente ANP nos blocos Posto simples e Central. Serve para quando você não sabe o CNPJ.',
