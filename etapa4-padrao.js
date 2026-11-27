@@ -50,6 +50,29 @@ window.ETAPA4_PADRAO = {
       }
       cfg.tefPixContato = true;
     }
+    // v275: a pergunta "Tem integração com APP de terceiros?" vira o bloco próprio APP de terceiros, no mesmo item em que estava
+    // (normalmente Integração). Vai junto o que depende dela (campos que só aparecem com Sim ou com uma opção dela).
+    // Mesma chave do campo, então a resposta já dada continua. Uma vez só (marca appTerceirosBloco)
+    if (!cfg.appTerceirosBloco) {
+      const L = cfg.secoes, ehApp = c => /integra[cç][aã]o\s+com\s+(o\s+)?app/i.test(c.label || '');
+      const s = L.find(x => x.id !== 'appTerceiros' && (x.campos || []).some(ehApp));
+      if (s && !L.some(x => x.id === 'appTerceiros')) {
+        const cs = s.campos, i = cs.findIndex(ehApp), c = cs[i], vai = [c];
+        const abre = c.tipo === 'simnao' && (c.abre != null ? c.abre : i === 0) && i < cs.length - 1;
+        for (let j = i + 1; j < cs.length; j++) {
+          const x = cs[j];
+          if (x.seOpcao && x.seOpcao[0] === c.k) { vai.push(x); continue; }
+          if (abre && !x.solto && !(x.tipo === 'simnao' && x.abre)) { vai.push(x); continue; }
+          if (abre) break;
+        }
+        s.campos = cs.filter(x => !vai.includes(x));
+        const alvo = s.setor && s.setor !== 'proprio' ? s.setor : (s.id || String(s.titulo || '').trim());
+        const app = { id: 'appTerceiros', titulo: 'APP de terceiros', setor: alvo, campos: vai.map((x, k) => k === 0 && x.tipo === 'simnao' && x.abre == null ? { ...x, abre: abre } : x) };
+        if (s.porFilial === false) app.porFilial = false;
+        L.splice(L.indexOf(s) + 1, 0, app); cfg.tefPixMudou = true;
+      }
+      cfg.appTerceirosBloco = true;
+    }
     // v275: o contato vem primeiro dentro do item TEF / PIX (topo). Uma vez só (marca tefPixContatoTopo)
     if (!cfg.tefPixContatoTopo) { const ct = cfg.secoes.find(x => x.id === 'contatoTefPix'); if (ct && !ct.topo) { ct.topo = true; cfg.tefPixMudou = true; } cfg.tefPixContatoTopo = true; }
     return cfg;
@@ -70,4 +93,5 @@ window.ETAPA4_PADRAO = {
   window.ETAPA4_PADRAO.tefPixJunto = true;
   window.ETAPA4_PADRAO.tefPixContato = true;
   window.ETAPA4_PADRAO.tefPixContatoTopo = true;
+  window.ETAPA4_PADRAO.appTerceirosBloco = true;
 })();
