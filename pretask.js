@@ -54,6 +54,7 @@
 .ptfil .tag100{display:inline-block;margin-left:4px;font-size:10.5px;font-weight:700;background:var(--accent);color:var(--accent-fg);border-radius:999px;padding:1px 6px}
 .ptscroll{overflow-x:auto}
 .ptnote{font-size:12.5px;color:var(--muted);font-weight:400;margin:0}
+.ptanp .anpacao{margin-top:0}.ptanp .anpbusca{margin:10px 0 0}
 .pttabs{display:flex;gap:6px;flex-wrap:wrap}
 .ptemb{display:flex;flex-direction:column;gap:8px;scroll-margin-top:12px}
 .pttabs button{border-radius:999px;padding:6px 12px;font-size:13px}
@@ -631,6 +632,7 @@
     ${central || simples ? `<div class="ptsec"><h5>${central ? 'Central' : 'Posto simples'}${f100 ? `<small>F100 = ${esc(f100.cod)}${f100.cidade ? ' · ' + esc(f100.cidade) : ''}</small>` : ''}</h5><div class="ptgrid">
       ${central ? `<label class="ptf"><span>Nome da Central <b>*</b></span><input data-hk="nome" value="${esc(P.nome || '')}"></label>
       <label class="ptf"><span>Quantidade de Filiais <b>*</b></span><input type="number" min="1" max="60" data-hk="qtd" value="${P.filiais.length || ''}"></label>` : ''}
+      ${C.direto && window.anpPesquisa ? `<div class="ptf full ptanp"><span class="anpacao"><button type="button" data-ptanp><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M10 3a7 7 0 0 1 5.6 11.2l4.6 4.6-1.4 1.4-4.6-4.6A7 7 0 1 1 10 3Zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/></svg>Pesquisar Cliente ANP</button><small>${central ? 'preenche a primeira filial sem CNPJ, ou acrescenta uma filial' : 'quando não souber o CNPJ'}</small></span><div id="ptAnpBusca" hidden></div></div>` : ''}
       <div class="ptf full"><span>${central ? 'Filiais' : 'Unidade'}</span>${tabela}
         <p class="ptnote">${central ? 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas. Marque qual filial é a F100: ela aparece no topo e no card do TASK.' : 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas.'}</p></div>
       ${central ? '' : `<label class="ptf"><span>Nome do Posto <b>*</b></span><input data-hk="nome" value="${esc(P.nome || '')}"></label>`}
@@ -770,8 +772,41 @@
     corpo.addEventListener('click', ev => {
       const t = ev.target.closest('[data-ptfi]'); if (t) { C.filAtiva = +t.dataset.ptfi; const p = t.closest('[data-ptp]'); p.querySelectorAll('[data-ptfi]').forEach(b => b.setAttribute('aria-selected', String(b === t))); p.querySelectorAll('[data-ptfp]').forEach(x => { x.hidden = x.dataset.ptfp !== t.dataset.ptfi; }); return; }
       const cp = ev.target.closest('[data-ptcopia]'); if (cp) { colherCampos(); const j = cp.dataset.ptcopia, s = secoesParam(C.cfg4)[+cp.dataset.sec]; const ks = []; s.campos.forEach(c => { ks.push(c.k, c.k + '__det'); Object.values(c.cond || {}).forEach(l => (l || []).forEach(x => ks.push(x.k))); }); ks.forEach(k => { if (C.v['f0__' + k] !== undefined && !Array.isArray(C.v['f0__' + k])) C.v['f' + j + '__' + k] = C.v['f0__' + k]; }); colherCabecalho(); desenhar(); mostrar(C.aba); msg('Dados copiados. Confira e salve.'); return; }
+      if (ev.target.closest('[data-ptanp]')) return pesquisarAnp();
       const a = ev.target.closest('[data-pta]'); if (a) { if (a.dataset.pta === 'pdf') return verPdf(a); if (a.dataset.pta === 'contrato' && C.verContrato) return C.verContrato(C.pid, a); }
       const ax = ev.target.closest('[data-ptanexo]'); if (ax) return baixar(ax);
+    });
+  }
+  // Cadastro direto: pesquisa na base de postos da ANP (sem o CNPJ). O posto escolhido preenche CNPJ, razão social
+  // e cidade da unidade (Posto simples, com a sugestão "Posto - <razão>" do Nome do Posto) ou da primeira filial
+  // sem CNPJ (Central; com todas preenchidas, acrescenta uma filial). A Receita completa depois.
+  function pesquisarAnp() {
+    const box = document.getElementById('ptAnpBusca'); if (!box) return;
+    const uf = v => (String(v || '').match(/[-\/]\s*([A-Za-z]{2})\s*$/) || [])[1] || '';
+    const cids = [...document.querySelectorAll('#ptCorpo .ptfil [data-ff="cidade"]')].map(x => uf(x.value)).filter(Boolean);
+    window.anpPesquisa(box, cids[0] || uf(C.p.cidade), async cnpj => {
+      if (!C) return;
+      let p = null; try { p = await window.anpPosto(cnpj); } catch (e) {}
+      if (!C) return;
+      const razao = (p && p.razao) || '', cidade = (p && p.municipio) || '', ufp = (p && p.uf) || '';
+      const trs = [...document.querySelectorAll('#ptCorpo .ptfil tbody tr')];
+      const ja = C.pre.tipoBase === 'Central' && trs.find(t => dig(t.querySelector('[data-ff="cnpj"]').value) === dig(cnpj));
+      if (ja) { msg('Este posto já está na filial ' + (ja.querySelector('[data-ff="cod"]').value || '') + '.'); return; }
+      const tr = C.pre.tipoBase === 'Central' ? trs.find(t => !dig(t.querySelector('[data-ff="cnpj"]').value)) : trs[0];
+      if (!tr) {
+        // Central com todas as filiais preenchidas: acrescenta uma (até 60) já com os dados da ANP
+        colherCabecalho(); const L = C.pre.filiais; if (L.length >= 60) { msg('A Central já tem 60 filiais.'); return; }
+        L.push({ cod: 'F' + (L.length + 1), tipo: 'Posto', cnpj: fmtCnpj(cnpj), razao, cidade, uf: ufp });
+        colherCampos(); desenhar(); mostrar('base'); msg('Filial ' + L[L.length - 1].cod + ' acrescentada com os dados da ANP. Confira.'); return;
+      }
+      const c = tr.querySelector('[data-ff="cnpj"]'), r = tr.querySelector('[data-ff="razao"]'), cid = tr.querySelector('[data-ff="cidade"]');
+      c.value = fmtCnpj(cnpj); c.classList.remove('erro'); delete tr.dataset.busca;
+      if (razao) { r.value = razao; r.dataset.auto = '1'; } else if (r.dataset.auto === '1') r.value = '';
+      cid.value = cidade ? [cidade, ufp].filter(Boolean).join(' - ') : '';
+      sugerirNomePosto(tr);
+      msg(p ? (C.pre.tipoBase === 'Central' ? 'Filial ' + (tr.querySelector('[data-ff="cod"]').value || '') + ' preenchida' : 'Preenchido') + ' com os dados da ANP. Confira.' : '');
+      buscarFil(tr, dig(cnpj));
+      c.focus();
     });
   }
   // Razão social e cidade da filial pela consulta do CNPJ
