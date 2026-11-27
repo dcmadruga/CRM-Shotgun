@@ -245,9 +245,9 @@
     atual = { leadId: l ? l.id : '', demo: d, editando: !!d0, volta: opts.volta || '', remarca: opts.remarca || '' };
     abrirDlg(d0 ? 'Demonstração' : opts.remarca ? 'Reagendar demonstração' : 'Agendar demonstração', `
       <div class="agform" id="agForm">
-        <section class="crmbloco"><h4>Lead <em class="agreq">obrigatório</em></h4><div id="agLeadBox"></div></section>
+        <section class="crmbloco"><h4>Lead <em class="agreq">obrigatório</em></h4><div id="agLeadBox"></div><div id="agPartBox"></div></section>
         ${d0 ? andamentoHtml(d0) : ''}
-        <section class="crmbloco"><h4>${opts.remarca ? 'Nova data <em class="agreq">obrigatório</em>' : 'Quando'}</h4>
+        <section class="crmbloco"><h4>${opts.remarca ? 'Nova data <em class="agreq">obrigatório</em>' : 'Data e hora'}</h4>
           ${opts.remarca ? (() => { const v = l && (l.demos || []).find(x => x.id === opts.remarca); return v ? `<p class="agstinfo">Estava marcada para ${esc(diaSemana(v.data))}, ${esc(quando(v))}. Informe a nova data e hora: o resto é repetido da demonstração original.</p>` : ''; })() : ''}
           <div class="tkform agquando">
             <label>Data<input type="date" id="agData" min="${d0 && d0.data < h ? d0.data : h}" value="${esc(d.data)}" required></label>
@@ -256,21 +256,20 @@
           </div>
           <p class="agconf" id="agConf" hidden></p>
         </section>
-        <section class="crmbloco"><h4>Onde</h4>
-          <div class="agfmtsel" role="radiogroup" aria-label="Formato">
+        <section class="crmbloco"><h4>Formato</h4>
+          <div class="agfmtsel agseg" role="radiogroup" aria-label="Formato">
             <label class="agopt"><input type="radio" name="agFmt" value="online"${d.formato !== 'presencial' ? ' checked' : ''}>${IC.video}<span><b>Online</b><small>Por videochamada</small></span></label>
             <label class="agopt"><input type="radio" name="agFmt" value="presencial"${d.formato === 'presencial' ? ' checked' : ''}>${IC.pin}<span><b>Presencial</b><small>No posto do cliente</small></span></label>
           </div>
-          <div id="agLinkL"><label for="agLink">Link da reunião <small>opcional</small></label>
+          <div id="agLinkL"><label for="agLink"><span class="aglab">Link da reunião <em>opcional</em></span></label>
             <div class="aglink"><input id="agLink" type="url" inputmode="url" placeholder="https://meet.google.com/…" value="${esc(d.link || '')}">
               <button type="button" data-a="meetnovo" title="Abre o Google Meet numa aba nova já com uma sala criada">${IC.video}Criar sala no Meet</button>
               ${navigator.clipboard && navigator.clipboard.readText ? '<button type="button" data-a="meetcolar" title="Cola o link copiado">Colar</button>' : ''}</div>
             <small class="aglinkdica" id="agLinkDica" hidden>Na aba do Meet, copie o link da sala (ícone de copiar ou a barra de endereço) e volte aqui para colar.</small></div>
           <label id="agLocalL">Endereço<input id="agLocal" placeholder="Rua, número, bairro, cidade" value="${esc(d.local || '')}"></label>
         </section>
-        <section class="crmbloco"><h4>Participantes do cliente</h4><div id="agPartBox"></div></section>
-        <section class="crmbloco"><h4>O que mostrar</h4>
-          <label class="full">Pontos de interesse e observações<span class="ditado"><textarea id="agObs" rows="3" maxlength="1500" placeholder="Ex.: quer ver o PDV, o TEF e a conciliação de cartões">${esc(d.obs || '')}</textarea>${window.crmMicBtn ? window.crmMicBtn() : ''}</span><small class="ditst" hidden></small></label>
+        <section class="crmbloco"><h4>O que mostrar <em class="agopc">opcional</em></h4>
+          <label class="full" aria-label="Pontos de interesse e observações"><span class="ditado"><textarea id="agObs" rows="3" maxlength="1500" placeholder="Ex.: quer ver o PDV, o TEF e a conciliação de cartões">${esc(d.obs || '')}</textarea>${window.crmMicBtn ? window.crmMicBtn() : ''}</span><small class="ditst" hidden></small></label>
         </section>
         <p class="hint agquem" id="agQuem"></p>
       </div>
@@ -316,8 +315,8 @@
     const l = leadAtual(), nomes = l ? [...new Set(contatosDe(l).map(c => String(c.nome || '').trim()).filter(Boolean))] : [];
     const marc = atual.demo.participantes || [];
     nomes.push(...marc.filter(n => !nomes.includes(n)));
-    box.innerHTML = !l ? '<p class="hint">Escolha o lead para ver os contatos.</p>' : nomes.length ? `<div class="agparts">${nomes.map(n => `<label class="uchip"><input type="checkbox" data-part="${esc(n)}"${marc.includes(n) ? ' checked' : ''}> ${esc(n)}</label>`).join('')}</div>`
-      : '<p class="hint">Este lead não tem contatos com nome. Cadastre no lead para escolher aqui.</p>';
+    box.innerHTML = !l ? '' : nomes.length ? `<span class="aglab">Quem participa do lado do cliente</span><div class="agparts">${nomes.map(n => `<label class="uchip"><input type="checkbox" data-part="${esc(n)}"${marc.includes(n) ? ' checked' : ''}> ${esc(n)}</label>`).join('')}</div>`
+      : '<p class="hint">Este lead não tem contatos com nome. Cadastre no lead para escolher quem participa.</p>';
   }
   function formato() {
     const on = (document.querySelector('input[name=agFmt]:checked') || {}).value !== 'presencial';
