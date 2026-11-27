@@ -5,6 +5,7 @@
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const dig = v => String(v || '').replace(/\D/g, '');
   const fmtCnpj = v => { const d = dig(v); return d.length === 14 ? d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5') : (v || ''); };
+  const nomePosto = raz => (raz = String(raz || '').trim()) ? 'Posto - ' + raz : ''; // sugestão do Nome do Posto (Posto simples)
   const fmtD = iso => { const m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? `${m[3]}/${m[2]}/${m[1]}` : (iso || ''); };
   const isoDe = v => { v = String(v || ''); let m = v.match(/(\d{4})-(\d{2})-(\d{2})/); if (m) return `${m[1]}-${m[2]}-${m[3]}`; m = v.match(/^\s*(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})\s*$/); if (!m) return ''; const y = m[3].length === 2 ? '20' + m[3] : m[3]; return `${y}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`; };
   const fmtTs = ts => ts && ts.toDate ? ts.toDate().toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
@@ -411,7 +412,7 @@
     if (!filiais.length) { const cn = (v2 && v2.cnpj) || p.cnpj; if (dig(cn).length === 14) filiais.push({ cod: 'F1', tipo: 'Posto', cnpj: fmtCnpj(cn), razao: (v2 && v2.razao) || '', cidade: (v2 && v2.cidade) || '', uf: (v2 && v2.uf) || '', info: null, dados: null }); }
     return {
       status: (task && task.status) || 'fut', dataBase: (task && task.dataBase) || achaData(/da[dt]a.*base|base.*da[dt]a/i), start: (task && task.start) || achaData(/start|in[ií]cio da implanta/i), modalidade: (task && task.modalidade) || modal,
-      tipoBase: tipo, inclusao: '', centralExistente: '', potencial: '', nome: (tc && tc.nome) || acha(/nome da central|nome do posto/i) || (tipo === 'Simples' ? ((v2 && v2.fantasia) || p.cliente || '') : ''), f100: (tc && tc.f100) || '', filiais
+      tipoBase: tipo, inclusao: '', centralExistente: '', potencial: '', nome: (tc && tc.nome) || acha(/nome da central|nome do posto/i) || (tipo === 'Simples' ? (nomePosto(filiais[0] && filiais[0].razao) || (v2 && v2.fantasia) || p.cliente || '') : ''), f100: (tc && tc.f100) || '', filiais
     };
   }
 
@@ -628,10 +629,11 @@
     </div></div>
     ${blocosBase().map(b => `<div class="ptsec"${b.band ? ' data-ptband' : ''}><h5>${esc(b.titulo)}</h5><div class="ptgrid">${camposHtml(b.campos, '', C.v, C.anx)}</div></div>`).join('')}
     ${central || simples ? `<div class="ptsec"><h5>${central ? 'Central' : 'Posto simples'}${f100 ? `<small>F100 = ${esc(f100.cod)}${f100.cidade ? ' · ' + esc(f100.cidade) : ''}</small>` : ''}</h5><div class="ptgrid">
-      <label class="ptf"><span>${central ? 'Nome da Central' : 'Nome do Posto'} <b>*</b></span><input data-hk="nome" value="${esc(P.nome || '')}"></label>
-      ${central ? `<label class="ptf"><span>Quantidade de Filiais <b>*</b></span><input type="number" min="1" max="60" data-hk="qtd" value="${P.filiais.length || ''}"></label>` : ''}
+      ${central ? `<label class="ptf"><span>Nome da Central <b>*</b></span><input data-hk="nome" value="${esc(P.nome || '')}"></label>
+      <label class="ptf"><span>Quantidade de Filiais <b>*</b></span><input type="number" min="1" max="60" data-hk="qtd" value="${P.filiais.length || ''}"></label>` : ''}
       <div class="ptf full"><span>${central ? 'Filiais' : 'Unidade'}</span>${tabela}
         <p class="ptnote">${central ? 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas. Marque qual filial é a F100: ela aparece no topo e no card do TASK.' : 'A razão social e a cidade vêm da consulta do CNPJ e podem ser corrigidas.'}</p></div>
+      ${central ? '' : `<label class="ptf"><span>Nome do Posto <b>*</b></span><input data-hk="nome" value="${esc(P.nome || '')}"></label>`}
     </div></div>` : '<p class="ptnote">Escolha o Tipo de Base para informar o posto ou as filiais.</p>'}
     ${anexos || ''}`);
   }
@@ -725,16 +727,29 @@
     const corpo = document.getElementById('ptCorpo'); if (!corpo) return;
     corpo.querySelectorAll('[data-pk]').forEach(el => { const k = el.dataset.pk; const alvo = k.startsWith('e2:') ? C.v2 : C.v, kk = k.startsWith('e2:') ? k.slice(3) : k; let v = el.dataset.seg ? (el.querySelector('[aria-pressed=true]')?.dataset.v || '') : el.value; const o = corpo.querySelector(`[data-outro="${CSS.escape(k)}"]`); if (o && !o.hidden && o.value.trim()) v += ': ' + o.value.trim(); alvo[kk] = v; });
   }
-  function nomeSugerido(tipo) { const f = ((C.v2 && C.v2.fantasia) || C.p.cliente || '').trim(); return !f || !tipo ? '' : tipo === 'Central' ? (/^central\b/i.test(f) ? f : 'Central ' + f) : f; }
+  // Simples: "Posto - <razão social>" da unidade (sem razão, o nome fantasia). Central: "Central " + nome fantasia
+  function nomeSugerido(tipo) { const f = ((C.v2 && C.v2.fantasia) || C.p.cliente || '').trim(); if (tipo === 'Simples') return nomePosto((C.pre.filiais[0] || {}).razao) || f; return !f || !tipo ? '' : /^central\b/i.test(f) ? f : 'Central ' + f; }
+  // O nome do posto ainda é sugestão (pode ser trocado sozinho)? Vazio, o nome fantasia/cliente antigo ou "Posto - <razão anterior>"
+  function nomeEhSugestao(nome, razaoAntes) { const n = String(nome || '').trim(); return !n || n === nomePosto(razaoAntes) || n === ((C.v2 && C.v2.fantasia) || '').trim() || n === (C.p.cliente || '').trim(); }
+  // Posto simples: ao achar (ou corrigir) a razão social da unidade, o Nome do Posto vira "Posto - <razão>", se ainda for sugestão
+  // tr.dataset.raz guarda a razão social anterior, para reconhecer "Posto - <razão anterior>" como sugestão
+  function sugerirNomePosto(tr, soVazio) {
+    if (!C || C.pre.tipoBase !== 'Simples' || +tr.dataset.fi !== 0) return;
+    const ni = document.querySelector('#ptCorpo [data-hk="nome"]'), raz = tr.querySelector('[data-ff="razao"]').value.trim(), razaoAntes = tr.dataset.raz || '';
+    if (!ni || !raz) return; tr.dataset.raz = raz;
+    if (soVazio ? ni.value.trim() : !nomeEhSugestao(ni.value, razaoAntes)) return;
+    ni.value = nomePosto(raz); C.pre.nome = ni.value; ni.classList.remove('erro', 'falta');
+  }
   function redesenhar() { setTimeout(() => { if (!C) return; colherCabecalho(); colherCampos(); bandeiraDoE2(); desenhar(); }, 0); }
   function cabecalhoMudou(ev) {
     const g = ev.target.closest('[data-hk]'); if (!g) return;
     const k = g.dataset.hk, antes = C.pre[k]; colherCabecalho();
     if (k === 'tipoBase' && C.pre.tipoBase !== antes) {
       // Nome sugerido: Simples = nome fantasia; Central = "Central " + nome fantasia (troca só se ainda for a sugestão do outro tipo)
-      const sugAntes = nomeSugerido(antes); if (!C.pre.nome || C.pre.nome === sugAntes) { C.pre.nome = nomeSugerido(C.pre.tipoBase); const ni = document.querySelector('#ptCorpo [data-hk="nome"]'); if (ni) ni.value = C.pre.nome; }
+      const sugAntes = nomeSugerido(antes);
       if (C.pre.tipoBase === 'Simples') { C.pre.filiais = C.pre.filiais.slice(0, 1); C.pre.f100 = ''; if (!C.pre.filiais.length) C.pre.filiais.push({ cod: 'F1', tipo: 'Posto', cnpj: fmtCnpj(C.v2.cnpj || C.p.cnpj), razao: C.v2.razao || '', cidade: C.v2.cidade || '', uf: C.v2.uf || '' }); }
       if (C.pre.tipoBase === 'Central' && !C.pre.filiais.length) C.pre.filiais.push({ cod: 'F1', tipo: 'Posto', cnpj: '', razao: '', cidade: '', uf: '' });
+      if (!C.pre.nome || C.pre.nome === sugAntes) C.pre.nome = nomeSugerido(C.pre.tipoBase);
       redesenhar(); return;
     }
     if (k === 'inclusao' && C.pre.inclusao !== antes) { redesenhar(); return; }
@@ -747,7 +762,8 @@
     corpo.querySelectorAll('.ptfil tbody tr').forEach(tr => {
       const c = tr.querySelector('[data-ff="cnpj"]');
       c.addEventListener('input', () => { const d = dig(c.value).slice(0, 14); c.value = d.length === 14 ? fmtCnpj(d) : d; c.classList.remove('erro'); if (d.length === 14) buscarFil(tr, d); });
-      tr.querySelector('[data-ff="razao"]').addEventListener('input', e => { delete e.target.dataset.auto; });
+      const rz = tr.querySelector('[data-ff="razao"]'); tr.dataset.raz = rz.value.trim();
+      rz.addEventListener('input', e => { delete e.target.dataset.auto; sugerirNomePosto(tr); });
       const r = tr.querySelector('[data-ff="f100"]'); if (r) r.addEventListener('change', () => setTimeout(() => { if (!C) return; colherCabecalho(); colherCampos(); desenhar(); mostrar('base'); }, 0));
       const d = dig(c.value); const f = C.pre.filiais[+tr.dataset.fi]; if (d.length === 14 && f && !f.info) buscarFil(tr, d, true);
     });
@@ -767,6 +783,7 @@
     const f = C.pre.filiais[i]; if (f) f.info = info;
     r.placeholder = info ? 'Razão social' : 'Não encontrada, digite';
     if (info && info.razao && (!r.value.trim() || r.dataset.auto === '1')) { r.value = info.razao; r.dataset.auto = '1'; }
+    sugerirNomePosto(tr, silencioso); // abrindo a tela, só preenche se o nome estiver vazio
     if (info && info.municipio && !cid.value.trim()) cid.value = [info.municipio, info.uf].filter(Boolean).join(' - ');
   }
   async function verPdf(bt) {
