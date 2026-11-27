@@ -69,7 +69,7 @@ export function avisosDaPagina(texto) {
 
 function orgao(t, mun, uf = 'MT') {
   const m = t.match(/((?:Secretaria|Departamento|Diretoria)\s+Municipal[^,.;]{0,90}?)(?:\s*[-–(]\s*[A-Z]{3,8}|,|\.|\s+a\s+|\s+o\s+)/i) || t.match(/Prefeitura\s+Municipal\s+de\s+[A-ZÀ-Úa-zà-ú' ]{3,40}/);
-  const sig = t.match(/\b(SMADESS?|SMURB|SEMMA|SEMMEA|SEMAM|SMMA|SAMA|SMAMA|SEMAGRI|SEMMARH|SEMMAS|SEFIC|AMMA)\b/) || t.match(/(Secretaria\s+(?:Municipal\s+)?de\s+Agricultura[^,.;]{0,60}Meio\s+Ambiente|Prefeitura\s+(?:Municipal\s+)?de\s+[A-ZÀ-Ú][A-Za-zÀ-ú' ]{2,30}|Coordenadoria\s+de\s+Meio\s+Ambiente[^,.;]{0,50})/);
+  const sig = t.match(/\b(SMADESS?|SMURB|SEMMA|SEMMEA|SEMAM|SMMA|SAMA|SMAMA|SEMAGRI|SEMMARH|SEMMAS|SEFIC|AMMA|SEMADI|SEMAI|SEMADUR|PLANURB|SEMAGEM)\b/) || t.match(/(Secretaria\s+(?:Municipal\s+)?de\s+Agricultura[^,.;]{0,60}Meio\s+Ambiente|Prefeitura\s+(?:Municipal\s+)?de\s+[A-ZÀ-Ú][A-Za-zÀ-ú' ]{2,30}|Coordenadoria\s+de\s+Meio\s+Ambiente[^,.;]{0,50})/);
   if (m || sig) return { orgao: limpa((m ? m[1] || m[0] : sig[1]).replace(/\s+-\s*$/, '')) + (mun ? ` (${mun.nome})` : ''), esfera: 'municipal' };
   if (uf === 'RS' && /\bFEPAM\b|Funda[cç][aã]o\s+Estadual\s+de\s+Prote[cç][aã]o\s+Ambiental/i.test(t)) return { orgao: 'FEPAM (Fundação Estadual de Proteção Ambiental)', esfera: 'estadual' };
   if (uf === 'SP' && /\bCETESB\b|Companhia\s+Ambiental\s+do\s+Estado\s+de\s+S[ãa]o\s+Paulo/i.test(t)) return { orgao: 'CETESB (Companhia Ambiental do Estado de SP)', esfera: 'estadual' };
@@ -79,6 +79,7 @@ function orgao(t, mun, uf = 'MT') {
   if (uf === 'TO' && /\bNATURATINS\b|Instituto\s+Natureza\s+do\s+Tocantins/i.test(t)) return { orgao: 'NATURATINS (Instituto Natureza do Tocantins)', esfera: 'estadual' };
   if (uf === 'SE' && /\bADEMA\b|Administra[cç][aã]o\s+Estadual\s+do\s+Meio\s+Ambiente/i.test(t)) return { orgao: 'ADEMA (Administração Estadual do Meio Ambiente de SE)', esfera: 'estadual' };
   if (uf === 'GO' && /\bSEMAD\b|Secretaria\s+de\s+Estado\s+de\s+Meio\s+Ambiente\s+e\s+Desenvolvimento\s+Sustent/i.test(t)) return { orgao: 'SEMAD-GO (Secretaria de Estado de Meio Ambiente e Desenvolvimento Sustentável)', esfera: 'estadual' };
+  if (uf === 'MS' && /\bIMASUL\b|Instituto\s+de\s+Meio\s+Ambiente\s+de\s+Mato\s+Grosso\s+do\s+Sul/i.test(t)) return { orgao: 'IMASUL (Instituto de Meio Ambiente de Mato Grosso do Sul)', esfera: 'estadual' };
   if (uf === 'SC' && /\bIMA\b|Instituto\s+do\s+Meio\s+Ambiente\s+de\s+Santa\s+Catarina/i.test(t)) return { orgao: 'IMA (Instituto do Meio Ambiente de SC)', esfera: 'estadual' };
   if (/\bSEMA\b|Secretaria\s+(de\s+Estado|Estadual)\s+d[eo]\s+Meio\s+Ambiente/i.test(t)) return { orgao: `SEMA-${uf} (Secretaria de Estado de Meio Ambiente)`, esfera: 'estadual' };
   return { orgao: '', esfera: '' };
