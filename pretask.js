@@ -197,12 +197,34 @@
     if (cc.slice(0, 8) === cf.slice(0, 8)) { st.cnpjRes = 'base'; ccn.className = 'cst ccnpj alerta'; ccn.textContent = '✗ O CNPJ do certificado (' + fmtCnpj(cc) + ') não é o da ' + cod + ' (' + fmtCnpj(cf) + '). É de outra unidade da mesma empresa.'; return; }
     st.cnpjRes = 'dif'; ccn.className = 'cst ccnpj alerta'; ccn.textContent = '✗ O CNPJ do certificado (' + fmtCnpj(cc) + ') não corresponde ao CNPJ da ' + cod + ' (' + fmtCnpj(cf) + ').';
   }
+  // Tipo de imagem pelo tipo gravado ou, se ele vier vazio/genérico, pela extensão do nome (como o logo do card)
+  const tipoImg = (tipo, nome) => { if (/^image\//.test(tipo || '') || /pdf/i.test(tipo || '')) return tipo; const ext = ((String(nome || '').match(/\.(\w+)$/) || [])[1] || '').toLowerCase(); return ext === 'pdf' ? 'application/pdf' : /^jpe?g|jfif$/.test(ext) ? 'image/jpeg' : ext === 'svg' ? 'image/svg+xml' : ext ? 'image/' + ext : 'image/png'; };
+  // Miniatura recortada: tira as bordas brancas ou transparentes (como o logo do card), para o desenho ocupar o quadro
+  function recortarMini(src) {
+    return new Promise(ok => { const i = new Image(); i.onload = () => { try {
+      const W = i.naturalWidth, H = i.naturalHeight; if (!W || !H) return ok(src);
+      const s0 = Math.min(1, 400 / Math.max(W, H)), w0 = Math.max(1, Math.round(W * s0)), h0 = Math.max(1, Math.round(H * s0));
+      const t = document.createElement('canvas'); t.width = w0; t.height = h0; const g = t.getContext('2d'); g.drawImage(i, 0, 0, w0, h0);
+      const px = g.getImageData(0, 0, w0, h0).data; let x0 = w0, y0 = h0, x1 = -1, y1 = -1;
+      for (let y = 0; y < h0; y++) for (let x = 0; x < w0; x++) { const k = (y * w0 + x) * 4; if (px[k + 3] > 16 && (px[k] < 235 || px[k + 1] < 235 || px[k + 2] < 235)) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } }
+      if (x1 < 0) return ok(src);
+      const m = 2; x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m); x1 = Math.min(w0 - 1, x1 + m); y1 = Math.min(h0 - 1, y1 + m);
+      const cw = x1 - x0 + 1, ch = y1 - y0 + 1, z = Math.min(1, 160 / Math.max(cw, ch)), c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(cw * z)); c.height = Math.max(1, Math.round(ch * z)); c.getContext('2d').drawImage(t, x0, y0, cw, ch, 0, 0, c.width, c.height);
+      ok(c.toDataURL('image/png'));
+    } catch (e) { ok(src); } }; i.onerror = () => ok(src); i.src = src; });
+  }
+  // Miniatura de anexo já salvo: { img: data URL para a miniatura (igual ao logo do card), abrir: blob URL para ver em outra aba }
   const MINIS = new Map();
-  function miniSalva(id) {
+  function miniSalva(id, nome) {
     if (MINIS.has(id)) return MINIS.get(id);
-    const pr = (async () => { try { if (!C || !C.F) return ''; const { F, db } = C, R = raizC(); const meta = (await F.getDoc(F.doc(db, ...R, 'anexos', id))).data() || {}; if ((meta.tamanho || 0) > 4 * 1024 * 1024) return '';
-      const ps = await F.getDocs(F.collection(db, ...R, 'anexos', id, 'partes')); const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join(''); if (!b64) return '';
-      const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return URL.createObjectURL(new Blob([u8], { type: meta.tipo || 'image/png' })); } catch (e) { return ''; } })();
+    const pr = (async () => { try { if (!C || !C.F) return null; const { F, db } = C, R = raizC(); const meta = (await F.getDoc(F.doc(db, ...R, 'anexos', id))).data() || {}; if ((meta.tamanho || 0) > 4 * 1024 * 1024) return null;
+      const ps = await F.getDocs(F.collection(db, ...R, 'anexos', id, 'partes')); const b64 = ps.docs.sort((x, y) => x.id.localeCompare(y.id)).map(x => x.data().d).join('').replace(/\s/g, ''); if (!b64) return null;
+      const tipo = tipoImg(meta.tipo, meta.orig || meta.nome || nome);
+      const bin = atob(b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      return { img: `data:${tipo};base64,${b64}`, abrir: URL.createObjectURL(new Blob([u8], { type: tipo })), blob: new Blob([u8], { type: tipo }) }; } catch (e) { return null; } })();
+    // falha (sem rede, sem permissão) não fica guardada: tenta de novo no próximo desenho
+    pr.then(r => { if (!r) MINIS.delete(id); });
     MINIS.set(id, pr); return pr;
   }
   // Miniatura da 1ª página de PDF (ex.: logo enviado em PDF), com o leitor de PDF carregado só quando precisa
@@ -222,8 +244,11 @@
     const temMini = (tipo, nome) => ehImg(tipo, nome) || ehPdfA(tipo, nome);
     box.querySelector('.lista').innerHTML = st.salvos.map((a, i) => `<span class="it${temMini(a.tipo, a.orig || a.nome) ? ' comimg' : ''}">${mini(temMini(a.tipo, a.orig || a.nome), `data-miniid="${esc(a.id || '')}"${ehPdfA(a.tipo, a.orig || a.nome) ? ' data-pdf="1"' : ''}`)} ${esc(a.nome)} <small>${kb(a.tamanho)}</small><button type="button" data-anxrm="s${i}" aria-label="Remover ${esc(a.nome)}">×</button></span>`).join('') + st.novos.map((f, i) => `<span class="it${temMini(f.type, f.name) ? ' comimg' : ''}">${mini(temMini(f.type, f.name), `data-mininovo="${i}"${ehPdfA(f.type, f.name) ? ' data-pdf="1"' : ''}`)} ${esc(f.name)} <small>${kb(f.size)} · novo</small><button type="button" data-anxrm="n${i}" aria-label="Remover ${esc(f.name)}">×</button></span>`).join('') || '<span class="ptnote">Nenhum arquivo.</span>';
     // Miniatura das imagens: as novas vêm do aparelho; as já salvas são lidas do banco (uma vez)
-    box.querySelectorAll('img[data-mininovo]').forEach(im => { const f = st.novos[+im.dataset.mininovo]; if (!f) return; const u = URL.createObjectURL(f); im.onclick = () => window.open(u, '_blank'); if (!im.dataset.pdf) { im.src = u; return; } miniPdf(f, f).then(m => { if (m) im.src = m; else im.replaceWith('📄'); }); });
-    box.querySelectorAll('img[data-miniid]').forEach(im => { const id = im.dataset.miniid; if (!id) { im.replaceWith('📄'); return; } miniSalva(id).then(async u => { if (!u) { im.replaceWith('📄'); return; } im.onclick = () => window.open(u, '_blank'); if (!im.dataset.pdf) { im.src = u; return; } const m = await miniPdf(id, await (await fetch(u)).blob()); if (m) im.src = m; else im.replaceWith('📄'); }); });
+    // Imagem que não abre (arquivo corrompido ou formato que o navegador não mostra) vira o ícone, nunca um quadro vazio
+    const icone = im => { if (im.isConnected) im.replaceWith('📄'); };
+    box.querySelectorAll('img.mini').forEach(im => { im.onerror = () => icone(im); });
+    box.querySelectorAll('img[data-mininovo]').forEach(im => { const f = st.novos[+im.dataset.mininovo]; if (!f) return; const b = /^image\//.test(f.type) ? f : new Blob([f], { type: tipoImg(f.type, f.name) }), u = URL.createObjectURL(b); im.onclick = () => window.open(u, '_blank'); if (!im.dataset.pdf) { recortarMini(u).then(m => { im.src = m; }); return; } miniPdf(f, f).then(m => { if (m) im.src = m; else icone(im); }); });
+    box.querySelectorAll('img[data-miniid]').forEach(im => { const id = im.dataset.miniid; if (!id) { icone(im); return; } const a = st.salvos.find(x => x.id === id) || {}; miniSalva(id, a.orig || a.nome).then(async r => { if (!r) { icone(im); return; } im.onclick = () => window.open(r.abrir, '_blank'); if (!im.dataset.pdf) { im.src = await recortarMini(r.img); return; } const m = await miniPdf(id, r.blob); if (m) im.src = m; else icone(im); }); });
     const temPfx = st.salvos.some(a => ehPfx(a.nome)) || st.novos.some(f => ehPfx(f.name)), l = box.querySelector('.ptpfx'); l.hidden = !temPfx;
     const novoPfx = st.novos.find(f => ehPfx(f.name)), inp = l.querySelector('input'), cst = l.querySelector('.cst:not(.ccnpj)'), ccn = l.querySelector('.ccnpj');
     const conf = async () => { if (!novoPfx || !inp.value) { cst.textContent = novoPfx && !inp.value ? 'Informe a senha deste certificado.' : ''; cst.className = 'cst'; st.pfxOk = null; st.cnpjRes = null; if (ccn) { ccn.textContent = ''; ccn.className = 'cst ccnpj'; } return; } cst.textContent = 'Conferindo…'; cst.className = 'cst'; const v = inp.value; let r; try { r = await conferirPfx(novoPfx, v); } catch (e) { r = { ok: null }; } if (inp.value !== v) return; st.pfxOk = r.ok; cnpjCert(k, r, st, ccn); const venc = r.ok && r.ate && r.ate < new Date(); cst.className = 'cst' + (venc ? ' venc' : r.ok ? ' ok' : r.ok === false ? ' bad' : ''); cst.textContent = r.ok ? (venc ? '⚠ Senha confere, mas o certificado está VENCIDO desde ' + r.ate.toLocaleDateString('pt-BR') + (r.cn ? ' · ' + r.cn : '') : '✓ Senha confere' + (r.cn ? ' · ' + r.cn : '') + (r.ate ? ' · válido até ' + r.ate.toLocaleDateString('pt-BR') : '')) : r.ok === false ? '✗ A senha não confere com este certificado.' : 'Não foi possível conferir agora.'; };

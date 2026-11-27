@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 267, data: '2026-11-27', titulo: 'Miniatura dos anexos de imagem', itens: [
+    'No Pré TASK, os anexos de imagem (como o Logo da Filial) mostram a miniatura recortada nas bordas brancas, então o desenho ocupa o quadro mesmo quando a imagem tem muita margem. Tocar na miniatura abre a imagem inteira.',
+    'Se a imagem não puder ser mostrada, aparece o ícone de arquivo em vez de um quadro vazio.'
+  ] },
   { v: 266, data: '2026-11-27', titulo: 'Card em preparação sem status', itens: [
     'Na TASK, o card que ainda está "Em preparação" (Pré TASK incompleto) não mostra mais o status (Futuro, Em andamento…). O status aparece quando o card fica "Pronto para as equipes".'
   ] },
