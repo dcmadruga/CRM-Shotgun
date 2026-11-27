@@ -12,7 +12,8 @@
 window.SHOTGUN_NOVIDADES = [
   { v: 264, data: '2026-11-27', titulo: 'Cadastro direto só salva com o cliente identificado', itens: [
     'No Novo cadastro direto da TASK, o Salvar parcial agora pede o Tipo de Base e os dados que identificam o cliente: no Posto simples, o CNPJ e o Nome do Posto; na Central, o Nome da Central e o CNPJ de cada filial. O que falta fica marcado em vermelho na aba Implantação. Assim não aparecem mais cards "Sem nome" na TASK.',
-    'No card da TASK, o botão de link ao lado da Data da base fica desligado até o link da base ser informado e salvo em Módulos › Implantação.'
+    'No card da TASK, o botão de link ao lado da Data da base fica desligado até o link da base ser informado e salvo em Módulos › Implantação.',
+    'Os cards da TASK ficaram mais curtos: a lista de módulos (Implantação, Homologação de Boleto, Pré Start…) fica escondida. Toque em "Mostrar módulos" para ver o andamento de cada um, e em "Ocultar módulos" para fechar. Pendências e processos parados continuam aparecendo no card.'
   ] },
   { v: 263, data: '2026-11-27', titulo: 'Pré TASK do cadastro direto: Pesquisar Cliente ANP', itens: [
     'No cadastro direto da TASK, o Pré TASK (aba Implantação) ganhou o botão Pesquisar Cliente ANP nos blocos Posto simples e Central. Serve para quando você não sabe o CNPJ.',

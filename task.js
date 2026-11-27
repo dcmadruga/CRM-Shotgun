@@ -231,11 +231,14 @@ function finalizarTodos(id, mid, url) {
   }, mid, 'finalizou todos os processos do módulo' + (url ? ' (link da base: ' + url + ')' : '') + '.').then(ok => { if (ok) dmsg('Todos os processos deste módulo foram finalizados.'); return ok; });
 }
 const prazoDe = (t, p) => { if (p.prazo === '' || p.prazo == null || !t.dataBase) return ''; const dt = new Date(t.dataBase + 'T12:00:00'); dt.setDate(dt.getDate() + (+p.prazo || 0)); return dt.toISOString().slice(0, 10); };
+// Lista de módulos do card: escondida por padrão, abre no botão Mostrar (o estado fica só nesta tela)
+const modsAbertos = new Set();
 function modsCard(t) {
   const top = (MODS.secoes || []).filter(m => !m.pai); if (!top.length) return '';
   const linhas = top.map(m => { const c = contaMod(t, filhosDe(m)), pct = c.tot ? c.f * 100 / c.tot : 0, pa = c.tot ? c.an * 100 / c.tot : 0, e = estadoMod(t, m); return `<div class="tkmod est-${e.k}${c.pa.length ? ' parado' : ''}" title="${esc(e.txt + ' · ' + c.f + ' de ' + c.tot + ' processos finalizados' + (c.an ? ' · ' + c.an + ' em andamento' : ''))}"><span><span class="tkdot" aria-hidden="true"></span>${esc(m.titulo)}</span><i><b style="width:${pct}%"></b><b class="an" style="width:${pa}%"></b></i><em>${c.f}/${c.tot}</em></div>`; }).join('');
   const pa = contaMod(t, MODS.secoes || []).pa, pe = pendAbertas(t, MODS.secoes || []), pc = pe.filter(x => x.com === 'Cliente').length;
-  return `<div class="tkmods">${linhas}</div>${pe.length ? `<div class="tkpend" title="${esc(pe.map(x => x.mt + ': ' + x.txt).join('\n'))}">${pe.length} pendência${pe.length > 1 ? 's' : ''} aberta${pe.length > 1 ? 's' : ''}${pc ? ' · ' + pc + ' com o cliente' : ''}</div>` : ''}${pa.length ? `<div class="tkparado" title="${esc(pa.join('\n'))}">${pa.length} processo${pa.length > 1 ? 's' : ''} parado${pa.length > 1 ? 's' : ''} · ${esc(pa[0].split(':')[0])}</div>` : ''}`;
+  const tot = contaMod(t, top.flatMap(filhosDe)), ab = modsAbertos.has(t.id);
+  return `<button type="button" class="tkvermods" data-tk="vermods" aria-expanded="${ab}"><span>${ab ? 'Ocultar' : 'Mostrar'} módulos</span><small>${tot.f} de ${tot.tot} processos</small></button>${ab ? `<div class="tkmods">${linhas}</div>` : ''}${pe.length ? `<div class="tkpend" title="${esc(pe.map(x => x.mt + ': ' + x.txt).join('\n'))}">${pe.length} pendência${pe.length > 1 ? 's' : ''} aberta${pe.length > 1 ? 's' : ''}${pc ? ' · ' + pc + ' com o cliente' : ''}</div>` : ''}${pa.length ? `<div class="tkparado" title="${esc(pa.join('\n'))}">${pa.length} processo${pa.length > 1 ? 's' : ''} parado${pa.length > 1 ? 's' : ''} · ${esc(pa[0].split(':')[0])}</div>` : ''}`;
 }
 const fmtQ = ms => ms ? new Date(ms).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
 function libHtml(t, m, lib) {
@@ -804,6 +807,7 @@ function ligar() {
     if (b.dataset.tk === 'e4') return verRef(b.dataset.pid);
     if (b.dataset.tk === 'filiais') return verFiliais(tasks.find(t => t.id === id));
     if (b.dataset.tk === 'mods') return formMods(id);
+    if (b.dataset.tk === 'vermods') { if (modsAbertos.has(id)) modsAbertos.delete(id); else modsAbertos.add(id); desenhar(); return; }
     if (b.dataset.tk === 'linkbase') { const lk = linkBaseDe(tasks.find(t => t.id === id) || {}); if (!lk) return formMods(id, modDoLink());
       const ok = () => { b.classList.add('ok'); b.title = 'Link copiado'; msg('Link da base copiado: ' + lk.url); setTimeout(() => { b.classList.remove('ok'); b.title = 'Copiar link para baixar a base'; }, 1800); };
       const reserva = () => { const ta = document.createElement('textarea'); ta.value = lk.url; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); ok(); } catch (e) { msg('Copie o link: ' + lk.url); } ta.remove(); };
