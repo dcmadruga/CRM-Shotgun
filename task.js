@@ -1,7 +1,7 @@
 // Módulo TASK: checklist de implantação. Roda para usuários TASK e administradores.
 // Dados: tasks/{id} (cadastros com checklists) e taskTemplates/{id} (modelos de checklist).
 let F, db, perfil, admin = false, unsubT = null, unsubM = null, unsubP = null, unsubMod = null, tasksOk = false, aprovadas = null;
-// Módulos do TASK (Implantação, TEF/PIX…): configurados em Parâmetros Módulos TASK
+// Módulos do TASK (Implantação, TEF, PIX…): configurados em Parâmetros Módulos TASK
 let MODS = window.MODULOS_PADRAO ? JSON.parse(JSON.stringify(window.MODULOS_PADRAO)) : { secoes: [] };
 let tasks = [], removidas = new Set(), templates = [], resps = [], aba = 'and', minhas = false, setorVer = null;
 const $ = id => document.getElementById(id);
@@ -31,13 +31,14 @@ function iniciar() {
     // Cards removidos pelo ADM ficam só como marca (removido: true), para o automático não recriar
     removidas = new Set(todos.filter(t => t.removido).flatMap(t => [t.id, t.propostaId]).filter(Boolean));
     tasks = todos.filter(t => !t.removido);
+    if (window.modulosHerdar) tasks.forEach(t => window.modulosHerdar(t, MODS)); // andamento do TEF / PIX antigo que passou para o PIX
     tasksOk = true; desenhar(); sincronizar(); completarDatas();
   }, e => msg('Não foi possível carregar os cadastros (' + (e.code || 'erro') + ').'));
   unsubP = F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')), qs => {
     aprovadas = qs.docs.map(d => ({ id: d.id, ...d.data() })); sincronizar(); desenhar();
   }, () => {});
   if (unsubMod) unsubMod();
-  unsubMod = F.onSnapshot(F.doc(db, 'config', 'modulos'), d => { try { const j = d && d.exists && d.exists() && d.data().json; if (j) MODS = JSON.parse(j); if (window.modulosCompletar) window.modulosCompletar(MODS); } catch (e) {} desenhar(); if ($('tkDlg').open && $('tkDlg').dataset.modo === 'mods') formMods($('tkMods').dataset.id, $('tkMods').dataset.mid); }, () => {});
+  unsubMod = F.onSnapshot(F.doc(db, 'config', 'modulos'), d => { try { const j = d && d.exists && d.exists() && d.data().json; if (j) MODS = JSON.parse(j); if (window.modulosCompletar) window.modulosCompletar(MODS); if (window.modulosHerdar) tasks.forEach(t => window.modulosHerdar(t, MODS)); } catch (e) {} desenhar(); if ($('tkDlg').open && $('tkDlg').dataset.modo === 'mods') formMods($('tkMods').dataset.id, $('tkMods').dataset.mid); }, () => {});
   unsubM = F.onSnapshot(F.collection(db, 'taskTemplates'), qs => {
     templates = qs.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => String(a.nome).localeCompare(String(b.nome), 'pt-BR'));
     if ($('tkDlg').open && $('tkDlg').dataset.modo === 'templates') desenharTemplates();
@@ -152,7 +153,7 @@ const filhosDe = m => [m, ...(MODS.secoes || []).filter(x => x.pai === m.id)];
 function contaMod(t, lista) { let f = 0, an = 0, tot = 0; const pa = []; lista.forEach(m => (m.processos || []).forEach(p => { tot++; const s = procDe(t, m.id, p.id); if (s && s.st === 'fi') f++; if (s && (s.st === 'in' || s.st === 'an')) an++; if (s && s.st === 'pa') pa.push(m.titulo + ': ' + p.t); })); return { f, an, tot, pa }; }
 // Setores: cada módulo principal é um setor (as etapas dele são do mesmo setor). O ADM marca o setor de cada pessoa em Usuários.
 const topDe = m => (m && m.pai && (MODS.secoes || []).find(x => x.id === m.pai)) || m;
-const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
+const meusSetores = () => window.setoresDe ? window.setoresDe(perfil) : (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
 // Quem não tem setor marcado (e o ADM) altera todos os módulos
 const podeMod = m => admin || !meusSetores().length || meusSetores().includes(topDe(m).id);
 /* ---------- Liberação, pendências e diário dos módulos ----------
@@ -424,7 +425,7 @@ async function carregarDg(t, navItem, painel) {
   const linhas = rows => `<table class="tkdados"><tbody>${rows.map(([k, v]) => `<tr><th>${esc(k)}</th><td style="white-space:pre-wrap">${valorOuLink(v)}</td></tr>`).join('')}</tbody></table>`;
   const grupos = [];
   if (e2) agrupar(e2.campos, titulosDe(json(pub2) || window.ETAPA2_PADRAO), 'e2_').forEach(g => grupos.push({ ...g, sub: 'Dados do cliente (Pré-Contrato)' }));
-  if (e4) agrupar(e4.campos, e4.secoes || titulosDe(json(cfg4)), 'e4_').forEach(g => grupos.push({ ...g, sub: 'Referência da implantação (Etapa 4)' }));
+  if (e4) agrupar(e4.campos, e4.secoes || titulosDe((window.pretaskCompletar || (x => x))(json(cfg4))), 'e4_').forEach(g => grupos.push({ ...g, sub: 'Referência da implantação (Etapa 4)' }));
   const nomes4 = {}; Object.values((e4 && e4.valores) || {}).forEach(l => { if (Array.isArray(l)) l.forEach(a => { if (a && a.id && a.nome) nomes4[a.id] = a.nome; }); });
   const v2 = (e2 && e2.valores) || {};
   const arqs = an.map(x => { let nome = x.etapa === 4 ? nomes4[x.id] || x.nome : x.nome; if (!x.etapa && /logo/i.test(x.campo || '')) nome = [dig(v2.cnpj), v2.razao].map(y => String(y || '').replace(/[\\/:*?"<>|]+/g, '-').trim()).filter(Boolean).concat('Logo').join('_') + ((String(x.nome || '').match(/\.[^.]+$/) || [''])[0]); return { ...x, nome }; });

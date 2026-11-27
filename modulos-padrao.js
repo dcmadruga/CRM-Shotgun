@@ -10,6 +10,11 @@
   const c = (k, label, tipo, extra) => ({ k, label, tipo: tipo || 'texto', req: false, show: true, custom: true, ...(extra || {}) });
   const POSVENDA = { id: 'posvenda', titulo: 'Pós-vendas', pai: '', libera: { tipo: 'proc', mid: 'posstart', pid: 'p3' }, desc: 'Cuida do cliente depois que a implantação termina. Faz o contato de boas-vindas, acompanha os primeiros 30 dias, aplica a pesquisa de satisfação e passa o cliente para o suporte com tudo registrado.', campos: [c('respPos', 'Responsável no pós-vendas'), c('notaSat', 'Nota de satisfação (0 a 10)', 'numero'), c('obsPosv', 'Observações', 'textolongo')],
     processos: [p('p1', 'Contato de boas-vindas'), p('p2', 'Acompanhamento de 30 dias'), p('p3', 'Pesquisa de satisfação'), p('p4', 'Passagem para o suporte')] };
+  // TEF e PIX eram um módulo só ("TEF / PIX", id tef) até a v271: agora são dois setores
+  const TEF_DESC_ANTIGA = 'Cuida dos pagamentos eletrônicos do posto. Solicita os números lógicos à adquirente, instala o TEF fixo e o TEF móvel, configura o PIX e homologa as transações antes de liberar para uso.';
+  const TEF_DESC = 'Cuida dos pagamentos com cartão no posto. Solicita os números lógicos à adquirente, instala o TEF fixo e o TEF móvel (PDV Móvel), configura os cartões frota e homologa as transações antes de liberar para uso.';
+  const PIX = { id: 'pix', titulo: 'PIX', pai: '', libera: { tipo: 'proc', mid: 'impl', pid: 'p2' }, desc: 'Cuida dos recebimentos por PIX no posto. Confere com o cliente o banco ou a adquirente que vai receber e a chave PIX, configura o PIX integrado ao PDV (QR Code na hora da venda) e testa um recebimento antes de liberar para uso.', campos: [c('pixBanco', 'Banco ou adquirente do PIX'), c('pixChave', 'Chave PIX')],
+    processos: [p('px1', 'Solicitar dados do PIX ao cliente'), p('px2', 'Configurar PIX'), p('px3', 'Testar recebimento PIX')] };
   window.MODULOS_PADRAO = {
     secoes: [
       { id: 'impl', titulo: 'Implantação', pai: '', libera: { tipo: 'pronto' }, desc: 'Responsável por colocar o sistema no ar para o cliente. Confere os dados do Pré TASK, cria a base, converte os dados do sistema anterior, libera a base e envia o link de acesso. Coordena as etapas Pré Start, Start e Pós Start até o encerramento da implantação.', campos: [c('baseLiberada', 'Base liberada', 'simnao', { abre: false }), c('linkBase', 'Link da base', 'link'), c('obsImpl', 'Observações', 'textolongo')],
@@ -22,8 +27,9 @@
         processos: [p('p1', 'Instalação dos PDVs'), p('p2', 'Treinamento dos frentistas'), p('p3', 'Treinamento do escritório'), p('p4', 'Primeiro fechamento de caixa'), p('p5', 'Aceite do cliente')] },
       { id: 'posstart', titulo: 'Pós Start', pai: '', libera: { tipo: 'proc', mid: 'start', pid: 'p5' }, desc: 'Acompanha o cliente nos primeiros dias de uso, tira dúvidas, faz os retreinamentos necessários e encerra formalmente a implantação.', campos: [c('obsPos', 'Observações e retreinamentos', 'textolongo')],
         processos: [p('p1', 'Acompanhamento da primeira semana'), p('p2', 'Retreinamento'), p('p3', 'Encerramento da implantação')] },
-      { id: 'tef', titulo: 'TEF / PIX', pai: '', libera: { tipo: 'proc', mid: 'impl', pid: 'p2' }, desc: 'Cuida dos pagamentos eletrônicos do posto. Solicita os números lógicos à adquirente, instala o TEF fixo e o TEF móvel, configura o PIX e homologa as transações antes de liberar para uso.', campos: [c('adqPrincipal', 'Adquirente principal'), c('logicos', 'Números lógicos', 'textolongo'), c('outrosAdq', 'Outros adquirentes'), c('tefFixo', 'TEF Fixo', 'simnao', { abre: false }), c('tefMovel', 'TEF Móvel', 'simnao', { abre: false })],
-        processos: [p('p1', 'Solicitar números lógicos'), p('p2', 'Instalar TEF fixo'), p('p3', 'Instalar TEF móvel'), p('p4', 'Configurar PIX'), p('p5', 'Homologar transações')] },
+      { id: 'tef', titulo: 'TEF', pai: '', libera: { tipo: 'proc', mid: 'impl', pid: 'p2' }, desc: TEF_DESC, campos: [c('adqPrincipal', 'Adquirente principal'), c('logicos', 'Números lógicos', 'textolongo'), c('outrosAdq', 'Outros adquirentes'), c('tefFixo', 'TEF Fixo', 'simnao', { abre: false }), c('tefMovel', 'TEF Móvel', 'simnao', { abre: false })],
+        processos: [p('p1', 'Solicitar números lógicos'), p('p2', 'Instalar TEF fixo'), p('p3', 'Instalar TEF móvel'), p('p5', 'Homologar transações')] },
+      PIX,
       { id: 'integ', titulo: 'Integração', pai: '', libera: { tipo: 'proc', mid: 'impl', pid: 'p2' }, desc: 'Conecta o sistema às plataformas externas que o posto usa, como os aplicativos e programas de fidelidade da bandeira e a loja franqueada. Levanta as integrações necessárias, solicita as credenciais e confirma que tudo está funcionando.', campos: [c('bandeirado', 'Posto bandeirado', 'simnao', { abre: false }), c('bandeira', 'Bandeira'), c('franquia', 'Tem loja franqueada', 'simnao', { abre: false }), c('apps', 'Integração com aplicativos da companhia', 'textolongo')],
         processos: [p('p1', 'Levantar as integrações necessárias'), p('p2', 'Solicitar credenciais'), p('p3', 'Integração concluída')] },
       { id: 'conc', titulo: 'Conciliação', pai: '', libera: { tipo: 'proc', mid: 'impl', pid: 'p2' }, desc: 'Configura a conciliação das vendas em cartão e PIX com o que as adquirentes pagam, para o posto conferir taxas e recebimentos sem trabalho manual. Termina quando a conciliação é validada com o cliente.', campos: [c('dadosConc', 'Dados de conciliação', 'textolongo')],
@@ -42,11 +48,49 @@
     if (!mods || !Array.isArray(mods.secoes)) return mods;
     if (!mods.etapasSoltas) { mods.secoes.forEach(m => { if (SOLTAS.includes(m.id) && m.pai === 'impl') { m.pai = ''; delete m.libera; } }); mods.etapasSoltas = true; }
     mods.secoes.forEach(m => { if (!m.libera && !m.pai) { const d = window.MODULOS_PADRAO.secoes.find(x => x.id === m.id); m.libera = d && d.libera ? JSON.parse(JSON.stringify(d.libera)) : { tipo: 'pronto' }; } });
+    // TEF / PIX virou dois módulos (v271): o antigo fica como TEF (mesmo id, os cards seguem com o andamento) e o PIX entra logo depois,
+    // levando os processos com "PIX" no nome (com o mesmo id, para o andamento já lançado ir junto: ver modulosHerdar). Uma vez só (marca tefPixSeparado)
+    if (!mods.tefPixSeparado) {
+      const i = mods.secoes.findIndex(m => m.id === 'tef' || (/\btef\b/i.test(m.titulo || '') && /\bpix\b/i.test(m.titulo || '')));
+      if (i >= 0 && !mods.secoes.some(m => m.id === 'pix')) {
+        const t = mods.secoes[i], pix = JSON.parse(JSON.stringify(PIX)), ePix = x => /\bpix\b/i.test(x || '');
+        if (ePix(t.titulo)) t.titulo = 'TEF';
+        if (!t.desc || t.desc === TEF_DESC_ANTIGA) t.desc = TEF_DESC;
+        const procs = (t.processos || []).filter(x => ePix(x.t)), cps = (t.campos || []).filter(x => ePix(x.label));
+        t.processos = (t.processos || []).filter(x => !procs.includes(x)); t.campos = (t.campos || []).filter(x => !cps.includes(x));
+        if (procs.length) pix.processos = [pix.processos[0], ...procs, ...pix.processos.slice(2)].filter((x, k, L) => L.findIndex(y => y.id === x.id) === k);
+        if (cps.length) pix.campos = cps.concat(pix.campos.filter(x => !cps.some(y => y.k === x.k)));
+        pix.pai = t.pai || ''; if (t.pai) delete pix.libera; else if (t.libera) pix.libera = JSON.parse(JSON.stringify(t.libera));
+        pix.herda = { mid: t.id, procs: procs.map(x => x.id), campos: cps.map(x => x.k) };
+        mods.secoes.splice(i + 1, 0, pix);
+      }
+      mods.tefPixSeparado = true;
+    }
     if (!mods.temPosvenda) { if (!mods.secoes.some(m => m.id === 'posvenda')) mods.secoes.push(JSON.parse(JSON.stringify(POSVENDA))); mods.temPosvenda = true; }
     return mods;
   };
   window.MODULOS_PADRAO.temPosvenda = true;
   window.MODULOS_PADRAO.etapasSoltas = true;
+  window.MODULOS_PADRAO.tefPixSeparado = true;
+  // Andamento já lançado no TEF / PIX antigo (tasks/{id}.mods.tef) dos processos e campos que passaram para o PIX:
+  // aparece no módulo PIX e é gravado lá na próxima alteração do card (só em memória até lá; o que já existe no PIX vale)
+  window.modulosHerdar = (t, mods) => {
+    if (!t || !t.mods || !mods || !Array.isArray(mods.secoes)) return t;
+    mods.secoes.forEach(m => {
+      const h = m.herda; if (!h || !h.mid || h.mid === m.id) return;
+      const de = t.mods[h.mid]; if (!de) return;
+      const para = t.mods[m.id] = t.mods[m.id] || {};
+      (h.procs || []).forEach(pid => {
+        if (de.proc && de.proc[pid] && !(para.proc && para.proc[pid])) { para.proc = para.proc || {}; para.proc[pid] = de.proc[pid]; delete de.proc[pid]; }
+        if (Array.isArray(de.pend) && de.pend.some(q => q.pid === pid)) { para.pend = (para.pend || []).concat(de.pend.filter(q => q.pid === pid)); de.pend = de.pend.filter(q => q.pid !== pid); }
+      });
+      (h.campos || []).forEach(k => { if (de.dados && de.dados[k] != null && !(para.dados && para.dados[k] != null)) { para.dados = para.dados || {}; para.dados[k] = de.dados[k]; } });
+    });
+    return t;
+  };
+  // Setor no TASK: quem era do TEF / PIX (setor tef) também é do PIX, até o ADM desmarcar o PIX da pessoa em Usuários
+  // (aí o cadastro guarda '-pix' na lista de setores, que não é setor nenhum: só lembra a escolha)
+  window.setoresDe = u => { const s = u && Array.isArray(u.setores) ? u.setores.filter(x => x !== '-pix') : []; if (s.includes('tef') && !s.includes('pix') && !u.setores.includes('-pix')) s.push('pix'); return s; };
   // Com quem está a pendência
   window.PEND_COM = ['Cliente', 'Equipe interna', 'Outro setor', 'Banco', 'Adquirente', 'Bandeira', 'Fornecedor', 'Outro'];
   window.PROC_STATUS = { ni: 'Não iniciado', in: 'Iniciado', an: 'Em andamento', pa: 'Parado', fi: 'Finalizado' };

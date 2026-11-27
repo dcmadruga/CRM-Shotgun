@@ -30,7 +30,7 @@
   // Setores = módulos principais do TASK (mesma lista da tela Usuários)
   const setoresTop = () => ((MODS || window.MODULOS_PADRAO || {}).secoes || []).filter(m => !m.pai);
   const nomeSetor = id => id === 'todos' ? 'Todos' : id === 'agenda' ? 'Agenda' : id === 'anp' ? 'Telemetria ANP' : id === 'pessoal' ? 'Para você' : id === 'usuarios' ? 'Usuários' : id === 'propostas' ? 'Propostas' : (setoresTop().find(m => m.id === id) || {}).titulo || id;
-  const meusSetores = () => (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
+  const meusSetores = () => window.setoresDe ? window.setoresDe(perfil) : (perfil && Array.isArray(perfil.setores)) ? perfil.setores : [];
   // Quem pode ver (o Firestore aplica a mesma regra no servidor)
   const podeVer = n => admin || n.auto || n.setor === 'todos' || (n.setor === 'pessoal' && n.para === uid) || meusSetores().includes(n.setor);
 
@@ -238,7 +238,8 @@
     if (admin) { ouvir('adm', F.query(col, F.orderBy('criado', 'desc'), F.limit(100))); ouvirCadastros(); }
     else {
       // Uma consulta por setor (o Firestore só libera consultas que a regra consegue provar)
-      ['todos', ...meusSetores()].forEach(s => ouvir('s:' + s, F.query(col, F.where('setor', '==', s))));
+      // Só os setores gravados no cadastro: é a lista que a regra confere (o PIX "herdado" do TEF não entra até o ADM salvar)
+      ['todos', ...((perfil && Array.isArray(perfil.setores)) ? perfil.setores : []).filter(s => s !== '-pix')].forEach(s => ouvir('s:' + s, F.query(col, F.where('setor', '==', s))));
       ouvir('eu', F.query(col, F.where('para', '==', uid)));
     }
     ouvirAceitas(); ouvirAnp();
