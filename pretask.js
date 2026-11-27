@@ -77,6 +77,7 @@
 .ptsefaz{margin-top:6px}.ptsefaz.sobre button[data-cartao]{outline:2px dashed var(--accent-text);outline-offset:2px}
 .ptsoc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;font-size:12px}.ptsoc small{color:var(--muted);font-weight:400}.ptsoc button{font:inherit;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--chip-bg);color:var(--chip-fg);cursor:pointer}
 .ptctt button small{font-weight:400;opacity:.75;margin-left:5px}
+.ptbwrap{position:relative;display:block}.ptbwrap input{width:100%;box-sizing:border-box;padding-right:34px!important}.ptbseta{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);font-size:14px;cursor:pointer;padding:4px 8px;line-height:1}.ptbanco.outro .ptbseta{display:none}.ptblista{position:fixed;z-index:10000;box-sizing:border-box;max-height:260px;overflow-y:auto;margin:0;padding:4px;list-style:none;background:var(--field);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18)}.ptblista li{padding:8px 10px;border-radius:6px;font-size:13.5px;font-weight:400;color:var(--fg);cursor:pointer;text-align:left}.ptblista li:hover,.ptblista li.foco{background:color-mix(in srgb,#FF6A00 12%,transparent)}.ptblista li.sel{font-weight:600;color:var(--accent-text)}.ptblista li.vazio{color:var(--muted);cursor:default;background:none}
 .ptf .ptmesmo{display:flex!important;flex-direction:row!important;align-items:center;justify-content:flex-start;align-self:flex-start;gap:6px;font-size:12.5px;font-weight:500;color:var(--fg);cursor:pointer;text-align:left}.ptf .ptmesmo input{accent-color:#FF6A00;width:16px!important;min-width:0;height:16px;margin:0;padding:0;flex:none}
 .ptgrid input[readonly]{opacity:.75}
 .ptcfc{font-size:12px;font-weight:600;color:var(--accent-text);margin-top:4px;align-self:flex-start}
@@ -120,17 +121,58 @@
     }
     if ((c.tipo || 'texto') === 'texto' && ehBanco(c)) {
       // Qual Banco: lista da FEBRABAN (código + nome) com busca; "Outro banco" libera digitar um que não está na lista
-      listaBancos(); const fora = !!String(val).trim() && !(window.BANCOS_FEBRABAN || []).includes(String(val).trim());
-      return `<div class="ptf${full} ptbanco">${lab}<input data-pk="${esc(key)}" data-tipo="texto" value="${esc(val)}"${fora ? '' : ' list="ptBancos"'} placeholder="${fora ? 'Digite o nome do banco' : 'Digite o nome ou o código do banco'}" autocomplete="off"><label class="ptmesmo"><input type="checkbox" data-bancooutro${fora ? ' checked' : ''}> <span>Outro banco (não está na lista)</span></label></div>`;
+      const fora = !!String(val).trim() && !(window.BANCOS_FEBRABAN || []).includes(String(val).trim());
+      return `<div class="ptf${full} ptbanco${fora ? ' outro' : ''}">${lab}<div class="ptbwrap"><input data-pk="${esc(key)}" data-tipo="texto" data-banco value="${esc(val)}" placeholder="${fora ? 'Digite o nome do banco' : 'Digite o nome ou o código do banco'}" autocomplete="off" role="combobox" aria-expanded="false"><button type="button" class="ptbseta" data-bancoseta tabindex="-1" aria-label="Abrir lista de bancos">▾</button><ul class="ptblista" role="listbox" hidden></ul></div><label class="ptmesmo"><input type="checkbox" data-bancooutro${fora ? ' checked' : ''}> <span>Outro banco (não está na lista)</span></label></div>`;
     }
     if (c.tipo === 'link') return `<label class="ptf${full}">${lab}<input data-pk="${esc(key)}" type="url" value="${esc(val)}" placeholder="https://"></label>`;
     return `<label class="ptf${full}">${lab}<input data-pk="${esc(key)}" data-tipo="${esc(c.tipo || 'texto')}" ${TIPOIN[c.tipo] || ''} value="${esc(val)}"${c.ph ? ` placeholder="${esc(c.ph)}"` : ''}></label>`;
   }
   // Campo de banco: rótulo com "banco" (Qual Banco, Banco ou adquirente do PIX), sem ser agência, conta, carteira ou convênio
   const ehBanco = c => /\bbanco\b/i.test(c.label || '') && !/ag[eê]ncia|conta|carteira|conv[eê]nio/i.test(c.label || '');
-  function listaBancos() {
-    if (document.getElementById('ptBancos') || !window.BANCOS_FEBRABAN) return;
-    const dl = document.createElement('datalist'); dl.id = 'ptBancos'; dl.innerHTML = window.BANCOS_FEBRABAN.map(b => `<option value="${esc(b)}">`).join(''); document.body.appendChild(dl);
+  // Lista de bancos própria (o datalist do navegador só mostrava o banco já escolhido e não deixava trocar)
+  const semAcento = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  function abrirBancos(inp, filtrar) {
+    const box = inp.closest('.ptbanco'); if (!box || box.classList.contains('outro')) return;
+    const ul = box.querySelector('.ptblista'), todos = window.BANCOS_FEBRABAN || [], v = inp.value.trim();
+    const q = filtrar && !todos.includes(v) ? semAcento(v) : '';
+    const itens = q ? todos.filter(b => semAcento(b).includes(q)) : todos;
+    ul.innerHTML = itens.length ? itens.map(b => `<li role="option" data-banco-op="${esc(b)}"${b === v ? ' class="sel" aria-selected="true"' : ''}>${esc(b)}</li>`).join('') : '<li class="vazio">Nenhum banco encontrado. Se não estiver na lista, marque "Outro banco".</li>';
+    ul.hidden = false; inp.setAttribute('aria-expanded', 'true'); posBancos(inp);
+    const sel = ul.querySelector('.sel'); ul.scrollTop = sel ? Math.max(0, sel.offsetTop - 60) : 0;
+  }
+  // A lista fica em position:fixed para não ser cortada pelo cartão; abre para cima quando falta espaço embaixo
+  function posBancos(inp) {
+    const ul = inp.closest('.ptbanco').querySelector('.ptblista'), r = inp.getBoundingClientRect(), vh = window.innerHeight;
+    const baixo = vh - r.bottom - 8, cima = r.top - 8, alto = Math.min(260, Math.max(baixo, cima) - 4), up = baixo < 180 && cima > baixo;
+    ul.style.left = r.left + 'px'; ul.style.width = r.width + 'px'; ul.style.maxHeight = Math.max(120, alto) + 'px';
+    if (up) { ul.style.top = ''; ul.style.bottom = (vh - r.top + 4) + 'px'; } else { ul.style.bottom = ''; ul.style.top = (r.bottom + 4) + 'px'; }
+  }
+  function fecharBancos(box) { const ul = box && box.querySelector('.ptblista'); if (!ul || ul.hidden) return; ul.hidden = true; const inp = box.querySelector('input[data-banco]'); if (inp) inp.setAttribute('aria-expanded', 'false'); }
+  function escolherBanco(inp, b) { inp.value = b; inp.classList.remove('erro', 'falta'); fecharBancos(inp.closest('.ptbanco')); inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); }
+  function ligarBancos(root) {
+    const reposicionar = ev => { if (ev && ev.target && ev.target.closest && ev.target.closest('.ptblista')) return; root.querySelectorAll('.ptblista:not([hidden])').forEach(ul => posBancos(ul.closest('.ptbanco').querySelector('input[data-banco]'))); };
+    window.addEventListener('scroll', reposicionar, true); window.addEventListener('resize', reposicionar);
+    root.addEventListener('focusin', ev => { if (ev.target.matches && ev.target.matches('input[data-banco]')) abrirBancos(ev.target, false); });
+    root.addEventListener('focusout', ev => { if (!ev.target.matches || !ev.target.matches('input[data-banco]')) return; const box = ev.target.closest('.ptbanco'); setTimeout(() => { if (!box.contains(document.activeElement)) fecharBancos(box); }, 150); });
+    root.addEventListener('input', ev => { if (ev.target.matches && ev.target.matches('input[data-banco]') && ev.isTrusted) abrirBancos(ev.target, true); });
+    root.addEventListener('mousedown', ev => {
+      const op = ev.target.closest('[data-banco-op]'); if (op) { ev.preventDefault(); escolherBanco(op.closest('.ptbanco').querySelector('input[data-banco]'), op.dataset.bancoOp); return; }
+      if (ev.target.closest('.ptblista')) { ev.preventDefault(); return; }
+      const seta = ev.target.closest('[data-bancoseta]'); if (seta) { ev.preventDefault(); const box = seta.closest('.ptbanco'), inp = box.querySelector('input[data-banco]'); if (box.querySelector('.ptblista').hidden) { inp.focus(); abrirBancos(inp, false); } else fecharBancos(box); }
+    });
+    root.addEventListener('click', ev => { if (ev.target.matches && ev.target.matches('input[data-banco]') && ev.target.closest('.ptbanco').querySelector('.ptblista').hidden) abrirBancos(ev.target, false); });
+    root.addEventListener('keydown', ev => {
+      const inp = ev.target; if (!inp.matches || !inp.matches('input[data-banco]')) return; const box = inp.closest('.ptbanco'), ul = box.querySelector('.ptblista');
+      if (ev.key === 'Escape') { if (!ul.hidden) { ev.preventDefault(); ev.stopPropagation(); fecharBancos(box); } return; }
+      if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp' && ev.key !== 'Enter') return;
+      if (ul.hidden) { if (ev.key !== 'Enter') { ev.preventDefault(); abrirBancos(inp, false); } return; }
+      const ops = [...ul.querySelectorAll('[data-banco-op]')]; if (!ops.length) return; ev.preventDefault();
+      let i = ops.findIndex(o => o.classList.contains('foco'));
+      if (ev.key === 'Enter') { const o = ops[i < 0 ? 0 : i]; escolherBanco(inp, o.dataset.bancoOp); return; }
+      if (i < 0) i = ops.findIndex(o => o.classList.contains('sel'));
+      i = ev.key === 'ArrowDown' ? Math.min(ops.length - 1, i + 1) : Math.max(0, i - 1);
+      ops.forEach((o, j) => o.classList.toggle('foco', j === i)); ops[i].scrollIntoView({ block: 'nearest' });
+    });
   }
   // Seção: Sim/Não que "abre" mostra os campos seguintes só com Sim
   function camposHtml(campos, pref, v, anx) {
@@ -294,11 +336,11 @@
   }
   // Segmentos (botões de escolha) e campos condicionais
   function ligarCampos(root) {
-    if (root._segLigado) return; root._segLigado = true;
+    if (root._segLigado) return; root._segLigado = true; ligarBancos(root);
     root.addEventListener('click', ev => { const b = ev.target.closest('[data-seg] > button'); if (!b) return; const g = b.parentElement; const ja = b.getAttribute('aria-pressed') === 'true'; g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b && !(ja && g.dataset.limpa)))); g.classList.remove('erro'); sincronizar(root); g.dispatchEvent(new CustomEvent('pt-mudou', { bubbles: true })); });
     root.addEventListener('change', ev => {
       const bo = ev.target.closest && ev.target.closest('[data-bancooutro]');
-      if (bo) { const inp = bo.closest('.ptbanco').querySelector('input[data-pk]'); if (bo.checked) { inp.removeAttribute('list'); inp.placeholder = 'Digite o nome do banco'; } else { inp.setAttribute('list', 'ptBancos'); inp.placeholder = 'Digite o nome ou o código do banco'; if (!(window.BANCOS_FEBRABAN || []).includes(inp.value.trim())) inp.value = ''; } inp.focus(); return; }
+      if (bo) { const box = bo.closest('.ptbanco'), inp = box.querySelector('input[data-pk]'); box.classList.toggle('outro', bo.checked); if (bo.checked) { fecharBancos(box); inp.placeholder = 'Digite o nome do banco'; inp.focus(); } else { inp.placeholder = 'Digite o nome ou o código do banco'; if (!(window.BANCOS_FEBRABAN || []).includes(inp.value.trim())) inp.value = ''; inp.focus(); abrirBancos(inp, false); } return; }
       sincronizar(root);
     });
     root.addEventListener('input', ev => { if (ev.target.classList) ev.target.classList.remove('erro', 'falta'); });

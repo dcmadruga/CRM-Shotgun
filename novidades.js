@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 277, data: '2026-11-27', titulo: 'Qual Banco: dá para trocar o banco escolhido', itens: [
+    'Depois de escolher um banco, clicar no campo (ou na setinha) abre a lista completa de novo, com o banco atual destacado, para trocar por outro.',
+    'Digitando, a lista filtra pelo nome ou pelo código, sem ligar para acentos. Também dá para usar as setas e o Enter.'
+  ] },
   { v: 276, data: '2026-11-27', titulo: 'Qual Banco com a lista da FEBRABAN', itens: [
     'No Pré TASK, o campo Qual Banco (e Banco ou adquirente do PIX) mostra a lista de bancos da FEBRABAN, com código e nome. Digite parte do nome ou o código para achar.',
     'Banco que não está na lista: marque "Outro banco (não está na lista)" e digite o nome.'
