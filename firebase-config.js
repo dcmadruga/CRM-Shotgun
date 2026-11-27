@@ -11,4 +11,4 @@ window.FIREBASE_CONFIG = {
 
 // Google Agenda + Meet automático na Agenda (ID do cliente OAuth do Google Cloud, tipo Aplicativo da Web).
 // Não é segredo. Vazio = o app mostra só o botão "Criar sala no Meet".
-window.GOOGLE_CLIENT_ID = '';
+window.GOOGLE_CLIENT_ID = '696362967875-1bpbtunipsqlpar392nqgjb7udm4u46g.apps.googleusercontent.com';
