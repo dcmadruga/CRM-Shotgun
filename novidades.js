@@ -10,6 +10,12 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 259, data: '2026-11-26', titulo: 'Demonstração: horário marcado × horário real', itens: [
+    'Na tela Hoje, cada demonstração mostra o status: Agendada, Confirmada, Em andamento, Atrasada ou Realizada.',
+    'Atrasada aparece sozinha quando o horário da demonstração já terminou e ninguém registrou o resultado. Em andamento aparece entre o início e o fim marcados.',
+    'Ao marcar como Realizada, informe a hora em que a demonstração começou e quanto durou. O card mostra, por exemplo, "Começou às 15:30 (30 min de atraso)", e isso vai para o histórico do lead.',
+    'Se alguém muda a data ou a hora de uma demonstração já agendada, o card mostra o horário anterior ("Marcada antes para 15:00") e a mudança fica anotada no histórico do lead. Uma demonstração reagendada mostra de qual data veio.'
+  ] },
   { v: 258, data: '2026-11-26', titulo: 'Cartão de contribuinte mais confiável e aba do vendedor fecha ao salvar', itens: [
     'Dados para o contrato: o botão "Anexar cartão de contribuinte" foi refeito para abrir a escolha de arquivo em qualquer navegador. Também dá para arrastar o arquivo e soltar em cima do botão.',
     'Ao escolher o arquivo, ele aparece logo abaixo do botão e a Inscrição estadual é preenchida pela leitura.',
