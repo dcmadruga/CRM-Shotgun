@@ -306,6 +306,8 @@ header.top .versao { align-self: center; }
 .loginCard .slogan { font-family: var(--display); font-weight: 600; font-style: italic; font-size: 14.5px; line-height: 1.4; letter-spacing: 0; color: var(--fg); margin: 0 0 6px; padding-left: 10px; border-left: 3px solid var(--accent); }
 .loginCard button.primary { min-height: 46px; font-size: 15px; }
 .loginCard h2 { font-weight: var(--peso-titulo); }
+.loginCard #loginMsg { font-size: 13px; line-height: 1.45; }
+.loginCard #loginMsg.erro { color: var(--danger); font-weight: 500; padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent); border-radius: var(--raio-sm); background: color-mix(in srgb, var(--danger) 10%, transparent); }
 
 /* ---------- Tela de carregamento ---------- */
 #sgSplash {
