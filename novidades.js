@@ -10,6 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 271, data: '2026-11-27', titulo: 'TEF e PIX separados', itens: [
+    'No Pré TASK, o item TEF / PIX virou dois: TEF, com os mesmos campos de antes (TEF Fixo, PDV Móvel, Cartões Frota e adquirentes), e PIX, que pergunta se o PIX é integrado ao PDV, o banco ou adquirente, o tipo de chave e a chave PIX. O que já tinha sido preenchido continua no TEF.',
+    'No TASK, o módulo TEF / PIX também virou dois setores, TEF e PIX. O processo "Configurar PIX" passou para o PIX, com o andamento que já tinha. Quem era do setor TEF / PIX passa a ver os dois.',
+    'Para o ADM: em Parâmetros Pré TASK, a seção PIX já aparece pronta para conferir e publicar. Em Usuários, marque ou desmarque o setor PIX de cada pessoa. Os avisos do sino do PIX chegam para quem tiver o setor PIX salvo no cadastro.'
+  ] },
   { v: 270, data: '2026-11-27', titulo: 'Cadastro direto sem a aba Pré-Contrato', itens: [
     'No Pré TASK do cadastro direto, a aba Pré-Contrato saiu: os dados do contrato não se aplicam a esse cadastro e deixam de ser exigidos no Salvar final. Os blocos que ficam nas outras abas continuam valendo.',
     'Em blocos com dois e-mails, como o Financeiro, o segundo ganhou a opção "Usar o mesmo e-mail para nota fiscal": ele copia o e-mail do boleto e acompanha se você mudar.'

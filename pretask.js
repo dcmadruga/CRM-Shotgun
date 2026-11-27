@@ -310,7 +310,7 @@
     return b; };
   // Seção de anexos (Certificado Digital, Logo da Filial) aparece dentro da aba Base e posto, por posto ou por filial
   const ehSecAnx = s => /anexo/i.test(s.titulo || '') || (s.campos || []).some(c => c.tipo === 'anexo' && /certificad|pfx|logo/i.test(c.label || ''));
-  // Seções dos Parâmetros que ficam no grupo Validação do menu, logo abaixo de Implantação (hoje todas: TEF / PIX, Integração…)
+  // Seções dos Parâmetros que ficam no grupo Validação do menu, logo abaixo de Implantação (hoje todas: TEF, PIX, Integração…)
   const ehSecVal = s => true;
   // Setor de Validação de uma seção (escolhido nos Parâmetros): 'proprio' (item próprio no menu), 'status', 'base' (Implantação)
   // ou o id/título de outra seção do Pré TASK. Sem escolha: Anexos em Implantação e o resto com item próprio.
@@ -318,7 +318,7 @@
   function alvoSetor(v, ps, eu) {
     if (!v || v === 'proprio') return 'proprio';
     if (v === 'status' || v === 'base') return v;
-    const j = ps.findIndex((x, k) => k !== eu && ((x.id && x.id === v) || normT(x.titulo) === normT(v)));
+    const j = ps.findIndex((x, k) => k !== eu && ((x.id && x.id === v) || normT(x.titulo) === normT(v) || (x.antes && normT(x.antes) === normT(v))));
     if (j < 0) return 'proprio';
     return alvoSetor(setorBruto(ps[j]), ps, j) === 'proprio' ? j : 'proprio'; // sem encadear: o destino precisa ter item próprio
   }
@@ -495,7 +495,7 @@
     if (task && task.status) pre.status = task.status; // o status do card é o que vale
     if (!pre.modalidade) { const im = p.implantacao || (p.dados && p.dados.implantacao); if (im) pre.modalidade = im === 'Remota' ? 'Remoto' : 'Presencial'; } // vem da proposta
     if (pre.tipoBase === 'Central' && !pre.nome) { const f = (v2.fantasia || p.cliente || '').trim(); if (f) pre.nome = /^central\b/i.test(f) ? f : 'Central ' + f; }
-    Object.assign(C, { p, e4: e4 || {}, e2, cfg4: cfg4 && cfg4.json ? json(cfg4) : copia(window.ETAPA4_PADRAO || { secoes: [] }), cfg2: json(pub2) || window.ETAPA2_PADRAO || { secoes: [] }, an, dono, centrais, pre, v: copia((e4 && e4.valores) || {}), v2: copia(v2) });
+    Object.assign(C, { p, e4: e4 || {}, e2, cfg4: (window.pretaskCompletar || (x => x))(cfg4 && cfg4.json ? json(cfg4) : copia(window.ETAPA4_PADRAO || { secoes: [] })), cfg2: json(pub2) || window.ETAPA2_PADRAO || { secoes: [] }, an, dono, centrais, pre, v: copia((e4 && e4.valores) || {}), v2: copia(v2) });
     d.querySelector('#ptTit').textContent = (direto ? (ctx.novo ? 'Novo cadastro direto' : 'Pré TASK · cadastro direto') : 'Pré TASK') + (p.cliente ? ' · ' + p.cliente : '');
     trazerAnexosE2();
     camposBase().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v[k] === undefined && C.v['f0__' + k] !== undefined) C.v[k] = C.v['f0__' + k]; }));
@@ -928,7 +928,7 @@
   // Cada seção do Pré-Contrato com campos marcados "Pré TASK" vira um item próprio do menu, com o título da seção
   const tituloComp = t => String(t || 'Dados complementares').replace(/:\s*$/, '').trim();
   // Seção do Pré-Contrato que entra dentro de uma seção do Pré TASK em vez de ter item próprio:
-  // a escolhida no campo pretaskEm (título da seção do Pré TASK) ou, por padrão, Dados bancários / boleto dentro de TEF / PIX
+  // a escolhida no campo pretaskEm (título da seção do Pré TASK) ou, por padrão, Dados bancários / boleto dentro de TEF (antes TEF / PIX)
   function destinoComp(sc) {
     const ps = secoesParam(C.cfg4);
     let v = sc.setor;

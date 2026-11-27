@@ -19,3 +19,29 @@ window.ETAPA4_PADRAO = {
     ] }
   ]
 };
+// TEF e PIX eram uma seção só ("TEF / PIX") até a v271. Nos parâmetros já publicados, a seção vira "TEF" (com os
+// mesmos campos, então o que já foi preenchido continua lá) e a seção "PIX" entra logo depois. Uma vez só (marca
+// tefPixSeparado): se o ADM mudar ou apagar a seção PIX e publicar, fica como ele deixou.
+(function () {
+  const PIX = () => ({ id: 'pix', titulo: 'PIX', campos: [
+    { k: 'pixIntegrado', label: 'PIX integrado ao PDV', tipo: 'simnao', req: true, show: true },
+    { k: 'pixBanco', label: 'Banco ou adquirente do PIX', tipo: 'texto', req: true, show: true },
+    { k: 'pixTipoChave', label: 'Tipo de chave PIX', tipo: 'opcoes', req: true, show: true, opcoes: 'CNPJ, E-mail, Telefone, Chave aleatória' },
+    { k: 'pixChave', label: 'Chave PIX', tipo: 'texto', req: true, show: true }
+  ] });
+  window.pretaskCompletar = cfg => {
+    if (!cfg || !Array.isArray(cfg.secoes) || cfg.tefPixSeparado) return cfg;
+    const i = cfg.secoes.findIndex(s => /\btef\b/i.test(s.titulo || '') && /\bpix\b/i.test(s.titulo || ''));
+    if (i >= 0) {
+      const s = cfg.secoes[i], pix = PIX();
+      s.antes = s.titulo; s.titulo = 'TEF'; // "antes": quem apontava para "TEF / PIX" (Setor de Validação) passa a achar o TEF
+      if (s.porFilial === false) pix.porFilial = false;
+      if (s.setor && s.setor !== 'proprio') pix.setor = s.setor;
+      if (!cfg.secoes.some(x => /^\s*pix\s*$/i.test(x.titulo || '') || x.id === 'pix')) cfg.secoes.splice(i + 1, 0, pix);
+      cfg.tefPixMudou = true;
+    }
+    cfg.tefPixSeparado = true;
+    return cfg;
+  };
+  window.ETAPA4_PADRAO.tefPixSeparado = true;
+})();
