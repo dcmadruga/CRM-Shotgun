@@ -261,7 +261,11 @@
             <label class="agopt"><input type="radio" name="agFmt" value="online"${d.formato !== 'presencial' ? ' checked' : ''}>${IC.video}<span><b>Online</b><small>Por videochamada</small></span></label>
             <label class="agopt"><input type="radio" name="agFmt" value="presencial"${d.formato === 'presencial' ? ' checked' : ''}>${IC.pin}<span><b>Presencial</b><small>No posto do cliente</small></span></label>
           </div>
-          <label id="agLinkL">Link da reunião <small>opcional</small><input id="agLink" type="url" inputmode="url" placeholder="https://meet.google.com/…" value="${esc(d.link || '')}"></label>
+          <div id="agLinkL"><label for="agLink">Link da reunião <small>opcional</small></label>
+            <div class="aglink"><input id="agLink" type="url" inputmode="url" placeholder="https://meet.google.com/…" value="${esc(d.link || '')}">
+              <button type="button" data-a="meetnovo" title="Abre o Google Meet numa aba nova já com uma sala criada">${IC.video}Criar sala no Meet</button>
+              ${navigator.clipboard && navigator.clipboard.readText ? '<button type="button" data-a="meetcolar" title="Cola o link copiado">Colar</button>' : ''}</div>
+            <small class="aglinkdica" id="agLinkDica" hidden>Na aba do Meet, copie o link da sala (ícone de copiar ou a barra de endereço) e volte aqui para colar.</small></div>
           <label id="agLocalL">Endereço<input id="agLocal" placeholder="Rua, número, bairro, cidade" value="${esc(d.local || '')}"></label>
         </section>
         <section class="crmbloco"><h4>Participantes do cliente</h4><div id="agPartBox"></div></section>
@@ -662,6 +666,15 @@
       else if (a === 'cancelar') { const v = atual.volta, id = atual.leadId; fechar(); if (v === 'lead' && id && window.crmAbrirLead) window.crmAbrirLead(id, true); }
       else if (a === 'excluir') excluir(b);
       else if (a === 'trocar') { lerDlgSeguro(); atual.leadId = ''; atual.demo.participantes = []; desenharLead(); atualizarConflito(); }
+      else if (a === 'meetnovo') { window.open('https://meet.google.com/new', '_blank', 'noopener'); const t = $('agLinkDica'); if (t) t.hidden = false; }
+      else if (a === 'meetcolar') {
+        navigator.clipboard.readText().then(txt => {
+          const m = String(txt || '').match(/https?:\/\/\S+/) || (/^meet\.google\.com\/\S+/.test(String(txt).trim()) ? ['https://' + String(txt).trim()] : null);
+          const t = $('agLinkDica');
+          if (m) { $('agLink').value = m[0]; if (t) t.hidden = true; }
+          else if (t) { t.textContent = 'Não achei um link copiado. Copie o link da sala no Meet e toque em Colar de novo.'; t.hidden = false; }
+        }).catch(() => { const t = $('agLinkDica'); if (t) { t.textContent = 'O navegador não deixou colar automático. Toque no campo e cole o link.'; t.hidden = false; } $('agLink').focus(); });
+      }
       else if (a === 'verlead') { const id = atual.leadId; fechar(); if (window.crmAbrirLead) window.crmAbrirLead(id); }
       else if (a === 'novolead') {
         // Cadastra o lead no CRM e volta para cá com ele escolhido
