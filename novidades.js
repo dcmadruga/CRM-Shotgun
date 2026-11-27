@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 275, data: '2026-11-27', titulo: 'Menu do Pré TASK: ✓ só quando algo foi respondido', itens: [
+    'No menu do Pré TASK, um item sem perguntas obrigatórias (como Homologação de Boleto) só mostra o ✓ depois que alguma pergunta é respondida. Antes de responder, aparece o círculo de pendente.',
+    'Isso não muda o Salvar final: ele continua exigindo só os campos obrigatórios.'
+  ] },
   { v: 274, data: '2026-11-27', titulo: 'Contato do cliente em TEF / PIX', itens: [
     'No Pré TASK, o item TEF / PIX ganhou o bloco Contato Cliente: TEF / PIX, com nome, telefone / WhatsApp e e-mail de quem cuida do TEF e do PIX no cliente.',
     'Embaixo do nome aparecem os contatos já informados (responsável legal, financeiro, contato técnico, proposta, CRM): um toque preenche o nome, o telefone e o e-mail.'
