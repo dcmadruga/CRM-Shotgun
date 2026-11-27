@@ -769,11 +769,30 @@ async function iniciar() {
       if (duvNova(p)) await F.updateDoc(F.doc(db, 'propostas', p.id), { duvidaLidaEm: F.serverTimestamp() });
     } catch (err) { box.innerHTML = `<p class="hint">Não foi possível carregar as dúvidas (${esc(err.code || err.message)}).</p>`; }
   }
+  // Vias repetidas: o cliente às vezes aprova duas vias iguais da mesma proposta (dois links, mesmo cliente e valores).
+  // No Hoje fica só uma: a que andou mais nos passos; empatou, a aprovada por último. As outras continuam no quadro.
+  const ms2 = ts => ts && ts.seconds ? ts.seconds * 1000 : 0;
+  const avanco = p => p.e4Em ? 5 : p.ctAceitoEm ? 4 : p.ctEm ? 3 : p.e2Em ? 2 : 1;
+  function viaUnica(lista) {
+    const grupos = new Map(), fora = [];
+    lista.forEach(p => {
+      if (p.status !== 'aprovada') { fora.push(p); return; }
+      const cli = String(p.cnpj || '').replace(/\D/g, '') || String(p.cliente || '').trim().toUpperCase();
+      if (!cli) { fora.push(p); return; }
+      const k = [p.owner || '', cli, Number(p.totLic) || 0, Number(p.totMen) || 0].join('|');
+      if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(p);
+    });
+    return fora.concat([...grupos.values()].map(l => {
+      const p = l.slice().sort((a, b) => avanco(b) - avanco(a) || ms2(b.aprovadoEm) - ms2(a.aprovadoEm))[0];
+      return l.length > 1 ? { ...p, _vias: l.length } : p;
+    }));
+  }
   function desenharHoje() {
     if (!$('hList')) return;
     const minhas = (fb.admin || fb.gerente) && $('hMinhas').checked;
     const base = fb.gerente && !minhas ? props.concat(propsEq.filter(p => !props.some(q => q.id === p.id))) : props;
-    const itens = base.filter(p => !minhas || p.owner === perfil?.uid).map(p => ({ p, x: pendencia(p) })).filter(o => o.x)
+    const itens = viaUnica(base.filter(p => !minhas || p.owner === perfil?.uid)).map(p => ({ p, x: pendencia(p) })).filter(o => o.x)
+      .map(o => { if (o.p._vias > 1) o.x = { ...o.x, d: o.x.d + ` O cliente aprovou ${o.p._vias} vias iguais desta proposta; aparece só esta.` }; return o; })
       .sort((a, b) => (a.x.cli === b.x.cli ? 0 : a.x.cli ? 1 : -1));
     const meus = itens.filter(o => !o.x.cli && !o.p._equipe).length, daEq = itens.filter(o => !o.x.cli && o.p._equipe).length;
     $('hCount').textContent = itens.length ? `${meus} com você${daEq ? ` · ${daEq} com a equipe` : ''} · ${itens.length - meus - daEq} aguardando cliente` : '';
