@@ -7,6 +7,7 @@
 // sem gravar nada); o aviso some quando a pessoa é liberada ou o cadastro é excluído. Tocar abre a tela Usuários.
 // Proposta aceita: quando o cliente aprova a proposta (página de aprovação), o vendedor dono e o ADM recebem um aviso,
 // montado a partir da própria proposta (status 'aprovada', últimos 30 dias), sem gravar nada. Tocar abre a proposta.
+// Vias repetidas da mesma proposta (mesmo cliente e valores) aprovadas mais de uma vez viram um aviso só, com todos que aprovaram.
 // Postos novos na ANP: um aviso por dia e por Estado com os postos que entraram na base da ANP (anp/novos.json, a mesma
 // lista da Telemetria ANP), só nos Estados de atuação da pessoa (usuarios/{uid}.estados, a mesma regra dos filtros do CRM).
 // Vale para todos, inclusive o ADM; quem não tem Estado marcado não recebe. Últimos 7 dias, sem gravar nada. Tocar abre a
@@ -176,10 +177,24 @@
     const q = admin ? F.query(col, F.where('status', '==', 'aprovada')) : F.query(col, F.where('owner', '==', uid), F.where('status', '==', 'aprovada'));
     unsubs.push(F.onSnapshot(q, s => {
       const lim = Date.now() - 30 * 864e5;
-      porQuery.aceitas = s.docs.map(d => ({ id: d.id, ...d.data() })).map(p => ({ p, t: ms(p.aprovadoEm) })).filter(x => !x.t || x.t >= lim).map(({ p, t }) => {
-        const quem = [p.aprovadoNome, p.aprovadoCargo].filter(Boolean).join(', ');
+      // Um aviso por proposta: quando o mesmo cliente aprova mais de uma via da mesma proposta (mesmo CNPJ/cliente e mesmos
+      // valores, ex.: uma vez como sócio e outra como gerente), junta num aviso só, com todos que aprovaram. O id muda com a
+      // quantidade de aprovações, para o aviso voltar como não lido quando chega uma nova.
+      const grupos = new Map();
+      s.docs.map(d => ({ id: d.id, ...d.data() })).map(p => ({ p, t: ms(p.aprovadoEm) })).filter(x => !x.t || x.t >= lim)
+        .sort((a, b) => (a.t || Date.now()) - (b.t || Date.now())).forEach(x => {
+          const cli = String(x.p.cnpj || '').replace(/\D/g, '') || String(x.p.cliente || x.p.numero || x.p.id).trim().toUpperCase();
+          const k = [x.p.owner || '', cli, Number(x.p.totLic) || 0, Number(x.p.totMen) || 0].join('|');
+          if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(x);
+        });
+      porQuery.aceitas = [...grupos.values()].map(l => {
+        const { p, t } = l[l.length - 1], n = l.length;
+        const pessoas = new Map(); // mesma pessoa com mais de um cargo: "Fulana (Sócia, Gerente)"
+        l.forEach(({ p }) => { const nm = String(p.aprovadoNome || '').trim(), cg = String(p.aprovadoCargo || '').trim(); if (!nm && !cg) return;
+          const k = nm.toUpperCase() || cg.toUpperCase(); if (!pessoas.has(k)) pessoas.set(k, { nm, cgs: [] }); const x = pessoas.get(k); if (cg && !x.cgs.some(c => c.toUpperCase() === cg.toUpperCase())) x.cgs.push(cg); });
+        const quem = [...pessoas.values()].map(({ nm, cgs }) => nm ? nm + (cgs.length ? (l.length > 1 ? ' (' + cgs.join(', ') + ')' : ', ' + cgs[0]) : '') : cgs.join(', '));
         const vals = [Number(p.totLic) ? 'Licenças ' + brl(p.totLic) : '', Number(p.totMen) ? 'Mensalidade ' + brl(p.totMen) : ''].filter(Boolean).join(' · ');
-        return { id: 'ace:' + p.id, auto: true, prop: p.id, titulo: 'Proposta aceita: ' + (p.cliente || p.numero || 'cliente') + (window.sgCidadeUf && window.sgCidadeUf(p) ? ' · ' + window.sgCidadeUf(p) : ''), texto: [vals, quem ? 'Aprovada por ' + quem : ''].filter(Boolean).join('\n'), setor: 'propostas', t, por: admin && p.owner !== uid ? p.vendedor || '' : '' };
+        return { id: 'ace:' + l[0].p.id + (n > 1 ? ':' + n : ''), auto: true, prop: p.id, titulo: 'Proposta aceita: ' + (p.cliente || p.numero || 'cliente') + (window.sgCidadeUf && window.sgCidadeUf(p) ? ' · ' + window.sgCidadeUf(p) : ''), texto: [vals, quem.length ? 'Aprovada por ' + quem.join('; ') : ''].filter(Boolean).join('\n'), setor: 'propostas', t, por: admin && p.owner !== uid ? p.vendedor || '' : '' };
       });
       desenhar();
     }, e => { console.warn('notificações (propostas aceitas)', e.code || e); porQuery.aceitas = []; desenhar(); }));
