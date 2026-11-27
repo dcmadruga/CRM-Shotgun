@@ -1397,7 +1397,7 @@ async function iniciar() {
       if (fb.admin) e4Status(snap.exists() ? (snap.data().por ? 'Publicado por ' + snap.data().por + (snap.data().em ? ' em ' + fmtQuando(snap.data().em) : '') + '.' : '') : 'Usando o formulário padrão. Ajuste e publique.');
     } catch (e) { E4 = copia(window.ETAPA4_PADRAO); if (fb.admin) e4Status('Não foi possível carregar o formulário publicado; mostrando o padrão.'); }
     e4Sujo = false; desenharE4();
-    if (E4 && E4.tefPixMudou) { delete E4.tefPixMudou; marcarE4(); e4Status('A seção TEF / PIX foi separada em TEF e PIX (o Pré TASK já mostra assim). Confira os campos do PIX e toque em Publicar para gravar.'); }
+    if (E4 && E4.tefPixMudou) { delete E4.tefPixMudou; marcarE4(); e4Status('TEF / PIX agora tem dois blocos no mesmo item do Pré TASK: TEF (os campos de sempre) e PIX (seção nova, com Setor de Validação em TEF / PIX). Confira e toque em Publicar para gravar.'); }
   }
   function marcarE4() { e4Sujo = true; e4Status('Alterações ainda não publicadas.'); }
   function desenharE4() {

@@ -19,9 +19,11 @@ window.ETAPA4_PADRAO = {
     ] }
   ]
 };
-// TEF e PIX eram uma seção só ("TEF / PIX") até a v271. Nos parâmetros já publicados, a seção vira "TEF" (com os
-// mesmos campos, então o que já foi preenchido continua lá) e a seção "PIX" entra logo depois. Uma vez só (marca
-// tefPixSeparado): se o ADM mudar ou apagar a seção PIX e publicar, fica como ele deixou.
+// TEF / PIX: um item só no menu do Pré TASK, com dois blocos dentro, TEF e PIX (v273).
+// Nos parâmetros já publicados, a seção "TEF / PIX" ganha o título de bloco "TEF" (mesmos campos, então o que já foi
+// preenchido continua lá) e a seção "PIX" entra logo depois, com o Setor de Validação apontando para TEF / PIX (é o que
+// a coloca dentro do mesmo item). Também desfaz a v271, que tinha virado dois itens ("TEF" com "antes", e "PIX").
+// Uma vez só (marca tefPixJunto): se o ADM mudar ou apagar a seção PIX e publicar, fica como ele deixou.
 (function () {
   const PIX = () => ({ id: 'pix', titulo: 'PIX', campos: [
     { k: 'pixIntegrado', label: 'PIX integrado ao PDV', tipo: 'simnao', req: true, show: true },
@@ -29,19 +31,20 @@ window.ETAPA4_PADRAO = {
     { k: 'pixTipoChave', label: 'Tipo de chave PIX', tipo: 'opcoes', req: true, show: true, opcoes: 'CNPJ, E-mail, Telefone, Chave aleatória' },
     { k: 'pixChave', label: 'Chave PIX', tipo: 'texto', req: true, show: true }
   ] });
+  const tefPix = x => /\btef\b/i.test(x || '') && /\bpix\b/i.test(x || '');
   window.pretaskCompletar = cfg => {
-    if (!cfg || !Array.isArray(cfg.secoes) || cfg.tefPixSeparado) return cfg;
-    const i = cfg.secoes.findIndex(s => /\btef\b/i.test(s.titulo || '') && /\bpix\b/i.test(s.titulo || ''));
-    if (i >= 0) {
-      const s = cfg.secoes[i], pix = PIX();
-      s.antes = s.titulo; s.titulo = 'TEF'; // "antes": quem apontava para "TEF / PIX" (Setor de Validação) passa a achar o TEF
-      if (s.porFilial === false) pix.porFilial = false;
-      if (s.setor && s.setor !== 'proprio') pix.setor = s.setor;
-      if (!cfg.secoes.some(x => /^\s*pix\s*$/i.test(x.titulo || '') || x.id === 'pix')) cfg.secoes.splice(i + 1, 0, pix);
+    if (!cfg || !Array.isArray(cfg.secoes) || cfg.tefPixJunto) return cfg;
+    const L = cfg.secoes, t = L.find(s => tefPix(s.titulo)) || L.find(s => tefPix(s.antes));
+    if (t) {
+      if (tefPix(t.antes)) t.titulo = t.antes; delete t.antes;
+      if (!t.bloco) t.bloco = 'TEF';
+      let px = L.find(x => x !== t && (x.id === 'pix' || /^\s*pix\s*$/i.test(x.titulo || '')));
+      if (!px && !cfg.tefPixSeparado) { px = PIX(); L.splice(L.indexOf(t) + 1, 0, px); }
+      if (px) { px.setor = t.id || String(t.titulo).trim(); if (t.porFilial === false) px.porFilial = false; else delete px.porFilial; }
       cfg.tefPixMudou = true;
     }
-    cfg.tefPixSeparado = true;
+    delete cfg.tefPixSeparado; cfg.tefPixJunto = true;
     return cfg;
   };
-  window.ETAPA4_PADRAO.tefPixSeparado = true;
+  window.ETAPA4_PADRAO.tefPixJunto = true;
 })();
