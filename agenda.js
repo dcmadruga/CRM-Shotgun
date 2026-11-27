@@ -85,7 +85,12 @@
   // Próximo contato: só dos leads em aberto (sem proposta e não perdidos), como no funil do CRM
   function lembretes() {
     if (!verProx) return [];
-    return leads.filter(l => doUser(l) && l.prox && !l._temProp && l.etapa !== 'perdido').map(l => ({ k: 'prox', l, data: l.prox, ord: -1 }));
+    return leads.filter(l => doUser(l) && l.prox && !l._temProp && l.etapa !== 'perdido' && !proxResolvido(l)).map(l => ({ k: 'prox', l, data: l.prox, ord: -1 }));
+  }
+  // O próximo contato já está resolvido quando o lead tem uma demonstração (agendada, confirmada ou realizada) do dia dele em diante:
+  // ex.: o contato era 26/11 e a demonstração foi reagendada para 28/11. Aí o lembrete some, em vez de ficar "Atrasado".
+  function proxResolvido(l) {
+    return (Array.isArray(l.demos) ? l.demos : []).some(d => d && d.data && d.data >= l.prox && !['cancelada', 'naocompareceu', 'remarcada'].includes(stDe(d)));
   }
   // Itens de um dia. Hoje também traz os próximos contatos que já passaram (atrasados).
   function doDia(s, todos) {
@@ -105,9 +110,10 @@
     const l = x.l, dono = admin && l.vendedor ? `<small class="agdono">${esc(l.vendedor)}</small>` : '';
     if (x.k === 'prox') {
       const atras = x.data < hoje(), c0 = contatosDe(l)[0] || {};
-      return `<button type="button" class="agit prox${atras ? ' atras' : ''}" data-lead="${esc(l.id)}">
+      return `<div class="agwrap prox"><button type="button" class="agit prox${atras ? ' atras' : ''}" data-lead="${esc(l.id)}">
         <span class="aghora">${atras ? 'Atrasado · ' + fmtDC(x.data) : 'Próximo contato'}</span><b>${esc(l.empresa || '(sem nome)')}</b>${cidAg(l)}
-        ${largo && (c0.nome || c0.fone) ? `<small>${esc([c0.nome, c0.fone].filter(Boolean).join(' · '))}</small>` : ''}${dono}</button>`;
+        ${largo && (c0.nome || c0.fone) ? `<small>${esc([c0.nome, c0.fone].filter(Boolean).join(' · '))}</small>` : ''}${dono}</button>
+        <div class="agqbar" role="group" aria-label="Próximo contato"><button type="button" class="agq" data-qprox="reagendar" data-lead="${esc(l.id)}">Reagendar</button><button type="button" class="agq agq-realizada" data-qprox="feito" data-lead="${esc(l.id)}">Feito</button></div></div>`;
     }
     const d = x.d, on = d.formato !== 'presencial', parts = (d.participantes || []).filter(Boolean), st = stVis(d);
     const nova = st === 'remarcada' && d.remarcadaPara ? (l.demos || []).find(y => y.id === d.remarcadaPara) : null;
@@ -397,6 +403,35 @@
     } catch (e) { dmsg('Não foi possível excluir (' + (e.code || e.message) + ').'); }
   }
 
+  /* ---------- Próximo contato: reagendar ou marcar como feito pelo card ---------- */
+  function telaProx(leadId, acao) {
+    const l = leads.find(x => x.id === leadId); if (!l) return;
+    atual = { leadId: l.id, demo: {}, editando: false, volta: '', remarca: '' };
+    const feito = acao === 'feito';
+    abrirDlg(feito ? 'Próximo contato feito' : 'Reagendar próximo contato', `
+      <p class="agsub"><b>${esc(l.empresa || '')}</b> · estava para ${esc(fmtD(l.prox))}</p>
+      <div class="agform"><section class="crmbloco"><h4>${feito ? 'Como foi' : 'Nova data <em class="agreq">obrigatório</em>'}</h4>
+        ${feito ? '' : `<label>Nova data do próximo contato<input type="date" id="agProxData" min="${hoje()}" value="" required></label>`}
+        <label>Anotação <small>opcional, vai para o histórico do lead</small><input id="agProxObs" maxlength="500" placeholder="${feito ? 'Ex.: liguei, pediu proposta' : 'Ex.: pediu para ligar na semana que vem'}"></label>
+        ${feito ? `<label>Marcar outro próximo contato <small>opcional</small><input type="date" id="agProxData" min="${hoje()}" value=""></label>` : ''}
+      </section></div>
+      <div class="tools crmacts"><button type="button" class="primary" data-a="salvarprox" data-acao="${feito ? 'feito' : 'reagendar'}">Salvar</button><button type="button" data-a="pronto">Fechar</button></div>`, 'prox');
+    setTimeout(() => { const i = $(feito ? 'agProxObs' : 'agProxData'); if (i) i.focus(); }, 60);
+  }
+  async function salvarProx(btn) {
+    const l = leadAtual(); if (!l) return;
+    const feito = btn.dataset.acao === 'feito', nova = ($('agProxData') || {}).value || '', obs = $('agProxObs').value.trim();
+    if (!feito && !nova) { dmsg('Informe a nova data do próximo contato.'); $('agProxData').focus(); return; }
+    if (nova && nova < hoje()) { dmsg('Escolha uma data de hoje em diante.'); $('agProxData').focus(); return; }
+    const texto = feito ? `Próximo contato de ${fmtD(l.prox)} feito.${obs ? ' ' + obs : ''}${nova ? ' Próximo: ' + fmtD(nova) + '.' : ''}` : `Próximo contato reagendado de ${fmtD(l.prox)} para ${fmtD(nova)}.${obs ? ' ' + obs : ''}`;
+    btn.disabled = true; dmsg('Salvando…');
+    try {
+      await F.updateDoc(F.doc(db, 'crm', l.id), { prox: nova, notas: F.arrayUnion({ tipo: 'Anotação', texto, em: new Date().toISOString(), por: quem() }), alterado: F.serverTimestamp(), alteradoPor: quem() });
+      l.prox = nova; fechar(); desenhar();
+      msgTela(nova ? `Próximo contato de ${l.empresa || ''}: ${fmtD(nova)}.` : `Próximo contato de ${l.empresa || ''} marcado como feito.`);
+    } catch (e) { dmsg('Não foi possível salvar (' + (e.code || e.message) + ').'); btn.disabled = false; }
+  }
+
   /* ---------- Reagendar e atalhos de status ---------- */
   // Reagendar: abre uma demo nova com tudo igual à original (lead, formato, link ou endereço, duração, participantes e observações),
   // mas com a data e a hora em branco: a pessoa é obrigada a informar o novo horário. A original fica como Reagendada.
@@ -590,6 +625,8 @@
     $('agArea').addEventListener('click', e => {
       const ir = e.target.closest('[data-irdia]'); if (ir) { ref = ir.dataset.irdia; modo = 'dia'; desenhar(); return; }
       const nv = e.target.closest('[data-novo]'); if (nv) { form('', '', { data: nv.dataset.novo }); return; }
+      const qp = e.target.closest('[data-qprox]');
+      if (qp) { telaProx(qp.dataset.lead, qp.dataset.qprox); return; }
       const q = e.target.closest('[data-qst]');
       if (q) { statusRapido(q.dataset.qst, q.dataset.lead, q.dataset.demo); return; }
       const it = e.target.closest('[data-lead]'); if (!it) return;
@@ -612,6 +649,7 @@
       if (a === 'ditar') { if (window.crmDitar) window.crmDitar(b); return; }
       if (window.crmPararDitado) window.crmPararDitado();
       if (a === 'salvar') salvar(b);
+      else if (a === 'salvarprox') salvarProx(b);
       else if (a === 'realizada') { lerDlgSeguro(); telaResultado(); }
       else if (a === 'registrar') registrar(b);
       else if (a === 'voltar') form(atual.leadId, atual.demo.id, { volta: atual.volta });
