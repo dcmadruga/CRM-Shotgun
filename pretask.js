@@ -745,10 +745,23 @@
     else if (!r.tipo) notaIe('Não deu para ler este tipo de arquivo. Digite a inscrição estadual.' + alerta, 'erro');
     else notaIe('Não encontramos a inscrição estadual neste arquivo' + (r.ocr ? ' (a imagem pode estar pouco nítida)' : '') + '. Digite à mão.' + alerta, 'erro');
   }
+  // Texto logo abaixo do CNPJ: não há botão de pesquisa, a consulta à Receita é automática ao digitar
+  function dicaCnpj(el) {
+    if (el.dataset.pk === 'e2:cnpj') return 'Ao digitar o CNPJ, a pesquisa na Receita é automática: completa os campos vazios da empresa e busca a Inscrição estadual.';
+    const grid = el.closest('[data-e2]'); if (!grid) return '';
+    const nomeDe = inp => ((inp.closest('.ptf') || inp.parentElement).querySelector('span')?.textContent || '').replace(/\*/g, '').trim();
+    const campos = [...grid.querySelectorAll('input[data-pk],select[data-pk],textarea[data-pk]')].filter(i => i !== el);
+    const enche = campos.filter(i => { const t = rotuloDe(i); return !/contador|cpf|crc|respons|cnpj/.test(t) && /raz[aã]o|nome|empresa|fantasia|e-?mail|telefone|whats|fone|\bcep\b|bairro|cidade|munic|^(estado|uf)\b|endere|logradouro|rua/.test(t); }).map(nomeDe);
+    const cont = campos.find(i => { const t = rotuloDe(i); return /nome/.test(t) && /contador|respons/.test(t) && !/cpf|crc/.test(t); });
+    if (!enche.length && !cont) return '';
+    const lista = enche.length > 1 ? enche.slice(0, -1).join(', ') + ' e ' + enche[enche.length - 1] : enche[0];
+    return 'Não precisa de botão: ao digitar o CNPJ, a pesquisa na Receita é automática' + (enche.length ? ' e preenche ' + lista : '') + '.' + (cont ? ' Os sócios aparecem embaixo de ' + nomeDe(cont) + ' para escolher com um toque.' : '');
+  }
   function ligarSefaz(corpo) {
     if (!window.SefazIE) return;
     corpo.querySelectorAll('[data-e2] input[data-tipo="cnpj"]').forEach(el => {
       const msg = document.createElement('small'); msg.className = 'ptauto ptcnpjmsg'; msg.setAttribute('role', 'status'); el.after(msg);
+      const dica = dicaCnpj(el); if (dica) { const h = document.createElement('small'); h.className = 'ptauto ptcnpjdica'; h.textContent = dica; el.after(h); }
       const vai = forcar => { const d = dig(el.value).slice(0, 14); if (d.length === 14 && el.value !== fmtCnpj(d)) el.value = fmtCnpj(d); pesquisarCnpjE2(el, msg, forcar); };
       el.addEventListener('input', () => vai(false));
       el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); vai(true); } });
@@ -784,8 +797,17 @@
     corpo.querySelectorAll('[data-e2] input[data-pk]').forEach(inp => {
       if (!/^crc\b/.test(rotuloDe(inp))) return;
       const a = document.createElement('a'); a.className = 'ptcfc'; a.href = 'https://www3.cfc.org.br/spw/ConsultaNacionalCFC/'; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Consultar no CFC ↗';
-      a.addEventListener('click', () => { const nome = [...(inp.closest('[data-e2]') || corpo).querySelectorAll('input[data-pk]')].find(x => /nome/.test(rotuloDe(x)) && /contador|respons/.test(rotuloDe(x)))?.value; if (nome) window.SefazIE.copiar(nome); });
-      const h = document.createElement('small'); h.className = 'ptauto'; h.textContent = 'Busque pelo nome do contador (já copiado) e cole o número aqui.';
+      // Copia o CPF do contador (a consulta do CFC aceita CPF); sem CPF, copia o nome
+      const h = document.createElement('small'), DICA = 'Ao tocar, o CPF do contador vai copiado: no site do CFC, cole no campo do CPF e traga o número do registro para cá.';
+      h.className = 'ptauto'; h.textContent = DICA;
+      a.addEventListener('click', () => {
+        const xs = [...(inp.closest('[data-e2]') || corpo).querySelectorAll('input[data-pk]')], t = x => rotuloDe(x);
+        const cpf = dig((xs.find(x => /cpf/.test(t(x)) && /contador|respons/.test(t(x))) || xs.find(x => x.dataset.tipo === 'cpf') || {}).value);
+        const nome = (xs.find(x => /nome/.test(t(x)) && /contador|respons/.test(t(x))) || {}).value;
+        if (cpf.length === 11) { window.SefazIE.copiar(cpf); h.className = 'ptauto ok'; h.textContent = 'CPF ' + cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4') + ' copiado. No site do CFC, cole no campo do CPF e traga o número do registro para cá.'; }
+        else if (nome && nome.trim()) { window.SefazIE.copiar(nome.trim()); h.className = 'ptauto'; h.textContent = 'Sem o CPF do contador: copiamos o nome. No site do CFC, busque pelo nome e traga o número do registro para cá.'; }
+        else { h.className = 'ptauto erro'; h.textContent = 'Preencha o CPF do contador para ele ir copiado para o site do CFC.'; }
+      });
       inp.after(a, h);
     });
     // Cadastro direto: o CNPJ da empresa já vem da Implantação. Ao abrir, completa o que faltar (uma vez por CNPJ)

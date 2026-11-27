@@ -20,6 +20,8 @@
     document.body.appendChild(ta); const ativo = document.activeElement; ta.focus(); ta.select(); ta.setSelectionRange(0, t.length);
     let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
     ta.remove(); if (ativo && ativo.focus) try { ativo.focus({ preventScroll: true }); } catch (e) {}
+    // reforço: a API nova da área de transferência (onde o comando antigo não funciona)
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).catch(() => {});
     return ok;
   }
 
