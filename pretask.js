@@ -85,7 +85,16 @@
 
   /* ---------- Campos configuráveis (usados no Pré TASK e nos módulos do TASK) ---------- */
   const ehOutro = v => /^outr[oa]s?(\b|$)/i.test(String(v || '').trim());
-  const opsDe = c => { const o = String(c.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean); if (c.outros && !o.some(ehOutro)) o.push('Outros'); return o; };
+  const opsDe = c => { let o = String(c.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean); if (c.tipo === 'opcoes' && /bandeir/i.test(c.label || '')) o = opsBandeira(o); if (c.outros && !o.some(ehOutro)) o.push('Outros'); return o; };
+  // "Qual bandeira": além das opções dos Parâmetros, entram as bandeiras do cadastro Logos das Bandeiras e as fixas abaixo
+  // (WATT), antes de Potencial/Outra. Assim uma bandeira nova aparece sem editar o campo.
+  const BAND_FIXAS = ['WATT'];
+  function opsBandeira(o) {
+    const n = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bandeira\s+/, '').trim();
+    const novos = ((BAND_LOGOS || LOGOS_PADRAO).map(x => String(x.nome || '').trim())).concat(BAND_FIXAS).filter(x => x && !o.some(y => n(y) === n(x)));
+    const uniq = novos.filter((x, i) => novos.findIndex(y => n(y) === n(x)) === i); if (!uniq.length) return o;
+    const j = o.findIndex(x => /potencial|^outr/i.test(n(x))), r = o.slice(); r.splice(j < 0 ? r.length : j, 0, ...uniq); return r;
+  }
   const TIPOIN = { data: 'type="date"', numero: 'type="number" min="0"', email: 'type="email"', telefone: 'inputmode="tel"', cpf: 'inputmode="numeric"', cnpj: 'inputmode="numeric"', cep: 'inputmode="numeric"' };
   // c: definição do campo; key: chave completa (com prefixo de filial); v: valores atuais; anx: estado dos anexos
   function campoHtml(c, key, v, anx) {

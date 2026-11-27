@@ -13,7 +13,8 @@ window.SHOTGUN_NOVIDADES = [
   { v: 275, data: '2026-11-27', titulo: 'Menu do Pré TASK: ✓ só quando algo foi respondido; contato no topo do TEF / PIX', itens: [
     'No menu do Pré TASK, um item sem perguntas obrigatórias (como Homologação de Boleto) só mostra o ✓ depois que alguma pergunta é respondida. Antes de responder, aparece o círculo de pendente.',
     'Isso não muda o Salvar final: ele continua exigindo só os campos obrigatórios.',
-    'No item TEF / PIX, o bloco Contato Cliente: TEF / PIX passou para o topo, antes de TEF e PIX.'
+    'No item TEF / PIX, o bloco Contato Cliente: TEF / PIX passou para o topo, antes de TEF e PIX.',
+    'Qual Bandeira: a lista agora inclui a WATT e também as bandeiras cadastradas em Logos das Bandeiras. Uma bandeira nova cadastrada lá aparece na lista sem editar o campo. Vale no Pré TASK e na página de dados do cliente.'
   ] },
   { v: 274, data: '2026-11-27', titulo: 'Contato do cliente em TEF / PIX', itens: [
     'No Pré TASK, o item TEF / PIX ganhou o bloco Contato Cliente: TEF / PIX, com nome, telefone / WhatsApp e e-mail de quem cuida do TEF e do PIX no cliente.',
