@@ -10,6 +10,10 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: 280, data: '2026-11-27', titulo: 'Homologação de Boleto: E-mail do Gerente', itens: [
+    'Ao lado do Nome e do Telefone do Gerente entrou o campo E-mail do Gerente, com as mesmas condições do telefone.',
+    'Tocando num nome em "Contatos já informados", o e-mail dessa pessoa também é preenchido.'
+  ] },
   { v: 279, data: '2026-11-27', titulo: 'Nome sugerido para loja', itens: [
     'No Pré TASK, bloco Posto simples: quando o Tipo da unidade é Loja, o nome sugerido vem como "Loja - Razão social" (antes era sempre "Posto - Razão social"). Trocar o Tipo entre Posto e Loja ajusta a sugestão, desde que o nome ainda seja o sugerido.'
   ] },
