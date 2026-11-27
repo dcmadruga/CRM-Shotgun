@@ -856,6 +856,10 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .agopt input{position:absolute;opacity:0;width:1px;height:1px}
 .agopt span{display:flex;flex-direction:column;gap:1px}.agopt b{font-size:13.5px}.agopt small{font-size:11.5px;color:var(--muted);font-weight:400}
 .agopt .agic{color:var(--muted)}
+#agLinkL{display:flex;flex-direction:column;gap:6px;margin-top:10px}#agLinkL[hidden]{display:none}
+.aglink{display:flex;gap:6px;align-items:stretch;flex-wrap:wrap}.aglink input{flex:1 1 220px;min-width:0}
+.aglink button{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;margin:0}.aglink .agic{width:16px;height:16px;color:currentColor}
+.aglinkdica{font-size:11.5px;color:var(--muted)}
 .agopt:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset;background:var(--accent-soft)}.agopt:has(input:checked) .agic{color:var(--accent-text)}
 .agopt:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
 .aglead{display:flex;align-items:center;gap:10px;justify-content:space-between;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:10px 12px;background:var(--bg)}
@@ -868,6 +872,24 @@ button.danger{color:var(--danger);border-color:var(--danger)}
 .agparts{display:flex;flex-wrap:wrap;gap:6px}
 .agparts .uchip:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
 .agquem{font-size:12.5px}
+/* Formulário da demonstração mais limpo (v287): seções sem caixa, separadas por linha fina */
+.agform{gap:0}
+.agform>.crmbloco{border:0;border-radius:0;background:none;padding:16px 0;gap:12px}
+.agform>.crmbloco:first-child{padding-top:0}
+.agform>.crmbloco+.crmbloco{border-top:1px solid var(--line)}
+.agform>.agquem{margin:4px 0 0}
+.agopc,.aglab em{font-style:normal;font-weight:400;text-transform:none;letter-spacing:0;color:var(--muted);font-size:11.5px;margin-left:4px}
+.aglab{font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+#agPartBox:empty{display:none}#agPartBox{display:grid;gap:8px}
+.agseg{display:inline-grid;grid-template-columns:1fr 1fr;gap:0;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--field);justify-self:start;width:min(100%,360px)}
+.agseg .agopt{border:0;border-radius:8px;background:none;justify-content:center;min-height:40px;padding:8px 12px}
+.agseg .agopt small{display:none}.agseg .agopt b{font-weight:600}
+.agseg .agopt:has(input:checked){background:var(--accent);box-shadow:none;color:#101010}.agseg .agopt:has(input:checked) .agic{color:#101010}
+#agLinkL{margin-top:0}
+#agLeadBox{display:grid;gap:8px}#agLeadBox .agres{gap:6px}#agLeadBox>.hint{margin:0}
+.agform .agquando{grid-template-columns:1.3fr 1fr 1fr}
+@media (max-width:480px){.agform .agquando{grid-template-columns:1fr 1fr}.agform .agquando>label:first-child{grid-column:1/-1}}
+@media (max-width:480px){.agseg{width:100%;grid-template-columns:1fr 1fr!important}}
 @media (max-width:480px){.agfmtsel{grid-template-columns:1fr}.aglead{flex-direction:column;align-items:flex-start}}
 /* Andamento da demonstração (fase 2) */
 .agst{display:inline-flex;align-items:center;justify-self:start;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;background:var(--chip-bg);color:var(--chip-fg);white-space:nowrap;font-family:var(--font)}
