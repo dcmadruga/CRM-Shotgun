@@ -10,8 +10,13 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 278, data: '2026-11-27', titulo: 'Nome sugerido para loja', itens: [
+  { v: 279, data: '2026-11-27', titulo: 'Nome sugerido para loja', itens: [
     'No Pré TASK, bloco Posto simples: quando o Tipo da unidade é Loja, o nome sugerido vem como "Loja - Razão social" (antes era sempre "Posto - Razão social"). Trocar o Tipo entre Posto e Loja ajusta a sugestão, desde que o nome ainda seja o sugerido.'
+  ] },
+  { v: 278, data: '2026-11-27', titulo: 'Ícone do app sem o quadrado escuro', itens: [
+    'No computador, o atalho do Shotgun instalado como app passa a mostrar só o S, com fundo transparente, sem o quadrado preto atrás.',
+    'No celular o ícone continua com o fundo escuro, porque Android e iPhone exigem um ícone com fundo.',
+    'Se o atalho não mudar sozinho em até um dia, desinstale o app e instale de novo pelo navegador.'
   ] },
   { v: 277, data: '2026-11-27', titulo: 'Qual Banco: dá para trocar o banco escolhido', itens: [
     'Depois de escolher um banco, clicar no campo (ou na setinha) abre a lista completa de novo, com o banco atual destacado, para trocar por outro.',
