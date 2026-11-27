@@ -1,0 +1,16 @@
+Modo de teste (RADAR_TESTE=true): nada será gravado.
+Gatilho: agendado · fontes: doe-ms (2025-11-27 a 2026-11-27), dom-ms (2025-11-27 a 2026-11-27), querido-ms (2025-11-27 a 2026-11-27)
+Municípios de MS: 79 · postos de MS na base da ANP: 634
+DOE-MS "posto revendedor": 43 página(s) no período
+DOE-MS "comercio varejista de combustiveis": 4 página(s) no período
+DOE-MS "comércio varejista de combustíveis": 4 página(s) no período
+DOE-MS "posto de combustiveis": 1 página(s) no período
+DOE-MS "posto de combustível": 8 página(s) no período
+DOE-MS "posto de combustivel": 8 página(s) no período
+DOE-MS "posto de abastecimento": 9 página(s) no período
+DOE-MS "ponto de abastecimento": 4 página(s) no período
+DOE-MS "revenda de combustiveis": 0 página(s) no período
+DOE-MS "combustiveis automotivos": 2 página(s) no período
+DOE-MS "auto posto": 120 página(s) no período
+DOE-MS "tanques subterraneos": 0 página(s) no período
+DOE-MS "armazenamento de combustiveis": 1 página(s) no período
