@@ -10,7 +10,11 @@
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
 //   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
-  { v: 282, data: '2026-11-27', titulo: 'Postos em construção em Mato Grosso do Sul', itens: ['Na Telemetria, em Postos em construção, já dá para escolher Mato Grosso do Sul (MS).', 'O Radar lê os avisos de licença de posto publicados no Diário Oficial do Estado de MS e nos diários das cidades (Querido Diário), e cruza com a base da ANP.'] },
+  { v: 283, data: '2026-11-27', titulo: 'Postos em construção em Mato Grosso do Sul', itens: ['Na Telemetria, em Postos em construção, já dá para escolher Mato Grosso do Sul (MS).', 'O Radar lê os avisos de licença de posto publicados no Diário Oficial do Estado de MS e nos diários das cidades (Querido Diário), e cruza com a base da ANP.'] },
+  { v: 282, data: '2026-11-27', titulo: 'Sessão volta sozinha quando o navegador a apaga', itens: [
+    'Quando o navegador apagava a sua sessão com o app aberto, você caía na tela de login mesmo com o acesso valendo. Agora o app confere com o servidor e, se o acesso ainda vale, devolve a sessão na hora, sem pedir a senha.',
+    'Se a sessão cair por outro motivo (senha trocada, conta bloqueada, Sair tocado em outra aba), a tela de login continua explicando o que aconteceu.'
+  ] },
   { v: 281, data: '2026-11-27', titulo: 'Quando a sessão cai, o app diz o motivo', itens: [
     'Se você for levado de volta para a tela de login sem ter tocado em Sair, a tela agora explica o que aconteceu: saída feita em outra aba do Shotgun, senha trocada, conta desativada, ou sessão apagada pelo navegador.',
     'Se isso acontecer, mande um print dessa tela para o administrador: o motivo ajuda a resolver de vez.'
