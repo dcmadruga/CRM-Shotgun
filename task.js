@@ -133,7 +133,7 @@ function cartao(t) {
   const st = statusDe(t), pr = progresso(t), pct = pr.total ? Math.round(pr.feitos * 100 / pr.total) : 0;
   return `<article class="tkcard" data-id="${esc(t.id)}">
     <div class="tkpills"><span class="tkst ${st}">${STATUS[st]}</span>${faseHtml(t)}<span class="tkorig ${origemDe(t).cls}">${origemDe(t).txt}</span>${admin ? '<button type="button" class="tkrem" data-tk="remover" title="Remover este card do TASK">Remover</button>' : ''}</div>
-    ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkbaserow"><span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>${(() => { const lk = linkBaseDe(t); return `<button type="button" class="tklink${lk ? '' : ' vazio'}" data-tk="linkbase" title="${lk ? 'Copiar link para baixar a base' : 'Link da base ainda não informado (Módulos › Implantação)'}" aria-label="${lk ? 'Copiar link da base' : 'Informar link da base'}"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>`; })()}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}${t.modalidade ? `<span class="tkstart tkmod">${esc(t.modalidade)}</span>` : ''}</div>` : ''}
+    ${t.dataBase || t.start ? `<div class="tkdatas">${t.dataBase ? `<span class="tkbaserow"><span class="tkstart tkbase">Data da base: ${esc(fmtD(t.dataBase))}</span>${(() => { const lk = linkBaseDe(t); return `<button type="button" class="tklink${lk ? '' : ' vazio'}" data-tk="linkbase"${lk ? '' : ' disabled'} title="${lk ? 'Copiar link para baixar a base' : 'Link da base ainda não informado e salvo (Módulos › Implantação)'}" aria-label="${lk ? 'Copiar link da base' : 'Link da base ainda não informado'}"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>`; })()}</span>` : ''}${t.start ? `<span class="tkstart">Data do start: ${esc(fmtD(t.start))}</span>` : ''}${t.modalidade ? `<span class="tkstart tkmod">${esc(t.modalidade)}</span>` : ''}</div>` : ''}
     ${t.logo ? `<div class="tklogobox"><img class="tklogo" src="${esc(t.logo)}" alt="Logo de ${esc(t.apelido || t.razao || '')}"></div>` : ''}
     ${t.central ? '' : `<h3>${esc(t.apelido || t.razao || 'Sem nome')}</h3>
     ${t.razao && t.razao !== t.apelido ? `<div class="tkraz">${esc(t.razao)}</div>` : ''}`}
@@ -231,11 +231,14 @@ function finalizarTodos(id, mid, url) {
   }, mid, 'finalizou todos os processos do módulo' + (url ? ' (link da base: ' + url + ')' : '') + '.').then(ok => { if (ok) dmsg('Todos os processos deste módulo foram finalizados.'); return ok; });
 }
 const prazoDe = (t, p) => { if (p.prazo === '' || p.prazo == null || !t.dataBase) return ''; const dt = new Date(t.dataBase + 'T12:00:00'); dt.setDate(dt.getDate() + (+p.prazo || 0)); return dt.toISOString().slice(0, 10); };
+// Lista de módulos do card: escondida por padrão, abre no botão Mostrar (o estado fica só nesta tela)
+const modsAbertos = new Set();
 function modsCard(t) {
   const top = (MODS.secoes || []).filter(m => !m.pai); if (!top.length) return '';
   const linhas = top.map(m => { const c = contaMod(t, filhosDe(m)), pct = c.tot ? c.f * 100 / c.tot : 0, pa = c.tot ? c.an * 100 / c.tot : 0, e = estadoMod(t, m); return `<div class="tkmod est-${e.k}${c.pa.length ? ' parado' : ''}" title="${esc(e.txt + ' · ' + c.f + ' de ' + c.tot + ' processos finalizados' + (c.an ? ' · ' + c.an + ' em andamento' : ''))}"><span><span class="tkdot" aria-hidden="true"></span>${esc(m.titulo)}</span><i><b style="width:${pct}%"></b><b class="an" style="width:${pa}%"></b></i><em>${c.f}/${c.tot}</em></div>`; }).join('');
   const pa = contaMod(t, MODS.secoes || []).pa, pe = pendAbertas(t, MODS.secoes || []), pc = pe.filter(x => x.com === 'Cliente').length;
-  return `<div class="tkmods">${linhas}</div>${pe.length ? `<div class="tkpend" title="${esc(pe.map(x => x.mt + ': ' + x.txt).join('\n'))}">${pe.length} pendência${pe.length > 1 ? 's' : ''} aberta${pe.length > 1 ? 's' : ''}${pc ? ' · ' + pc + ' com o cliente' : ''}</div>` : ''}${pa.length ? `<div class="tkparado" title="${esc(pa.join('\n'))}">${pa.length} processo${pa.length > 1 ? 's' : ''} parado${pa.length > 1 ? 's' : ''} · ${esc(pa[0].split(':')[0])}</div>` : ''}`;
+  const tot = contaMod(t, top.flatMap(filhosDe)), ab = modsAbertos.has(t.id);
+  return `<button type="button" class="tkvermods" data-tk="vermods" aria-expanded="${ab}"><span>${ab ? 'Ocultar' : 'Mostrar'} módulos</span><small>${tot.f} de ${tot.tot} processos</small></button>${ab ? `<div class="tkmods">${linhas}</div>` : ''}${pe.length ? `<div class="tkpend" title="${esc(pe.map(x => x.mt + ': ' + x.txt).join('\n'))}">${pe.length} pendência${pe.length > 1 ? 's' : ''} aberta${pe.length > 1 ? 's' : ''}${pc ? ' · ' + pc + ' com o cliente' : ''}</div>` : ''}${pa.length ? `<div class="tkparado" title="${esc(pa.join('\n'))}">${pa.length} processo${pa.length > 1 ? 's' : ''} parado${pa.length > 1 ? 's' : ''} · ${esc(pa[0].split(':')[0])}</div>` : ''}`;
 }
 const fmtQ = ms => ms ? new Date(ms).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) : '';
 function libHtml(t, m, lib) {
@@ -804,6 +807,7 @@ function ligar() {
     if (b.dataset.tk === 'e4') return verRef(b.dataset.pid);
     if (b.dataset.tk === 'filiais') return verFiliais(tasks.find(t => t.id === id));
     if (b.dataset.tk === 'mods') return formMods(id);
+    if (b.dataset.tk === 'vermods') { if (modsAbertos.has(id)) modsAbertos.delete(id); else modsAbertos.add(id); desenhar(); return; }
     if (b.dataset.tk === 'linkbase') { const lk = linkBaseDe(tasks.find(t => t.id === id) || {}); if (!lk) return formMods(id, modDoLink());
       const ok = () => { b.classList.add('ok'); b.title = 'Link copiado'; msg('Link da base copiado: ' + lk.url); setTimeout(() => { b.classList.remove('ok'); b.title = 'Copiar link para baixar a base'; }, 1800); };
       const reserva = () => { const ta = document.createElement('textarea'); ta.value = lk.url; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); ok(); } catch (e) { msg('Copie o link: ' + lk.url); } ta.remove(); };
