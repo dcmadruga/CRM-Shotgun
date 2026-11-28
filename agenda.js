@@ -10,6 +10,8 @@
 //   status: agendada → confirmada → realizada | naocompareceu | remarcada ("Reagendada": vira uma demo nova, com a nova data obrigatória) | cancelada
 //   O status 'remarcada' continua com esse nome no banco (demos antigas); na tela aparece como Reagendada.
 //   Realizada grava "Demonstração realizada" no histórico do lead e move o lead no funil (Qualificado ou Perdido).
+//   Feita antes do dia marcado (botão "Demonstração realizada" no Andamento de uma demo futura): a demo passa para o dia e a hora em que
+//   foi feita de fato, e o horário marcado fica em agOrig (aparece como "Marcada antes para…").
 // Os leads chegam do crm.js pelo evento 'crm-dados' (o CRM já está ouvindo a coleção, a Agenda não lê de novo).
 // Para abrir o lead e cadastrar lead novo, usa window.crmAbrirLead / window.crmNovoLead (crm.js).
 (() => {
@@ -55,10 +57,12 @@
   const atrasoTxt = (hora, real) => { const m = min(real) - min(hora); return m > 0 ? `${durTxt(m)} de atraso` : m < 0 ? `${durTxt(-m)} antes` : 'no horário'; };
   function planoReal(l, d) {
     const out = [], o = d.agOrig;
-    if (o && o.hora && (o.data !== d.data || o.hora !== d.hora)) out.push(`Marcada antes para ${o.data === d.data ? o.hora : fmtDC(o.data) + ' às ' + o.hora}`);
+    const antes = stDe(d) === 'realizada' && o && o.data > d.data; // feita antes do dia marcado
+    if (antes) out.push(`Feita antes do dia marcado: estava para ${fmtDC(o.data)} às ${o.hora}${d.durReal && Number(d.durReal) !== (Number(d.dur) || 60) ? ' · durou ' + durTxt(Number(d.durReal)) : ''}`);
+    else if (o && o.hora && (o.data !== d.data || o.hora !== d.hora)) out.push(`Marcada antes para ${o.data === d.data ? o.hora : fmtDC(o.data) + ' às ' + o.hora}`);
     const de = l && (l.demos || []).find(x => x.remarcadaPara === d.id);
     if (de) out.push(`Reagendada de ${fmtDC(de.data)} às ${de.hora}`);
-    if (stDe(d) === 'realizada' && d.horaReal) out.push(`Começou às ${d.horaReal} (${atrasoTxt(d.hora, d.horaReal)})${d.durReal && Number(d.durReal) !== (Number(d.dur) || 60) ? ' · durou ' + durTxt(Number(d.durReal)) : ''}`);
+    if (stDe(d) === 'realizada' && d.horaReal && !antes) out.push(`Começou às ${d.horaReal} (${atrasoTxt(d.hora, d.horaReal)})${d.durReal && Number(d.durReal) !== (Number(d.dur) || 60) ? ' · durou ' + durTxt(Number(d.durReal)) : ''}`);
     return out;
   }
   const IC = {
@@ -529,7 +533,7 @@
     else if (st === 'cancelada') corpo = `<p class="agstinfo">Cancelada${d.motivoCanc ? ': ' + esc(d.motivoCanc) : ''}.</p>`;
     else if (st === 'remarcada') corpo = (() => { const n = d.remarcadaPara && l ? (l.demos || []).find(x => x.id === d.remarcadaPara) : null; return `<p class="agstinfo">Reagendada${n ? ' para ' + esc(quando(n)) : ' para outra data'}.${n ? ' <button type="button" class="linkbtn" data-a="vernova">Ver a nova</button>' : ''}</p>`; })();
     else corpo = `${semResultado(d) ? '<p class="agstinfo pend">Atrasada: o horário já passou e o resultado não foi registrado. Como foi a demonstração?</p>' : emAndamento(d) ? `<p class="agstinfo">Em andamento: marcada das ${esc(d.hora)} às ${esc(fimDe(d))}.</p>` : ''}<div class="agacoes">
-        ${passou ? '<button type="button" class="primary" data-a="realizada">Realizada</button><button type="button" data-a="naocomp">Não compareceu</button>' : ''}
+        ${passou ? '<button type="button" class="primary" data-a="realizada">Realizada</button><button type="button" data-a="naocomp">Não compareceu</button>' : '<button type="button" data-a="realizada" title="Para quando a demonstração foi feita antes do dia marcado">Demonstração realizada</button>'}
         ${st === 'agendada' && !semResultado(d) ? '<button type="button"' + (passou ? '' : ' class="primary"') + ' data-a="confirmar">Cliente confirmou</button>' : ''}
         <button type="button" data-a="remarcar">Reagendar</button><button type="button" data-a="cancelar">Cancelar demonstração</button></div>
         ${l && !semResultado(d) ? botoesCliente(l, d) : ''}`;
@@ -546,8 +550,12 @@
     l.demos = lista;
     return lista.find(x => x.id === id);
   }
+  // Demo marcada para um dia que ainda não chegou: foi feita antes
+  const antecipada = d => d.data > hoje();
+  // Hora de início sugerida para a feita antes: agora menos a duração, arredondada para 5 min (acabou de acontecer)
+  const inicioSugerido = d => { const m = Math.max(0, agoraMin() - (Number(d.dur) || 60)); return hhmm(Math.floor(m / 5) * 5); };
   function telaResultado() {
-    const d = atual.demo, l = leadAtual();
+    const d = atual.demo, l = leadAtual(), ant = antecipada(d);
     abrirDlg('Como foi a demonstração?', `
       <p class="agsub"><b>${esc(l.empresa || '')}</b> · ${esc(quando(d))}</p>
       <div class="agform">
@@ -558,10 +566,11 @@
           <label id="agResProxL" hidden>Próximo contato<input type="date" id="agResProx" min="${hoje()}" value="${soma(hoje(), 3)}"></label>
           <label id="agResMotL" hidden>Motivo<select id="agResMot">${MOTIVOS.map(m => `<option${m === 'Sem interesse no momento' ? ' selected' : ''}>${m}</option>`).join('')}</select></label>
         </section>
-        <section class="crmbloco"><h4>Horário real</h4>
-          <p class="hint">Estava marcada para ${esc(d.hora)} (${esc(durTxt(Number(d.dur) || 60))}). Ajuste se começou em outro horário ou durou mais ou menos.</p>
+        <section class="crmbloco"><h4>${ant ? 'Quando foi feita' : 'Horário real'}</h4>
+          ${ant ? `<p class="agstinfo">Estava marcada para ${esc(diaSemana(d.data))}, ${esc(quando(d))}. Como foi feita antes, ela passa para o dia e a hora abaixo, e o horário marcado fica guardado no histórico.</p>` : `<p class="hint">Estava marcada para ${esc(d.hora)} (${esc(durTxt(Number(d.dur) || 60))}). Ajuste se começou em outro horário ou durou mais ou menos.</p>`}
           <div class="tkform agquando">
-            <label>Começou às<input type="time" id="agResHora" step="300" value="${esc(d.horaReal || d.hora)}" required></label>
+            ${ant ? `<label>Dia<input type="date" id="agResData" max="${hoje()}" value="${hoje()}" required></label>` : ''}
+            <label>Começou às<input type="time" id="agResHora" step="300" value="${esc(ant ? inicioSugerido(d) : d.horaReal || d.hora)}" required></label>
             <label>Duração<select id="agResDur">${(() => { const v = Number(d.durReal || d.dur) || 60; return DURS.concat(DURS.includes(v) ? [] : [v]).sort((a, b) => a - b).map(m => `<option value="${m}"${m === v ? ' selected' : ''}>${durTxt(m)}</option>`).join(''); })()}</select></label>
           </div>
         </section>
@@ -581,11 +590,15 @@
     const l = leadAtual(), d = atual.demo, res = (document.querySelector('input[name=agRes]:checked') || {}).value || 'proposta';
     const obs = $('agResObs').value.trim(), prox = $('agResProx').value, mot = $('agResMot').value;
     const horaReal = $('agResHora').value, durReal = Number($('agResDur').value) || Number(d.dur) || 60;
+    const ant = antecipada(d), dataReal = ant ? $('agResData').value : d.data;
+    if (ant && (!dataReal || dataReal > hoje())) { dmsg('Informe o dia em que a demonstração foi feita (de hoje para trás).'); $('agResData').focus(); return; }
     if (!horaReal) { dmsg('Informe a hora em que a demonstração começou.'); $('agResHora').focus(); return; }
+    if (ant && dataReal === hoje() && min(horaReal) > agoraMin()) { dmsg('A hora de início ainda não chegou. Informe quando ela começou de fato.'); $('agResHora').focus(); return; }
     if (res === 'pensar' && !prox) { dmsg('Escolha a data do próximo contato.'); $('agResProx').focus(); return; }
-    const realTxt = horaReal !== d.hora ? ` Começou às ${horaReal} (${atrasoTxt(d.hora, horaReal)}).` : '';
+    const realTxt = !ant && horaReal !== d.hora ? ` Começou às ${horaReal} (${atrasoTxt(d.hora, horaReal)}).` : '';
     const durTxtNota = durReal !== (Number(d.dur) || 60) ? ` Durou ${durTxt(durReal)}.` : '';
-    const extra = { notas: F.arrayUnion(nota(`Demonstração de ${quando(d)} realizada.${realTxt}${durTxtNota} Resultado: ${RES[res].toLowerCase()}.${obs ? ' ' + obs : ''}`, d)) };
+    const abre = ant ? `Demonstração marcada para ${quando(d)} realizada antes, em ${fmtD(dataReal)} às ${horaReal}.` : `Demonstração de ${quando(d)} realizada.`;
+    const extra = { notas: F.arrayUnion(nota(`${abre}${realTxt}${durTxtNota} Resultado: ${RES[res].toLowerCase()}.${obs ? ' ' + obs : ''}`, d)) };
     // Funil: só mexe no lead que ainda não virou proposta
     if (!l._temProp) {
       if (res === 'sem') Object.assign(extra, { etapa: 'perdido', motivo: mot || 'Sem interesse no momento' });
@@ -594,7 +607,9 @@
     if (res === 'pensar') extra.prox = prox;
     btn.disabled = true; dmsg('Registrando…');
     try {
-      const nd = await gravarStatus(l, d.id, { status: 'realizada', resultado: res, resultadoObs: obs, feitaEm: new Date().toISOString(), horaReal, durReal }, extra);
+      // Feita antes: a demo passa para o dia e a hora reais; o horário marcado fica em agOrig
+      const mover = ant ? { data: dataReal, hora: horaReal, agOrig: d.agOrig || { data: d.data, hora: d.hora } } : {};
+      const nd = await gravarStatus(l, d.id, { status: 'realizada', resultado: res, resultadoObs: obs, feitaEm: new Date().toISOString(), horaReal, durReal, ...mover }, extra);
       atual.demo = { ...nd };
       if (res === 'proposta' && !l._temProp && window.crmGerarProposta) {
         abrirDlg('Demonstração registrada', `<p class="agsub">Anotada no histórico de <b>${esc(l.empresa || '')}</b>${extra.etapa ? ', que foi para Qualificado no funil' : ''}.</p>
