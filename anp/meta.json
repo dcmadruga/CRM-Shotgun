@@ -1,7 +1,7 @@
 {
  "fonte": "https://revendedoresapi.anp.gov.br/v1/combustivel",
- "postos": 45866,
- "arquivos": 970,
+ "postos": 45858,
+ "arquivos": 969,
  "fatia": "postos/{3 primeiros dígitos do CNPJ}.json",
- "atualizado": "2026-11-27T17:44:04.621Z"
+ "atualizado": "2026-11-28T16:28:59.487Z"
 }
