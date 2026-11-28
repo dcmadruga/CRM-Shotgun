@@ -92,6 +92,12 @@ window.ETAPA4_PADRAO = {
       });
       cfg.emailGerente = true;
     }
+    // v292: perguntas extras por bandeira (bloco Perguntas por bandeira dos Parâmetros Pré TASK). Começa com a Ipiranga.
+    // Uma vez só (marca perguntasBandeiraV292): se o ADM mudar ou apagar e publicar, fica como ele deixou
+    if (!cfg.perguntasBandeiraV292) {
+      if (!Array.isArray(cfg.perguntasBandeira)) { cfg.perguntasBandeira = window.PERGUNTAS_BANDEIRA_PADRAO(); cfg.bandPergMudou = true; }
+      cfg.perguntasBandeiraV292 = true;
+    }
     return cfg;
   };
   function juntar(cfg) {
@@ -112,4 +118,17 @@ window.ETAPA4_PADRAO = {
   window.ETAPA4_PADRAO.tefPixContatoTopo = true;
   window.ETAPA4_PADRAO.appTerceirosBloco = true;
   window.ETAPA4_PADRAO.emailGerente = true;
+  // Perguntas que aparecem no bloco Integração do Pré TASK quando "Qual bandeira" é a do grupo
+  window.PERGUNTAS_BANDEIRA_PADRAO = () => [{ bandeira: 'Ipiranga', campos: [
+    { k: 'pbIpPista', label: 'Integra PISTA', tipo: 'simnao', req: false },
+    { k: 'pbIpAmpm', label: 'Integra AMPM', tipo: 'simnao', req: false },
+    { k: 'pbIpJetoil', label: 'Integra JETOIL', tipo: 'simnao', req: false },
+    { k: 'pbIpJetoilAtivo', label: 'Necessário ter Jetoil ativo', tipo: 'simnao', req: false, seSim: 'pbIpJetoil' },
+    { k: 'pbIpProFrotas', label: 'Integra PRO FROTAS', tipo: 'simnao', req: false },
+    { k: 'pbIpKmv', label: 'Integra KMV', tipo: 'simnao', req: false },
+    { k: 'pbIpIndicar', label: 'Integra INDICAR', tipo: 'simnao', req: false },
+    { k: 'pbIpIndicarAcesso', label: 'Acesso do Indicar', tipo: 'texto', req: false, ph: 'Usuário e senha de acesso ao Indicar', seSim: 'pbIpIndicar' }
+  ] }];
+  window.ETAPA4_PADRAO.perguntasBandeira = window.PERGUNTAS_BANDEIRA_PADRAO();
+  window.ETAPA4_PADRAO.perguntasBandeiraV292 = true;
 })();
