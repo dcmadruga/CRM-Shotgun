@@ -100,6 +100,14 @@ window.ETAPA4_PADRAO = {
     }
     // Grupos de bandeira que vieram depois (v293 Shell, v294 Rodoil): entram nas configurações já publicadas, se ainda não
     // houver grupo daquela bandeira. Uma vez só por grupo (marca de cada um): se o ADM apagar e publicar, fica como ele deixou
+    // v295: a Ipiranga ganha as regras reais (pré-requisitos, contato para treinamento, INDICAR com Jetoil ativo na Argo).
+    // Troca o grupo só se ele ainda for o da v292 (todas as chaves são as padrão pbIp…); se o ADM criou perguntas próprias, fica.
+    // Mesmas chaves das perguntas que já existiam, então as respostas continuam. Uma vez só (marca perguntasIpirangaV295)
+    if (!cfg.perguntasIpirangaV295) {
+      const g = (cfg.perguntasBandeira || []).find(x => /ipiranga/i.test(x.bandeira || ''));
+      if (g && (g.campos || []).every(c => /^pbIp/.test(c.k || ''))) { g.campos = IPIRANGA(); cfg.bandPergMudou = true; }
+      cfg.perguntasIpirangaV295 = true;
+    }
     [['perguntasShellV293', 'Shell', /shell|ra[ií]zen/i], ['perguntasRodoilV294', 'Rodoil', /rodoil/i]].forEach(([marca, nome, re]) => {
       if (cfg[marca]) return;
       const L = cfg.perguntasBandeira = Array.isArray(cfg.perguntasBandeira) ? cfg.perguntasBandeira : [];
@@ -127,16 +135,26 @@ window.ETAPA4_PADRAO = {
   window.ETAPA4_PADRAO.appTerceirosBloco = true;
   window.ETAPA4_PADRAO.emailGerente = true;
   // Perguntas que aparecem no bloco Integração do Pré TASK quando "Qual bandeira" é a do grupo
-  window.PERGUNTAS_BANDEIRA_PADRAO = () => [{ bandeira: 'Ipiranga', campos: [
+  // Ipiranga (v295, regras passadas pelo Diego): pré-requisitos da Ipiranga, integrações, contato para treinamento quando
+  // tem AMPM ou JETOIL, e INDICAR com Jetoil ativo na Argo e o acesso que a Ipiranga envia
+  const IPIRANGA = () => [
+    { k: 'pbIpNotaPre', label: 'Para ativar as integrações, o CNPJ precisa ter cadastro na Ipiranga e os aceites PPI e Conecta. Os cadastros e aceites são feitos com a Ipiranga (portal ou Consultor Ipiranga, que ajuda o posto se precisar). O Suporte Argo não solicita, só consulta se existem.', tipo: 'nota' },
+    { k: 'pbIpCadastro', label: 'CNPJ tem cadastro na Ipiranga', tipo: 'simnao', req: false },
+    { k: 'pbIpPpi', label: 'Aceite PPI', tipo: 'simnao', req: false },
+    { k: 'pbIpConecta', label: 'Aceite Conecta', tipo: 'simnao', req: false },
     { k: 'pbIpPista', label: 'Integra PISTA', tipo: 'simnao', req: false },
     { k: 'pbIpAmpm', label: 'Integra AMPM', tipo: 'simnao', req: false },
     { k: 'pbIpJetoil', label: 'Integra JETOIL', tipo: 'simnao', req: false },
-    { k: 'pbIpJetoilAtivo', label: 'Necessário ter Jetoil ativo', tipo: 'simnao', req: false, seSim: 'pbIpJetoil' },
-    { k: 'pbIpProFrotas', label: 'Integra PRO FROTAS', tipo: 'simnao', req: false },
-    { k: 'pbIpKmv', label: 'Integra KMV', tipo: 'simnao', req: false },
+    { k: 'pbIpRespNome', label: 'Responsável no posto por promoções e vínculo de produtos (AMPM / JETOIL)', tipo: 'texto', req: false, ph: 'Nome, para agendarmos o treinamento', seSim: ['pbIpAmpm', 'pbIpJetoil'] },
+    { k: 'pbIpRespFone', label: 'Telefone / WhatsApp do responsável', tipo: 'telefone', req: false, seSim: ['pbIpAmpm', 'pbIpJetoil'] },
+    { k: 'pbIpProFrotas', label: 'Integra PRO FROTAS (forma de pagamento)', tipo: 'simnao', req: false },
+    { k: 'pbIpKmv', label: 'Integra KMV (forma de pagamento)', tipo: 'simnao', req: false },
     { k: 'pbIpIndicar', label: 'Integra INDICAR', tipo: 'simnao', req: false },
-    { k: 'pbIpIndicarAcesso', label: 'Acesso do Indicar', tipo: 'texto', req: false, ph: 'Usuário e senha de acesso ao Indicar', seSim: 'pbIpIndicar' }
-  ] }, { bandeira: 'Petrobras', campos: [
+    { k: 'pbIpJetoilAtivo', label: 'Tem Jetoil ativo na Argo (necessário para o INDICAR)', tipo: 'simnao', req: false, seSim: 'pbIpIndicar' },
+    { k: 'pbIpIndicarAcesso', label: 'Acesso do Indicar (a Ipiranga disponibiliza)', tipo: 'texto', req: false, ph: 'Acesso enviado pela Ipiranga', seSim: 'pbIpIndicar' },
+    { k: 'pbIpNotaFluxo', label: 'Depois: o Suporte consulta os aceites (Postman). Com tudo ok, baixamos a carga de produtos (cerca de 24h) e ativamos as integrações na unidade de negócio.', tipo: 'nota' }
+  ];
+  window.PERGUNTAS_BANDEIRA_PADRAO = () => [{ bandeira: 'Ipiranga', campos: IPIRANGA() }, { bandeira: 'Petrobras', campos: [
     { k: 'pbBrMania', label: 'Integra BrMania', tipo: 'simnao', req: false },
     { k: 'pbBrPremmia', label: 'Integra Premmia', tipo: 'simnao', req: false },
     { k: 'pbBrLubrax', label: 'Integra Lubrax+', tipo: 'simnao', req: false }
@@ -151,4 +169,5 @@ window.ETAPA4_PADRAO = {
   window.ETAPA4_PADRAO.perguntasBandeiraV292 = true;
   window.ETAPA4_PADRAO.perguntasShellV293 = true;
   window.ETAPA4_PADRAO.perguntasRodoilV294 = true;
+  window.ETAPA4_PADRAO.perguntasIpirangaV295 = true;
 })();
