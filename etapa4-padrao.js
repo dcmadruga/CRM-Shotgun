@@ -128,6 +128,10 @@ window.ETAPA4_PADRAO = {
     { k: 'pbIpKmv', label: 'Integra KMV', tipo: 'simnao', req: false },
     { k: 'pbIpIndicar', label: 'Integra INDICAR', tipo: 'simnao', req: false },
     { k: 'pbIpIndicarAcesso', label: 'Acesso do Indicar', tipo: 'texto', req: false, ph: 'Usuário e senha de acesso ao Indicar', seSim: 'pbIpIndicar' }
+  ] }, { bandeira: 'Petrobras', campos: [
+    { k: 'pbBrMania', label: 'Integra BrMania', tipo: 'simnao', req: false },
+    { k: 'pbBrPremmia', label: 'Integra Premmia', tipo: 'simnao', req: false },
+    { k: 'pbBrLubrax', label: 'Integra Lubrax+', tipo: 'simnao', req: false }
   ] }];
   window.ETAPA4_PADRAO.perguntasBandeira = window.PERGUNTAS_BANDEIRA_PADRAO();
   window.ETAPA4_PADRAO.perguntasBandeiraV292 = true;
