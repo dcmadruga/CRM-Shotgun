@@ -1334,6 +1334,8 @@
           if (C.task && fin !== !!C.task.finalizado) up.finalizadoEm = fin ? F.serverTimestamp() : null;
           const ref = F.doc(db, 'tasks', tid), ex = await F.getDoc(ref);
           if (ex.exists() && !ex.data().removido) { await F.updateDoc(ref, up); taskOk = true; if (ex.data().preOk !== true && window.TK_aoPronto) window.TK_aoPronto(tid, ex.data().apelido || C.p.cliente || ''); }
+          // Card ainda não existe (primeiro salvar final): cria agora, sem depender de alguém estar com o quadro do TASK aberto
+          else if (!ex.exists() && !C.task && window.TK_criarDaProposta) { const n = await window.TK_criarDaProposta(pid); if (n) { taskOk = 'novo'; await F.updateDoc(ref, up); } }
         } catch (e) { console.warn('Pré TASK: card do TASK', e); }
       }
       // Salvar parcial depois de um salvar final: o card volta a mostrar "Pré TASK" (só esse campo muda)
@@ -1343,7 +1345,7 @@
       C.e4 = { ...doc, em: { toDate: () => new Date() } };
       if (C.aoSalvar && !parcial) C.aoSalvar(pre);
       colherCampos(); desenhar();
-      msg(parcial ? 'Salvo parcial. Quando tudo estiver preenchido, use o salvar final.' : 'Pré TASK salvo' + (taskOk ? ' e card do TASK atualizado.' : '.'));
+      msg(parcial ? 'Salvo parcial. Quando tudo estiver preenchido, use o salvar final.' : 'Pré TASK salvo' + (taskOk === 'novo' ? ' e card criado no quadro do TASK.' : taskOk ? ' e card do TASK atualizado.' : '.'));
     } catch (err) { msg('Não foi possível salvar (' + (err.code || err.message) + ').'); }
     finally { bt.disabled = false; document.querySelectorAll('#ptCorpo [data-ptparc]').forEach(x => { x.disabled = false; }); }
   }
