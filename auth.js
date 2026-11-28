@@ -1487,6 +1487,7 @@ async function iniciar() {
     if (E4 && E4.tefPixMudou) { delete E4.tefPixMudou; marcarE4(); e4Status('Seções novas no Pré TASK: PIX e Contato Cliente: TEF / PIX (dentro de TEF / PIX) e APP de terceiros (dentro de Integração), e o campo E-mail do Gerente ao lado do Telefone do Gerente. Confira e toque em Publicar para gravar.'); }
     else if (E4 && E4.bandPergMudou) { delete E4.bandPergMudou; marcarE4(); e4Status('Novo no Pré TASK: Perguntas por bandeira (Charrua e Petronas), no fim desta página. Confira e toque em Publicar para gravar.'); }
     if (E4) delete E4.bandPergMudou;
+    if (E4 && E4.appTerceirosMudou) { delete E4.appTerceirosMudou; marcarE4(); e4Status('Pré TASK: o bloco APP de terceiros agora começa com "Vai ter integração de terceiros?" (Sim / Não). A lista de apps só aparece com Sim. Já vale para todos; toque em Publicar para gravar aqui também.'); }
   }
   function marcarE4() { e4Sujo = true; e4Status('Alterações ainda não publicadas.'); }
   function desenharE4() {
@@ -1694,7 +1695,7 @@ async function iniciar() {
     if (E4.secoes.flatMap(s => s.campos).some(c => !String(c.label || '').trim()) || E4.secoes.some(s => !String(s.titulo || '').trim())) { e4Status('Todo campo e toda seção precisam de um nome.'); return; }
     if ((E4.perguntasBandeira || []).some(g => (g.campos || []).length && !String(g.bandeira || '').trim())) { e4Status('Informe o nome da bandeira em Perguntas por bandeira.'); return; }
     if ((E4.perguntasBandeira || []).some(g => (g.campos || []).some(c => !String(c.label || '').trim()))) { e4Status('Toda pergunta da bandeira precisa de um texto.'); return; }
-    delete E4.bandPergMudou;
+    delete E4.bandPergMudou; delete E4.appTerceirosMudou;
     const btn = $('btnE4Salvar'); btn.disabled = true; e4Status('Publicando…');
     try {
       const em = new Date().toISOString();

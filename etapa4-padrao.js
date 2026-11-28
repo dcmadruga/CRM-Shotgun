@@ -73,6 +73,23 @@ window.ETAPA4_PADRAO = {
       }
       cfg.appTerceirosBloco = true;
     }
+    // v300: o bloco APP de terceiros começa com a pergunta Sim/Não "Vai ter integração de terceiros?". A lista de apps
+    // só aparece (e só é obrigatória) com Sim; com Não o bloco fica completo. "simSeTem": proposta já salva com um app
+    // escolhido conta como Sim. Mesma chave da lista, então o app já escolhido continua. Uma vez só (marca appTerceirosSimNao)
+    if (!cfg.appTerceirosSimNao) {
+      const ehApp = c => /integra[cç][aã]o\s+com\s+(o\s+)?app/i.test(c.label || '') || /app\s+de\s+terceiros/i.test(c.label || '');
+      const s = cfg.secoes.find(x => x.id === 'appTerceiros') || cfg.secoes.find(x => (x.campos || []).some(c => c.tipo !== 'simnao' && ehApp(c)));
+      const cs = s && (s.campos || []), i = cs ? cs.findIndex(c => c.tipo !== 'simnao' && ehApp(c)) : -1;
+      if (i >= 0 && !cs.slice(0, i).some(c => c.tipo === 'simnao')) {
+        const c = cs[i], chaves = new Set(cfg.secoes.flatMap(x => (x.campos || []).map(y => y.k)));
+        let k = 'appTerceirosTem', n = 2; while (chaves.has(k)) k = 'appTerceirosTem' + n++;
+        if (/integra[cç][aã]o\s+com\s+(o\s+)?app/i.test(c.label || '')) c.label = 'Quais APPs de terceiros?';
+        c.req = true; delete c.solto;
+        cs.splice(i, 0, { k, label: 'Vai ter integração de terceiros?', tipo: 'simnao', req: true, show: true, abre: true, simSeTem: c.k });
+        cfg.appTerceirosMudou = true;
+      }
+      cfg.appTerceirosSimNao = true;
+    }
     // v275: o contato vem primeiro dentro do item TEF / PIX (topo). Uma vez só (marca tefPixContatoTopo)
     if (!cfg.tefPixContatoTopo) { const ct = cfg.secoes.find(x => x.id === 'contatoTefPix'); if (ct && !ct.topo) { ct.topo = true; cfg.tefPixMudou = true; } cfg.tefPixContatoTopo = true; }
     // v280: onde tem Nome + Telefone do Gerente (ex.: Homologação de Boleto) entra o E-mail do Gerente logo depois do telefone,
@@ -133,6 +150,7 @@ window.ETAPA4_PADRAO = {
   window.ETAPA4_PADRAO.tefPixContato = true;
   window.ETAPA4_PADRAO.tefPixContatoTopo = true;
   window.ETAPA4_PADRAO.appTerceirosBloco = true;
+  window.ETAPA4_PADRAO.appTerceirosSimNao = true;
   window.ETAPA4_PADRAO.emailGerente = true;
   // Perguntas que aparecem no bloco Integração do Pré TASK quando "Qual bandeira" é a do grupo
   // Ipiranga (v295, regras passadas pelo Diego): pré-requisitos da Ipiranga, integrações, contato para treinamento quando
