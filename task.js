@@ -34,8 +34,29 @@ const vistos = () => tasks.filter(visivel);
 const msg = t => { const el = $('tkMsg'); el.textContent = t || ''; el.hidden = !t; };
 
 window.addEventListener('argo-perfil', e => { ({ F, db, perfil, admin } = e.detail); iniciar(); });
-window.addEventListener('argo-sair', () => { if (unsubT) unsubT(); if (unsubM) unsubM(); if (unsubP) unsubP(); if (unsubMod) unsubMod(); unsubT = unsubM = unsubP = unsubMod = null; aprovadas = null; tasksOk = false; tasks = []; templates = []; });
+window.addEventListener('argo-sair', () => { clearTimeout(religT); clearTimeout(religP); if (unsubT) unsubT(); if (unsubM) unsubM(); if (unsubP) unsubP(); if (unsubMod) unsubMod(); unsubT = unsubM = unsubP = unsubMod = null; aprovadas = null; tasksOk = false; tasks = []; templates = []; });
 
+// Ouvintes do quadro: se o banco recusar (ex.: cota diária de leituras esgotada), o Firestore encerra o ouvinte
+// para sempre e o automático parava sem aviso até recarregar a página. Agora ele tenta de novo sozinho.
+let religT = null, religP = null, tasksErro = false;
+function ouvirTasks() {
+  if (unsubT) unsubT(); clearTimeout(religT);
+  unsubT = F.onSnapshot(F.collection(db, 'tasks'), qs => {
+    const todos = qs.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Cards removidos pelo ADM ficam só como marca (removido: true), para o automático não recriar
+    removidas = new Set(todos.filter(t => t.removido).flatMap(t => [t.id, t.propostaId]).filter(Boolean));
+    tasks = todos.filter(t => !t.removido);
+    if (window.modulosHerdar) tasks.forEach(t => window.modulosHerdar(t, MODS)); // andamento lançado no módulo PIX da v271 volta para o TEF / PIX
+    if (tasksErro) { tasksErro = false; msg(''); }
+    tasksOk = true; desenhar(); sincronizar(); completarDatas();
+  }, e => { tasksErro = true; msg('Não foi possível carregar os cadastros (' + (e.code || 'erro') + '). Tentando de novo em 1 minuto…'); console.warn('TASK: cards', e); unsubT = null; if (perfil) religT = setTimeout(() => { if (perfil && !unsubT) ouvirTasks(); }, 60000); });
+}
+function ouvirAprovadas() {
+  if (unsubP) unsubP(); clearTimeout(religP);
+  unsubP = F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')), qs => {
+    aprovadas = qs.docs.map(d => ({ id: d.id, ...d.data() })); sincronizar(); desenhar();
+  }, e => { console.warn('TASK: propostas aprovadas', e); unsubP = null; if (perfil) religP = setTimeout(() => { if (perfil && !unsubP) ouvirAprovadas(); }, 60000); });
+}
 function iniciar() {
   const papeis = Array.isArray(perfil.papeis) && perfil.papeis.length ? perfil.papeis : [perfil.papel || 'vendedor'];
   meusUfs = admin || !papeis.includes('vendedor') ? null : (Array.isArray(perfil.estados) ? perfil.estados : []).map(u => String(u).toUpperCase());
@@ -43,17 +64,7 @@ function iniciar() {
   if (unsubM) unsubM();
   if (unsubP) unsubP();
   tasksOk = false; aprovadas = null;
-  unsubT = F.onSnapshot(F.collection(db, 'tasks'), qs => {
-    const todos = qs.docs.map(d => ({ id: d.id, ...d.data() }));
-    // Cards removidos pelo ADM ficam só como marca (removido: true), para o automático não recriar
-    removidas = new Set(todos.filter(t => t.removido).flatMap(t => [t.id, t.propostaId]).filter(Boolean));
-    tasks = todos.filter(t => !t.removido);
-    if (window.modulosHerdar) tasks.forEach(t => window.modulosHerdar(t, MODS)); // andamento lançado no módulo PIX da v271 volta para o TEF / PIX
-    tasksOk = true; desenhar(); sincronizar(); completarDatas();
-  }, e => msg('Não foi possível carregar os cadastros (' + (e.code || 'erro') + ').'));
-  unsubP = F.onSnapshot(F.query(F.collection(db, 'propostas'), F.where('status', '==', 'aprovada')), qs => {
-    aprovadas = qs.docs.map(d => ({ id: d.id, ...d.data() })); sincronizar(); desenhar();
-  }, () => {});
+  ouvirTasks(); ouvirAprovadas();
   if (unsubMod) unsubMod();
   unsubMod = F.onSnapshot(F.doc(db, 'config', 'modulos'), d => { try { const j = d && d.exists && d.exists() && d.data().json; if (j) MODS = JSON.parse(j); if (window.modulosCompletar) window.modulosCompletar(MODS); if (window.modulosHerdar) tasks.forEach(t => window.modulosHerdar(t, MODS)); } catch (e) {} desenhar(); if ($('tkDlg').open && $('tkDlg').dataset.modo === 'mods') formMods($('tkMods').dataset.id, $('tkMods').dataset.mid); }, () => {});
   unsubM = F.onSnapshot(F.collection(db, 'taskTemplates'), qs => {
@@ -699,6 +710,14 @@ async function criarDaProposta(pid, auto) {
   window.TK_aoPronto(pid, novo.apelido); // card nasce pronto (Pré TASK salvo): avisa quem é liberado pelo TASK pronto
   return novo;
 }
+// Pré TASK salvo (salvar final) por quem pode mexer no TASK: o card nasce na hora, sem depender
+// de alguém estar com o quadro do TASK aberto. Respeita card removido e cadastro direto já vinculado à proposta.
+window.TK_criarDaProposta = async pid => {
+  if (!F || !db || !pid || !tasksOk || criando.has(pid) || removidas.has(pid)) return null;
+  if (tasks.some(t => t.id === pid || t.propostaId === pid || t.propostaVinc === pid)) return null;
+  criando.add(pid);
+  try { return await criarDaProposta(pid, true); } finally { criando.delete(pid); }
+};
 // Remove o card (só ADM). Se veio de proposta, deixa a marca para o automático não recriar; a proposta volta para "Importar".
 async function removerTask(id) {
   const t = tasks.find(x => x.id === id); if (!t) return;
