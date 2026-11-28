@@ -98,7 +98,7 @@ window.ETAPA4_PADRAO = {
       if (!Array.isArray(cfg.perguntasBandeira)) { cfg.perguntasBandeira = window.PERGUNTAS_BANDEIRA_PADRAO(); cfg.bandPergMudou = true; }
       cfg.perguntasBandeiraV292 = true;
     }
-    // Grupos de bandeira que vieram depois (v293 Shell, v294 Rodoil): entram nas configurações já publicadas, se ainda não
+    // Grupos de bandeira que vieram depois (v293 Shell, v294 Rodoil, v296 Charrua e Petronas): entram nas configurações já publicadas, se ainda não
     // houver grupo daquela bandeira. Uma vez só por grupo (marca de cada um): se o ADM apagar e publicar, fica como ele deixou
     // v295: a Ipiranga ganha as regras reais (pré-requisitos, contato para treinamento, INDICAR com Jetoil ativo na Argo).
     // Troca o grupo só se ele ainda for o da v292 (todas as chaves são as padrão pbIp…); se o ADM criou perguntas próprias, fica.
@@ -108,7 +108,7 @@ window.ETAPA4_PADRAO = {
       if (g && (g.campos || []).every(c => /^pbIp/.test(c.k || ''))) { g.campos = IPIRANGA(); cfg.bandPergMudou = true; }
       cfg.perguntasIpirangaV295 = true;
     }
-    [['perguntasShellV293', 'Shell', /shell|ra[ií]zen/i], ['perguntasRodoilV294', 'Rodoil', /rodoil/i]].forEach(([marca, nome, re]) => {
+    [['perguntasShellV293', 'Shell', /shell|ra[ií]zen/i], ['perguntasRodoilV294', 'Rodoil', /rodoil/i], ['perguntasCharruaV296', 'Charrua', /charrua/i], ['perguntasPetronasV296', 'Petronas', /petronas/i]].forEach(([marca, nome, re]) => {
       if (cfg[marca]) return;
       const L = cfg.perguntasBandeira = Array.isArray(cfg.perguntasBandeira) ? cfg.perguntasBandeira : [];
       if (!L.some(g => re.test(g.bandeira || ''))) { L.push(window.PERGUNTAS_BANDEIRA_PADRAO().find(g => g.bandeira === nome)); cfg.bandPergMudou = true; }
@@ -164,10 +164,16 @@ window.ETAPA4_PADRAO = {
   ] }, { bandeira: 'Rodoil', campos: [
     { k: 'pbRodoilTriShop', label: 'Integra TriShop', tipo: 'simnao', req: false },
     { k: 'pbRodoilPro', label: 'Integra RodoilPró', tipo: 'simnao', req: false }
+  ] }, { bandeira: 'Charrua', campos: [
+    { k: 'pbCharrua', label: 'Integra Charrua', tipo: 'simnao', req: false }
+  ] }, { bandeira: 'Petronas', campos: [
+    { k: 'pbPetronas', label: 'Integra Petronas', tipo: 'simnao', req: false }
   ] }];
   window.ETAPA4_PADRAO.perguntasBandeira = window.PERGUNTAS_BANDEIRA_PADRAO();
   window.ETAPA4_PADRAO.perguntasBandeiraV292 = true;
   window.ETAPA4_PADRAO.perguntasShellV293 = true;
   window.ETAPA4_PADRAO.perguntasRodoilV294 = true;
   window.ETAPA4_PADRAO.perguntasIpirangaV295 = true;
+  window.ETAPA4_PADRAO.perguntasCharruaV296 = true;
+  window.ETAPA4_PADRAO.perguntasPetronasV296 = true;
 })();
