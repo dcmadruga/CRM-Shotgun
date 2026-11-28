@@ -108,7 +108,7 @@ async function iniciar() {
   let userAtual = null, entrouEm = 0, erroToken = null, restauradas = [];
   // Abas do Shotgun abertas neste navegador (só as da versão 282 em diante respondem): entra no registro da queda
   let canal = null; try { canal = new BroadcastChannel('sg-abas'); } catch (e) { /* navegador antigo */ }
-  const versaoAba = () => ((document.getElementById('versaoApp') || {}).textContent || '').replace(/\D*(\d+).*/, '$1');
+  const versaoAba = () => ((document.getElementById('versaoApp') || {}).textContent || '').replace(/\D*(\d+(?:\.\d+)*).*/, '$1');
   if (canal) canal.onmessage = ev => { if (ev.data?.q === 'quem' && ev.data.de !== ABA) canal.postMessage({ r: 'eu', de: ABA, para: ev.data.de, versao: versaoAba(), uid: auth.currentUser?.uid || '', visivel: document.visibilityState }); };
   function contarAbas() {
     if (!canal) return Promise.resolve([]);

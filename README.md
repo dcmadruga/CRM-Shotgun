@@ -39,8 +39,9 @@ Shotgun é o app (PWA) para a equipes Proposta Comercial em PDF, no celular e no
 
 ## Novidades a cada versão
 
-- `novidades.js` guarda o que mudou em cada versão, em linguagem de usuário. Quando o app atualiza, a janela "Novidades" abre sozinha uma vez (por usuário, em cada aparelho), depois do login. Tocar em "Versão N" no cabeçalho reabre a janela, que também tem o botão "Forçar atualização do app".
-- Todo PR que sobe a versão do `sw.js` acrescenta no topo de `novidades.js` uma entrada com o mesmo número (instruções no começo do arquivo). Mudança sem nada visível pode ficar sem entrada.
+- `novidades.js` guarda o que mudou em cada versão, em linguagem de usuário. Quando o app atualiza, a janela "Novidades" abre sozinha uma vez (por usuário, em cada aparelho), depois do login. Tocar em "Versão A.M.R" no cabeçalho reabre a janela, que também tem o botão "Forçar atualização do app".
+- Todo PR que sobe a versão do `sw.js` acrescenta no topo de `novidades.js` uma entrada com a mesma versão (instruções no começo do arquivo).
+- A versão segue o formato A.M.R, por exemplo 1.11.302: A = ano do app (1 = 2026), M = mês, R = release dentro do mês, que volta a 1 quando o mês vira (1.12.1). Mudança sem nada visível pode ficar sem entrada.
 
 ## Nova senha e e-mails da conta
 
