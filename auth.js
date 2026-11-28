@@ -1473,7 +1473,7 @@ async function iniciar() {
   const E4DOC = F.doc(db, 'config', 'etapa4');
   const TIPOS4 = { ...Object.fromEntries(Object.entries(TIPOS).filter(([k]) => k !== 'arquivo')), multicond: 'Multi condicional', anexo: 'Anexo' };
   let E4 = null, e4Sujo = false;
-  const e4Status = t => { $('e4Status').textContent = t; };
+  const e4Status = t => { $('e4Status').textContent = t; const b = $('pbStatus'); if (b) b.textContent = t; };
   const cfgE4 = () => E4 || copia(window.ETAPA4_PADRAO);
   async function carregarE4() {
     try {
@@ -1484,6 +1484,8 @@ async function iniciar() {
     } catch (e) { E4 = copia(window.ETAPA4_PADRAO); if (fb.admin) e4Status('Não foi possível carregar o formulário publicado; mostrando o padrão.'); }
     e4Sujo = false; desenharE4();
     if (E4 && E4.tefPixMudou) { delete E4.tefPixMudou; marcarE4(); e4Status('Seções novas no Pré TASK: PIX e Contato Cliente: TEF / PIX (dentro de TEF / PIX) e APP de terceiros (dentro de Integração), e o campo E-mail do Gerente ao lado do Telefone do Gerente. Confira e toque em Publicar para gravar.'); }
+    else if (E4 && E4.bandPergMudou) { delete E4.bandPergMudou; marcarE4(); e4Status('Novo no Pré TASK: Perguntas por bandeira (Ipiranga e Petrobras), no fim desta página. Confira e toque em Publicar para gravar.'); }
+    if (E4) delete E4.bandPergMudou;
   }
   function marcarE4() { e4Sujo = true; e4Status('Alterações ainda não publicadas.'); }
   function desenharE4() {
@@ -1493,7 +1495,55 @@ async function iniciar() {
     $('e4Secoes').querySelectorAll('.sec[data-si]').forEach(sec => { const s = E4.secoes[+sec.dataset.si]; const d = document.createElement('label'); d.className = 'chk secfil'; d.innerHTML = `<input type="checkbox" data-porfil${s.porFilial === false ? '' : ' checked'}> Em Central, preencher esta seção filial por filial`; sec.querySelector('.body').prepend(d); });
     $('e4Secoes').querySelectorAll('.sec[data-si]').forEach(sec => { const si = +sec.dataset.si; sec.querySelector('.body').prepend(setorHtml(E4.secoes[si], si)); });
     if (E2) desenharE2(); // as opções do Setor de Validação no Pré-Contrato usam as seções daqui
+    desenharPb();
   }
+  /* ---------- Perguntas por bandeira (ADM): E4.perguntasBandeira, publicadas junto com o formulário do Pré TASK ---------- */
+  // Cada grupo: nome da bandeira + perguntas. No Pré TASK aparecem logo abaixo de "Qual bandeira" quando ela é a do grupo.
+  const PB_TIPOS = { simnao: 'Sim / Não', texto: 'Texto', textolongo: 'Texto longo', numero: 'Número', data: 'Data' };
+  const pbChave = () => 'pb' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  function desenharPb() {
+    const box = $('e4Band'); if (!box || !E4 || !fb.admin) return;
+    const L = E4.perguntasBandeira = Array.isArray(E4.perguntasBandeira) ? E4.perguntasBandeira : [];
+    let nomes = []; try { nomes = (BAND || BAND_PADRAO).map(b => String(b.nome || '').trim()).filter(Boolean); } catch (e) {}
+    box.innerHTML = L.map((g, gi) => { const cs = g.campos = g.campos || []; return `<section class="sec pbgrp" data-gi="${gi}"><h2>${esc(g.bandeira || 'Nova bandeira')} <span>${cs.length} pergunta${cs.length === 1 ? '' : 's'}</span></h2><div class="body">
+      <div class="e2head"><input data-pbn value="${esc(g.bandeira || '')}" list="pbNomes" placeholder="Nome da bandeira (como aparece em Qual bandeira)" aria-label="Nome da bandeira"><button type="button" data-pba="delg">Remover bandeira</button></div>
+      <div class="refwrap"><table class="e2tab"><thead><tr><th>Pergunta</th><th>Tipo</th><th class="c">Obrigatório</th><th>Quando mostrar</th><th><span class="sr">Ações</span></th></tr></thead><tbody>
+      ${cs.map((c, pi) => `<tr data-pi="${pi}"><td><input data-pf="label" value="${esc(c.label || '')}" aria-label="Pergunta"></td>
+        <td class="t"><select data-pf="tipo" aria-label="Tipo">${Object.entries(PB_TIPOS).map(([k, t]) => `<option value="${k}"${(c.tipo || 'simnao') === k ? ' selected' : ''}>${t}</option>`).join('')}</select></td>
+        <td class="c"><input type="checkbox" data-pf="req"${c.req ? ' checked' : ''} aria-label="Obrigatório"></td>
+        <td class="o"><select data-pf="seSim" aria-label="Quando mostrar"><option value="">Sempre</option>${cs.slice(0, pi).filter(x => (x.tipo || 'simnao') === 'simnao' && x.k).map(x => `<option value="${esc(x.k)}"${c.seSim === x.k ? ' selected' : ''}>Só com Sim em “${esc(x.label || '')}”</option>`).join('')}</select></td>
+        <td class="a"><button type="button" data-pba="up"${pi === 0 ? ' disabled' : ''} aria-label="Subir">↑</button><button type="button" data-pba="down"${pi === cs.length - 1 ? ' disabled' : ''} aria-label="Descer">↓</button><button type="button" data-pba="del" aria-label="Excluir pergunta" title="Excluir pergunta">✕</button></td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="tools"><button type="button" data-pba="add">+ Pergunta</button></div></div></section>`; }).join('') + `<datalist id="pbNomes">${nomes.map(n => `<option value="${esc(n)}">`).join('')}</datalist>` + (L.length ? '' : '<p class="hint">Nenhuma bandeira com perguntas extras.</p>');
+  }
+  $('e4Band').addEventListener('input', e => {
+    const g = E4 && E4.perguntasBandeira && E4.perguntasBandeira[+(e.target.closest('[data-gi]') || {}).dataset?.gi]; if (!g) return;
+    if (e.target.matches('[data-pbn]')) { g.bandeira = e.target.value; const h = e.target.closest('.sec').querySelector('h2'); if (h.firstChild) h.firstChild.textContent = (e.target.value.trim() || 'Nova bandeira') + ' '; marcarE4(); return; }
+    if (e.target.dataset.pf === 'label') { g.campos[+e.target.closest('[data-pi]').dataset.pi].label = e.target.value; marcarE4(); }
+  });
+  $('e4Band').addEventListener('change', e => {
+    const f = e.target.dataset.pf; if (!f || f === 'label' || !E4) return; const g = E4.perguntasBandeira[+e.target.closest('[data-gi]').dataset.gi], c = g.campos[+e.target.closest('[data-pi]').dataset.pi];
+    if (f === 'req') c.req = e.target.checked; else if (f === 'seSim') { if (e.target.value) c.seSim = e.target.value; else delete c.seSim; }
+    else if (f === 'tipo') { c.tipo = e.target.value; if (c.tipo !== 'simnao') g.campos.forEach(x => { if (x.seSim === c.k) delete x.seSim; }); desenharPb(); }
+    marcarE4();
+  });
+  $('e4Band').addEventListener('click', e => {
+    const b = e.target.closest('[data-pba]'); if (!b || !E4) return; const L = E4.perguntasBandeira, gi = +b.closest('[data-gi]').dataset.gi, g = L[gi], a = b.dataset.pba;
+    if (a === 'delg') L.splice(gi, 1);
+    else if (a === 'add') g.campos.push({ k: pbChave(), label: 'Nova pergunta', tipo: 'simnao', req: false });
+    else {
+      const cs = g.campos, pi = +b.closest('[data-pi]').dataset.pi;
+      if (a === 'up' && pi > 0) [cs[pi - 1], cs[pi]] = [cs[pi], cs[pi - 1]];
+      else if (a === 'down' && pi < cs.length - 1) [cs[pi + 1], cs[pi]] = [cs[pi], cs[pi + 1]];
+      else if (a === 'del') { const k = cs[pi].k; cs.splice(pi, 1); cs.forEach(x => { if (x.seSim === k) delete x.seSim; }); }
+      else return;
+      cs.forEach((x, j) => { if (x.seSim && !cs.slice(0, j).some(y => y.k === x.seSim)) delete x.seSim; }); // "Só com Sim em" precisa vir de uma pergunta acima
+    }
+    marcarE4(); desenharPb();
+    if (a === 'add') $('e4Band').querySelector(`[data-gi="${gi}"] tbody tr:last-child [data-pf=label]`)?.select();
+  });
+  $('btnPbNova').addEventListener('click', () => { if (!E4) return; (E4.perguntasBandeira = E4.perguntasBandeira || []).push({ bandeira: '', campos: [{ k: pbChave(), label: 'Nova pergunta', tipo: 'simnao', req: false }] }); marcarE4(); desenharPb(); $('e4Band').querySelector('.pbgrp:last-of-type [data-pbn]')?.focus(); });
+  $('btnPbSalvar').addEventListener('click', () => $('btnE4Salvar').click());
   // Setor de Validação: em qual tela do Pré TASK a seção aparece (item próprio no menu ou dentro de outra tela)
   const SETOR_ANX = s => /anexo/i.test(s.titulo || '') || (s.campos || []).some(c => c.tipo === 'anexo' && /certificad|pfx|logo/i.test(c.label || ''));
   const SETOR_CONV = s => /convers[aã]o/i.test(s.titulo || '');
@@ -1527,7 +1577,7 @@ async function iniciar() {
     desenharBand();
   }
   function desenharBand() {
-    if (!BAND || !fb.admin) return;
+    if (!BAND || !fb.admin) return; if (E4) desenharPb();
     $('bandLista').innerHTML = BAND.map((b, i) => `<div class="bandrow" data-bi="${i}"><span class="bimg">${b.img ? `<img src="${esc(b.img)}" alt="">` : 'sem imagem'}</span><input data-bn value="${esc(b.nome)}" placeholder="Nome da bandeira" aria-label="Nome da bandeira"><label class="btn">${b.img ? 'Trocar imagem' : 'Escolher imagem'}<input type="file" accept="image/*,.svg" hidden data-bf></label>${b.img ? '<button type="button" data-bx>Tirar imagem</button>' : ''}<button type="button" data-bdel aria-label="Excluir bandeira">✕</button></div>`).join('') || '<p class="hint">Nenhuma bandeira cadastrada.</p>';
   }
   const marcarBand = () => bandStatus('Alterações ainda não publicadas.');
@@ -1639,6 +1689,9 @@ async function iniciar() {
   $('btnE4Salvar').addEventListener('click', async () => {
     if (!E4 || !fb.admin) return;
     if (E4.secoes.flatMap(s => s.campos).some(c => !String(c.label || '').trim()) || E4.secoes.some(s => !String(s.titulo || '').trim())) { e4Status('Todo campo e toda seção precisam de um nome.'); return; }
+    if ((E4.perguntasBandeira || []).some(g => (g.campos || []).length && !String(g.bandeira || '').trim())) { e4Status('Informe o nome da bandeira em Perguntas por bandeira.'); return; }
+    if ((E4.perguntasBandeira || []).some(g => (g.campos || []).some(c => !String(c.label || '').trim()))) { e4Status('Toda pergunta da bandeira precisa de um texto.'); return; }
+    delete E4.bandPergMudou;
     const btn = $('btnE4Salvar'); btn.disabled = true; e4Status('Publicando…');
     try {
       const em = new Date().toISOString();

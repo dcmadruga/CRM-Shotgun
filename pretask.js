@@ -80,6 +80,7 @@
 .ptbwrap{position:relative;display:block}.ptbwrap input{width:100%;box-sizing:border-box;padding-right:34px!important}.ptbseta{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);font-size:14px;cursor:pointer;padding:4px 8px;line-height:1}.ptbanco.outro .ptbseta{display:none}.ptblista{position:fixed;z-index:10000;box-sizing:border-box;max-height:260px;overflow-y:auto;margin:0;padding:4px;list-style:none;background:var(--field);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18)}.ptblista li{padding:8px 10px;border-radius:6px;font-size:13.5px;font-weight:400;color:var(--fg);cursor:pointer;text-align:left}.ptblista li:hover,.ptblista li.foco{background:color-mix(in srgb,#FF6A00 12%,transparent)}.ptblista li.sel{font-weight:600;color:var(--accent-text)}.ptblista li.vazio{color:var(--muted);cursor:default;background:none}
 .ptf .ptmesmo{display:flex!important;flex-direction:row!important;align-items:center;justify-content:flex-start;align-self:flex-start;gap:6px;font-size:12.5px;font-weight:500;color:var(--fg);cursor:pointer;text-align:left}.ptf .ptmesmo input{accent-color:#FF6A00;width:16px!important;min-width:0;height:16px;margin:0;padding:0;flex:none}
 .ptgrid input[readonly]{opacity:.75}
+.ptbtit{margin:4px 0 -2px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-text)}
 .ptcfc{font-size:12px;font-weight:600;color:var(--accent-text);margin-top:4px;align-self:flex-start}
 `;
   function estilos() { if (document.getElementById('ptCss')) return; const s = document.createElement('style'); s.id = 'ptCss'; s.textContent = css; document.head.appendChild(s); }
@@ -179,6 +180,8 @@
     let dep = null;
     return campos.map((c, i) => {
       let h = campoHtml(c, pref + c.k, v, anx);
+      if (c.seSim) h = `<div class="ptdw" data-dep="${esc(pref + c.seSim)}">${h}</div>`;
+      if (c.bandTit) h = `<p class="ptbtit full">Perguntas da bandeira ${esc(c.bandTit)}</p>` + h;
       if (c.seOpcao) h = `<div class="ptdw" data-cond="${esc(pref + c.seOpcao[0])}" data-op="${esc(c.seOpcao[1])}">${h}</div>`;
       // Cada Sim/Não que abre começa um grupo próprio: não fica dentro do grupo anterior (TEF Fixo x PDV Móvel x Cartões Frota são independentes)
       const abre = c.tipo === 'simnao' && (c.abre != null ? c.abre : i === 0) && i < campos.length - 1;
@@ -236,7 +239,7 @@
     campos.forEach((c, i) => {
       const abre = c.tipo === 'simnao' && (c.abre != null ? c.abre : i === 0) && i < campos.length - 1;
       if (c.solto || abre) dep = null;
-      const oculto = (dep && v[pref + dep] !== 'Sim') || (c.seOpcao && String(v[pref + c.seOpcao[0]] || '').split(':')[0].trim() !== c.seOpcao[1]);
+      const oculto = (dep && v[pref + dep] !== 'Sim') || (c.seSim && v[pref + c.seSim] !== 'Sim') || (c.seOpcao && String(v[pref + c.seOpcao[0]] || '').split(':')[0].trim() !== c.seOpcao[1]);
       if (abre) dep = c.k;
       if (oculto) return; const x = v[pref + c.k], tem = Array.isArray(x) ? x.length : String(x || '').trim(); if (tem) algum++;
       if (!c.req) return; tot++; if (tem) ok++;
@@ -394,7 +397,28 @@
   const injeta = (html, extra) => extra ? html.replace(/<\/section>\s*$/, extra + '</section>') : html;
   const ARQ_CONV = '.csv,.txt,.xls,.xlsx,.xlsm,.xlsb,.xltx,.ods';
   const camposBase = () => blocosBase().flatMap(x => x.campos);
-  const secoesParam = cfg => ((cfg && cfg.secoes) || []).filter(s => !ehSecBase(s)).map(s => ({ ...s, campos: (s.campos || []).filter(c => c.show !== false && !ehDup(c)) })).filter(s => s.campos.length);
+  const secoesParam = cfg => ((cfg && cfg.secoes) || []).filter(s => !ehSecBase(s)).map(s => ({ ...s, campos: comPerguntasBand(cfg, (s.campos || []).filter(c => c.show !== false && !ehDup(c))) })).filter(s => s.campos.length);
+  // Perguntas por bandeira (Parâmetros Pré TASK, bloco Perguntas por bandeira): entram logo depois de "Qual bandeira" e só
+  // aparecem quando a bandeira escolhida é a do grupo (ex.: Ipiranga: integra PISTA, AMPM, JETOIL…). Cada pergunta tem chave
+  // própria, então a resposta continua guardada mesmo se a bandeira mudar e voltar. "seSim": só aparece com Sim em outra pergunta.
+  function comPerguntasBand(cfg, cs) {
+    const gs = ((cfg && cfg.perguntasBandeira) || []).filter(g => String(g.bandeira || '').trim() && (g.campos || []).some(x => String(x.label || '').trim()));
+    if (!gs.length) return cs;
+    const i = cs.findIndex(c => (c.tipo === 'opcoes' || c.tipo === 'multicond') && ehBand(c) && !/bandeirad/i.test(c.label || ''));
+    if (i < 0) return cs;
+    const qual = cs[i], ops = qual.tipo === 'multicond' ? String(qual.opcoes || '').split(/[,;\n]/).map(x => x.trim()).filter(Boolean) : opsDe(qual);
+    const extra = gs.flatMap(g => {
+      const op = opcaoBand(ops, g.bandeira), xs = g.campos.filter(x => x.k && String(x.label || '').trim()), ks = new Set(xs.map(x => x.k));
+      return xs.map((x, j) => ({ k: x.k, label: String(x.label).trim(), tipo: x.tipo || 'simnao', req: !!x.req, ph: x.ph || '', abre: false, seOpcao: [qual.k, op], seSim: ks.has(x.seSim) ? x.seSim : '', bandTit: j === 0 ? String(g.bandeira).trim() : '', perguntaBand: true }));
+    });
+    return cs.slice(0, i + 1).concat(extra, cs.slice(i + 1));
+  }
+  // Opção da lista "Qual bandeira" que corresponde ao nome do grupo (Ipiranga = "Ipiranga", "Bandeira Ipiranga", "IPIRANGA"…)
+  function opcaoBand(ops, nome) {
+    const n = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/^bandeira\s+/, '').trim();
+    const b = BANDS.find(x => x[0].test(nome)), canon = b ? b[4] : '';
+    return ops.find(o => n(o) === n(nome)) || (canon && ops.find(o => !ehOutro(o) && BANDS.find(x => x[0].test(o)) === b)) || String(nome).trim();
+  }
   const BANDS = [[/ipiranga/i, '#0a3d91', '#ffd400', '#ffd400', 'Ipiranga'], [/shell|ra[ií]zen/i, '#ffd500', '#dd1d21', '#dd1d21', 'Shell'], [/petrobras|^br\b|vibra/i, '#00843d', '#fdc82f', '#fff', 'Petrobras'], [/\bale\b|alesat/i, '#0b4ea2', '#e30613', '#fff', 'ALE'], [/total/i, '#ed0000', '#2a5caa', '#fff', 'TotalEnergies'], [/atem/i, '#004b8d', '#f7a600', '#fff', 'Atem'], [/rodoil/i, '#e30613', '#1d1d1b', '#fff', 'Rodoil'], [/larco/i, '#003f7d', '#e4002b', '#fff', 'Larco'], [/charrua/i, '#00539b', '#f6a800', '#fff', 'Charrua'], [/petronas/i, '#00a19c', '#d8e021', '#fff', 'Petronas'], [/idaza/i, '#1b3f8b', '#f39200', '#fff', 'Idaza'], [/branca|sem bandeira|livre/i, '#ffffff', '#c9c9d1', '#33333b', 'Bandeira branca']];
   // Logo oficial (arquivos em icons/bandeiras, do Wikimedia Commons) quando houver; senão o selo com as cores
   // A lista vem do cadastro "Logos das Bandeiras" (Parâmetros Pré TASK); sem cadastro publicado, usa a padrão
