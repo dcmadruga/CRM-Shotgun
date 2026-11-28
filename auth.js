@@ -23,7 +23,8 @@ async function iniciar() {
   const app = initializeApp(C);
   const auth = A.getAuth(app);
   auth.languageCode = 'pt-BR'; // e-mails do Firebase (nova senha, verificação) em português do Brasil
-  let db; try { db = F.initializeFirestore(app, { localCache: F.persistentLocalCache() }); } catch (e) { db = F.getFirestore(app); }
+  // Cache local compartilhado entre as abas (v297): com o padrão de uma aba só, a 2ª aba ficava sem cache e lia tudo do servidor
+  let db; try { db = F.initializeFirestore(app, { localCache: F.persistentLocalCache({ tabManager: F.persistentMultipleTabManager() }) }); } catch (e) { db = F.getFirestore(app); }
   const $ = id => document.getElementById(id);
   const body = document.body;
   const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -676,7 +677,7 @@ async function iniciar() {
   function ouvirPropostas() {
     if (unsubP) unsubP();
     const col = F.collection(db, 'propostas');
-    const q = fb.admin ? F.query(col, F.orderBy('criado', 'desc'), F.limit(300)) : F.query(col, F.where('owner', '==', perfil.uid));
+    const q = fb.admin ? F.query(col, F.orderBy('criado', 'desc'), F.limit(500)) : F.query(col, F.where('owner', '==', perfil.uid)); // ADM: mesma consulta do CRM (crm.js), o Firestore lê uma vez só para as duas telas
     unsubP = F.onSnapshot(q, qs => {
       propsTodas = qs.docs.map(d => ({ id: d.id, ...d.data() })).filter(p => p.status !== 'substituida') // versões antigas ficam guardadas, mas saem do quadro
         .sort((a, b) => (b.criado?.seconds || 9e9) - (a.criado?.seconds || 9e9));

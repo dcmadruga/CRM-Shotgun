@@ -25,9 +25,10 @@ async function tokenAuth() {
   return j.access_token;
 }
 
-const usuarios = await db.lista('usuarios');
-const fila = usuarios.filter(u => u.excluido === true && u.contaApagada !== true);
-if (!fila.length) { log(`Nenhuma conta para apagar (${usuarios.length} cadastros conferidos).`); process.exit(0); }
+// Só os cadastros marcados como excluídos (antes lia todos os usuários a cada 15 minutos)
+const marcados = await db.consulta('usuarios', 'excluido', true);
+const fila = marcados.filter(u => u.contaApagada !== true);
+if (!fila.length) { log(`Nenhuma conta para apagar (${marcados.length} excluída(s), todas já apagadas).`); process.exit(0); }
 log(`${fila.length} conta(s) excluída(s) no app aguardando: ${fila.map(u => u.email || u.id).join(', ')}`);
 if (teste) { log('Modo de teste: nada foi apagado.'); process.exit(0); }
 

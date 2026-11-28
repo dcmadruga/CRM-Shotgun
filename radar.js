@@ -1,7 +1,7 @@
 // Radar de Novos Postos – MT, RS, SC, PR e SP (aba Telemetria → Postos em construção). Lê o que o robô diário grava no Firestore (coleções radar_*)
 // e deixa o administrador revisar, configurar fontes e pedir uma pesquisa na hora.
 // O robô é scripts/radar/radar.mjs, rodado pelo GitHub Actions (.github/workflows/radar-postos.yml).
-let F, db, perfil, admin = false, temTask = false, unsub = [], uf = 'MT';
+let F, db, perfil, admin = false, temTask = false, unsub = [], uf = 'MT', docsCache = {};
 let emps = [], alertas = [], execs = [], fontes = [], config = {}, erroLeitura = '', aba = 'geral', area = null, mapa = null, camada = null;
 const filtro = { q: '', mun: '', cat: '', sit: '', conf: '', de: '', ate: '' };
 const $ = id => document.getElementById(id);
@@ -107,15 +107,21 @@ const FONTES_PREVISTAS_MT = [
   { id: 'pnla', nome: 'PNLA (MMA)', url: 'https://pnla.mma.gov.br/', obs: 'Pesquisa exige login: não monitorada' }
 ];
 
-window.addEventListener('shotgun-crm', e => { ({ F, db, perfil, admin, temTask } = e.detail); ouvir(); });
-window.addEventListener('argo-sair', () => { unsub.forEach(u => u()); unsub = []; emps = []; alertas = []; execs = []; fontes = []; config = {}; });
-window.radarMT = { mostrar(el, u = 'MT') { if (u !== uf) { uf = u; filtro.mun = ''; if (mapa) { mapa.remove(); mapa = null; } } area = el; area.className = 'radar'; desenhar(); } };
+// Economia de leituras (v297): o Radar só abre os listeners quando a pessoa entra na Telemetria, e os empreendimentos
+// vêm só do Estado escolhido. Antes, todo login lia todos os empreendimentos de todos os Estados, mesmo sem abrir a aba.
+let ouvindoUF = '', unsubEmp = null;
+window.addEventListener('shotgun-crm', e => { ({ F, db, perfil, admin, temTask } = e.detail); parar(); });
+function parar() { unsub.forEach(u => u()); unsub = []; if (unsubEmp) unsubEmp(); unsubEmp = null; ouvindoUF = ''; emps = []; alertas = []; execs = []; fontes = []; config = {}; docsCache = {}; }
+window.addEventListener('argo-sair', parar);
+window.radarMT = { mostrar(el, u = 'MT') { if (u !== uf) { uf = u; filtro.mun = ''; if (mapa) { mapa.remove(); mapa = null; } } area = el; area.className = 'radar'; if (F && db && ouvindoUF !== uf) ouvir(); desenhar(); } };
 
 function ouvir() {
-  unsub.forEach(u => u()); unsub = []; erroLeitura = '';
   const falha = e => { erroLeitura = e.code === 'permission-denied' ? 'Sem permissão para ler o Radar. As regras do Firestore do Radar ainda não foram publicadas (veja docs/radar.md).' : 'Não consegui ler o Radar: ' + e.message; desenhar(); };
   const col = n => F.collection(db, n);
-  unsub.push(F.onSnapshot(col('radar_empreendimentos'), s => { emps = s.docs.map(d => ({ id: d.id, ...d.data() })); desenhar(); }, falha));
+  // empreendimentos: só os do Estado escolhido (trocar de Estado troca só esta consulta)
+  if (unsubEmp) unsubEmp(); erroLeitura = ''; emps = []; ouvindoUF = uf;
+  unsubEmp = F.onSnapshot(F.query(col('radar_empreendimentos'), F.where('uf', '==', uf)), s => { emps = s.docs.map(d => ({ id: d.id, ...d.data() })); desenhar(); }, falha);
+  if (unsub.length) return; // alertas, execuções, fontes e configuração já estão abertos
   unsub.push(F.onSnapshot(F.query(col('radar_alertas'), F.orderBy('criado', 'desc'), F.limit(100)), s => { alertas = s.docs.map(d => ({ id: d.id, ...d.data() })); desenhar(); }, falha));
   unsub.push(F.onSnapshot(F.query(col('radar_execucoes'), F.orderBy('inicio', 'desc'), F.limit(30)), s => { execs = s.docs.map(d => ({ id: d.id, ...d.data() })); desenhar(); }, falha));
   unsub.push(F.onSnapshot(col('radar_fontes'), s => { fontes = s.docs.map(d => ({ id: d.id, ...d.data() })); desenhar(); }, falha));
@@ -282,10 +288,12 @@ function carregarLeaflet() {
 }
 
 async function vDocs(el) {
-  el.innerHTML = '<p class="hint">Carregando os documentos mais recentes…</p>';
+  // A aba redesenha a cada mudança do Radar: guarda os documentos lidos por 10 min, em vez de ler 400 de novo a cada vez
+  const fresco = docsCache.lista && Date.now() - docsCache.t < 10 * 60000;
+  if (!fresco) el.innerHTML = '<p class="hint">Carregando os documentos mais recentes…</p>';
   try {
-    const s = await F.getDocs(F.query(F.collection(db, 'radar_documentos'), F.orderBy('coletado', 'desc'), F.limit(400)));
-    const ds = s.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => daUF(d) && daCidade(d)).slice(0, 100);
+    if (!fresco) { const s = await F.getDocs(F.query(F.collection(db, 'radar_documentos'), F.orderBy('coletado', 'desc'), F.limit(400))); docsCache = { t: Date.now(), lista: s.docs.map(d => ({ id: d.id, ...d.data() })) }; }
+    const ds = docsCache.lista.filter(d => daUF(d) && daCidade(d)).slice(0, 100);
     el.innerHTML = ds.length ? `<div class="crmlist">${ds.map(d => `<div class="crmrow rddoc"><span><b>${esc(d.titulo || d.fonteNome || d.fonte)}</b><small>${esc(d.fonteNome || d.fonte)} · publicado em ${fmtD(d.dataPublicacao)} · coletado em ${quando(d.coletado)}</small><small class="rdtrecho">${esc(String(d.trecho || '').slice(0, 280))}…</small></span>
       <span><small>${esc(EVENTOS[d.evento] || '')}</small><small>${esc(d.municipio || '')}</small></span><span><span class="pill rdconf ${esc(d.confianca || '')}">${esc(CONFIANCA[d.confianca] || '')}</span>${d.url ? `<a href="${esc(d.url)}" target="_blank" rel="noopener">Abrir original</a>` : ''}${d.eid ? `<button type="button" class="linkbtn" data-eid="${esc(d.eid)}">Ver empreendimento</button>` : ''}</span></div>`).join('')}</div>` : vazio();
     ligarLinhas(el);
