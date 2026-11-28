@@ -689,6 +689,7 @@ function completarDatas() {
     })().catch(() => {});
   });
 }
+const limite = (pr, ms, padrao) => Promise.race([Promise.resolve(pr).catch(() => padrao), new Promise(ok => setTimeout(() => ok(padrao), ms))]);
 // Cria o cadastro a partir da proposta (id do cadastro = id da proposta, para não duplicar)
 async function criarDaProposta(pid, auto) {
   const ref = F.doc(db, 'tasks', pid);
@@ -698,8 +699,13 @@ async function criarDaProposta(pid, auto) {
   const p = (await F.getDoc(F.doc(db, 'propostas', pid))).data();
   let v = {}; try { const r = await F.getDoc(F.doc(db, 'propostas', pid, 'etapa2', 'resposta')); if (r.exists()) v = r.data().valores || {}; } catch (e) {}
   const sc = window.splitCidade ? window.splitCidade(p.cidade) : { cidade: p.cidade || '', uf: '' };
-  const d4 = (await datasE4(pid)) || {}; baseSimples(d4, v.cnpj || p.cnpj); if (d4.central) await razoesFiliais(d4.central);
-  const novo = { dataBase: d4.dataBase || '', central: d4.central || null, logo: await logoDe(pid), logoV: 3,
+  const d4 = (await datasE4(pid)) || {}; baseSimples(d4, v.cnpj || p.cnpj);
+  // Consulta de CNPJ das filiais e miniatura do logo têm limite de tempo: antes, se uma delas travasse
+  // (site de CNPJ sem responder, PDF do logo que não abre), o card nunca era criado (nem no automático, nem no Importar).
+  // O que ficar faltando o completarDatas() refaz depois, com o card já no quadro.
+  if (d4.central) await limite(razoesFiliais(d4.central), 15000, null);
+  const logo = await limite(logoDe(pid), 15000, '');
+  const novo = { dataBase: d4.dataBase || '', central: d4.central || null, logo, logoV: 3,
     apelido: v.fantasia || p.cliente || '', razao: v.razao || p.cliente || '', cnpj: dig(v.cnpj || p.cnpj), cidade: v.cidade || sc.cidade, uf: (v.uf || sc.uf || '').toUpperCase(),
     email: v.respEmail || v.finEmail || '', contato: v.respNome || p.ctAceitoNome || p.contato || '', fone: v.respFone || p.fone || '',
     respCadastro: respE4(d4) || (auto ? null : { uid: perfil.uid, nome: perfil.nome || perfil.email }), respStart: null, start: d4.start || v.dataImpl || '', obs: v.obs || '',
