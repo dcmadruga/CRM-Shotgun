@@ -1484,7 +1484,7 @@ async function iniciar() {
     } catch (e) { E4 = copia(window.ETAPA4_PADRAO); if (fb.admin) e4Status('Não foi possível carregar o formulário publicado; mostrando o padrão.'); }
     e4Sujo = false; desenharE4();
     if (E4 && E4.tefPixMudou) { delete E4.tefPixMudou; marcarE4(); e4Status('Seções novas no Pré TASK: PIX e Contato Cliente: TEF / PIX (dentro de TEF / PIX) e APP de terceiros (dentro de Integração), e o campo E-mail do Gerente ao lado do Telefone do Gerente. Confira e toque em Publicar para gravar.'); }
-    else if (E4 && E4.bandPergMudou) { delete E4.bandPergMudou; marcarE4(); e4Status('Novo no Pré TASK: Perguntas por bandeira (Ipiranga, Petrobras, Shell e Rodoil), no fim desta página. Confira e toque em Publicar para gravar.'); }
+    else if (E4 && E4.bandPergMudou) { delete E4.bandPergMudou; marcarE4(); e4Status('Novo no Pré TASK: Perguntas por bandeira (Ipiranga reajustada, Petrobras, Shell e Rodoil), no fim desta página. Confira e toque em Publicar para gravar.'); }
     if (E4) delete E4.bandPergMudou;
   }
   function marcarE4() { e4Sujo = true; e4Status('Alterações ainda não publicadas.'); }
@@ -1499,7 +1499,9 @@ async function iniciar() {
   }
   /* ---------- Perguntas por bandeira (ADM): E4.perguntasBandeira, publicadas junto com o formulário do Pré TASK ---------- */
   // Cada grupo: nome da bandeira + perguntas. No Pré TASK aparecem logo abaixo de "Qual bandeira" quando ela é a do grupo.
-  const PB_TIPOS = { simnao: 'Sim / Não', texto: 'Texto', textolongo: 'Texto longo', numero: 'Número', data: 'Data' };
+  const PB_TIPOS = { simnao: 'Sim / Não', texto: 'Texto', textolongo: 'Texto longo', numero: 'Número', data: 'Data', telefone: 'Telefone', nota: 'Aviso (só texto)' };
+  const pbSe = c => [].concat(c.seSim || []);
+  const pbTira = (cs, k) => cs.forEach(x => { const se = pbSe(x).filter(y => y !== k); if (se.length) x.seSim = se.length > 1 ? se : se[0]; else delete x.seSim; }); // "Quando mostrar": Sim em uma pergunta acima, ou em qualquer uma de uma lista
   const pbChave = () => 'pb' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   function desenharPb() {
     const box = $('e4Band'); if (!box || !E4 || !fb.admin) return;
@@ -1511,7 +1513,7 @@ async function iniciar() {
       ${cs.map((c, pi) => `<tr data-pi="${pi}"><td><input data-pf="label" value="${esc(c.label || '')}" aria-label="Pergunta"></td>
         <td class="t"><select data-pf="tipo" aria-label="Tipo">${Object.entries(PB_TIPOS).map(([k, t]) => `<option value="${k}"${(c.tipo || 'simnao') === k ? ' selected' : ''}>${t}</option>`).join('')}</select></td>
         <td class="c"><input type="checkbox" data-pf="req"${c.req ? ' checked' : ''} aria-label="Obrigatório"></td>
-        <td class="o"><select data-pf="seSim" aria-label="Quando mostrar"><option value="">Sempre</option>${cs.slice(0, pi).filter(x => (x.tipo || 'simnao') === 'simnao' && x.k).map(x => `<option value="${esc(x.k)}"${c.seSim === x.k ? ' selected' : ''}>Só com Sim em “${esc(x.label || '')}”</option>`).join('')}</select></td>
+        <td class="o"><select data-pf="seSim" aria-label="Quando mostrar"><option value="">Sempre</option>${(() => { const ac = cs.slice(0, pi).filter(x => (x.tipo || 'simnao') === 'simnao' && x.k), se = pbSe(c), val = se.join('|'); return ac.map(x => `<option value="${esc(x.k)}"${val === x.k ? ' selected' : ''}>Só com Sim em “${esc(x.label || '')}”</option>`).join('') + (se.length > 1 ? `<option value="${esc(val)}" selected>Só com Sim em ${se.map(k => '“' + esc((cs.find(y => y.k === k) || {}).label || '') + '”').join(' ou ')}</option>` : ''); })()}</select></td>
         <td class="a"><button type="button" data-pba="up"${pi === 0 ? ' disabled' : ''} aria-label="Subir">↑</button><button type="button" data-pba="down"${pi === cs.length - 1 ? ' disabled' : ''} aria-label="Descer">↓</button><button type="button" data-pba="del" aria-label="Excluir pergunta" title="Excluir pergunta">✕</button></td></tr>`).join('')}
       </tbody></table></div>
       <div class="tools"><button type="button" data-pba="add">+ Pergunta</button></div></div></section>`; }).join('') + `<datalist id="pbNomes">${nomes.map(n => `<option value="${esc(n)}">`).join('')}</datalist>` + (L.length ? '' : '<p class="hint">Nenhuma bandeira com perguntas extras.</p>');
@@ -1523,8 +1525,8 @@ async function iniciar() {
   });
   $('e4Band').addEventListener('change', e => {
     const f = e.target.dataset.pf; if (!f || f === 'label' || !E4) return; const g = E4.perguntasBandeira[+e.target.closest('[data-gi]').dataset.gi], c = g.campos[+e.target.closest('[data-pi]').dataset.pi];
-    if (f === 'req') c.req = e.target.checked; else if (f === 'seSim') { if (e.target.value) c.seSim = e.target.value; else delete c.seSim; }
-    else if (f === 'tipo') { c.tipo = e.target.value; if (c.tipo !== 'simnao') g.campos.forEach(x => { if (x.seSim === c.k) delete x.seSim; }); desenharPb(); }
+    if (f === 'req') c.req = e.target.checked; else if (f === 'seSim') { const se = e.target.value.split('|').filter(Boolean); if (se.length) c.seSim = se.length > 1 ? se : se[0]; else delete c.seSim; }
+    else if (f === 'tipo') { c.tipo = e.target.value; if (c.tipo !== 'simnao') pbTira(g.campos, c.k); desenharPb(); }
     marcarE4();
   });
   $('e4Band').addEventListener('click', e => {
@@ -1535,9 +1537,9 @@ async function iniciar() {
       const cs = g.campos, pi = +b.closest('[data-pi]').dataset.pi;
       if (a === 'up' && pi > 0) [cs[pi - 1], cs[pi]] = [cs[pi], cs[pi - 1]];
       else if (a === 'down' && pi < cs.length - 1) [cs[pi + 1], cs[pi]] = [cs[pi], cs[pi + 1]];
-      else if (a === 'del') { const k = cs[pi].k; cs.splice(pi, 1); cs.forEach(x => { if (x.seSim === k) delete x.seSim; }); }
+      else if (a === 'del') { const k = cs[pi].k; cs.splice(pi, 1); pbTira(cs, k); }
       else return;
-      cs.forEach((x, j) => { if (x.seSim && !cs.slice(0, j).some(y => y.k === x.seSim)) delete x.seSim; }); // "Só com Sim em" precisa vir de uma pergunta acima
+      cs.forEach((x, j) => { const se = pbSe(x).filter(k => cs.slice(0, j).some(y => y.k === k)); if (se.length) x.seSim = se.length > 1 ? se : se[0]; else delete x.seSim; }); // "Só com Sim em" precisa vir de pergunta acima
     }
     marcarE4(); desenharPb();
     if (a === 'add') $('e4Band').querySelector(`[data-gi="${gi}"] tbody tr:last-child [data-pf=label]`)?.select();
