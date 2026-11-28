@@ -60,6 +60,20 @@ export function firestore() {
       do { const j = await req('GET', `${base}/${colecao}?pageSize=300${page ? '&pageToken=' + page : ''}`); (j.documents || []).forEach(d => out.push({ id: d.name.split('/').pop(), ...decFields(d.fields || {}) })); page = j.nextPageToken || ''; } while (page);
       return out;
     },
+    // quais destes documentos já existem (lê só os pedidos, não a coleção inteira): devolve um Set com os caminhos
+    async existem(caminhos) {
+      const out = new Set();
+      for (let i = 0; i < caminhos.length; i += 100) {
+        const j = await req('POST', `${base}:batchGet`, { documents: caminhos.slice(i, i + 100).map(nome), mask: { fieldPaths: ['fonte'] } });
+        (j || []).forEach(r => { if (r.found) out.add(r.found.name.split('/documents/')[1]); });
+      }
+      return out;
+    },
+    // documentos de uma coleção com campo == valor (paga só pelos encontrados, no mínimo 1 leitura)
+    async consulta(colecao, campo, valor) {
+      const j = await req('POST', `${base}:runQuery`, { structuredQuery: { from: [{ collectionId: colecao }], where: { fieldFilter: { field: { fieldPath: campo }, op: 'EQUAL', value: enc(valor) } } } });
+      return (j || []).filter(r => r.document).map(r => ({ id: r.document.name.split('/').pop(), ...decFields(r.document.fields || {}) }));
+    },
     // grava em lotes de até 400: cada item {caminho, dados, mesclar} (mesclar = só os campos enviados)
     async gravar(itens) {
       for (let i = 0; i < itens.length; i += 400) {

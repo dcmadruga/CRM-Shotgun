@@ -54,9 +54,14 @@ const NOMES_CAT = { novo: 'Novo posto de combustível', ampliacao: 'Ampliação 
 let config = {}, fontesDb = {}, gatilho = gatilhoBase, pedidoPor = '';
 if (db) {
   config = (await db.get('radar_config/geral')) || {};
-  for (const f of await db.lista('radar_fontes')) fontesDb[f.id] = f;
   const ped = config.pedido && !config.pedido.atendido;
   const freqH = Number(config.frequenciaHoras) || 24;
+  // Atalho (1 leitura): a última rodada anota em radar_config/geral quando todas as fontes deram certo. Se ainda não
+  // é hora e nenhuma fonte nova entrou no código, sai sem ler radar_fontes (o robô confere a cada 15 minutos).
+  const resumo = config.rodada;
+  if (!ped && gatilhoBase === 'agendado' && resumo?.okMin && FONTES.every(f => (resumo.fontes || []).includes(f.mod.info.id))
+    && Date.now() - new Date(resumo.okMin).getTime() < freqH * 36e5 - 10 * 6e4) { log(`Última pesquisa completa há ${((Date.now() - new Date(resumo.okMin).getTime()) / 36e5).toFixed(1)} h (frequência: ${freqH} h). Nada a fazer agora.`); process.exit(0); }
+  for (const f of await db.lista('radar_fontes')) fontesDb[f.id] = f;
   // a fonte mais atrasada manda: uma fonte nova (sem coleta) faz a rodada acontecer já
   const ultimaOk = Math.min(...FONTES.map(f => fontesDb[f.mod.info.id]?.ultimaOk ? new Date(fontesDb[f.mod.info.id].ultimaOk).getTime() : 0));
   if (ped) { gatilho = 'manual'; pedidoPor = config.pedido.por || ''; }
@@ -126,7 +131,8 @@ const unicos = [...new Map(avisos.map(a => [a.docId, a])).values()];
 
 // ---------- 4) empreendimentos ----------
 const existentes = db ? await db.lista('radar_empreendimentos') : [];
-const docsExist = new Set(db ? (await db.lista('radar_documentos')).map(d => d.id) : []);
+// documentos já gravados: confere só os avisos desta rodada (antes lia a coleção radar_documentos inteira todo dia)
+const docsExist = new Set(db ? [...await db.existem(unicos.map(a => `radar_documentos/${a.docId}`))].map(c => c.split('/').pop()) : []);
 const emps = new Map(existentes.map(e => [e.id, e]));
 const porNomeMun = new Map(existentes.filter(e => e.razao).map(e => [slug(e.razao) + '|' + (e.ibge || ''), e.id]));
 const novosDocs = [], historico = [], alertas = [], processos = new Map();
@@ -209,6 +215,8 @@ if (db) {
   const itens = [];
   const campos = e => { const { revisao, leadId, id, ...resto } = e; return resto; }; // revisão e lead são do app: o robô não mexe
   for (const id of tocados) itens.push({ caminho: `radar_empreendimentos/${id}`, dados: campos(emps.get(id)), mesclar: true });
+  // registros antigos sem Estado são de MT: grava o campo, porque o app agora busca os empreendimentos por Estado
+  for (const e of existentes) if (!e.uf && !tocados.includes(e.id)) itens.push({ caminho: `radar_empreendimentos/${e.id}`, dados: { uf: 'MT' }, mesclar: true });
   for (const p of processos.values()) if (p.docs.some(d => novosDocs.some(n => n.id === d))) itens.push({ caminho: `radar_processos/${p.id}`, dados: p, mesclar: true });
   for (const d of novosDocs) itens.push({ caminho: `radar_documentos/${d.id}`, dados: d });
   const auto = () => inicio.getTime().toString(36) + Math.random().toString(36).slice(2, 8);
@@ -220,7 +228,10 @@ if (db) {
   }
   itens.push({ caminho: 'radar_fontes/anp', mesclar: true, dados: { ...anpFonte.info, ufs: UFS_ATIVAS, situacao: 'integrada', ultimaColeta: inicio, ultimaOk: inicio, ultimoErro: '' } });
   itens.push({ caminho: `radar_execucoes/${auto()}`, dados: exec });
-  if (gatilho === 'manual') itens.push({ caminho: 'radar_config/geral', mesclar: true, dados: { pedido: { ...config.pedido, atendido: true, atendidoEm: inicio } } });
+  // resumo para o atalho do início: a fonte mais atrasada (falha mantém o ultimaOk anterior) e as fontes conferidas
+  const okDe = id => porFonte[id]?.ok ? inicio : (fontesDb[id]?.ultimaOk ? new Date(fontesDb[id].ultimaOk) : new Date(0));
+  const rodada = { okMin: new Date(Math.min(...FONTES.map(f => okDe(f.mod.info.id).getTime()))), fontes: FONTES.map(f => f.mod.info.id), em: inicio };
+  itens.push({ caminho: 'radar_config/geral', mesclar: true, dados: { rodada, ...(gatilho === 'manual' ? { pedido: { ...config.pedido, atendido: true, atendidoEm: inicio } } : {}) } });
   await db.gravar(itens);
   log(`Gravados ${itens.length} registros no Firestore.`);
 } else {
