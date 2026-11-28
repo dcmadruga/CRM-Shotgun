@@ -98,6 +98,13 @@ window.ETAPA4_PADRAO = {
       if (!Array.isArray(cfg.perguntasBandeira)) { cfg.perguntasBandeira = window.PERGUNTAS_BANDEIRA_PADRAO(); cfg.bandPergMudou = true; }
       cfg.perguntasBandeiraV292 = true;
     }
+    // v293: grupo da Shell (ShellBox, Shell Select/Café) entra nas configurações já publicadas, se ainda não houver grupo Shell.
+    // Uma vez só (marca perguntasShellV293)
+    if (!cfg.perguntasShellV293) {
+      const L = cfg.perguntasBandeira = Array.isArray(cfg.perguntasBandeira) ? cfg.perguntasBandeira : [];
+      if (!L.some(g => /shell|ra[ií]zen/i.test(g.bandeira || ''))) { L.push(window.PERGUNTAS_BANDEIRA_PADRAO().find(g => g.bandeira === 'Shell')); cfg.bandPergMudou = true; }
+      cfg.perguntasShellV293 = true;
+    }
     return cfg;
   };
   function juntar(cfg) {
@@ -132,7 +139,11 @@ window.ETAPA4_PADRAO = {
     { k: 'pbBrMania', label: 'Integra BrMania', tipo: 'simnao', req: false },
     { k: 'pbBrPremmia', label: 'Integra Premmia', tipo: 'simnao', req: false },
     { k: 'pbBrLubrax', label: 'Integra Lubrax+', tipo: 'simnao', req: false }
+  ] }, { bandeira: 'Shell', campos: [
+    { k: 'pbShellBox', label: 'Integra ShellBox', tipo: 'simnao', req: false },
+    { k: 'pbShellSelect', label: 'Integra Shell Select/Café', tipo: 'simnao', req: false }
   ] }];
   window.ETAPA4_PADRAO.perguntasBandeira = window.PERGUNTAS_BANDEIRA_PADRAO();
   window.ETAPA4_PADRAO.perguntasBandeiraV292 = true;
+  window.ETAPA4_PADRAO.perguntasShellV293 = true;
 })();
