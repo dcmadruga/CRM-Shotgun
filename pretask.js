@@ -76,7 +76,7 @@
 .ptauto.ok{color:var(--ok-text)}.ptauto.erro{color:var(--danger)}.ptcnpjmsg:empty,.ptiemsg:empty{display:none}
 .ptsefaz{margin-top:6px}.ptsefaz.sobre button[data-cartao]{outline:2px dashed var(--accent-text);outline-offset:2px}
 .ptsoc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px;font-size:12px}.ptsoc small{color:var(--muted);font-weight:400}.ptsoc button{font:inherit;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--chip-bg);color:var(--chip-fg);cursor:pointer}
-.ptctt button small{font-weight:400;opacity:.75;margin-left:5px}
+.ptctt{align-items:flex-start}.ptctt>small{flex-basis:100%}.ptctt button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;max-width:100%;min-width:0;text-align:left;line-height:1.25;padding:5px 10px;border-radius:8px}.ptctt button b,.ptctt button small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ptctt button b{font-weight:600}.ptctt button small{font-size:11px;font-weight:400;color:var(--muted);margin:0}
 .ptbwrap{position:relative;display:block}.ptbwrap input{width:100%;box-sizing:border-box;padding-right:34px!important}.ptbseta{position:absolute;right:4px;top:50%;transform:translateY(-50%);border:0;background:none;color:var(--muted);font-size:14px;cursor:pointer;padding:4px 8px;line-height:1}.ptbanco.outro .ptbseta{display:none}.ptblista{position:fixed;z-index:10000;box-sizing:border-box;max-height:260px;overflow-y:auto;margin:0;padding:4px;list-style:none;background:var(--field);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18)}.ptblista li{padding:8px 10px;border-radius:6px;font-size:13.5px;font-weight:400;color:var(--fg);cursor:pointer;text-align:left}.ptblista li:hover,.ptblista li.foco{background:color-mix(in srgb,#FF6A00 12%,transparent)}.ptblista li.sel{font-weight:600;color:var(--accent-text)}.ptblista li.vazio{color:var(--muted);cursor:default;background:none}
 .ptf .ptmesmo{display:flex!important;flex-direction:row!important;align-items:center;justify-content:flex-start;align-self:flex-start;gap:6px;font-size:12.5px;font-weight:500;color:var(--fg);cursor:pointer;text-align:left}.ptf .ptmesmo input{accent-color:#FF6A00;width:16px!important;min-width:0;height:16px;margin:0;padding:0;flex:none}
 .ptgrid input[readonly]{opacity:.75}
@@ -890,12 +890,14 @@
           const c = box._cs[+b.dataset.i]; if (!c) return;
           poe(nome, c.nome, true);
           const t = tituloGrid(g), todos = [...corpo.querySelectorAll('.ptgrid')].filter(x => x === g || tituloGrid(x) === t).flatMap(x => [...x.querySelectorAll('input[data-pk]')]);
-          todos.forEach(i => { if (i === nome) return; if (c.fone && ehFone(i)) poe(i, foneFmt(c.fone), true); else if (c.email && ehEmail(i)) poe(i, c.email, true); });
+          // Telefone e e-mails passam a ser os desta pessoa: o que ela não tem fica em branco (não sobra o dado do contato anterior)
+          const troca = (i, v) => { if (i.readOnly) return; if (v) { poe(i, v, true); return; } if (!i.value) return; i.value = ''; i.dispatchEvent(new Event('input', { bubbles: true })); };
+          todos.forEach(i => { if (i === nome) return; if (ehFone(i)) troca(i, c.fone && foneFmt(c.fone)); else if (ehEmail(i)) troca(i, c.email); });
           desenharContatos(corpo);
         });
       }
       box._cs = cs;
-      box.innerHTML = '<small>Contatos já informados:</small>' + cs.slice(0, 8).map((c, i) => `<button type="button" data-i="${i}" title="${esc([c.origem, c.fone && foneFmt(c.fone), c.email].filter(Boolean).join(' · '))}">${esc(c.nome)}<small>${esc(c.origem.split(' · ')[0])}</small></button>`).join('');
+      box.innerHTML = '<small>Contatos já informados:</small>' + cs.slice(0, 8).map((c, i) => { const det = [c.origem, c.fone && foneFmt(c.fone), c.email].filter(Boolean).join(' · '); return `<button type="button" data-i="${i}" title="${esc(c.nome + ' · ' + det)}"><b>${esc(c.nome)}</b><small>${esc(det)}</small></button>`; }).join('');
     });
   }
   function ligarContatos(corpo) {
