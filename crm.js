@@ -308,13 +308,13 @@ function notasHtml(notas, contatos) {
   const nomes = [...new Set((contatos || []).map(c => String(c || '').trim()).filter(Boolean))];
   return `<div class="crmhist"><h4>Histórico</h4>
     <div class="crmnova"><select id="crmNTipo" aria-label="Tipo">${TIPOS_NOTA.map(t => `<option>${t}</option>`).join('')}</select>
-      <select id="crmNCont" aria-label="Com quem"${nomes.length ? '' : ' hidden'}><option value="">Com quem?</option>${nomes.map(n => `<option>${esc(n)}</option>`).join('')}</select>
+      <input id="crmNCont" list="crmNContL" aria-label="Com quem" placeholder="Com quem?" maxlength="80" autocomplete="off"><datalist id="crmNContL">${nomes.map(n => `<option value="${esc(n)}">`).join('')}</datalist>
       <span class="ditado ditlinha"><input id="crmNTexto" placeholder="O que aconteceu? Ex.: liguei, pediu retorno na sexta" maxlength="1000">${micBtn()}</span>
       <button type="button" id="crmNAdd">Anotar</button><small class="ditst" hidden></small></div>
     ${ns.length ? `<ul>${ns.map(n => `<li><span class="pill">${esc(n.tipo)}</span> ${n.contato ? `<b class="crmncont">com ${esc(n.contato)}</b> ` : ''}<small>${fmtTs(n.em)}${n.por ? ' · ' + esc(n.por) : ''}</small><p>${esc(n.texto)}</p></li>`).join('')}</ul>` : '<p class="hint">Nenhuma anotação ainda.</p>'}
   </div>`;
 }
-const novaNota = () => { const texto = $('crmNTexto').value.trim(); const ct = $('crmNCont') ? $('crmNCont').value : ''; return texto ? { tipo: $('crmNTipo').value, texto, ...(ct ? { contato: ct } : {}), em: new Date().toISOString(), por: quem() } : null; };
+const novaNota = () => { const texto = $('crmNTexto').value.trim(); const ct = $('crmNCont') ? $('crmNCont').value.trim().replace(/\s+/g, ' ') : ''; return texto ? { tipo: $('crmNTipo').value, texto, ...(ct ? { contato: ct } : {}), em: new Date().toISOString(), por: quem() } : null; };
 
 // Sócios da Receita (QSA): tocar num nome preenche o Contato do lead
 const nomeProprio = n => String(n || '').toLowerCase().replace(/(^|\s)(\S)/g, (m, a, c) => a + c.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E)\s/g, m => m.toLowerCase());
@@ -329,12 +329,11 @@ const ctLinha = (c = {}) => `<div class="crmct">
   <label>E-mail<input data-c="email" type="email" value="${esc(c.email || '')}"></label>
   <button type="button" class="crmctx" data-a="ctdel" aria-label="Tirar este contato" title="Tirar este contato">✕</button>
 </div>`;
-// No lead, o seletor "Com quem?" do histórico acompanha os contatos que estão no formulário
+// No lead, as sugestões do "Com quem?" do histórico acompanham os contatos que estão no formulário (e dá para digitar qualquer nome)
 function atualizarNCont() {
-  const sel = $('crmNCont'); if (!sel || !$('crmCts')) return;
-  const atual = sel.value, nomes = [...new Set(lerContatos().map(c => c.nome).filter(Boolean))];
-  sel.innerHTML = `<option value="">Com quem?</option>${nomes.map(n => `<option${n === atual ? ' selected' : ''}>${esc(n)}</option>`).join('')}`;
-  sel.hidden = !nomes.length;
+  const dl = $('crmNContL'); if (!dl || !$('crmCts')) return;
+  const nomes = [...new Set(lerContatos().map(c => c.nome).filter(Boolean))];
+  dl.innerHTML = nomes.map(n => `<option value="${esc(n)}">`).join('');
 }
 function lerContatos() {
   return [...document.querySelectorAll('#crmCts .crmct')].map(r => ({ nome: r.querySelector('[data-c=nome]').value.trim(), fone: r.querySelector('[data-c=fone]').value.trim(), email: r.querySelector('[data-c=email]').value.trim(), cargo: r.querySelector('[data-c=cargo]').value.trim() })).filter(c => c.nome || c.fone || c.email || c.cargo);
@@ -642,7 +641,8 @@ function ligar() {
   dlg().addEventListener('change', e => { if (e.target.dataset.f === 'etapa') { const m = dlg().querySelector('.crmmot'); if (m) m.hidden = e.target.value !== 'perdido'; } });
   dlg().addEventListener('input', e => { if (e.target.closest('#crmCts')) atualizarNCont(); });
   dlg().addEventListener('input', e => { if (e.target.dataset.f === 'prox') marcarPrazos(); });
-  dlg().addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'crmNTexto') { e.preventDefault(); pararDitado(); anotar(); } });
+  dlg().addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'crmNCont') { e.preventDefault(); $('crmNTexto').focus(); return; }
+    if (e.key === 'Enter' && e.target.id === 'crmNTexto') { e.preventDefault(); pararDitado(); anotar(); } });
   dlg().addEventListener('click', async e => {
     if (e.target.id === 'crmNAdd') { pararDitado(); anotar(); return; }
     const b = e.target.closest('[data-a]'); if (!b) return;
