@@ -592,6 +592,8 @@
     Object.assign(C, { p, e4: e4 || {}, e2, cfg4: (window.pretaskCompletar || (x => x))(cfg4 && cfg4.json ? json(cfg4) : copia(window.ETAPA4_PADRAO || { secoes: [] })), cfg2: json(pub2) || window.ETAPA2_PADRAO || { secoes: [] }, an, dono, centrais, pre, v: copia((e4 && e4.valores) || {}), v2: copia(v2) });
     d.querySelector('#ptTit').textContent = (direto ? (ctx.novo ? 'Novo cadastro direto' : 'Pré TASK · cadastro direto') : 'Pré TASK') + (p.cliente ? ' · ' + p.cliente : '');
     trazerAnexosE2();
+    // Sim/Não novo na frente de uma lista (ex.: APP de terceiros, v300): quem já escolheu um item da lista conta como Sim
+    secoesParam(C.cfg4).forEach(s => (s.campos || []).forEach(c => { if (!c.simSeTem) return; Object.keys(C.v).forEach(key => { const m = key.match(/^(f\d+__)?(.+)$/); if (m[2] !== c.simSeTem || !String(C.v[key] || '').trim()) return; const g = (m[1] || '') + c.k; if (!C.v[g]) C.v[g] = 'Sim'; }); }));
     camposBase().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v[k] === undefined && C.v['f0__' + k] !== undefined) C.v[k] = C.v['f0__' + k]; }));
     // a Bandeira voltou para a aba Integração: na Central ela é por filial, então o valor salvo na aba Implantação vai para a F1
     if (C.pre.tipoBase === 'Central') camposBand().forEach(c => [c.k, c.k + '__det'].forEach(k => { if (C.v['f0__' + k] === undefined && C.v[k] !== undefined) C.v['f0__' + k] = C.v[k]; }));
