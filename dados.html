@@ -69,7 +69,7 @@ body.visorLado #visor .valca::after{content:"";position:absolute;top:50%;left:3p
 body.visorAberto:not(.visorLado)>*:not(#visor){user-select:none;-webkit-user-select:none}#visor .vtopo,#visor .vmsg{user-select:none;-webkit-user-select:none}
 #visor .vmsg{color:#ddd;font-size:13px;padding:8px;margin-inline:auto}
 .cfclink{font-size:12.5px;color:var(--purple,#7030a0);font-weight:600;margin-top:4px;text-decoration:none}.cfclink:hover{text-decoration:underline}.cfchint{font-size:11.5px;color:var(--muted)}
-.ctt{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.ctt>small{color:var(--muted);font-size:12px}.ctt button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}.ctt button small{color:var(--muted);font-size:11px}
+.ctt{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.ctt>small{color:var(--muted);font-size:12px}.ctt button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}.ctt>small{flex-basis:100%}.ctt button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;max-width:100%;min-width:0;text-align:left;line-height:1.25;padding:5px 10px;border-radius:8px}.ctt button b,.ctt button small{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ctt button b{font-weight:600}.ctt button small{color:var(--muted);font-size:11px}
 .nsug{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:4px}.nsug small{color:var(--muted);font-size:12px}.nsug button{font:inherit;font-size:12.5px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer;width:auto}
 @media (min-width:700px){.body>label:has(.busca){grid-column:span 2}}
 .linha{grid-column:1/-1;display:grid;grid-template-columns:minmax(160px,1fr) 3fr;gap:12px;align-items:start}
@@ -1075,11 +1075,12 @@ function sugerirContatos(){
     if(!lista.length){ if(box) box.remove(); return }
     if(!box){ box=document.createElement('span'); box.className='ctt'; alvo.l.appendChild(box);
       box.addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b) return; e.preventDefault(); const c=box._l[+b.dataset.i]; if(!c) return;
-        const poeD=(i,v)=>{ if(!v||i.readOnly) return; i.value=v; i.dispatchEvent(new Event('input',{bubbles:true})); if(i.classList.contains('bad')) valida(i) };
-        poeD(alvo.i,c.nome); campoSec(sec).forEach(x=>{ if(x===alvo||x.i===alvo.i) return; if(c.fone&&foneD(x)) poeD(x.i,fmtFone(c.fone)); else if(c.email&&emailD(x)) poeD(x.i,c.email) });
+        // Telefone e e-mails passam a ser os desta pessoa: o que ela não tem fica em branco (não sobra o dado do contato anterior)
+        const poeD=(i,v)=>{ if(i.readOnly||(!v&&!i.value)) return; i.value=v||''; i.dispatchEvent(new Event('input',{bubbles:true})); if(i.classList.contains('bad')) valida(i) };
+        poeD(alvo.i,c.nome); campoSec(sec).forEach(x=>{ if(x===alvo||x.i===alvo.i) return; if(foneD(x)) poeD(x.i,c.fone&&fmtFone(c.fone)); else if(emailD(x)) poeD(x.i,c.email) });
         sugerirContatos() }); }
     box._l=lista;
-    box.innerHTML='<small>Contatos já informados:</small>'+lista.slice(0,8).map((c,i)=>`<button type="button" data-i="${i}" title="${esc([c.origem,c.fone&&fmtFone(c.fone),c.email].filter(Boolean).join(' · '))}">${esc(c.nome)} <small>${esc(c.origem)}</small></button>`).join('');
+    box.innerHTML='<small>Contatos já informados:</small>'+lista.slice(0,8).map((c,i)=>{ const det=[c.origem,c.fone&&fmtFone(c.fone),c.email].filter(Boolean).join(' · '); return `<button type="button" data-i="${i}" title="${esc(c.nome+' · '+det)}"><b>${esc(c.nome)}</b><small>${esc(det)}</small></button>` }).join('');
   });
 }
 let cttT=0; f.addEventListener('change',e=>{ if(e.target.closest&&e.target.closest('.ctt')) return; clearTimeout(cttT); cttT=setTimeout(sugerirContatos,50) });
