@@ -1,15 +1,21 @@
 // Novidades do Shotgun: o que mudou em cada versão, em linguagem de usuário.
 // A janela "Novidades" abre sozinha uma vez quando o app atualiza (uma vez por versão, por usuário, em cada aparelho)
-// e pode ser revista a qualquer momento tocando em "Versão N" no cabeçalho.
+// e pode ser revista a qualquer momento tocando em "Versão A.M.R" no cabeçalho.
+//
+// NUMERAÇÃO (desde nov/2026): A.M.R, por exemplo 1.11.302
+//   A = ano do app (1 = 2026, 2 = 2027, ...), M = mês (1 a 12), R = número da release dentro do mês.
+//   R continua subindo dentro do mês e volta a 1 na primeira release de um mês novo (ex.: 1.11.310 → 1.12.1).
+//   As entradas antigas (até 301) ficam com número simples: o app sabe que elas vêm antes de qualquer A.M.R.
 //
 // COMO ACRESCENTAR UMA VERSÃO (em todo PR que sobe a versão do sw.js):
-//   1. Suba a versão em sw.js (const VERSAO = 'shotgun-vNNN').
-//   2. Coloque uma entrada NO TOPO da lista abaixo com o mesmo número:
-//        { v: NNN, data: 'AAAA-MM-DD', titulo: 'Frase curta', itens: ['O que a pessoa vê de diferente.', '...'] },
+//   1. Suba a versão em sw.js (const VERSAO = 'shotgun-A.M.R'). Não mexa no "shotgun-v302" do comentário da 1ª linha.
+//   2. Coloque uma entrada NO TOPO da lista abaixo com a mesma versão, entre aspas:
+//        { v: 'A.M.R', data: 'AAAA-MM-DD', titulo: 'Frase curta', itens: ['O que a pessoa vê de diferente.', '...'] },
 //      Escreva para quem usa o app: o que mudou na tela e onde encontrar. Sem nomes de código ou de arquivo.
 //   3. Mudança só interna (sem nada visível para o usuário)? Pode pular a entrada: a janela não abre para essa versão.
-//   Se dois PRs disputarem o mesmo número, quem fizer o merge depois troca para o próximo número livre aqui e no sw.js.
+//   Se dois PRs disputarem a mesma versão, quem fizer o merge depois troca para a próxima livre aqui e no sw.js.
 window.SHOTGUN_NOVIDADES = [
+  { v: '1.11.302', data: '2026-11-28', titulo: 'Novo jeito de numerar as versões', itens: ['A versão no topo do app agora tem três partes, como 1.11.302: o ano do app (1 = 2026), o mês (11 = novembro) e o número da atualização dentro do mês.', 'Na virada do mês a contagem recomeça: a primeira atualização de dezembro será a 1.12.1.'] },
   { v: 301, data: '2026-11-28', titulo: 'Contatos já informados sem mistura', itens: ['Tocando num nome em "Contatos já informados", o telefone e o e-mail passam a ser só dessa pessoa: o que ela não tem fica em branco, sem sobrar o dado do contato anterior.', 'Cada contato mostra o papel, o telefone e o e-mail embaixo do nome, para você ver o que vai ser preenchido antes de tocar.'] },
   { v: 300, data: '2026-11-28', titulo: 'APP de terceiros deixa de ser obrigatório', itens: ['No Pré TASK, item Integração, o bloco APP de terceiros agora pergunta primeiro "Vai ter integração de terceiros?" (Sim / Não).', 'Só com Sim aparece a lista de quais apps, e só aí ela é obrigatória. Com Não, o bloco já fica completo.', 'Quem já tinha escolhido um app continua com a escolha, e a resposta fica como Sim.'] },
   { v: 299, data: '2026-11-28', titulo: 'Histórico: digite com quem você falou', itens: ['No histórico do lead e da ficha do cliente, o campo "Com quem?" agora aceita qualquer nome digitado, como um recepcionista ou o contador.', 'Os contatos e sócios já cadastrados continuam aparecendo como sugestão enquanto você digita.', 'O campo aparece sempre, mesmo quando o lead ainda não tem contato cadastrado.'] },
@@ -525,19 +531,21 @@ window.SHOTGUN_NOVIDADES = [
 
 (function () {
   const LISTA = window.SHOTGUN_NOVIDADES || [];
-  const ULTIMA = LISTA.reduce((m, n) => Math.max(m, n.v), 0);
+  // Ordem das versões: '1.11.302' (A.M.R) vale A*1e8 + M*1e6 + R; número antigo (301) vale ele mesmo, sempre menor
+  const chaveV = v => { const m = String(v ?? '').match(/^(\d+)\.(\d+)\.(\d+)$/); return m ? m[1] * 1e8 + m[2] * 1e6 + +m[3] : (+v || 0); };
+  const ULTIMA = LISTA.reduce((m, n) => chaveV(n.v) > chaveV(m) ? n.v : m, 0);
   const MAX_AUTO = 5;                 // na abertura automática, no máximo as 5 versões mais recentes que a pessoa ainda não viu
   const CHAVE = 'shotgun-novidades-vista';
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmtD = d => { const m = String(d || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? `${m[3]}/${m[2]}/${m[1]}` : ''; };
-  const ler = k => { try { return +(localStorage.getItem(k) || 0); } catch (_) { return 0; } };
+  const ler = k => { try { return localStorage.getItem(k) || 0; } catch (_) { return 0; } };
   const gravar = (k, v) => { try { localStorage.setItem(k, String(v)); } catch (_) {} };
 
   // auto: abertura automática, mostra só o que a pessoa ainda não viu (desde = última versão vista; 0 = nunca viu)
   function abrir(auto, desde) {
     const dlg = document.getElementById('novDlg'), body = document.getElementById('novBody');
     if (!dlg || !body || !LISTA.length) return;
-    const novas = auto ? LISTA.filter(n => n.v > (desde || 0)).slice(0, MAX_AUTO) : [];
+    const novas = auto ? LISTA.filter(n => chaveV(n.v) > chaveV(desde)).slice(0, MAX_AUTO) : [];
     const mostrar = novas.length ? novas : LISTA;
     document.getElementById('novTit').textContent = novas.length ? 'Novidades desta versão' : 'Novidades do Shotgun';
     body.innerHTML = mostrar.map((n, i) => `
@@ -557,7 +565,7 @@ window.SHOTGUN_NOVIDADES = [
     if (!ULTIMA) return;
     const chave = CHAVE + (uid ? ':' + uid : '');
     const vista = ler(chave);
-    if (vista >= ULTIMA) return;
+    if (chaveV(vista) >= chaveV(ULTIMA)) return;
     gravar(chave, ULTIMA);
     abrir(true, vista); // primeira vez com esta janela: mostra as versões mais recentes
   }

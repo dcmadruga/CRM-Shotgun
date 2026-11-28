@@ -2465,18 +2465,20 @@ async function atualizarApp(el){
   location.reload();
 }
 (async()=>{ const el=document.getElementById('versaoApp'); if(!el) return;
-  const num=t=>{ const m=String(t||'').match(/(?:argo|shotgun)-v(\d+)/); return m?+m[1]:0 };
-  let atual=0; try{ atual=Math.max(0,...(await caches.keys()).map(num)) }catch(_){}
-  let srv=0; try{ srv=num(await (await fetch('sw.js',{cache:'no-store'})).text()) }catch(_){}
-  const v=atual||srv; if(!v) return; el.textContent='Versão '+v; el.title='Ver as novidades desta versão';
+  // Versão A.M.R (shotgun-1.11.302) ou da numeração antiga (shotgun-v301 / argo-v301, sempre mais velha que qualquer A.M.R)
+  const ver=t=>{ t=String(t||''); let m=t.match(/shotgun-(\d+)\.(\d+)\.(\d+)/); if(m) return {k:m[1]*1e8+m[2]*1e6+ +m[3], txt:m[1]+'.'+m[2]+'.'+m[3]};
+    m=t.match(/(?:argo|shotgun)-v(\d+)/); return m?{k:+m[1], txt:m[1]}:{k:0, txt:''} };
+  let atual={k:0}; try{ for(const c of await caches.keys()){ const x=ver(c); if(x.k>atual.k) atual=x } }catch(_){}
+  let srv={k:0}; try{ srv=ver(await (await fetch('sw.js',{cache:'no-store'})).text()) }catch(_){}
+  const v=atual.k?atual:srv; if(!v.k) return; el.textContent='Versão '+v.txt; el.title='Ver as novidades desta versão';
   el.setAttribute('role','button'); el.tabIndex=0;
-  if(atual&&srv>atual){ el.textContent='Versão '+atual+' · nova '+srv+', toque para atualizar'; el.classList.add('nova') }
+  if(atual.k&&srv.k>atual.k){ el.textContent='Versão '+atual.txt+' · nova '+srv.txt+', toque para atualizar'; el.classList.add('nova') }
   // Toque na versão: se há versão nova, atualiza; senão abre as Novidades (que têm o botão de forçar a atualização)
   const tocar=()=>{ if(el.classList.contains('nova')||!window.shotgunNovidades) atualizarApp(el); else window.shotgunNovidades.abrir() };
   el.addEventListener('click',tocar);
   // Página aberta há tempo: confere a cada 2 min se saiu versão nova e avisa no cabeçalho
-  const base=srv||atual;
-  setInterval(async()=>{ try{ const n=num(await (await fetch('sw.js',{cache:'no-store'})).text()); if(n>base&&!el.classList.contains('nova')){ el.textContent='Versão '+base+' · nova '+n+', toque para atualizar'; el.classList.add('nova') } }catch(_){} },120000);
+  const base=srv.k?srv:atual;
+  setInterval(async()=>{ try{ const n=ver(await (await fetch('sw.js',{cache:'no-store'})).text()); if(n.k>base.k&&!el.classList.contains('nova')){ el.textContent='Versão '+base.txt+' · nova '+n.txt+', toque para atualizar'; el.classList.add('nova') } }catch(_){} },120000);
   el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); tocar() } });
 })();
 
